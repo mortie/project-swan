@@ -1,0 +1,2 @@
+PKGS = sfml-all
+LDFLAGS += -lstdc++
