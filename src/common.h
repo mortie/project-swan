@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 #define UNIT_SIZE 32.0
+#define TICK_RATE 20
 
 class Vec2: public sf::Vector2<float> {
 public:

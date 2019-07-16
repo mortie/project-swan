@@ -1,2 +1,3 @@
+PROJNAME = cpplat
 PKGS = sfml-all
 LDFLAGS += -lstdc++
