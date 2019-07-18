@@ -2,9 +2,10 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "common.h"
-#include "Player.h"
-#include "Game.h"
+#include <swan/common.h>
+#include <swan/Player.h>
+#include <swan/World.h>
+#include <swan/Game.h>
 
 using namespace Swan;
 
@@ -29,9 +30,12 @@ int main() {
 	Win win = { window, transform };
 
 	Game game;
-	game.player_ = new Player(Vec2(1, 1));
-	game.current_plane_ = new WorldPlane();
-	game.planes_.push_back(game.current_plane_);
+	game.world_ = new World();
+	game.world_->player_ = new Player(Vec2(1, 1));
+	game.world_->current_plane_ = new WorldPlane();
+	game.world_->planes_.push_back(game.world_->current_plane_);
+
+	game.loadMod("core.mod/build/release/core.mod.so");
 
 	double prevtime = getTime();
 	double fpsAcc = 0;

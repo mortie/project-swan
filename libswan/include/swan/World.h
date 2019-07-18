@@ -1,26 +1,27 @@
 #pragma once
 
-#include <vector>
-#include <map>
-#include <string>
-
 #include "common.h"
-#include "WorldPlane.h"
 #include "Player.h"
+#include "Tile.h"
+#include "WorldPlane.h"
+#include "WorldPlane.h"
 #include "Tile.h"
 
 namespace Swan {
 
-class Game {
+class World {
 public:
 	Player *player_;
+
 	WorldPlane *current_plane_;
 	std::vector<WorldPlane *> planes_;
+
 	std::vector<Tile> registered_tiles_;
 	std::map<std::string, Tile::TileID> tile_id_map_;
 
-	void registerTile(std::string &name, Tile &tile);
-	Tile::TileID getTileID(std::string &name);
+	Tile::TileID getTileID(const std::string &name) {
+		return tile_id_map_[name];
+	}
 
 	void draw(Win &win);
 	void update(float dt);

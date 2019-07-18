@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <string>
 
 namespace Swan {
 
@@ -8,7 +9,7 @@ class Tile {
 public:
 	using TileID = uint16_t;
 
-	Tile(std::string name);
+	std::string name_;
 };
 
 }

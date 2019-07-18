@@ -1,0 +1,3 @@
+PROJNAME = core.mod
+PROJTYPE = solib
+DEPENDS = ../libswan
