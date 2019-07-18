@@ -28,6 +28,8 @@ int main() {
 
 	Game game;
 	game.player_ = new Player(Vec2(1, 1));
+	game.current_plane_ = new WorldPlane();
+	game.planes_.push_back(game.current_plane_);
 
 	double prevtime = getTime();
 	double fpsAcc = 0;

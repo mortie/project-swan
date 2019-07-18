@@ -8,7 +8,7 @@
 class Player {
 public:
 	Player(Vec2 pos):
-		body_(pos, Vec2(1, 1), mass) {}
+		body_(pos, Vec2(width, height), mass) {}
 
 	void draw(Win &win);
 	void update(float dt);
@@ -16,7 +16,9 @@ public:
 private:
 	static constexpr float force = 600;
 	static constexpr float friction = 100;
-	static constexpr float mass = 50;
+	static constexpr float mass = 80;
+	static constexpr float width = 1;
+	static constexpr float height = 2;
 
 	Body body_;
 };

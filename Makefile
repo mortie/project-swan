@@ -3,8 +3,8 @@
 PROJNAME = cpplat
 PROJTYPE = exe
 
-SRCS = src/Body.cc src/Game.cc src/main.cc src/Player.cc src/WorldPlane.cc
-HDRS = src/Body.h src/common.h src/Game.h src/Player.h src/WorldPlane.h
+SRCS = src/Body.cc src/Chunk.cc src/Game.cc src/main.cc src/Player.cc src/WorldPlane.cc
+HDRS = src/Body.h src/Chunk.h src/common.h src/Game.h src/Player.h src/Tile.h src/WorldPlane.h
 OBJS = $(patsubst src/%,$(BUILD)/obj/%.o,$(SRCS))
 DEPS = $(patsubst src/%,$(BUILD)/dep/%.d,$(SRCS))
 PUBLICHDRS =

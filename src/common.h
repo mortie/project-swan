@@ -3,8 +3,10 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics.hpp>
 
-#define UNIT_SIZE 32.0
+#define UNIT_SIZE 12.0
 #define TICK_RATE 20
+#define CHUNK_HEIGHT 32
+#define CHUNK_WIDTH 32
 
 class Vec2: public sf::Vector2<float> {
 public:
