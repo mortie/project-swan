@@ -1,24 +1,25 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
-
 #include "common.h"
 #include "Body.h"
+
+namespace Swan {
 
 class Player {
 public:
 	Player(Vec2 pos):
-		body_(pos, Vec2(width, height), mass) {}
+		body_(pos, size, mass) {}
 
 	void draw(Win &win);
 	void update(float dt);
 
 private:
-	static constexpr float force = 600;
-	static constexpr float friction = 100;
-	static constexpr float mass = 80;
-	static constexpr float width = 1;
-	static constexpr float height = 2;
+	static const float force;
+	static const float friction;
+	static const float mass;
+	static const Vec2 size;
 
 	Body body_;
 };
+
+}

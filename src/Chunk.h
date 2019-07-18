@@ -3,6 +3,8 @@
 #include "common.h"
 #include "Tile.h"
 
+namespace Swan {
+
 class Chunk {
 public:
 	int x_;
@@ -12,3 +14,5 @@ public:
 	void clear();
 	void draw(Win &win);
 };
+
+}

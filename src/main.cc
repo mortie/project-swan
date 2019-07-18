@@ -6,14 +6,16 @@
 #include "Player.h"
 #include "Game.h"
 
-double getTime() {
+using namespace Swan;
+
+static double getTime() {
 	struct timespec ts;
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
 }
 
 template<typename T>
-void draw_ents(std::vector<T> ents) {
+static void draw_ents(std::vector<T> ents) {
 	for (auto &ent: ents)
 		ent.draw();
 }

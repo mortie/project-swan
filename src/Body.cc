@@ -1,5 +1,7 @@
 #include "Body.h"
 
+namespace Swan {
+
 void Body::friction(float coef) {
 	force_ += -vel_ * coef;
 }
@@ -22,4 +24,6 @@ void Body::update(float dt) {
 	vel_ += (force_ / mass_) * dt;
 	pos_ += vel_ * dt;
 	force_ = { 0, 0 };
+}
+
 }

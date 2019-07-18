@@ -1,3 +1,3 @@
-PROJNAME = cpplat
+PROJNAME = swan
 PKGS = sfml-all
 LDFLAGS += -lstdc++

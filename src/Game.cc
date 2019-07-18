@@ -1,5 +1,7 @@
 #include "Game.h"
 
+namespace Swan {
+
 void Game::registerTile(std::string &name, Tile &tile) {
 	Tile::TileID id = registered_tiles_.size();
 	registered_tiles_.push_back(tile);
@@ -27,4 +29,6 @@ void Game::update(float dt) {
 void Game::tick() {
 	for (WorldPlane *plane: planes_)
 		plane->tick();
+}
+
 }

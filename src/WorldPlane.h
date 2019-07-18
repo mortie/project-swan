@@ -5,6 +5,8 @@
 #include "common.h"
 #include "Chunk.h"
 
+namespace Swan {
+
 class WorldPlane {
 public:
 	std::vector<Chunk> chunks_;
@@ -17,3 +19,5 @@ public:
 	void update(float dt);
 	void tick();
 };
+
+}

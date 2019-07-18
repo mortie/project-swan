@@ -4,6 +4,8 @@
 
 #include "common.h"
 
+namespace Swan {
+
 class Body {
 public:
 	Vec2 force_ = { 0, 0 };
@@ -21,3 +23,5 @@ public:
 	void outline(Win &win);
 	void update(float dt);
 };
+
+}

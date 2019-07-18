@@ -9,6 +9,8 @@
 #include "Player.h"
 #include "Tile.h"
 
+namespace Swan {
+
 class Game {
 public:
 	Player *player_;
@@ -24,3 +26,5 @@ public:
 	void update(float dt);
 	void tick();
 };
+
+}

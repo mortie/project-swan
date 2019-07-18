@@ -1,5 +1,6 @@
-# Game Idea
+# Game Idea: Swan
 
+* Working title: Swan (maybe the final name should be 'Project: Swan'?)
 * 2D tile-based platformer-esque game
 * Circuit network shit
 * Move along a third axis, the Z axis
