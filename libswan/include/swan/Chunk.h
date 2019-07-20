@@ -28,30 +28,18 @@ public:
 		drawBlock(tmap, x, y, id);
 	}
 
-	void drawBlock(TileMap &tmap, int x, int y, Tile::TileID id) {
-		Tile *t = tmap.get(id);
-		fprintf(stderr, "Drawing %s to %i,%i in chunk %i,%i\n", t->name_.c_str(), x, y, x_, y_);
+	void drawBlock(int x, int y, Tile *t) {
 		texture_.update(t->image_, x * TILE_SIZE, y * TILE_SIZE);
 		dirty_ = true;
 	}
 
-	void drawBlock(TileMap &tmap, int x, int y) {
-		drawBlock(tmap, x, y, tiles_[x][y]);
+	void drawBlock(TileMap &tmap, int x, int y, Tile::TileID id) {
+		drawBlock(x, y, tmap.get(id));
 	}
 
-	void clear() {
-		memset(tiles_, 0, sizeof(tiles_));
-	}
-
-	void draw(Win &win) {
-		if (dirty_) {
-			sprite_.setTexture(texture_);
-			dirty_ = false;
-		}
-
-		win.setPos(Vec2(x_ * CHUNK_WIDTH, y_ * CHUNK_HEIGHT));
-		win.draw(sprite_);
-	}
+	void redraw(TileMap &tmap);
+	void fill(TileMap &tmap, Tile::TileID id);
+	void draw(Win &win);
 };
 
 }

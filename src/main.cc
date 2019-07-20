@@ -72,7 +72,7 @@ int main() {
 			game.tick();
 		}
 
-		window.clear(sf::Color(135, 206, 250));
+		window.clear();
 		game.draw(win);
 		window.display();
 	}

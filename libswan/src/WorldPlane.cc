@@ -21,7 +21,7 @@ void WorldPlane::setTile(int x, int y, Tile::TileID id) {
 	if (chunk == NULL) {
 		chunks_.push_back(Chunk(chx, chy));
 		chunk = &chunks_.back();
-		chunk->clear();
+		chunk->fill(world_->tile_map_, 0);
 	}
 
 	chunk->setTile(world_->tile_map_, rx, ry, id);

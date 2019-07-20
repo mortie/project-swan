@@ -1,5 +1,6 @@
 include_directories("${CMAKE_CURRENT_LIST_DIR}/include/swan")
 add_library(libswan SHARED
+	src/Chunk.cc
 	src/Body.cc
 	src/Game.cc
 	src/Mod.cc

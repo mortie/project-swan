@@ -19,7 +19,7 @@ void Mod::registerTile(const std::string &name, const std::string &asset) {
 
 	std::string asset_path = path_ + "/" + asset;
 	if (!t.image_.loadFromFile(asset_path)) {
-		fprintf(stderr, "Tile %s: Failed to load image %s!\n", t.name_.c_str(), asset_path.c_str());
+		fprintf(stderr, "Tile %s: Failed to load image %s\n", t.name_.c_str(), asset_path.c_str());
 	}
 }
 
