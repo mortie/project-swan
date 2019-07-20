@@ -15,12 +15,6 @@ static double getTime() {
 	return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
 }
 
-template<typename T>
-static void draw_ents(std::vector<T> ents) {
-	for (auto &ent: ents)
-		ent.draw();
-}
-
 int main() {
 	sf::RenderWindow window(sf::VideoMode(800, 600), "good gaem");
 	window.setVerticalSyncEnabled(true);
@@ -30,12 +24,15 @@ int main() {
 	Win win = { window, transform };
 
 	Game game;
-	game.world_ = new World();
-	game.world_->player_ = new Player(Vec2(1, 1));
-	game.world_->current_plane_ = new WorldPlane();
-	game.world_->planes_.push_back(game.world_->current_plane_);
+	game.loadMod("core.mod");
 
-	game.loadMod("core.mod/core.mod.so");
+	game.createWorld();
+	game.world_->setCurrentPlane(game.world_->addPlane());
+	game.world_->player_ = new Player(Vec2(1, 1));
+
+	Tile::TileID tStone = game.world_->getTileID("core::stone");
+	WorldPlane &plane = game.world_->getPlane(game.world_->current_plane_);
+	plane.setTile(2, 2, tStone);
 
 	double prevtime = getTime();
 	double fpsAcc = 0;

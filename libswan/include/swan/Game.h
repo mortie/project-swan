@@ -14,9 +14,10 @@ class Game {
 public:
 	std::vector<Mod> registered_mods_;
 
-	World *world_;
+	World *world_ = NULL;
 
 	void loadMod(const std::string &path);
+	void createWorld();
 
 	void draw(Win &win);
 	void update(float dt);

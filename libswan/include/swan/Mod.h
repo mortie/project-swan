@@ -13,11 +13,12 @@ public:
 	using ModID = uint32_t;
 
 	std::string name_;
+	std::string path_;
 	std::vector<Tile> tiles_;
 	bool inited_ = false;
 
 	void init(const std::string &name);
-	void registerTile(const std::string &name, const Tile &tile);
+	void registerTile(const std::string &name, const std::string &asset);
 };
 
 }

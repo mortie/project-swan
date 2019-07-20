@@ -11,12 +11,16 @@ void Mod::init(const std::string &name) {
 	fprintf(stderr, "Mod initing: %s\n", name_.c_str());
 }
 
-void Mod::registerTile(const std::string &name, const Tile &tile) {
-	tiles_.push_back(tile);
+void Mod::registerTile(const std::string &name, const std::string &asset) {
+	tiles_.push_back(Tile());
 	Tile &t = tiles_.back();
 	t.name_ = name_ + "::" + name;
+	fprintf(stderr, "Adding tile: %s\n", t.name_.c_str());
 
-	fprintf(stderr, "Added tile: %s\n", t.name_.c_str());
+	std::string asset_path = path_ + "/" + asset;
+	if (!t.image_.loadFromFile(asset_path)) {
+		fprintf(stderr, "Tile %s: Failed to load image %s!\n", t.name_.c_str(), asset_path.c_str());
+	}
 }
 
 }

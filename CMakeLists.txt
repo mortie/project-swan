@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(swan)
 
 find_package(SFML 2.5 COMPONENTS graphics system window REQUIRED)
