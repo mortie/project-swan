@@ -7,13 +7,8 @@ WorldPlane::PlaneID World::addPlane() {
 	planes_.push_back(WorldPlane());
 	WorldPlane &plane = planes_.back();
 	plane.id_ = id;
+	plane.world_ = this;
 	return id;
-}
-
-void World::registerTile(Tile *t) {
-	Tile::TileID id = registered_tiles_.size();
-	registered_tiles_.push_back(t);
-	tile_id_map_[t->name_] = id;
 }
 
 void World::draw(Win &win) {

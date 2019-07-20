@@ -5,7 +5,7 @@
 
 namespace Swan {
 
-static constexpr float UNIT_SIZE = 12;
+static constexpr float TILE_SIZE = 32;
 static constexpr int TICK_RATE = 20;
 static constexpr int CHUNK_HEIGHT = 32;
 static constexpr int CHUNK_WIDTH = 32;
@@ -53,18 +53,17 @@ public:
 
 struct Win {
 public:
-	sf::RenderWindow &window_;
-	sf::Transform &transform_;
-	Vec2 curr_pos_ = { 0, 0 };
+	sf::RenderWindow *window_;
+	sf::Transform transform_;
 
-	void setPos(Vec2 &pos) {
-		transform_.translate(-curr_pos_.x, -curr_pos_.y);
-		transform_.translate(pos.x, pos.y);
-		curr_pos_ = pos;
+	Win(sf::RenderWindow *win): window_(win) {}
+
+	void setPos(const Vec2 &pos) {
+		transform_ = sf::Transform().translate(pos);
 	}
 
 	void draw(const sf::Drawable &drawable) {
-		window_.draw(drawable, transform_);
+		window_->draw(drawable, transform_);
 	}
 };
 

@@ -1,8 +1,10 @@
 #include "WorldPlane.h"
 
+#include "World.h"
+
 namespace Swan {
 
-void WorldPlane::setTile(int x, int y, Tile::TileID tile) {
+void WorldPlane::setTile(int x, int y, Tile::TileID id) {
 	int chx = x / CHUNK_WIDTH;
 	int chy = y / CHUNK_HEIGHT;
 	int rx = x % CHUNK_WIDTH;
@@ -17,15 +19,18 @@ void WorldPlane::setTile(int x, int y, Tile::TileID tile) {
 	}
 
 	if (chunk == NULL) {
-		chunks_.push_back(Chunk());
+		chunks_.push_back(Chunk(chx, chy));
 		chunk = &chunks_.back();
 		chunk->clear();
 	}
 
-	chunk->setTile(rx, ry, tile);
+	chunk->setTile(world_->tile_map_, rx, ry, id);
 }
 
 void WorldPlane::draw(Win &win) {
+	for (auto &chunk: chunks_) {
+		chunk.draw(win);
+	}
 }
 
 void WorldPlane::update(float dt) {

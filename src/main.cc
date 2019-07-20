@@ -18,10 +18,7 @@ static double getTime() {
 int main() {
 	sf::RenderWindow window(sf::VideoMode(800, 600), "good gaem");
 	window.setVerticalSyncEnabled(true);
-	sf::Transform transform;
-	transform.scale(UNIT_SIZE, UNIT_SIZE);
-
-	Win win = { window, transform };
+	Win win(&window);
 
 	Game game;
 	game.loadMod("core.mod");
@@ -32,7 +29,11 @@ int main() {
 
 	Tile::TileID tStone = game.world_->getTileID("core::stone");
 	WorldPlane &plane = game.world_->getPlane(game.world_->current_plane_);
-	plane.setTile(2, 2, tStone);
+	for (int x = 1; x < 10; ++x) {
+		for (int y = 1; y < 10; ++y) {
+			plane.setTile(x, y, tStone);
+		}
+	}
 
 	double prevtime = getTime();
 	double fpsAcc = 0;

@@ -11,12 +11,11 @@ void Body::gravity(Vec2 g) {
 }
 
 void Body::outline(Win &win) {
-	win.setPos(pos_);
-
-	sf::RectangleShape rect(size_);
+	sf::RectangleShape rect(size_ * TILE_SIZE);
+	rect.setPosition(pos_ * TILE_SIZE);
 	rect.setFillColor(sf::Color::Transparent);
 	rect.setOutlineColor(sf::Color(128, 128, 128));
-	rect.setOutlineThickness(2 / UNIT_SIZE);
+	rect.setOutlineThickness(2);
 	win.draw(rect);
 }
 

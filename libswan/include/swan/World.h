@@ -16,18 +16,19 @@ public:
 	WorldPlane::PlaneID current_plane_;
 	std::vector<WorldPlane> planes_;
 
-	std::vector<Tile *> registered_tiles_;
-	std::map<std::string, Tile::TileID> tile_id_map_;
+	TileMap tile_map_;
 
 	WorldPlane::PlaneID addPlane();
 	void setCurrentPlane(WorldPlane::PlaneID id) { current_plane_ = id; }
 	WorldPlane &getPlane(WorldPlane::PlaneID id) { return planes_[id]; }
 
 	Tile::TileID getTileID(const std::string &name) {
-		return tile_id_map_[name];
+		return tile_map_.getID(name);
 	}
 
-	void registerTile(Tile *t);
+	void registerTile(Tile *t) {
+		tile_map_.registerTile(t);
+	}
 
 	void draw(Win &win);
 	void update(float dt);
