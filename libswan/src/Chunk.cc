@@ -10,7 +10,7 @@ void Chunk::redraw(TileMap &tmap) {
 	}
 }
 
-void Chunk::fill(TileMap &tmap, Tile::TileID id) {
+void Chunk::fill(TileMap &tmap, Tile::ID id) {
 	Tile *air = tmap.get(0);
 	for (int x = 0; x < CHUNK_WIDTH; ++x) {
 		for (int y = 0; y < CHUNK_HEIGHT; ++y) {

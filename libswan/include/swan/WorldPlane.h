@@ -13,13 +13,13 @@ class World;
 
 class WorldPlane {
 public:
-	using PlaneID = uint16_t;
+	using ID = uint16_t;
 
 	std::vector<Chunk> chunks_;
-	PlaneID id_;
+	ID id_;
 	World *world_;
 
-	void setTile(int x, int y, Tile::TileID id);
+	void setTile(int x, int y, Tile::ID id);
 
 	void draw(Win &win);
 	void update(float dt);

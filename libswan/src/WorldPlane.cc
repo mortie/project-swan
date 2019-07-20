@@ -4,7 +4,7 @@
 
 namespace Swan {
 
-void WorldPlane::setTile(int x, int y, Tile::TileID id) {
+void WorldPlane::setTile(int x, int y, Tile::ID id) {
 	int chx = x / CHUNK_WIDTH;
 	int chy = y / CHUNK_HEIGHT;
 	int rx = x % CHUNK_WIDTH;

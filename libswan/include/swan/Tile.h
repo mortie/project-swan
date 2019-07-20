@@ -8,7 +8,7 @@ namespace Swan {
 
 class Tile {
 public:
-	using TileID = uint16_t;
+	using ID = uint16_t;
 
 	std::string name_;
 	sf::Image image_;

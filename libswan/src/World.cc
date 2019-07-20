@@ -2,8 +2,8 @@
 
 namespace Swan {
 
-WorldPlane::PlaneID World::addPlane() {
-	WorldPlane::PlaneID id = planes_.size();
+WorldPlane::ID World::addPlane() {
+	WorldPlane::ID id = planes_.size();
 	planes_.push_back(WorldPlane());
 	WorldPlane &plane = planes_.back();
 	plane.id_ = id;

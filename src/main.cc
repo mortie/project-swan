@@ -27,10 +27,10 @@ int main() {
 	game.world_->setCurrentPlane(game.world_->addPlane());
 	game.world_->player_ = new Player(Vec2(1, 1));
 
-	Tile::TileID tStone = game.world_->getTileID("core::stone");
+	Tile::ID tStone = game.world_->getTileID("core::stone");
 	WorldPlane &plane = game.world_->getPlane(game.world_->current_plane_);
 	for (int x = 1; x < 10; ++x) {
-		for (int y = 1; y < 10; ++y) {
+		for (int y = 3; y < 10; ++y) {
 			plane.setTile(x, y, tStone);
 		}
 	}

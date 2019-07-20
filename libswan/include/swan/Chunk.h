@@ -14,7 +14,7 @@ public:
 	int x_;
 	int y_;
 	bool dirty_ = false;
-	Tile::TileID tiles_[CHUNK_WIDTH][CHUNK_HEIGHT];
+	Tile::ID tiles_[CHUNK_WIDTH][CHUNK_HEIGHT];
 	sf::Texture texture_;
 	sf::Sprite sprite_;
 
@@ -23,7 +23,7 @@ public:
 		sprite_ = sf::Sprite(texture_);
 	}
 
-	void setTile(TileMap &tmap, int x, int y, Tile::TileID id) {
+	void setTile(TileMap &tmap, int x, int y, Tile::ID id) {
 		tiles_[x][y] = id;
 		drawBlock(tmap, x, y, id);
 	}
@@ -33,12 +33,12 @@ public:
 		dirty_ = true;
 	}
 
-	void drawBlock(TileMap &tmap, int x, int y, Tile::TileID id) {
+	void drawBlock(TileMap &tmap, int x, int y, Tile::ID id) {
 		drawBlock(x, y, tmap.get(id));
 	}
 
 	void redraw(TileMap &tmap);
-	void fill(TileMap &tmap, Tile::TileID id);
+	void fill(TileMap &tmap, Tile::ID id);
 	void draw(Win &win);
 };
 

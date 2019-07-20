@@ -13,16 +13,16 @@ class World {
 public:
 	Player *player_;
 
-	WorldPlane::PlaneID current_plane_;
+	WorldPlane::ID current_plane_;
 	std::vector<WorldPlane> planes_;
 
 	TileMap tile_map_;
 
-	WorldPlane::PlaneID addPlane();
-	void setCurrentPlane(WorldPlane::PlaneID id) { current_plane_ = id; }
-	WorldPlane &getPlane(WorldPlane::PlaneID id) { return planes_[id]; }
+	WorldPlane::ID addPlane();
+	void setCurrentPlane(WorldPlane::ID id) { current_plane_ = id; }
+	WorldPlane &getPlane(WorldPlane::ID id) { return planes_[id]; }
 
-	Tile::TileID getTileID(const std::string &name) {
+	Tile::ID getTileID(const std::string &name) {
 		return tile_map_.getID(name);
 	}
 
