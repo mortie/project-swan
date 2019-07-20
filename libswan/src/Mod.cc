@@ -16,7 +16,7 @@ void Mod::registerTile(const std::string &name, const Tile &tile) {
 	Tile &t = tiles_.back();
 	t.name_ = name_ + "::" + name;
 
-	fprintf(stderr, "Mod %s added tile %s.\n", name_.c_str(), t.name_.c_str());
+	fprintf(stderr, "Added tile: %s\n", t.name_.c_str());
 }
 
 }

@@ -14,7 +14,7 @@ public:
 
 	std::string name_;
 	std::vector<Tile> tiles_;
-	bool inited_ = false;;
+	bool inited_ = false;
 
 	void init(const std::string &name);
 	void registerTile(const std::string &name, const Tile &tile);
