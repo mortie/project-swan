@@ -1,4 +1,0 @@
-PROJNAME = libswan
-PROJTYPE = solib
-PKGS = sfml-all
-CCOPTS += -Iinclude/swan

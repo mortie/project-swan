@@ -1,5 +1,0 @@
-PROJNAME = swan
-PROJTYPE = exe
-PKGS = sfml-all
-LDOPTS += -lstdc++ -ldl -lswan -Wl,--rpath=libswan/build/$(CONFIG)
-DEPENDS = libswan

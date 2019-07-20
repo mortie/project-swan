@@ -5,11 +5,19 @@
 namespace Swan {
 
 void Game::loadMod(const std::string &path) {
+	void *dl = dlopen(path.c_str(), RTLD_LAZY);
+	if (dl == NULL) {
+		fprintf(stderr, "%s\n", dlerror());
+		return;
+	}
+
+	void (*mod_init)(Mod &) = (void (*)(Mod &))dlsym(dl, "mod_init");
+	if (mod_init == NULL) {
+		fprintf(stderr, "%s\n", dlerror());
+	}
+
 	registered_mods_.push_back(Mod());
 	Mod &mod = registered_mods_.back();
-
-	void *dl = dlopen(path.c_str(), RTLD_LAZY);
-	void (*mod_init)(Mod &) = (void (*)(Mod &))dlsym(dl, "mod_init");
 	mod_init(mod);
 }
 

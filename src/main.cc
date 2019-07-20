@@ -35,7 +35,7 @@ int main() {
 	game.world_->current_plane_ = new WorldPlane();
 	game.world_->planes_.push_back(game.world_->current_plane_);
 
-	game.loadMod("core.mod/build/release/core.mod.so");
+	game.loadMod("core.mod/core.mod.so");
 
 	double prevtime = getTime();
 	double fpsAcc = 0;
