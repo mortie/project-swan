@@ -33,9 +33,9 @@ int main() {
 	for (int x = 1; x < 10; ++x) {
 		for (int y = 3; y < 10; ++y) {
 			if (y == 3)
-				plane.setTile(x, y, tGrass);
+				plane.setTileID(x, y, tGrass);
 			else
-				plane.setTile(x, y, tStone);
+				plane.setTileID(x, y, tStone);
 		}
 	}
 

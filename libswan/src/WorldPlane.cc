@@ -4,32 +4,33 @@
 
 namespace Swan {
 
-void WorldPlane::setTile(int x, int y, Tile::ID id) {
-	int chx = x / CHUNK_WIDTH;
-	int chy = y / CHUNK_HEIGHT;
-	int rx = x % CHUNK_WIDTH;
-	int ry = y % CHUNK_HEIGHT;
+void WorldPlane::setTileID(int x, int y, Tile::ID id) {
+	auto coord = Coord(x / CHUNK_WIDTH, y / CHUNK_HEIGHT);
+	auto it = chunks_.find(coord);
 
-	Chunk *chunk = NULL;
-	for (auto &ch: chunks_) {
-		if (ch.x_ == chx && ch.y_ == chy) {
-			chunk = &ch;
-			break;
-		}
+	if (it == chunks_.end()) {
+		it = chunks_.emplace(coord, Chunk(coord.first, coord.second)).first;
+		it->second.fill(world_->tile_map_, 0);
 	}
 
-	if (chunk == NULL) {
-		chunks_.push_back(Chunk(chx, chy));
-		chunk = &chunks_.back();
-		chunk->fill(world_->tile_map_, 0);
+	it->second.setTileID(world_->tile_map_, x % CHUNK_WIDTH, y % CHUNK_HEIGHT, id);
+}
+
+Tile *WorldPlane::getTile(int x, int y) {
+	auto coord = Coord(x / CHUNK_WIDTH, y / CHUNK_HEIGHT);
+	auto it = chunks_.find(coord);
+
+	if (it == chunks_.end()) {
+		it = chunks_.emplace(coord, Chunk(coord.first, coord.second)).first;
+		it->second.fill(world_->tile_map_, 0);
 	}
 
-	chunk->setTile(world_->tile_map_, rx, ry, id);
+	return it->second.getTile(world_->tile_map_, x % CHUNK_WIDTH, y % CHUNK_HEIGHT);
 }
 
 void WorldPlane::draw(Win &win) {
-	for (auto &chunk: chunks_) {
-		chunk.draw(win);
+	for (auto &p: chunks_) {
+		p.second.draw(win);
 	}
 }
 

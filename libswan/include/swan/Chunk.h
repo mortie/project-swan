@@ -23,9 +23,13 @@ public:
 		sprite_ = sf::Sprite(texture_);
 	}
 
-	void setTile(TileMap &tmap, int x, int y, Tile::ID id) {
+	void setTileID(TileMap &tmap, int x, int y, Tile::ID id) {
 		tiles_[x][y] = id;
 		drawBlock(tmap, x, y, id);
+	}
+
+	Tile *getTile(TileMap &tmap, int x, int y) {
+		return tmap.get(tiles_[x][y]);
 	}
 
 	void drawBlock(int x, int y, Tile *t) {
