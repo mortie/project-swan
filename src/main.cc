@@ -61,19 +61,23 @@ int main() {
 		prevtime = now;
 		fpsAcc += dt;
 		fcount += 1;
-		if (fpsAcc >= 1) {
-			fprintf(stderr, "FPS: %i\n", fcount);
-			fpsAcc -= 1;
+		if (fpsAcc >= 4) {
+			fprintf(stderr, "FPS: %.3f\n", fcount / 4.0);
+			fpsAcc -= 4;
 			fcount = 0;
 		}
 
-		game.update(dt);
+		if (dt > 0.1) {
+			fprintf(stderr, "Warning: delta time is too high! (%.3fs).\n", dt);
+		} else {
+			game.update(dt);
 
-		// Call tick TICK_RATE times per second
-		tickAcc += dt;
-		while (tickAcc >= 1.0 / TICK_RATE) {
-			tickAcc -= 1.0 / TICK_RATE;
-			game.tick();
+			// Call tick TICK_RATE times per second
+			tickAcc += dt;
+			while (tickAcc >= 1.0 / TICK_RATE) {
+				tickAcc -= 1.0 / TICK_RATE;
+				game.tick();
+			}
 		}
 
 		window.clear();
