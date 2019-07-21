@@ -4,10 +4,11 @@
 extern "C" void mod_init(Swan::Mod &mod) {
 	mod.init("core");
 
-	mod.registerTile("air", "assets/tiles/air.png");
-	mod.registerTile("stone", "assets/tiles/stone.png");
-	mod.registerTile("dirt", "assets/tiles/dirt.png");
-	mod.registerTile("grass", "assets/tiles/grass.png");
+	mod.registerTile("air", "assets/tiles/air.png", Swan::Tile::Opts()
+			.transparent());
+	mod.registerTile("stone", "assets/tiles/stone.png", Swan::Tile::Opts());
+	mod.registerTile("dirt", "assets/tiles/dirt.png", Swan::Tile::Opts());
+	mod.registerTile("grass", "assets/tiles/grass.png", Swan::Tile::Opts());
 }
 
 int main() {

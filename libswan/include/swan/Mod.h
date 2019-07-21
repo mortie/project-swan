@@ -18,7 +18,7 @@ public:
 	bool inited_ = false;
 
 	void init(const std::string &name);
-	void registerTile(const std::string &name, const std::string &asset);
+	void registerTile(const std::string &name, const std::string &asset, const Tile::Opts &opts);
 };
 
 }

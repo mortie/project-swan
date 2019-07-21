@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "Body.h"
+#include "WorldPlane.h"
 
 namespace Swan {
 
@@ -11,7 +12,7 @@ public:
 		body_(pos, SIZE, MASS) {}
 
 	void draw(Win &win);
-	void update(float dt);
+	void update(WorldPlane &plane, float dt);
 
 private:
 	static const float FORCE;

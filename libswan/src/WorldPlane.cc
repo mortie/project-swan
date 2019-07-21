@@ -4,7 +4,7 @@
 
 namespace Swan {
 
-void WorldPlane::setTileID(int x, int y, Tile::ID id) {
+Chunk &WorldPlane::getChunk(int x, int y) {
 	auto coord = Coord(x / CHUNK_WIDTH, y / CHUNK_HEIGHT);
 	auto it = chunks_.find(coord);
 
@@ -13,19 +13,15 @@ void WorldPlane::setTileID(int x, int y, Tile::ID id) {
 		it->second.fill(world_->tile_map_, 0);
 	}
 
-	it->second.setTileID(world_->tile_map_, x % CHUNK_WIDTH, y % CHUNK_HEIGHT, id);
+	return it->second;
 }
 
-Tile *WorldPlane::getTile(int x, int y) {
-	auto coord = Coord(x / CHUNK_WIDTH, y / CHUNK_HEIGHT);
-	auto it = chunks_.find(coord);
+void WorldPlane::setTileID(int x, int y, Tile::ID id) {
+	getChunk(x, y).setTileID(world_->tile_map_, x % CHUNK_WIDTH, y % CHUNK_HEIGHT, id);
+}
 
-	if (it == chunks_.end()) {
-		it = chunks_.emplace(coord, Chunk(coord.first, coord.second)).first;
-		it->second.fill(world_->tile_map_, 0);
-	}
-
-	return it->second.getTile(world_->tile_map_, x % CHUNK_WIDTH, y % CHUNK_HEIGHT);
+Tile &WorldPlane::getTile(int x, int y) {
+	return *getChunk(x, y).getTile(world_->tile_map_, x % CHUNK_WIDTH, y % CHUNK_HEIGHT);
 }
 
 void WorldPlane::draw(Win &win) {

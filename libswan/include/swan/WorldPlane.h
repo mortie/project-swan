@@ -21,8 +21,9 @@ public:
 	ID id_;
 	World *world_;
 
+	Chunk &getChunk(int x, int y);
 	void setTileID(int x, int y, Tile::ID id);
-	Tile *getTile(int x, int y);
+	Tile &getTile(int x, int y);
 
 	void draw(Win &win);
 	void update(float dt);

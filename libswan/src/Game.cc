@@ -24,10 +24,7 @@ void Game::loadMod(const std::string &path) {
 }
 
 void Game::createWorld() {
-	if (world_ != NULL)
-		delete world_;
-
-	world_ = new World();
+	world_.reset(new World());
 	for (auto &mod: registered_mods_) {
 		for (auto &tile: mod.tiles_) {
 			world_->registerTile(&tile);

@@ -10,8 +10,15 @@ class Tile {
 public:
 	using ID = uint16_t;
 
+	struct Opts {
+		bool transparent_ = false;
+
+		Opts &transparent() { transparent_ = true; return *this; }
+	};
+
 	std::string name_;
 	sf::Image image_;
+	Opts opts_;
 };
 
 }

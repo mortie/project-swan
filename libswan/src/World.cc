@@ -20,7 +20,7 @@ void World::update(float dt) {
 	for (auto &plane: planes_)
 		plane.update(dt);
 
-	player_->update(dt);
+	player_->update(planes_[current_plane_], dt);
 }
 
 void World::tick() {

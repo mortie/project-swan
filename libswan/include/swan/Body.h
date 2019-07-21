@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "common.h"
+#include "WorldPlane.h"
 
 namespace Swan {
 
@@ -19,6 +20,7 @@ public:
 
 	void friction(float coef);
 	void gravity(Vec2 g = Vec2(0, 9.81));
+	void collide(WorldPlane &plane);
 
 	void outline(Win &win);
 	void update(float dt);

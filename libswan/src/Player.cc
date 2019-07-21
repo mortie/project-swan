@@ -13,7 +13,7 @@ void Player::draw(Win &win) {
 	body_.outline(win);
 }
 
-void Player::update(float dt) {
+void Player::update(WorldPlane &plane, float dt) {
 	if (Keyboard::isKeyPressed(Keyboard::W) || Keyboard::isKeyPressed(Keyboard::Up))
 		body_.force_ += Vec2(0, -FORCE);
 	if (Keyboard::isKeyPressed(Keyboard::S) || Keyboard::isKeyPressed(Keyboard::Down))
@@ -26,6 +26,7 @@ void Player::update(float dt) {
 	body_.friction(FRICTION);
 	body_.gravity();
 	body_.update(dt);
+	body_.collide(plane);
 }
 
 }

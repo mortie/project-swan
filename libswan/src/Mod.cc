@@ -11,10 +11,11 @@ void Mod::init(const std::string &name) {
 	fprintf(stderr, "Mod initing: %s\n", name_.c_str());
 }
 
-void Mod::registerTile(const std::string &name, const std::string &asset) {
+void Mod::registerTile(const std::string &name, const std::string &asset, const Tile::Opts &opts) {
 	tiles_.push_back(Tile());
 	Tile &t = tiles_.back();
 	t.name_ = name_ + "::" + name;
+	t.opts_ = opts;
 	fprintf(stderr, "Adding tile: %s\n", t.name_.c_str());
 
 	std::string asset_path = path_ + "/" + asset;
