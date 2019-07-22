@@ -18,7 +18,7 @@ class WorldPlane {
 public:
 	using ID = uint16_t;
 
-	std::map<Chunk::ChunkPos, Chunk> chunks_;
+	std::map<std::pair<int, int>, Chunk> chunks_;
 	ID id_;
 	World *world_;
 	std::shared_ptr<WorldGen> gen_;

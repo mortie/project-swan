@@ -43,7 +43,14 @@ public:
 		drawBlock(pos, tmap.get(id));
 	}
 
-	void redraw(TileMap &tmap);
+	void redraw(TileMap &tmap) {
+		for (int x = 0; x < CHUNK_WIDTH; ++x) {
+			for (int y = 0; y < CHUNK_HEIGHT; ++y) {
+				drawBlock(tmap, ChunkPos(x, y), tiles_[x][y]);
+			}
+		}
+	}
+
 	void draw(Win &win);
 };
 

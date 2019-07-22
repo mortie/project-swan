@@ -18,10 +18,10 @@ static Chunk::RelPos relPos(int x, int y) {
 
 Chunk &WorldPlane::getChunk(int x, int y) {
 	Chunk::ChunkPos pos = chunkPos(x, y);
-	auto it = chunks_.find(pos);
+	auto it = chunks_.find(std::pair<int, int>(pos.x_, pos.y_));
 
 	if (it == chunks_.end()) {
-		it = chunks_.emplace(pos, Chunk(pos)).first;
+		it = chunks_.emplace(std::pair<int, int>(pos.x_, pos.y_), Chunk(pos)).first;
 		gen_->genChunk(it->second, pos.x_, pos.y_);
 		it->second.redraw(world_->tile_map_);
 	}

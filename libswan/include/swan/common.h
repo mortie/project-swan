@@ -16,11 +16,12 @@ struct Win {
 public:
 	sf::RenderWindow *window_;
 	sf::Transform transform_;
+	Vec2 cam_;
 
 	Win(sf::RenderWindow *win): window_(win) {}
 
 	void setPos(const Vec2 &pos) {
-		transform_ = sf::Transform().translate(pos);
+		transform_ = sf::Transform().translate(pos - cam_);
 	}
 
 	void draw(const sf::Drawable &drawable) {
