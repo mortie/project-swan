@@ -22,6 +22,8 @@ public:
 	void draw(Win &win);
 	void update(float dt);
 	void tick();
+
+	static void initGlobal();
 };
 
 }

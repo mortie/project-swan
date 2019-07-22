@@ -10,7 +10,8 @@ Chunk &WorldPlane::getChunk(int x, int y) {
 
 	if (it == chunks_.end()) {
 		it = chunks_.emplace(coord, Chunk(coord.first, coord.second)).first;
-		it->second.fill(world_->tile_map_, 0);
+		gen_->genChunk(it->second, coord.first, coord.second);
+		it->second.redraw(world_->tile_map_);
 	}
 
 	return it->second;
@@ -21,7 +22,7 @@ void WorldPlane::setTileID(int x, int y, Tile::ID id) {
 }
 
 Tile &WorldPlane::getTile(int x, int y) {
-	return *getChunk(x, y).getTile(world_->tile_map_, x % CHUNK_WIDTH, y % CHUNK_HEIGHT);
+	return getChunk(x, y).getTile(world_->tile_map_, x % CHUNK_WIDTH, y % CHUNK_HEIGHT);
 }
 
 void WorldPlane::draw(Win &win) {

@@ -2,12 +2,10 @@
 
 namespace Swan {
 
-WorldPlane::ID World::addPlane() {
+WorldPlane::ID World::addPlane(WorldGen::ID gen) {
 	WorldPlane::ID id = planes_.size();
-	planes_.push_back(WorldPlane());
-	WorldPlane &plane = planes_.back();
-	plane.id_ = id;
-	plane.world_ = this;
+	WorldGen *g = worldgens_[gen]->create(tile_map_);
+	planes_.push_back(WorldPlane(id, this, std::shared_ptr<WorldGen>(g)));
 	return id;
 }
 

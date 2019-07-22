@@ -17,9 +17,10 @@ void Body::collide(WorldPlane &plane) {
 	int y = (int)(pos_.y_ + size_.y_);
 	for (int x = startx; x <= endx; ++x) {
 		Tile &tile = plane.getTile(x, y);
-		if (!tile.opts_.transparent_) {
+		if (tile.opts_.solid_) {
 			pos_.y_ = y - size_.y_;
 			vel_.y_ = 0;
+			break;
 		}
 	}
 }

@@ -20,24 +20,14 @@ int main() {
 	window.setVerticalSyncEnabled(true);
 	Win win(&window);
 
+	Game::initGlobal();
+
 	Game game;
 	game.loadMod("core.mod");
 
 	game.createWorld();
 	game.world_->setCurrentPlane(game.world_->addPlane());
 	game.world_->player_ = new Player(Vec2(1, 1));
-
-	Tile::ID tStone = game.world_->getTileID("core::stone");
-	Tile::ID tGrass = game.world_->getTileID("core::grass");
-	WorldPlane &plane = game.world_->getPlane(game.world_->current_plane_);
-	for (int x = 1; x < 10; ++x) {
-		for (int y = 3; y < 10; ++y) {
-			if (y == 3)
-				plane.setTileID(x, y, tGrass);
-			else
-				plane.setTileID(x, y, tStone);
-		}
-	}
 
 	double prevtime = getTime();
 	double fpsAcc = 0;

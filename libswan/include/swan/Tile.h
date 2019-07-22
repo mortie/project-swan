@@ -11,14 +11,17 @@ public:
 	using ID = uint16_t;
 
 	struct Opts {
-		bool transparent_ = false;
-
-		Opts &transparent() { transparent_ = true; return *this; }
+		bool solid_ = true;
+		Opts &solid(bool b) { solid_ = b; return *this; }
 	};
 
 	std::string name_;
 	sf::Image image_;
 	Opts opts_;
+
+	static sf::Image invalid_image;
+	static Tile invalid_tile;
+	static void initInvalid();
 };
 
 }

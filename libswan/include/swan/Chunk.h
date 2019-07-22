@@ -28,12 +28,12 @@ public:
 		drawBlock(tmap, x, y, id);
 	}
 
-	Tile *getTile(TileMap &tmap, int x, int y) {
+	Tile &getTile(TileMap &tmap, int x, int y) {
 		return tmap.get(tiles_[x][y]);
 	}
 
-	void drawBlock(int x, int y, Tile *t) {
-		texture_.update(t->image_, x * TILE_SIZE, y * TILE_SIZE);
+	void drawBlock(int x, int y, const Tile &t) {
+		texture_.update(t.image_, x * TILE_SIZE, y * TILE_SIZE);
 		dirty_ = true;
 	}
 
@@ -42,7 +42,6 @@ public:
 	}
 
 	void redraw(TileMap &tmap);
-	void fill(TileMap &tmap, Tile::ID id);
 	void draw(Win &win);
 };
 

@@ -12,16 +12,22 @@ void Mod::init(const std::string &name) {
 }
 
 void Mod::registerTile(const std::string &name, const std::string &asset, const Tile::Opts &opts) {
-	tiles_.push_back(Tile());
-	Tile &t = tiles_.back();
-	t.name_ = name_ + "::" + name;
-	t.opts_ = opts;
-	fprintf(stderr, "Adding tile: %s\n", t.name_.c_str());
+	Tile *t = new Tile();
+	t->name_ = name_ + "::" + name;
+	t->opts_ = opts;
+	fprintf(stderr, "Adding tile: %s\n", t->name_.c_str());
 
 	std::string asset_path = path_ + "/" + asset;
-	if (!t.image_.loadFromFile(asset_path)) {
-		fprintf(stderr, "Tile %s: Failed to load image %s\n", t.name_.c_str(), asset_path.c_str());
+	if (!t->image_.loadFromFile(asset_path)) {
+		fprintf(stderr, "Tile %s: Failed to load image %s\n", t->name_.c_str(), asset_path.c_str());
+		t->image_ = Tile::invalid_image;
 	}
+
+	tiles_.push_back(std::shared_ptr<Tile>(t));
+}
+
+void Mod::registerWorldGen(WorldGen::Factory *gen) {
+	worldgens_.push_back(std::shared_ptr<WorldGen::Factory>(gen));
 }
 
 }
