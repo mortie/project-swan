@@ -73,6 +73,12 @@ public:
 		y_ /= num;
 		return *this;
 	}
+
+	bool operator<(const Vector2<T> &vec) const {
+		if (x_ < vec.x_) return true;
+		if (vec.x_ < x_) return false;
+		return y_ < vec.y_;
+	}
 };
 
 using Vec2 = Vector2<float>;

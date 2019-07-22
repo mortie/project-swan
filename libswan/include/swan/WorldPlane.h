@@ -17,9 +17,8 @@ class World;
 class WorldPlane {
 public:
 	using ID = uint16_t;
-	using Coord = std::pair<int, int>;
 
-	std::map<Coord, Chunk> chunks_;
+	std::map<Chunk::ChunkPos, Chunk> chunks_;
 	ID id_;
 	World *world_;
 	std::shared_ptr<WorldGen> gen_;

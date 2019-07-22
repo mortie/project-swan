@@ -14,7 +14,6 @@ public:
 	class Factory {
 	public:
 		std::string name_;
-		Factory(const std::string &name): name_(name) {}
 		virtual WorldGen *create(TileMap &tmap) = 0;
 	};
 

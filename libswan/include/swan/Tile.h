@@ -10,14 +10,15 @@ class Tile {
 public:
 	using ID = uint16_t;
 
-	struct Opts {
-		bool solid_ = true;
-		Opts &solid(bool b) { solid_ = b; return *this; }
-	};
-
+	std::string path_;
 	std::string name_;
 	sf::Image image_;
-	Opts opts_;
+
+	bool is_solid_ = true;
+
+	Tile(std::string path): path_(path) {}
+
+	Tile *solid(bool b) { is_solid_ = b; return this; }
 
 	static sf::Image invalid_image;
 	static Tile invalid_tile;

@@ -21,8 +21,8 @@ public:
 	bool inited_ = false;
 
 	void init(const std::string &name);
-	void registerTile(const std::string &name, const std::string &asset, const Tile::Opts &opts);
-	void registerWorldGen(WorldGen::Factory *gen);
+	void registerTile(const std::string &name, Tile *tile);
+	void registerWorldGen(const std::string &name, WorldGen::Factory *gen);
 };
 
 }

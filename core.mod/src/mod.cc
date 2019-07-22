@@ -4,7 +4,6 @@ class DefaultWorldGen: public Swan::WorldGen {
 public:
 	class Factory: public Swan::WorldGen::Factory {
 	public:
-		Factory(): Swan::WorldGen::Factory("Default") {}
 		WorldGen *create(Swan::TileMap &tmap) { return new DefaultWorldGen(tmap); }
 	};
 
@@ -26,13 +25,12 @@ public:
 extern "C" void mod_init(Swan::Mod &mod) {
 	mod.init("core");
 
-	mod.registerTile("air", "assets/tiles/air.png", Swan::Tile::Opts()
-			.solid(false));
-	mod.registerTile("stone", "assets/tiles/stone.png", Swan::Tile::Opts());
-	mod.registerTile("dirt", "assets/tiles/dirt.png", Swan::Tile::Opts());
-	mod.registerTile("grass", "assets/tiles/grass.png", Swan::Tile::Opts());
+	mod.registerTile("air", (new Swan::Tile("assets/tiles/air.png"))->solid(false));
+	mod.registerTile("stone", (new Swan::Tile("assets/tiles/stone.png")));
+	mod.registerTile("dirt", (new Swan::Tile("assets/tiles/dirt.png")));
+	mod.registerTile("grass", (new Swan::Tile("assets/tiles/grass.png")));
 
-	mod.registerWorldGen(new DefaultWorldGen::Factory());
+	mod.registerWorldGen("Default", new DefaultWorldGen::Factory());
 }
 
 int main() {

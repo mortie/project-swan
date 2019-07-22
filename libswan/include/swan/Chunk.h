@@ -11,34 +11,36 @@ namespace Swan {
 
 class Chunk {
 public:
-	int x_;
-	int y_;
+	using ChunkPos = Vector2<int>;
+	using RelPos = Vector2<int>;
+
+	ChunkPos pos_;
 	bool dirty_ = false;
 	Tile::ID tiles_[CHUNK_WIDTH][CHUNK_HEIGHT];
 	sf::Texture texture_;
 	sf::Sprite sprite_;
 
-	Chunk(int x, int y): x_(x), y_(y) {
+	Chunk(ChunkPos pos): pos_(pos) {
 		texture_.create(CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE);
 		sprite_ = sf::Sprite(texture_);
 	}
 
-	void setTileID(TileMap &tmap, int x, int y, Tile::ID id) {
-		tiles_[x][y] = id;
-		drawBlock(tmap, x, y, id);
+	void setTileID(TileMap &tmap, RelPos pos, Tile::ID id) {
+		tiles_[pos.x_][pos.y_] = id;
+		drawBlock(tmap, pos, id);
 	}
 
-	Tile &getTile(TileMap &tmap, int x, int y) {
-		return tmap.get(tiles_[x][y]);
+	Tile &getTile(TileMap &tmap, RelPos pos) {
+		return tmap.get(tiles_[pos.x_][pos.y_]);
 	}
 
-	void drawBlock(int x, int y, const Tile &t) {
-		texture_.update(t.image_, x * TILE_SIZE, y * TILE_SIZE);
+	void drawBlock(RelPos pos, const Tile &t) {
+		texture_.update(t.image_, pos.x_ * TILE_SIZE, pos.y_ * TILE_SIZE);
 		dirty_ = true;
 	}
 
-	void drawBlock(TileMap &tmap, int x, int y, Tile::ID id) {
-		drawBlock(x, y, tmap.get(id));
+	void drawBlock(TileMap &tmap, RelPos pos, Tile::ID id) {
+		drawBlock(pos, tmap.get(id));
 	}
 
 	void redraw(TileMap &tmap);
