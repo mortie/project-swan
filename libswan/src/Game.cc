@@ -40,18 +40,15 @@ void Game::createWorld(std::string worldgen) {
 }
 
 void Game::draw(Win &win) {
-	if (world_)
-		world_->draw(win);
+	world_->draw(win);
 }
 
 void Game::update(float dt) {
-	if (world_)
-		world_->update(dt);
+	world_->update(dt);
 }
 
 void Game::tick() {
-	if (world_)
-		world_->tick();
+	world_->tick();
 }
 
 void Game::initGlobal() {

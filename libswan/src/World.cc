@@ -17,14 +17,11 @@ WorldPlane::ID World::addPlane(std::string gen) {
 
 void World::draw(Win &win) {
 	planes_[current_plane_].draw(win);
-	player_->draw(win);
 }
 
 void World::update(float dt) {
 	for (auto &plane: planes_)
 		plane.update(dt);
-
-	player_->update(planes_[current_plane_], dt);
 }
 
 void World::tick() {

@@ -8,12 +8,12 @@
 #include "Chunk.h"
 #include "Tile.h"
 #include "TileMap.h"
-#include "WorldGen.h"
-#include "Entity.h"
 
 namespace Swan {
 
 class World;
+class WorldGen;
+class Entity;
 
 class WorldPlane {
 public:
@@ -26,7 +26,11 @@ public:
 	std::vector<std::shared_ptr<Entity>> entities_;
 
 	WorldPlane(ID id, World *world, std::shared_ptr<WorldGen> gen):
-		id_(id), world_(world), gen_(gen) {}
+		id_(id), world_(world), gen_(gen) {
+			getChunk(0, 0); // Create the initial chunk
+		}
+
+	Entity &spawnEntity(const std::string &name, const Vec2 &pos);
 
 	Chunk &getChunk(int x, int y);
 	void setTileID(int x, int y, Tile::ID id);

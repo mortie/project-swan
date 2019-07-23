@@ -4,6 +4,7 @@
 
 #include "Chunk.h"
 #include "TileMap.h"
+#include "WorldPlane.h"
 
 namespace Swan {
 
@@ -13,11 +14,12 @@ public:
 	public:
 		std::string name_;
 		virtual WorldGen *create(TileMap &tmap) = 0;
+		virtual ~Factory() = default;
 	};
 
 	virtual ~WorldGen() = default;
 
-	virtual void genChunk(Chunk &chunk, int x, int y) = 0;
+	virtual void genChunk(WorldPlane &plane, Chunk &chunk, int x, int y) = 0;
 };
 
 }

@@ -5,7 +5,6 @@
 #include <string>
 
 #include "common.h"
-#include "Player.h"
 #include "Tile.h"
 #include "WorldPlane.h"
 #include "WorldGen.h"
@@ -15,8 +14,6 @@ namespace Swan {
 
 class World {
 public:
-	Player *player_;
-
 	WorldPlane::ID current_plane_;
 	std::vector<WorldPlane> planes_;
 	std::string default_worldgen_;

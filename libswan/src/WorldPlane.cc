@@ -20,14 +20,28 @@ static Chunk::RelPos relPos(int x, int y) {
 	return Chunk::RelPos(rx, ry);
 }
 
+Entity &WorldPlane::spawnEntity(const std::string &name, const Vec2 &pos) {
+	if (world_->ents_.find(name) == world_->ents_.end()) {
+		fprintf(stderr, "Tried to spawn non-existant entity %s!",
+				name.c_str());
+		abort();
+	}
+
+	Entity *ent = world_->ents_[name]->create(pos);
+	entities_.push_back(std::shared_ptr<Entity>(ent));
+	fprintf(stderr, "Spawned %s at %f,%f.\n", name.c_str(), pos.x_, pos.y_);
+	return *ent;
+}
+
 Chunk &WorldPlane::getChunk(int x, int y) {
 	Chunk::ChunkPos pos = chunkPos(x, y);
 	auto it = chunks_.find(pos);
 
 	if (it == chunks_.end()) {
 		it = chunks_.emplace(pos, Chunk(pos)).first;
-		gen_->genChunk(it->second, pos.x_, pos.y_);
+		gen_->genChunk(*this, it->second, pos.x_, pos.y_);
 		it->second.redraw(world_->tile_map_);
+		fprintf(stderr, "Generated chunk %i,%i\n", pos.x_, pos.y_);
 	}
 
 	return it->second;
@@ -51,7 +65,7 @@ void WorldPlane::draw(Win &win) {
 
 void WorldPlane::update(float dt) {
 	for (auto &ent: entities_)
-		ent->update(dt);
+		ent->update(*this, dt);
 }
 
 void WorldPlane::tick() {

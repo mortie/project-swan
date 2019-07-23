@@ -3,7 +3,6 @@ add_library(libswan SHARED
 	src/Chunk.cc
 	src/Game.cc
 	src/Mod.cc
-	src/Player.cc
 	src/Tile.cc
 	src/World.cc
 	src/WorldPlane.cc)

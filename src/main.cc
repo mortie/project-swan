@@ -3,7 +3,6 @@
 #include <unistd.h>
 
 #include <swan/common.h>
-#include <swan/Player.h>
 #include <swan/World.h>
 #include <swan/Game.h>
 
@@ -27,7 +26,6 @@ int main() {
 
 	game.createWorld("core::default");
 	game.world_->setCurrentPlane(game.world_->addPlane());
-	game.world_->player_ = new Player(Vec2(1, 1));
 
 	double prevtime = getTime();
 	double fpsAcc = 0;
