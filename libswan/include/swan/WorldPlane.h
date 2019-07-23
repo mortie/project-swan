@@ -9,6 +9,7 @@
 #include "Tile.h"
 #include "TileMap.h"
 #include "WorldGen.h"
+#include "Entity.h"
 
 namespace Swan {
 
@@ -18,10 +19,11 @@ class WorldPlane {
 public:
 	using ID = uint16_t;
 
-	std::map<std::pair<int, int>, Chunk> chunks_;
 	ID id_;
 	World *world_;
 	std::shared_ptr<WorldGen> gen_;
+	std::map<std::pair<int, int>, Chunk> chunks_;
+	std::vector<std::shared_ptr<Entity>> entities_;
 
 	WorldPlane(ID id, World *world, std::shared_ptr<WorldGen> gen):
 		id_(id), world_(world), gen_(gen) {}

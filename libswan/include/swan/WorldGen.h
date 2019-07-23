@@ -9,8 +9,6 @@ namespace Swan {
 
 class WorldGen {
 public:
-	using ID = int;
-
 	class Factory {
 	public:
 		std::string name_;

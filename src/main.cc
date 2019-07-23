@@ -25,7 +25,7 @@ int main() {
 	Game game;
 	game.loadMod("core.mod");
 
-	game.createWorld();
+	game.createWorld("core::default");
 	game.world_->setCurrentPlane(game.world_->addPlane());
 	game.world_->player_ = new Player(Vec2(1, 1));
 

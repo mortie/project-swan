@@ -25,14 +25,18 @@ void Game::loadMod(const std::string &path) {
 	mod_init(mod);
 }
 
-void Game::createWorld() {
+void Game::createWorld(std::string worldgen) {
 	world_.reset(new World());
 	for (auto &mod: registered_mods_) {
 		for (auto &tile: mod.tiles_)
 			world_->registerTile(tile);
 		for (auto &worldgen: mod.worldgens_)
 			world_->registerWorldGen(worldgen);
+		for (auto &entity: mod.entities_)
+			world_->registerEntity(entity);
 	}
+
+	world_->default_worldgen_ = worldgen;
 }
 
 void Game::draw(Win &win) {

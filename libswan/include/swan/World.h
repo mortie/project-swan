@@ -8,8 +8,8 @@
 #include "Player.h"
 #include "Tile.h"
 #include "WorldPlane.h"
-#include "WorldPlane.h"
-#include "Tile.h"
+#include "WorldGen.h"
+#include "Entity.h"
 
 namespace Swan {
 
@@ -19,12 +19,13 @@ public:
 
 	WorldPlane::ID current_plane_;
 	std::vector<WorldPlane> planes_;
+	std::string default_worldgen_;
 
-	WorldGen::ID default_worldgen_;
-	std::vector<std::shared_ptr<WorldGen::Factory>> worldgens_;
 	TileMap tile_map_;
+	std::map<std::string, std::shared_ptr<WorldGen::Factory>> worldgens_;
+	std::map<std::string, std::shared_ptr<Entity::Factory>> ents_;
 
-	WorldPlane::ID addPlane(WorldGen::ID gen);
+	WorldPlane::ID addPlane(std::string gen);
 	WorldPlane::ID addPlane() { return addPlane(default_worldgen_); }
 	void setCurrentPlane(WorldPlane::ID id) { current_plane_ = id; }
 	WorldPlane &getPlane(WorldPlane::ID id) { return planes_[id]; }
@@ -38,7 +39,11 @@ public:
 	}
 
 	void registerWorldGen(std::shared_ptr<WorldGen::Factory> gen) {
-		worldgens_.push_back(gen);
+		worldgens_[gen->name_] = gen;
+	}
+
+	void registerEntity(std::shared_ptr<Entity::Factory> ent) {
+		ents_[ent->name_] = ent;
 	}
 
 	void draw(Win &win);

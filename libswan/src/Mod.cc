@@ -25,8 +25,13 @@ void Mod::registerTile(const std::string &name, Tile *tile) {
 }
 
 void Mod::registerWorldGen(const std::string &name, WorldGen::Factory *gen) {
-	gen->name_ = name;
+	gen->name_ = name_ + "::" + name;
 	worldgens_.push_back(std::shared_ptr<WorldGen::Factory>(gen));
+}
+
+void Mod::registerEntity(const std::string &name, Entity::Factory *ent) {
+	ent->name_ = name_ + "::" + name;
+	entities_.push_back(std::shared_ptr<Entity::Factory>(ent));
 }
 
 }

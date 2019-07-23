@@ -44,13 +44,19 @@ Tile &WorldPlane::getTile(int x, int y) {
 void WorldPlane::draw(Win &win) {
 	for (auto &p: chunks_) {
 		p.second.draw(win);
+	for (auto &ent: entities_)
+		ent->draw(win);
 	}
 }
 
 void WorldPlane::update(float dt) {
+	for (auto &ent: entities_)
+		ent->update(dt);
 }
 
 void WorldPlane::tick() {
+	for (auto &ent: entities_)
+		ent->tick();
 }
 
 }

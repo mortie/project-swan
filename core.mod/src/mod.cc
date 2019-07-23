@@ -30,7 +30,7 @@ extern "C" void mod_init(Swan::Mod &mod) {
 	mod.registerTile("dirt", (new Swan::Tile("assets/tiles/dirt.png")));
 	mod.registerTile("grass", (new Swan::Tile("assets/tiles/grass.png")));
 
-	mod.registerWorldGen("Default", new DefaultWorldGen::Factory());
+	mod.registerWorldGen("default", new DefaultWorldGen::Factory());
 }
 
 int main() {

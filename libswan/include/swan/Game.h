@@ -17,7 +17,7 @@ public:
 	std::unique_ptr<World> world_ = NULL;
 
 	void loadMod(const std::string &path);
-	void createWorld();
+	void createWorld(std::string worldgen);
 
 	void draw(Win &win);
 	void update(float dt);
