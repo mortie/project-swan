@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/System/Vector2.hpp>
+#include <utility>
 
 namespace Swan {
 
@@ -14,6 +15,10 @@ public:
 
 	operator sf::Vector2<T>() const {
 		return sf::Vector2<T>(x_, y_);
+	}
+
+	operator std::pair<T, T>() const {
+		return std::pair<T, T>(x_, y_);
 	}
 
 	Vector2<T> operator-() const {

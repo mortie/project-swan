@@ -5,23 +5,27 @@
 namespace Swan {
 
 static Chunk::ChunkPos chunkPos(int x, int y) {
-	return Chunk::ChunkPos(
-			(x >= 0 ? x : x - CHUNK_WIDTH) / CHUNK_WIDTH,
-			(y >= 0 ? y : y - CHUNK_HEIGHT) / CHUNK_HEIGHT);
+	int chx = x / CHUNK_WIDTH;
+	if (x < 0 && x % CHUNK_WIDTH != 0) chx -= 1;
+	int chy = y / CHUNK_HEIGHT;
+	if (y < 0 && y % CHUNK_HEIGHT != 0) chy -= 1;
+	return Chunk::ChunkPos(chx, chy);
 }
 
 static Chunk::RelPos relPos(int x, int y) {
-	return Chunk::ChunkPos(
-			(x >= 0 ? x : x + CHUNK_WIDTH) % CHUNK_WIDTH,
-			(y >= 0 ? y : y + CHUNK_HEIGHT) % CHUNK_HEIGHT);
+	int rx = x % CHUNK_WIDTH;
+	if (rx < 0) rx += CHUNK_WIDTH;
+	int ry = y % CHUNK_HEIGHT;
+	if (ry < 0) ry += CHUNK_HEIGHT;
+	return Chunk::RelPos(rx, ry);
 }
 
 Chunk &WorldPlane::getChunk(int x, int y) {
 	Chunk::ChunkPos pos = chunkPos(x, y);
-	auto it = chunks_.find(std::pair<int, int>(pos.x_, pos.y_));
+	auto it = chunks_.find(pos);
 
 	if (it == chunks_.end()) {
-		it = chunks_.emplace(std::pair<int, int>(pos.x_, pos.y_), Chunk(pos)).first;
+		it = chunks_.emplace(pos, Chunk(pos)).first;
 		gen_->genChunk(it->second, pos.x_, pos.y_);
 		it->second.redraw(world_->tile_map_);
 	}
