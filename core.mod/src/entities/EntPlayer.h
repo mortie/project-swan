@@ -18,8 +18,8 @@ public:
 	void update(Swan::WorldPlane &plane, float dt) override;
 
 private:
-	static const float FORCE;
-	static const float FRICTION;
-	static const float MASS;
-	static const Swan::Vec2 SIZE;
+	static constexpr float FORCE = 600;
+	static constexpr float FRICTION = 100;
+	static constexpr float MASS = 80;
+	static constexpr Swan::Vec2 SIZE = Swan::Vec2(1, 2);
 };

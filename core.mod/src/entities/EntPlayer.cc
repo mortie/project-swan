@@ -1,10 +1,5 @@
 #include "EntPlayer.h"
 
-const float EntPlayer::FORCE = 600;
-const float EntPlayer::FRICTION = 100;
-const float EntPlayer::MASS = 80;
-const Swan::Vec2 EntPlayer::SIZE = Swan::Vec2(1, 2);
-
 void EntPlayer::draw(Swan::Win &win) {
 	body_.outline(win);
 }
