@@ -26,8 +26,8 @@ void Body::collide(WorldPlane &plane) {
 }
 
 void Body::outline(Win &win) {
+	win.setPos(pos_ * TILE_SIZE);
 	sf::RectangleShape rect(size_ * TILE_SIZE);
-	rect.setPosition(pos_ * TILE_SIZE);
 	rect.setFillColor(sf::Color::Transparent);
 	rect.setOutlineColor(sf::Color(128, 128, 128));
 	rect.setOutlineThickness(2);

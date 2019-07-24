@@ -34,7 +34,7 @@ void Chunk::draw(Win &win) {
 		dirty_ = false;
 	}
 
-	win.setPos(Vec2(pos_.x_ * CHUNK_WIDTH, pos_.y_ * CHUNK_HEIGHT));
+	win.setPos(Vec2(pos_.x_ * CHUNK_WIDTH * TILE_SIZE, pos_.y_ * CHUNK_HEIGHT * TILE_SIZE));
 	win.draw(sprite_);
 }
 
