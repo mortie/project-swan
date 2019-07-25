@@ -2,7 +2,7 @@
 
 namespace Swan {
 
-void Body::friction(float coef) {
+void Body::friction(Vec2 coef) {
 	force_ += -vel_ * coef;
 }
 
@@ -15,11 +15,13 @@ void Body::collide(WorldPlane &plane) {
 	int endx = (int)(pos_.x_ + size_.x_);
 
 	int y = (int)(pos_.y_ + size_.y_);
+	on_ground_ = false;
 	for (int x = startx; x <= endx; ++x) {
 		Tile &tile = plane.getTile(TilePos(x, y));
 		if (tile.is_solid_) {
 			pos_.y_ = y - size_.y_;
 			vel_.y_ = 0;
+			on_ground_ = true;
 			break;
 		}
 	}

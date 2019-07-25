@@ -12,7 +12,7 @@ public:
 	Body(Vec2 pos, Vec2 size, float mass):
 		pos_(pos), size_(size), mass_(mass) {};
 
-	void friction(float coef);
+	void friction(Vec2 coef);
 	void gravity(Vec2 g = Vec2(0, 9.81));
 	void collide(WorldPlane &plane);
 
@@ -24,6 +24,7 @@ public:
 	Vec2 pos_;
 	Vec2 size_;
 	float mass_;
+	bool on_ground_ = false;
 };
 
 }
