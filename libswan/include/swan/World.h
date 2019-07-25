@@ -14,18 +14,19 @@ namespace Swan {
 
 class World {
 public:
-	WorldPlane::ID current_plane_;
-	std::vector<WorldPlane> planes_;
-	std::string default_worldgen_;
-
-	TileMap tile_map_;
-	std::map<std::string, std::shared_ptr<WorldGen::Factory>> worldgens_;
-	std::map<std::string, std::shared_ptr<Entity::Factory>> ents_;
-
 	WorldPlane::ID addPlane(std::string gen);
-	WorldPlane::ID addPlane() { return addPlane(default_worldgen_); }
-	void setCurrentPlane(WorldPlane::ID id) { current_plane_ = id; }
-	WorldPlane &getPlane(WorldPlane::ID id) { return planes_[id]; }
+
+	WorldPlane::ID addPlane() {
+		return addPlane(default_worldgen_);
+	}
+
+	void setCurrentPlane(WorldPlane::ID id) {
+		current_plane_ = id;
+	}
+
+	WorldPlane &getPlane(WorldPlane::ID id) {
+		return planes_[id];
+	}
 
 	Tile::ID getTileID(const std::string &name) {
 		return tile_map_.getID(name);
@@ -46,6 +47,14 @@ public:
 	void draw(Win &win);
 	void update(float dt);
 	void tick();
+
+	WorldPlane::ID current_plane_;
+	std::vector<WorldPlane> planes_;
+	std::string default_worldgen_;
+
+	TileMap tile_map_;
+	std::map<std::string, std::shared_ptr<WorldGen::Factory>> worldgens_;
+	std::map<std::string, std::shared_ptr<Entity::Factory>> ents_;
 };
 
 }

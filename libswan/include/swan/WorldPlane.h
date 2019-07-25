@@ -8,22 +8,16 @@
 #include "Chunk.h"
 #include "Tile.h"
 #include "TileMap.h"
+#include "WorldGen.h"
+#include "Entity.h"
 
 namespace Swan {
 
 class World;
-class WorldGen;
-class Entity;
 
 class WorldPlane {
 public:
 	using ID = uint16_t;
-
-	ID id_;
-	World *world_;
-	std::shared_ptr<WorldGen> gen_;
-	std::map<std::pair<int, int>, Chunk> chunks_;
-	std::vector<std::shared_ptr<Entity>> entities_;
 
 	WorldPlane(ID id, World *world, std::shared_ptr<WorldGen> gen):
 		id_(id), world_(world), gen_(gen) {
@@ -39,6 +33,14 @@ public:
 	void draw(Win &win);
 	void update(float dt);
 	void tick();
+
+	ID id_;
+	World *world_;
+	std::shared_ptr<WorldGen> gen_;
+
+private:
+	std::map<std::pair<int, int>, std::unique_ptr<Chunk>> chunks_;
+	std::vector<std::unique_ptr<Entity>> entities_;
 };
 
 }

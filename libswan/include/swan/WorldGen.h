@@ -4,17 +4,18 @@
 
 #include "Chunk.h"
 #include "TileMap.h"
-#include "WorldPlane.h"
 
 namespace Swan {
+
+class WorldPlane;
 
 class WorldGen {
 public:
 	class Factory {
 	public:
-		std::string name_;
-		virtual WorldGen *create(TileMap &tmap) = 0;
 		virtual ~Factory() = default;
+		virtual WorldGen *create(TileMap &tmap) = 0;
+		std::string name_;
 	};
 
 	virtual ~WorldGen() = default;

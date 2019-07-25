@@ -3,17 +3,18 @@
 #include <memory>
 
 #include "common.h"
-#include "WorldPlane.h"
 
 namespace Swan {
+
+class WorldPlane;
 
 class Entity {
 public:
 	class Factory {
 	public:
-		std::string name_;
-		virtual Entity *create(const Vec2 &pos) = 0;
 		virtual ~Factory() = default;
+		virtual Entity *create(const Vec2 &pos) = 0;
+		std::string name_;
 	};
 
 	virtual ~Entity() = default;

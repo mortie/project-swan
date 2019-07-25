@@ -28,23 +28,23 @@ Entity &WorldPlane::spawnEntity(const std::string &name, const Vec2 &pos) {
 	}
 
 	Entity *ent = world_->ents_[name]->create(pos);
-	entities_.push_back(std::shared_ptr<Entity>(ent));
+	entities_.push_back(std::unique_ptr<Entity>(ent));
 	fprintf(stderr, "Spawned %s at %f,%f.\n", name.c_str(), pos.x_, pos.y_);
 	return *ent;
 }
 
 Chunk &WorldPlane::getChunk(int x, int y) {
 	Chunk::ChunkPos pos = chunkPos(x, y);
-	auto it = chunks_.find(pos);
+	auto iter = chunks_.find(pos);
 
-	if (it == chunks_.end()) {
-		it = chunks_.emplace(pos, Chunk(pos)).first;
-		gen_->genChunk(*this, it->second, pos.x_, pos.y_);
-		it->second.redraw(world_->tile_map_);
+	if (iter == chunks_.end()) {
+		iter = chunks_.emplace(pos, new Chunk(pos)).first;
+		gen_->genChunk(*this, *iter->second, pos.x_, pos.y_);
+		iter->second->redraw(world_->tile_map_);
 		fprintf(stderr, "Generated chunk %i,%i\n", pos.x_, pos.y_);
 	}
 
-	return it->second;
+	return *iter->second;
 }
 
 void WorldPlane::setTileID(int x, int y, Tile::ID id) {
@@ -56,8 +56,8 @@ Tile &WorldPlane::getTile(int x, int y) {
 }
 
 void WorldPlane::draw(Win &win) {
-	for (auto &p: chunks_)
-		p.second.draw(win);
+	for (auto &ch: chunks_)
+		ch.second->draw(win);
 	for (auto &ent: entities_)
 		ent->draw(win);
 }

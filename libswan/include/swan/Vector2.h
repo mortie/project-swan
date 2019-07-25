@@ -8,9 +8,6 @@ namespace Swan {
 template<typename T>
 class Vector2 {
 public:
-	T x_;
-	T y_;
-
 	constexpr Vector2(T x = 0, T y = 0): x_(x), y_(y) {}
 
 	operator sf::Vector2<T>() const {
@@ -78,6 +75,9 @@ public:
 		y_ /= num;
 		return *this;
 	}
+
+	T x_;
+	T y_;
 };
 
 using Vec2 = Vector2<float>;

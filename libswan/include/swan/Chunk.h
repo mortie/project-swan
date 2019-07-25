@@ -14,12 +14,6 @@ public:
 	using ChunkPos = Vector2<int>;
 	using RelPos = Vector2<int>;
 
-	ChunkPos pos_;
-	bool dirty_ = false;
-	Tile::ID tiles_[CHUNK_WIDTH][CHUNK_HEIGHT];
-	sf::Texture texture_;
-	sf::Sprite sprite_;
-
 	Chunk(ChunkPos pos): pos_(pos) {
 		texture_.create(CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE);
 		sprite_ = sf::Sprite(texture_);
@@ -31,6 +25,14 @@ public:
 	void drawBlock(TileMap &tmap, RelPos pos, Tile::ID id);
 	void redraw(TileMap &tmap);
 	void draw(Win &win);
+
+	ChunkPos pos_;
+	Tile::ID tiles_[CHUNK_WIDTH][CHUNK_HEIGHT];
+
+private:
+	bool dirty_ = false;
+	sf::Texture texture_;
+	sf::Sprite sprite_;
 };
 
 }
