@@ -4,18 +4,18 @@
 
 namespace Swan {
 
-static Chunk::ChunkPos chunkPos(int x, int y) {
-	int chx = x / CHUNK_WIDTH;
-	if (x < 0 && x % CHUNK_WIDTH != 0) chx -= 1;
-	int chy = y / CHUNK_HEIGHT;
-	if (y < 0 && y % CHUNK_HEIGHT != 0) chy -= 1;
-	return Chunk::ChunkPos(chx, chy);
+static ChunkPos chunkPos(TilePos pos) {
+	int chx = pos.x_ / CHUNK_WIDTH;
+	if (pos.x_ < 0 && pos.x_ % CHUNK_WIDTH != 0) chx -= 1;
+	int chy = pos.y_ / CHUNK_HEIGHT;
+	if (pos.y_ < 0 && pos.y_ % CHUNK_HEIGHT != 0) chy -= 1;
+	return ChunkPos(chx, chy);
 }
 
-static Chunk::RelPos relPos(int x, int y) {
-	int rx = x % CHUNK_WIDTH;
+static Chunk::RelPos relPos(TilePos pos) {
+	int rx = pos.x_ % CHUNK_WIDTH;
 	if (rx < 0) rx += CHUNK_WIDTH;
-	int ry = y % CHUNK_HEIGHT;
+	int ry = pos.y_ % CHUNK_HEIGHT;
 	if (ry < 0) ry += CHUNK_HEIGHT;
 	return Chunk::RelPos(rx, ry);
 }
@@ -33,13 +33,12 @@ Entity &WorldPlane::spawnEntity(const std::string &name, const Vec2 &pos) {
 	return *ent;
 }
 
-Chunk &WorldPlane::getChunk(int x, int y) {
-	Chunk::ChunkPos pos = chunkPos(x, y);
+Chunk &WorldPlane::getChunk(ChunkPos pos) {
 	auto iter = chunks_.find(pos);
 
 	if (iter == chunks_.end()) {
 		iter = chunks_.emplace(pos, new Chunk(pos)).first;
-		gen_->genChunk(*this, *iter->second, pos.x_, pos.y_);
+		gen_->genChunk(*this, *iter->second);
 		iter->second->redraw(world_->tile_map_);
 		fprintf(stderr, "Generated chunk %i,%i\n", pos.x_, pos.y_);
 	}
@@ -47,12 +46,12 @@ Chunk &WorldPlane::getChunk(int x, int y) {
 	return *iter->second;
 }
 
-void WorldPlane::setTileID(int x, int y, Tile::ID id) {
-	getChunk(x, y).setTileID(world_->tile_map_, relPos(x, y), id);
+void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
+	getChunk(chunkPos(pos)).setTileID(world_->tile_map_, relPos(pos), id);
 }
 
-Tile &WorldPlane::getTile(int x, int y) {
-	return getChunk(x, y).getTile(world_->tile_map_, relPos(x, y));
+Tile &WorldPlane::getTile(TilePos pos) {
+	return getChunk(chunkPos(pos)).getTile(world_->tile_map_, relPos(pos));
 }
 
 Entity &WorldPlane::spawnPlayer() {

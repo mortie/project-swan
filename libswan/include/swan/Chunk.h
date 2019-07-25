@@ -11,8 +11,7 @@ namespace Swan {
 
 class Chunk {
 public:
-	using ChunkPos = Vector2<int>;
-	using RelPos = Vector2<int>;
+	using RelPos = TilePos;
 
 	Chunk(ChunkPos pos): pos_(pos) {
 		texture_.create(CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE);

@@ -24,9 +24,9 @@ public:
 
 	Entity &spawnEntity(const std::string &name, const Vec2 &pos);
 
-	Chunk &getChunk(int x, int y);
-	void setTileID(int x, int y, Tile::ID id);
-	Tile &getTile(int x, int y);
+	Chunk &getChunk(ChunkPos pos);
+	void setTileID(TilePos pos, Tile::ID id);
+	Tile &getTile(TilePos pos);
 
 	Entity &spawnPlayer();
 

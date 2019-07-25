@@ -12,6 +12,9 @@ static constexpr int TICK_RATE = 20;
 static constexpr int CHUNK_HEIGHT = 32;
 static constexpr int CHUNK_WIDTH = 32;
 
+using TilePos = Vector2<int>;
+using ChunkPos = Vector2<int>;
+
 struct Win {
 public:
 	sf::RenderWindow *window_;

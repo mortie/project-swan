@@ -21,7 +21,7 @@ public:
 
 	virtual ~WorldGen() = default;
 
-	virtual void genChunk(WorldPlane &plane, Chunk &chunk, int x, int y) = 0;
+	virtual void genChunk(WorldPlane &plane, Chunk &chunk) = 0;
 	virtual Entity &spawnPlayer(WorldPlane &plane) = 0;
 };
 
