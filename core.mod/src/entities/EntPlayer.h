@@ -14,6 +14,8 @@ public:
 	EntPlayer(Swan::Vec2 pos):
 		body_(pos, SIZE, MASS) {}
 
+	const Swan::Vec2 &getPos() override { return body_.pos_; }
+
 	void draw(Swan::Win &win) override;
 	void update(Swan::WorldPlane &plane, float dt) override;
 

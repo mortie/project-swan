@@ -14,7 +14,7 @@ public:
 
 	Tile &get(Tile::ID id) {
 		if (id >= tiles_.size())
-			return Tile::invalid_tile;
+			return Tile::INVALID_TILE;
 		return *tiles_[id];
 	}
 

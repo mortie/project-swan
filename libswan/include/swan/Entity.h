@@ -19,6 +19,8 @@ public:
 
 	virtual ~Entity() = default;
 
+	virtual const Vec2 &getPos() { return Vec2::ZERO; }
+
 	virtual void draw(Win &win) {}
 	virtual void update(WorldPlane &plane, float dt) {}
 	virtual void tick() {}

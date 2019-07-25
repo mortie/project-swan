@@ -20,15 +20,15 @@ public:
 	using ID = uint16_t;
 
 	WorldPlane(ID id, World *world, std::shared_ptr<WorldGen> gen):
-		id_(id), world_(world), gen_(gen) {
-			getChunk(0, 0); // Create the initial chunk
-		}
+			id_(id), world_(world), gen_(gen) {}
 
 	Entity &spawnEntity(const std::string &name, const Vec2 &pos);
 
 	Chunk &getChunk(int x, int y);
 	void setTileID(int x, int y, Tile::ID id);
 	Tile &getTile(int x, int y);
+
+	Entity &spawnPlayer();
 
 	void draw(Win &win);
 	void update(float dt);

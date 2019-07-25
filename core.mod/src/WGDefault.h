@@ -14,5 +14,6 @@ public:
 	WGDefault(Swan::TileMap &tmap):
 		tGrass_(tmap.getID("core::grass")), tAir_(tmap.getID("core::air")) {}
 
-	void genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk, int x, int y);
+	void genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk, int x, int y) override;
+	Swan::Entity &spawnPlayer(Swan::WorldPlane &plane) override;
 };

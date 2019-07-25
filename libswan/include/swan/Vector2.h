@@ -78,6 +78,8 @@ public:
 
 	T x_;
 	T y_;
+
+	static constexpr Vector2<T> ZERO = Vector2<T>(0, 0);
 };
 
 using Vec2 = Vector2<float>;

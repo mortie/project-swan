@@ -18,7 +18,7 @@ void Mod::registerTile(const std::string &name, Tile *tile) {
 	std::string asset_path = path_ + "/" + tile->path_;
 	if (!tile->image_.loadFromFile(asset_path)) {
 		fprintf(stderr, "Tile %s: Failed to load image %s\n", tile->name_.c_str(), asset_path.c_str());
-		tile->image_ = Tile::invalid_image;
+		tile->image_ = Tile::INVALID_IMAGE;
 	}
 
 	tiles_.push_back(std::shared_ptr<Tile>(tile));

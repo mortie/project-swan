@@ -25,7 +25,6 @@ int main() {
 	game.loadMod("core.mod");
 
 	game.createWorld("core::default");
-	game.world_->setCurrentPlane(game.world_->addPlane());
 
 	double prevtime = getTime();
 	double fpsAcc = 0;

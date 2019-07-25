@@ -9,8 +9,8 @@ void WGDefault::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk, int x, int
 				chunk.tiles_[cx][cy] = tAir_;
 		}
 	}
+}
 
-	if (plane.id_ == 0 && x == 0 && y == 0) {
-		plane.spawnEntity("core::player", Swan::Vec2(0, 0));
-	}
+Swan::Entity &WGDefault::spawnPlayer(Swan::WorldPlane &plane) {
+	return plane.spawnEntity("core::player", Swan::Vec2(0, 0));
 }

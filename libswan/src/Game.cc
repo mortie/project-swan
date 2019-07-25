@@ -36,7 +36,9 @@ void Game::createWorld(std::string worldgen) {
 			world_->registerEntity(entity);
 	}
 
-	world_->default_worldgen_ = worldgen;
+	world_->setWorldGen(worldgen);
+	world_->setCurrentPlane(world_->addPlane());
+	world_->spawnPlayer();
 }
 
 void Game::draw(Win &win) {

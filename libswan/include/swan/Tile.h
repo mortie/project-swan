@@ -14,15 +14,15 @@ public:
 
 	Tile *solid(bool b) { is_solid_ = b; return this; }
 
-	static sf::Image invalid_image;
-	static Tile invalid_tile;
-	static void initInvalid();
-
 	bool is_solid_ = true;
 
 	std::string path_;
 	std::string name_;
 	sf::Image image_;
+
+	static sf::Image INVALID_IMAGE;
+	static Tile INVALID_TILE;
+	static void initInvalid();
 };
 
 }

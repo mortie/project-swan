@@ -55,6 +55,10 @@ Tile &WorldPlane::getTile(int x, int y) {
 	return getChunk(x, y).getTile(world_->tile_map_, relPos(x, y));
 }
 
+Entity &WorldPlane::spawnPlayer() {
+	return gen_->spawnPlayer(*this);
+}
+
 void WorldPlane::draw(Win &win) {
 	for (auto &ch: chunks_)
 		ch.second->draw(win);

@@ -4,6 +4,7 @@
 
 #include "Chunk.h"
 #include "TileMap.h"
+#include "Entity.h"
 
 namespace Swan {
 
@@ -21,6 +22,7 @@ public:
 	virtual ~WorldGen() = default;
 
 	virtual void genChunk(WorldPlane &plane, Chunk &chunk, int x, int y) = 0;
+	virtual Entity &spawnPlayer(WorldPlane &plane) = 0;
 };
 
 }
