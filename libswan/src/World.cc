@@ -2,30 +2,31 @@
 
 namespace Swan {
 
-void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
-	Vec2i dir(1, 0);
-	ChunkPos relpos(-level_, -level_);
-
-	if (!plane.hasChunk(abspos)) {
-		plane.getChunk(abspos);
-		level_ = 1;
-		relpos = ChunkPos(-level_, -level_);
+static bool chunkLine(int l, int &left, WorldPlane &plane, ChunkPos &abspos, const Vec2i &dir) {
+	for (int i = 0; i < l; ++i) {
+		if (!plane.hasChunk(abspos)) {
+			plane.getChunk(abspos);
+			if (--left == 0)
+				return true;
+		}
+		abspos += dir;
 	}
 
-	do {
-		if (relpos == ChunkPos(level_, -level_))
-			dir = Vec2i(0, 1);
-		else if (relpos == ChunkPos(level_, level_))
-			dir = Vec2i(-1, 0);
-		else if (relpos == ChunkPos(-level_, level_))
-			dir = Vec2i(0, -1);
+	return false;
+}
 
-		plane.getChunk(abspos + relpos);
-		relpos += dir;
-	} while (relpos != ChunkPos(-level_, -level_));
+void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
+	int l = 0;
+	int left = 4;
 
-	if (level_ < 5)
-		level_ += 1;
+	for (int i = 0; i < 8; ++i) {
+		if (chunkLine(l, left, plane, abspos, Vec2i(0, -1))) return;
+		if (chunkLine(l, left, plane, abspos, Vec2i(1, 0))) return;
+		l += 1;
+		if (chunkLine(l, left, plane, abspos, Vec2i(0, 1))) return;
+		if (chunkLine(l, left, plane, abspos, Vec2i(-1, 0))) return;
+		l += 1;
+	}
 }
 
 void World::setCurrentPlane(WorldPlane &plane) {

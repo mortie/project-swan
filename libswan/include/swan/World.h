@@ -36,9 +36,6 @@ private:
 	class ChunkRenderer {
 	public:
 		void tick(WorldPlane &plane, ChunkPos abspos);
-
-	private:
-		int level_ = 1;
 	};
 
 	ChunkRenderer chunk_renderer_;
