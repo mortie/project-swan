@@ -11,18 +11,32 @@ void Body::gravity(Vec2 g) {
 }
 
 void Body::collide(WorldPlane &plane) {
-	int startx = (int)pos_.x_;
-	int endx = (int)(pos_.x_ + size_.x_);
+	int px = (int)pos_.x_;
+	if (pos_.x_ < 0) px -= 1;
+	int startx = px;
+	int endx = (int)(px + size_.x_);
 
-	int y = (int)(pos_.y_ + size_.y_);
 	on_ground_ = false;
+	int y = (int)pos_.y_ + size_.y_;
 	for (int x = startx; x <= endx; ++x) {
-		Tile &tile = plane.getTile(TilePos(x, y));
-		if (tile.is_solid_) {
+		Tile &ground = plane.getTile(TilePos(x, y));
+		if (ground.is_solid_ && vel_.y_ > 0) {
 			pos_.y_ = y - size_.y_;
 			vel_.y_ = 0;
 			on_ground_ = true;
-			break;
+		}
+
+		Tile &wall = plane.getTile(TilePos(x, y - 1));
+		if (x == startx && vel_.x_ < 0) {
+			if (wall.is_solid_) {
+				vel_.x_ = 0;
+				pos_.x_ = startx + 1;
+			}
+		} else if (x == endx && vel_.x_ > 0) {
+			if (wall.is_solid_) {
+				vel_.x_ = 0;
+				pos_.x_ = endx - 1;
+			}
 		}
 	}
 }
