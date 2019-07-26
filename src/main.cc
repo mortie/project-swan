@@ -5,14 +5,9 @@
 #include <swan/common.h>
 #include <swan/World.h>
 #include <swan/Game.h>
+#include <swan/Timer.h>
 
 using namespace Swan;
-
-static double getTime() {
-	struct timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
-}
 
 int main() {
 	sf::RenderWindow window(sf::VideoMode(800, 600), "good gaem");
@@ -26,7 +21,7 @@ int main() {
 
 	game.createWorld("core::default");
 
-	double prevtime = getTime();
+	double prevtime = Timer::now();
 	double fpsAcc = 0;
 	double tickAcc = 0;
 	int fcount = 0;
@@ -43,7 +38,7 @@ int main() {
 		}
 
 		// Display FPS
-		double now = getTime();
+		double now = Timer::now();
 		double dt = now - prevtime;
 		prevtime = now;
 		fpsAcc += dt;

@@ -3,7 +3,8 @@
 void WGDefault::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 	for (int cx = 0; cx < Swan::CHUNK_WIDTH; ++cx) {
 		for (int cy = 0; cy < Swan::CHUNK_HEIGHT; ++cy) {
-			Swan::TilePos tpos = Swan::TilePos(cx, cy) + chunk.pos_ * Swan::TILE_SIZE;
+			Swan::TilePos tpos = Swan::TilePos(cx, cy) + Swan::TilePos(
+					chunk.pos_.x_ * Swan::CHUNK_WIDTH, chunk.pos_.y_ * Swan::CHUNK_HEIGHT);
 			if (tpos.y_ == 3)
 				chunk.tiles_[cx][cy] = tGrass_;
 			else if (tpos.y_ > 3 && tpos.y_ <= 5)

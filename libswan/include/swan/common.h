@@ -9,11 +9,11 @@ namespace Swan {
 
 static constexpr int TILE_SIZE = 32;
 static constexpr int TICK_RATE = 20;
-static constexpr int CHUNK_HEIGHT = 32;
-static constexpr int CHUNK_WIDTH = 32;
+static constexpr int CHUNK_HEIGHT = 4;
+static constexpr int CHUNK_WIDTH = 8;
 
-using TilePos = Vector2<int>;
-using ChunkPos = Vector2<int>;
+using TilePos = Vec2i;
+using ChunkPos = Vec2i;
 
 struct Win {
 public:

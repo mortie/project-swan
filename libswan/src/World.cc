@@ -2,6 +2,32 @@
 
 namespace Swan {
 
+void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
+	Vec2i dir(1, 0);
+	ChunkPos relpos(-level_, -level_);
+
+	if (!plane.hasChunk(abspos)) {
+		plane.getChunk(abspos);
+		level_ = 1;
+		relpos = ChunkPos(-level_, -level_);
+	}
+
+	do {
+		if (relpos == ChunkPos(level_, -level_))
+			dir = Vec2i(0, 1);
+		else if (relpos == ChunkPos(level_, level_))
+			dir = Vec2i(-1, 0);
+		else if (relpos == ChunkPos(-level_, level_))
+			dir = Vec2i(0, -1);
+
+		plane.getChunk(abspos + relpos);
+		relpos += dir;
+	} while (relpos != ChunkPos(-level_, -level_));
+
+	if (level_ < 5)
+		level_ += 1;
+}
+
 void World::setCurrentPlane(WorldPlane &plane) {
 	current_plane_ = plane.id_;
 }
@@ -57,6 +83,11 @@ void World::update(float dt) {
 void World::tick() {
 	for (auto &plane: planes_)
 		plane.tick();
+
+	const Vec2 &abspos = player_->getPos();
+	chunk_renderer_.tick(
+			planes_[current_plane_],
+			ChunkPos((int)abspos.x_ / CHUNK_WIDTH, (int)abspos.y_ / CHUNK_HEIGHT));
 }
 
 }

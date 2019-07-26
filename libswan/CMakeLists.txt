@@ -4,6 +4,7 @@ add_library(libswan SHARED
 	src/Game.cc
 	src/Mod.cc
 	src/Tile.cc
+	src/Timer.cc
 	src/World.cc
 	src/WorldPlane.cc)
 target_include_directories(libswan PUBLIC "include/swan")

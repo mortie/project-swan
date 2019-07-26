@@ -1,6 +1,7 @@
 #include "WorldPlane.h"
 
 #include "World.h"
+#include "Timer.h"
 
 namespace Swan {
 
@@ -33,6 +34,10 @@ Entity &WorldPlane::spawnEntity(const std::string &name, const Vec2 &pos) {
 	return *ent;
 }
 
+bool WorldPlane::hasChunk(ChunkPos pos) {
+	return chunks_.find(pos) != chunks_.end();
+}
+
 Chunk &WorldPlane::getChunk(ChunkPos pos) {
 	auto iter = chunks_.find(pos);
 
@@ -40,7 +45,6 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 		iter = chunks_.emplace(pos, new Chunk(pos)).first;
 		gen_->genChunk(*this, *iter->second);
 		iter->second->redraw(world_->tile_map_);
-		fprintf(stderr, "Generated chunk %i,%i\n", pos.x_, pos.y_);
 	}
 
 	return *iter->second;

@@ -18,6 +18,14 @@ public:
 		return std::pair<T, T>(x_, y_);
 	}
 
+	bool operator==(const Vector2<T> &vec) const {
+		return x_ == vec.x_ && y_ == vec.y_;
+	}
+
+	bool operator!=(const Vector2<T> &vec) const {
+		return !(*this == vec);
+	}
+
 	Vector2<T> operator-() const {
 		return Vector2<T>(-x_, -y_);
 	}
@@ -83,5 +91,6 @@ public:
 };
 
 using Vec2 = Vector2<float>;
+using Vec2i = Vector2<int>;
 
 }

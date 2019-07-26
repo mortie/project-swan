@@ -30,9 +30,18 @@ public:
 	std::map<std::string, std::shared_ptr<WorldGen::Factory>> worldgens_;
 	std::map<std::string, std::shared_ptr<Entity::Factory>> ents_;
 	TileMap tile_map_;
+	Entity *player_;
 
 private:
-	Entity *player_;
+	class ChunkRenderer {
+	public:
+		void tick(WorldPlane &plane, ChunkPos abspos);
+
+	private:
+		int level_ = 1;
+	};
+
+	ChunkRenderer chunk_renderer_;
 	WorldPlane::ID current_plane_;
 	std::vector<WorldPlane> planes_;
 	std::string default_world_gen_;

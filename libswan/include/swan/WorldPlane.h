@@ -24,6 +24,7 @@ public:
 
 	Entity &spawnEntity(const std::string &name, const Vec2 &pos);
 
+	bool hasChunk(ChunkPos pos);
 	Chunk &getChunk(ChunkPos pos);
 	void setTileID(TilePos pos, Tile::ID id);
 	Tile &getTile(TilePos pos);
