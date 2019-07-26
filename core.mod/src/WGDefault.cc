@@ -1,15 +1,19 @@
 #include "WGDefault.h"
 
 void WGDefault::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
+	int height = perlin_.octaveNoise0_1(chunk.pos_.x_ / (64.0 / 16), 8) * 10;
+	int depth = perlin_.octaveNoise0_1(chunk.pos_.x_ / (64.0 / 9), 5) * 10 + 10;
+
 	for (int cx = 0; cx < Swan::CHUNK_WIDTH; ++cx) {
 		for (int cy = 0; cy < Swan::CHUNK_HEIGHT; ++cy) {
 			Swan::TilePos tpos = Swan::TilePos(cx, cy) + Swan::TilePos(
 					chunk.pos_.x_ * Swan::CHUNK_WIDTH, chunk.pos_.y_ * Swan::CHUNK_HEIGHT);
-			if (tpos.y_ == 3)
+
+			if (tpos.y_ == height)
 				chunk.tiles_[cx][cy] = tGrass_;
-			else if (tpos.y_ > 3 && tpos.y_ <= 5)
+			else if (tpos.y_ > height && tpos.y_ <= depth)
 				chunk.tiles_[cx][cy] = tDirt_;
-			else if (tpos.y_ > 5)
+			else if (tpos.y_ > depth)
 				chunk.tiles_[cx][cy] = tStone_;
 			else
 				chunk.tiles_[cx][cy] = tAir_;

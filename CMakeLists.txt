@@ -16,7 +16,7 @@ else()
 	message(FATAL_ERROR "CMAKE_BUILD_TYPE must be Debug or Release.")
 endif()
 
-include_directories("${PROJECT_SOURCE_DIR}/libswan/include")
+include_directories("${PROJECT_SOURCE_DIR}/libswan/include" "${PROJECT_SOURCE_DIR}/third_party")
 
 add_subdirectory(libswan)
 add_subdirectory(core.mod)
