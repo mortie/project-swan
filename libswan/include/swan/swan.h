@@ -1,5 +1,6 @@
 #pragma once
 
+#include <swan/Animation.h>
 #include <swan/Body.h>
 #include <swan/Chunk.h>
 #include <swan/Entity.h>

@@ -18,6 +18,10 @@ public:
 		return std::pair<T, T>(x_, y_);
 	}
 
+	operator Vector2<float>() const {
+		return Vector2<float>(x_, y_);
+	}
+
 	bool operator==(const Vector2<T> &vec) const {
 		return x_ == vec.x_ && y_ == vec.y_;
 	}

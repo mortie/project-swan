@@ -1,7 +1,19 @@
 #include "EntPlayer.h"
 
+EntPlayer::EntPlayer(const Swan::Vec2 &pos):
+		body_(pos, SIZE, MASS) {
+	texture_.create(animation_still_.width_, animation_still_.height_);
+	sprite_ = sf::Sprite(texture_);
+}
+
 void EntPlayer::draw(Swan::Win &win) {
 	body_.outline(win);
+
+	if (animation_still_.fill(texture_))
+		sprite_.setTexture(texture_);
+
+	win.setPos(body_.pos_);
+	win.draw(sprite_);
 }
 
 void EntPlayer::update(Swan::WorldPlane &plane, float dt) {
@@ -16,4 +28,6 @@ void EntPlayer::update(Swan::WorldPlane &plane, float dt) {
 	body_.gravity();
 	body_.update(dt);
 	body_.collide(plane);
+
+	animation_still_.tick(dt);
 }

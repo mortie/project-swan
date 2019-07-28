@@ -67,12 +67,7 @@ WorldPlane &World::addPlane(std::string gen) {
 }
 
 void World::draw(Win &win) {
-	auto size = win.window_->getSize();
-	const Vec2 &pos = player_->getPos();
-	win.cam_ = Vec2(
-			pos.x_ * TILE_SIZE - size.x / 2,
-			pos.y_ * TILE_SIZE - size.y / 2);
-
+	win.cam_ = player_->getPos() - (win.getSize() / 2) + 0.5;
 	planes_[current_plane_].draw(win);
 }
 

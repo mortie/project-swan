@@ -20,15 +20,23 @@ public:
 	sf::RenderWindow *window_;
 	sf::Transform transform_;
 	Vec2 cam_;
+	double scale_ = 2;
 
 	Win(sf::RenderWindow *win): window_(win) {}
 
 	void setPos(const Vec2 &pos) {
-		transform_ = sf::Transform().translate(pos - cam_);
+		transform_ = sf::Transform()
+			.scale(scale_, scale_)
+			.translate((pos - cam_) * TILE_SIZE);
 	}
 
 	void draw(const sf::Drawable &drawable) {
 		window_->draw(drawable, transform_);
+	}
+
+	Vec2 getSize() {
+		sf::Vector2 v = window_->getSize();
+		return Vec2(v.x, v.y) / (TILE_SIZE * scale_);
 	}
 };
 
