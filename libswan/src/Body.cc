@@ -16,10 +16,10 @@ void Body::collide(WorldPlane &plane) {
 	int px = (int)pos_.x_;
 	if (pos_.x_ < 0) px -= 1;
 	int startx = px;
-	int endx = (int)(px + size_.x_);
+	int endx = (int)ceil(px + size_.x_);
 
 	on_ground_ = false;
-	int y = (int)floor(pos_.y_ + size_.y_);
+	int y = (int)ceil(pos_.y_ + size_.y_ - 1);
 	for (int x = startx; x <= endx; ++x) {
 		Tile &ground = plane.getTile(TilePos(x, y));
 		if (ground.is_solid_ && vel_.y_ > 0) {
@@ -37,7 +37,7 @@ void Body::collide(WorldPlane &plane) {
 		} else if (x == endx && vel_.x_ > 0) {
 			if (wall.is_solid_) {
 				vel_.x_ = 0;
-				pos_.x_ = endx - 1;
+				pos_.x_ = endx - size_.x_;
 			}
 		}
 	}
