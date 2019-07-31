@@ -25,6 +25,7 @@ int main() {
 	double fpsAcc = 0;
 	double tickAcc = 0;
 	int fcount = 0;
+	int slowFrames = 0;
 
 	while (window.isOpen()) {
 		sf::Event event;
@@ -50,8 +51,16 @@ int main() {
 		}
 
 		if (dt > 0.1) {
-			fprintf(stderr, "Warning: delta time is too high! (%.3fs).\n", dt);
+			if (slowFrames == 0)
+				fprintf(stderr, "Warning: delta time is too high! (%.3fs).\n", dt);
+			slowFrames += 1;
 		} else {
+			if (slowFrames > 0) {
+				if (slowFrames > 1)
+					fprintf(stderr, "%i consecutive slow frames.\n", slowFrames);
+				slowFrames = 0;
+			}
+
 			game.update(dt);
 
 			// Call tick TICK_RATE times per second

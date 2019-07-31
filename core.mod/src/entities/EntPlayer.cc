@@ -46,5 +46,4 @@ void EntPlayer::update(Swan::WorldPlane &plane, float dt) {
 	body_.gravity();
 	body_.update(dt);
 	body_.collide(plane);
-
 }
