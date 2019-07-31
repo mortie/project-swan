@@ -1,5 +1,7 @@
 #include "Body.h"
 
+#include <math.h>
+
 namespace Swan {
 
 void Body::friction(Vec2 coef) {
@@ -11,8 +13,8 @@ void Body::gravity(Vec2 g) {
 }
 
 void Body::collide(WorldPlane &plane) {
-	int startx = (int)pos_.x_;
-	int endx = (int)(pos_.x_ + size_.x_);
+	int startx = (int)floor(pos_.x_);
+	int endx = (int)floor(pos_.x_ + size_.x_);
 
 	int y = (int)(pos_.y_ + size_.y_);
 	on_ground_ = false;
@@ -32,7 +34,7 @@ void Body::outline(Win &win) {
 	sf::RectangleShape rect(size_ * TILE_SIZE);
 	rect.setFillColor(sf::Color::Transparent);
 	rect.setOutlineColor(sf::Color(128, 128, 128));
-	rect.setOutlineThickness(2);
+	rect.setOutlineThickness(1);
 	win.draw(rect);
 }
 

@@ -6,6 +6,7 @@
 
 namespace Swan {
 
+class World;
 class WorldPlane;
 
 class Entity {
@@ -13,7 +14,7 @@ public:
 	class Factory {
 	public:
 		virtual ~Factory() = default;
-		virtual Entity *create(const Vec2 &pos) = 0;
+		virtual Entity *create(World &world, const Vec2 &pos) = 0;
 		std::string name_;
 	};
 

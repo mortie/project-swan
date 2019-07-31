@@ -6,10 +6,12 @@ class EntPlayer: public Swan::Entity {
 public:
 	class Factory: public Swan::Entity::Factory {
 	public:
-		Swan::Entity *create(const Swan::Vec2 &pos) override { return new EntPlayer(pos); }
+		Swan::Entity *create(Swan::World &world, const Swan::Vec2 &pos) override {
+			return new EntPlayer(world, pos);
+		}
 	};
 
-	EntPlayer(const Swan::Vec2 &pos);
+	EntPlayer(Swan::World &world, const Swan::Vec2 &pos);
 
 	const Swan::Vec2 &getPos() override { return body_.pos_; }
 
@@ -21,11 +23,17 @@ private:
 	static constexpr float JUMP_FORCE = 7;
 	static constexpr float MASS = 80;
 	static constexpr Swan::Vec2 FRICTION = Swan::Vec2(400, 0);
-	static constexpr Swan::Vec2 SIZE = Swan::Vec2(1, 2);
+	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.6, 1.9);
 
-	Swan::Animation animation_still_ = Swan::Animation(
-		32, 64, 1.3, "core.mod/assets/entities/player-still.png");
-	sf::Texture texture_;
-	sf::Sprite sprite_;
+	enum class State {
+		IDLE,
+		RUNNING_L,
+		RUNNING_R,
+		COUNT,
+	};
+
+	State state_ = State::IDLE;
+	Swan::Animation anims_[(int)State::COUNT];
+
 	Swan::Body body_;
 };

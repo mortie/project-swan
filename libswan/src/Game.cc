@@ -34,6 +34,8 @@ void Game::createWorld(std::string worldgen) {
 			world_->registerWorldGen(worldgen);
 		for (auto &entity: mod.entities_)
 			world_->registerEntity(entity);
+		for (auto &asset: mod.assets_)
+			world_->registerAsset(asset);
 	}
 
 	world_->setWorldGen(worldgen);

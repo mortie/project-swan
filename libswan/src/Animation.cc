@@ -2,17 +2,19 @@
 
 namespace Swan {
 
-Animation::Animation(int w, int h, double freq, const sf::Image &img):
-		width_(w), height_(h), img_(img) {
-	fcount_ = img_.getSize().y / height_;
-	interval_ = 1.0 / freq;
-}
+void Animation::init(int w, int h, double interval, const Asset &asset, int flags) {
+	width_ = w;
+	height_ = h;
+	interval_ = interval;
+	asset_ = &asset;
+	fcount_ = asset_->img_.getSize().y / height_;
+	sprite_.setTexture(asset_->tex_);
+	sprite_.setTextureRect(sf::IntRect(0, 0, width_, height_));
 
-Animation::Animation(int w, int h, double freq, const std::string &path):
-		width_(w), height_(h) {
-	img_.loadFromFile(path);
-	fcount_ = img_.getSize().y / height_;
-	interval_ = 1.0 / freq;
+	if (flags & (int)Flags::HFLIP) {
+		sprite_.setOrigin(Vec2(width_, 0));
+		sprite_.setScale(Vec2(-1, 1));
+	}
 }
 
 void Animation::tick(double dt) {
@@ -22,19 +24,21 @@ void Animation::tick(double dt) {
 		time_ = 0;
 		if (frame_ >= fcount_)
 			frame_ = 0;
+
+		sprite_.setTextureRect(sf::IntRect(0, height_ * frame_, width_, height_));
 	}
 
 	time_ += dt;
 }
 
-bool Animation::fill(sf::Texture &tex, bool force) {
-	if (!force && !dirty_)
-		return false;
+void Animation::draw(Win &win) {
+	win.draw(sprite_);
+}
 
-	const sf::Uint8 *data = img_.getPixelsPtr() + 4 * width_ * height_ * frame_;
-	tex.update(data);
-	dirty_ = false;
-	return true;
+void Animation::reset() {
+    time_ = 0;
+    frame_ = 0;
+    dirty_ = true;
 }
 
 }

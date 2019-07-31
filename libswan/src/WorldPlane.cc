@@ -28,7 +28,7 @@ Entity &WorldPlane::spawnEntity(const std::string &name, const Vec2 &pos) {
 		abort();
 	}
 
-	Entity *ent = world_->ents_[name]->create(pos);
+	Entity *ent = world_->ents_[name]->create(*world_, pos);
 	entities_.push_back(std::unique_ptr<Entity>(ent));
 	fprintf(stderr, "Spawned %s at %f,%f.\n", name.c_str(), pos.x_, pos.y_);
 	return *ent;

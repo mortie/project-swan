@@ -53,6 +53,20 @@ void World::registerEntity(std::shared_ptr<Entity::Factory> ent) {
 	ents_[ent->name_] = ent;
 }
 
+void World::registerAsset(std::shared_ptr<Asset> asset) {
+	assets_[asset->name_] = asset;
+}
+
+Asset &World::getAsset(const std::string &name) {
+	auto iter = assets_.find(name);
+	if (iter == assets_.end()) {
+		fprintf(stderr, "Tried to get non-existant asset ''%s'!\n", name.c_str());
+		abort();
+	}
+
+	return *iter->second;
+}
+
 WorldPlane &World::addPlane(std::string gen) {
 	WorldPlane::ID id = planes_.size();
 	if (worldgens_.find(gen) == worldgens_.end()) {

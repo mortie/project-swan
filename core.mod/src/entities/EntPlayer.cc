@@ -1,33 +1,50 @@
 #include "EntPlayer.h"
 
-EntPlayer::EntPlayer(const Swan::Vec2 &pos):
+EntPlayer::EntPlayer(Swan::World &world, const Swan::Vec2 &pos):
 		body_(pos, SIZE, MASS) {
-	texture_.create(animation_still_.width_, animation_still_.height_);
-	sprite_ = sf::Sprite(texture_);
+	anims_[(int)State::IDLE].init(32, 64, 0.8,
+		world.getAsset("core::player-still"));
+	anims_[(int)State::RUNNING_R].init(32, 64, 1,
+		world.getAsset("core::player-running"));
+	anims_[(int)State::RUNNING_L].init(32, 64, 1,
+		world.getAsset("core::player-running"), (int)Swan::Animation::Flags::HFLIP);
 }
 
 void EntPlayer::draw(Swan::Win &win) {
 	body_.outline(win);
 
-	if (animation_still_.fill(texture_))
-		sprite_.setTexture(texture_);
-
-	win.setPos(body_.pos_);
-	win.draw(sprite_);
+	win.setPos(body_.pos_ - Swan::Vec2(0.2, 0.1));
+	anims_[(int)state_].draw(win);
 }
 
 void EntPlayer::update(Swan::WorldPlane &plane, float dt) {
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+	State oldState = state_;
+	state_ = State::IDLE;
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
 		body_.force_ += Swan::Vec2(-FORCE, 0);
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+		state_ = State::RUNNING_L;
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
 		body_.force_ += Swan::Vec2(FORCE, 0);
-	if (body_.on_ground_ && sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+		if (state_ == State::RUNNING_L)
+			state_ = State::IDLE;
+		else
+			state_ = State::RUNNING_R;
+	}
+
+	if (body_.on_ground_ && sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
 		body_.vel_.y_ = -JUMP_FORCE;
+	}
+
+	if (state_ != oldState)
+		anims_[(int)state_].reset();
+	anims_[(int)state_].tick(dt);
 
 	body_.friction(FRICTION);
 	body_.gravity();
 	body_.update(dt);
 	body_.collide(plane);
 
-	animation_still_.tick(dt);
 }

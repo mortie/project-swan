@@ -15,6 +15,8 @@ static constexpr int CHUNK_WIDTH = 8;
 using TilePos = Vec2i;
 using ChunkPos = Vec2i;
 
+class WorldPlane;
+
 struct Win {
 public:
 	sf::RenderWindow *window_;

@@ -1,27 +1,39 @@
 #pragma once
 
-#include <SFML/Graphics/Image.hpp>
-#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+
+#include "common.h"
+#include "Asset.h"
 
 namespace Swan {
 
 class Animation {
 public:
-	Animation(int w, int h, double freq, const sf::Image &img);
-	Animation(int w, int h, double freq, const std::string &path);
+	enum class Flags {
+		HFLIP = 1,
+	};
+
+	Animation() = default;
+	Animation(int w, int h, double interval, const Asset &asset, int flags = 0) {
+		init(w, h, interval, asset, flags);
+	}
+
+	void init(int w, int h, double interval, const Asset &asset, int flags = 0);
 
 	void tick(double dt);
-	bool fill(sf::Texture &tex, bool force = false);
+	void draw(Win &win);
+    void reset();
 
 	int width_, height_;
 
 private:
-	sf::Image img_;
+	double interval_;
+	const Asset *asset_;
 	int fcount_;
 	int frame_ = 0;
 	bool dirty_ = true;
-	double interval_;
 	double time_ = 0;
+	sf::Sprite sprite_;
 };
 
 }
