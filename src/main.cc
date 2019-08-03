@@ -1,6 +1,7 @@
 #include <vector>
 #include <time.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #include <swan/common.h>
 #include <swan/World.h>
@@ -10,8 +11,15 @@
 using namespace Swan;
 
 int main() {
+	sf::Image icon;
+	if (!icon.loadFromFile("assets/icon.png")) {
+		fprintf(stderr, "Failed to load image 'icon.png'\n");
+		abort();
+	}
+
 	sf::RenderWindow window(sf::VideoMode(800, 600), "good gaem");
 	window.setVerticalSyncEnabled(true);
+	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 	Win win(&window);
 
 	Game::initGlobal();

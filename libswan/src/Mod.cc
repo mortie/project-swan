@@ -38,7 +38,7 @@ void Mod::registerAsset(const std::string &name, Asset *asset) {
 	asset->name_ = name_ + "::" + name;
 
 	if (!asset->load(path_)) {
-		fprintf(stderr, "Asset %s: Failed to load image %s", name.c_str(), (path_ + "/" + asset->path_).c_str());
+		fprintf(stderr, "Asset %s: Failed to load image '%s'", name.c_str(), (path_ + "/" + asset->path_).c_str());
 		abort();
 	}
 
