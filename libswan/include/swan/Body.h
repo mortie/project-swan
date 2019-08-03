@@ -13,7 +13,7 @@ public:
 		pos_(pos), size_(size), mass_(mass) {};
 
 	void friction(Vec2 coef);
-	void gravity(Vec2 g = Vec2(0, 9.81));
+	void gravity(Vec2 g = Vec2(0, 20));
 	void collide(WorldPlane &plane);
 
 	void outline(Win &win);

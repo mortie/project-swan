@@ -35,6 +35,8 @@ public:
 	void update(float dt);
 	void tick();
 
+	void debugBox(TilePos pos);
+
 	ID id_;
 	World *world_;
 	std::shared_ptr<WorldGen> gen_;
@@ -42,6 +44,7 @@ public:
 private:
 	std::map<std::pair<int, int>, std::unique_ptr<Chunk>> chunks_;
 	std::vector<std::unique_ptr<Entity>> entities_;
+	std::vector<TilePos> debug_boxes_;
 };
 
 }

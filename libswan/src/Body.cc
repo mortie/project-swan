@@ -13,13 +13,27 @@ void Body::gravity(Vec2 g) {
 }
 
 void Body::collide(WorldPlane &plane) {
-	int px = (int)pos_.x_;
-	if (pos_.x_ < 0) px -= 1;
-	int startx = px;
-	int endx = (int)ceil(px + size_.x_);
+	int startx, endx, y;
+
+	startx = (int)floor(pos_.x_);
+	endx = (int)floor(pos_.x_ + size_.x_);
+	y = (int)ceil(pos_.y_ + size_.y_ - 1.3);
+	for (int x = startx; x <= endx; ++x) {
+		Tile &wall = plane.getTile(TilePos(x, y));
+		if (x == startx && vel_.x_ < 0 && wall.is_solid_) {
+			vel_.x_ = 0;
+			pos_.x_ = startx + 1.01;
+			startx = (int)floor(pos_.x_);
+		} else if (x == endx && vel_.x_ > 0 && wall.is_solid_) {
+			vel_.x_ = 0;
+			pos_.x_ = endx - size_.x_ - 0.01;
+			endx = (int)floor(pos_.x_ + size_.x_);
+		}
+		plane.debugBox(TilePos(x, y));
+	}
 
 	on_ground_ = false;
-	int y = (int)ceil(pos_.y_ + size_.y_ - 1);
+	y = (int)ceil(pos_.y_ + size_.y_ - 1);
 	for (int x = startx; x <= endx; ++x) {
 		Tile &ground = plane.getTile(TilePos(x, y));
 		if (ground.is_solid_ && vel_.y_ > 0) {
@@ -27,19 +41,7 @@ void Body::collide(WorldPlane &plane) {
 			vel_.y_ = 0;
 			on_ground_ = true;
 		}
-
-		Tile &wall = plane.getTile(TilePos(x, y - 1));
-		if (x == startx && vel_.x_ < 0) {
-			if (wall.is_solid_) {
-				vel_.x_ = 0;
-				pos_.x_ = startx + 1;
-			}
-		} else if (x == endx && vel_.x_ > 0) {
-			if (wall.is_solid_) {
-				vel_.x_ = 0;
-				pos_.x_ = endx - size_.x_;
-			}
-		}
+		plane.debugBox(TilePos(x, y));
 	}
 }
 

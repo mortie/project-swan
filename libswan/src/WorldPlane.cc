@@ -67,9 +67,21 @@ void WorldPlane::draw(Win &win) {
 		ch.second->draw(win);
 	for (auto &ent: entities_)
 		ent->draw(win);
+
+	if (debug_boxes_.size() > 0) {
+		sf::RectangleShape rect(Vec2(TILE_SIZE, TILE_SIZE));
+		rect.setFillColor(sf::Color(60, 70, 200, 100));
+		rect.setOutlineThickness(1);
+		rect.setOutlineColor(sf::Color(50, 65, 170, 200));
+		for (auto &pos: debug_boxes_) {
+			win.setPos(pos);
+			win.draw(rect);
+		}
+	}
 }
 
 void WorldPlane::update(float dt) {
+	debug_boxes_.clear();
 	for (auto &ent: entities_)
 		ent->update(*this, dt);
 }
@@ -77,6 +89,10 @@ void WorldPlane::update(float dt) {
 void WorldPlane::tick() {
 	for (auto &ent: entities_)
 		ent->tick();
+}
+
+void WorldPlane::debugBox(TilePos pos) {
+	debug_boxes_.push_back(pos);
 }
 
 }
