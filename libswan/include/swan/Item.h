@@ -1,0 +1,7 @@
+namespace Swan {
+
+class Item {
+
+};
+
+}

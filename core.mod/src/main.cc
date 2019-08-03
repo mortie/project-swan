@@ -7,9 +7,9 @@ extern "C" void mod_init(Swan::Mod &mod) {
 	mod.init("core");
 
 	mod.registerTile("air", (new Swan::Tile("assets/tiles/air.png"))->solid(false));
-	mod.registerTile("stone", (new Swan::Tile("assets/tiles/stone.png")));
-	mod.registerTile("dirt", (new Swan::Tile("assets/tiles/dirt.png")));
-	mod.registerTile("grass", (new Swan::Tile("assets/tiles/grass.png")));
+	mod.registerTile("stone", (new Swan::Tile("assets/tiles/stone.png"))->drops("core::stone"));
+	mod.registerTile("dirt", (new Swan::Tile("assets/tiles/dirt.png"))->drops("core::dirt"));
+	mod.registerTile("grass", (new Swan::Tile("assets/tiles/grass.png"))->drops("core::dirt"));
 
 	mod.registerWorldGen("default", new WGDefault::Factory());
 

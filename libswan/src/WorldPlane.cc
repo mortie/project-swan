@@ -44,18 +44,18 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 	if (iter == chunks_.end()) {
 		iter = chunks_.emplace(pos, new Chunk(pos)).first;
 		gen_->genChunk(*this, *iter->second);
-		iter->second->redraw(world_->tile_map_);
+		iter->second->redraw(*world_);
 	}
 
 	return *iter->second;
 }
 
 void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
-	getChunk(chunkPos(pos)).setTileID(world_->tile_map_, relPos(pos), id);
+	getChunk(chunkPos(pos)).setTileID(*world_, relPos(pos), id);
 }
 
 Tile &WorldPlane::getTile(TilePos pos) {
-	return getChunk(chunkPos(pos)).getTile(world_->tile_map_, relPos(pos));
+	return *getChunk(chunkPos(pos)).getTile(*world_, relPos(pos));
 }
 
 Entity &WorldPlane::spawnPlayer() {

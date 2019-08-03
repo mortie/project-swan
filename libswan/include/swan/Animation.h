@@ -14,11 +14,11 @@ public:
 	};
 
 	Animation() = default;
-	Animation(int w, int h, double interval, const Asset &asset, int flags = 0) {
+	Animation(int w, int h, double interval, const Asset *asset, int flags = 0) {
 		init(w, h, interval, asset, flags);
 	}
 
-	void init(int w, int h, double interval, const Asset &asset, int flags = 0);
+	void init(int w, int h, double interval, const Asset *asset, int flags = 0);
 
 	void tick(double dt);
 	void draw(Win &win);

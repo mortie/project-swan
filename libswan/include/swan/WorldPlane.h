@@ -7,7 +7,6 @@
 #include "common.h"
 #include "Chunk.h"
 #include "Tile.h"
-#include "TileMap.h"
 #include "WorldGen.h"
 #include "Entity.h"
 

@@ -42,7 +42,9 @@ void World::spawnPlayer() {
 }
 
 void World::registerTile(std::shared_ptr<Tile> t) {
-	tile_map_.registerTile(t);
+	Tile::ID id = tiles_.size();
+	tiles_.push_back(t);
+	tiles_map_[t->name_] = id;
 }
 
 void World::registerWorldGen(std::shared_ptr<WorldGen::Factory> gen) {
@@ -57,14 +59,45 @@ void World::registerAsset(std::shared_ptr<Asset> asset) {
 	assets_[asset->name_] = asset;
 }
 
-Asset &World::getAsset(const std::string &name) {
+Asset *World::getAsset(const std::string &name) {
 	auto iter = assets_.find(name);
 	if (iter == assets_.end()) {
 		fprintf(stderr, "Tried to get non-existant asset ''%s'!\n", name.c_str());
-		abort();
+		return NULL;
 	}
 
-	return *iter->second;
+	return iter->second.get();
+}
+
+Item *World::getItem(const std::string &name) {
+	auto iter = items_.find(name);
+	if (iter == items_.end()) {
+		fprintf(stderr, "Tried to get non-existant item ''%s'!\n", name.c_str());
+		return NULL;
+	}
+
+	return iter->second.get();
+}
+
+Tile::ID World::getTileID(const std::string &name) {
+	auto iter = tiles_map_.find(name);
+	if (iter == tiles_map_.end()) {
+		fprintf(stderr, "Tried to get non-existant tile ''%s'!\n", name.c_str());
+		return Tile::INVALID_ID;
+	}
+
+	return iter->second;
+}
+
+Tile *World::getTileByID(Tile::ID id) {
+	return tiles_[id].get();
+}
+
+Tile *World::getTile(const std::string &name) {
+	Tile::ID id = getTileID(name);
+	if (id == Tile::INVALID_ID)
+		return &Tile::INVALID_TILE;
+	return getTileByID(id);
 }
 
 WorldPlane &World::addPlane(std::string gen) {
@@ -75,7 +108,7 @@ WorldPlane &World::addPlane(std::string gen) {
 		abort();
 	}
 
-	WorldGen *g = worldgens_[gen]->create(tile_map_);
+	WorldGen *g = worldgens_[gen]->create(*this);
 	planes_.push_back(WorldPlane(id, this, std::shared_ptr<WorldGen>(g)));
 	return planes_[id];
 }

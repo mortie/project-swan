@@ -8,12 +8,12 @@ class WGDefault: public Swan::WorldGen {
 public:
 	class Factory: public Swan::WorldGen::Factory {
 	public:
-		WorldGen *create(Swan::TileMap &tmap) { return new WGDefault(tmap); }
+		WorldGen *create(Swan::World &world) { return new WGDefault(world); }
 	};
 
-	WGDefault(Swan::TileMap &tmap):
-		tGrass_(tmap.getID("core::grass")), tDirt_(tmap.getID("core::dirt")),
-		tStone_(tmap.getID("core::stone")), tAir_(tmap.getID("core::air")) {}
+	WGDefault(Swan::World &world):
+		tGrass_(world.getTileID("core::grass")), tDirt_(world.getTileID("core::dirt")),
+		tStone_(world.getTileID("core::stone")), tAir_(world.getTileID("core::air")) {}
 
 	void genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) override;
 	Swan::Entity &spawnPlayer(Swan::WorldPlane &plane) override;

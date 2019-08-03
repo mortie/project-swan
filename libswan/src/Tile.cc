@@ -5,6 +5,7 @@ namespace Swan {
 
 sf::Image Tile::INVALID_IMAGE;
 Tile Tile::INVALID_TILE("");
+Tile::ID Tile::INVALID_ID = 0xffff;
 
 void Tile::initInvalid() {
 	INVALID_IMAGE.create(TILE_SIZE, TILE_SIZE, sf::Color(245, 66, 242));

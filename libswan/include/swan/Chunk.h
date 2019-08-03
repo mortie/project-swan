@@ -5,9 +5,10 @@
 
 #include "common.h"
 #include "Tile.h"
-#include "TileMap.h"
 
 namespace Swan {
+
+class World;
 
 class Chunk {
 public:
@@ -18,17 +19,17 @@ public:
 		sprite_ = sf::Sprite(texture_);
 	}
 
-	void setTileID(TileMap &tmap, RelPos pos, Tile::ID id);
-	Tile &getTile(TileMap &tmap, RelPos pos);
-	void drawBlock(RelPos pos, const Tile &t);
-	void drawBlock(TileMap &tmap, RelPos pos, Tile::ID id);
-	void redraw(TileMap &tmap);
+	void setTileID(World &world, RelPos pos, Tile::ID id);
+	Tile *getTile(World &world, RelPos pos);
+	void redraw(World &world);
 	void draw(Win &win);
 
 	ChunkPos pos_;
 	Tile::ID tiles_[CHUNK_WIDTH][CHUNK_HEIGHT];
 
 private:
+	void drawBlock(RelPos pos, const Tile *t);
+	void drawBlock(World &world, RelPos pos, Tile::ID id);
 	bool dirty_ = false;
 	sf::Texture texture_;
 	sf::Sprite sprite_;

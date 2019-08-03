@@ -5,11 +5,12 @@
 #include <string>
 
 #include "common.h"
+#include "Asset.h"
+#include "Item.h"
 #include "Tile.h"
 #include "WorldPlane.h"
 #include "WorldGen.h"
 #include "Entity.h"
-#include "Asset.h"
 
 namespace Swan {
 
@@ -25,7 +26,11 @@ public:
 	void registerEntity(std::shared_ptr<Entity::Factory> ent);
 	void registerAsset(std::shared_ptr<Asset> asset);
 
-	Asset &getAsset(const std::string &name);
+	Asset *getAsset(const std::string &name);
+	Item *getItem(const std::string &name);
+	Tile::ID getTileID(const std::string &name);
+	Tile *getTileByID(Tile::ID id);
+	Tile *getTile(const std::string &name);
 
 	void draw(Win &win);
 	void update(float dt);
@@ -34,7 +39,9 @@ public:
 	std::map<std::string, std::shared_ptr<WorldGen::Factory>> worldgens_;
 	std::map<std::string, std::shared_ptr<Entity::Factory>> ents_;
 	std::map<std::string, std::shared_ptr<Asset>> assets_;
-	TileMap tile_map_;
+	std::map<std::string, std::shared_ptr<Item>> items_;
+	std::vector<std::shared_ptr<Tile>> tiles_;
+	std::map<std::string, Tile::ID> tiles_map_;
 	Entity *player_;
 
 private:

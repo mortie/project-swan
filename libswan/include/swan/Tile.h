@@ -13,8 +13,10 @@ public:
 	Tile(std::string path): path_(path) {}
 
 	Tile *solid(bool b) { is_solid_ = b; return this; }
+	Tile *drops(std::string item) { dropped_item_ = item; return this; }
 
 	bool is_solid_ = true;
+	std::string dropped_item_ = "";
 
 	std::string path_;
 	std::string name_;
@@ -22,6 +24,7 @@ public:
 
 	static sf::Image INVALID_IMAGE;
 	static Tile INVALID_TILE;
+	static ID INVALID_ID;
 	static void initInvalid();
 };
 

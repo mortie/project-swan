@@ -3,11 +3,11 @@
 #include <memory>
 
 #include "Chunk.h"
-#include "TileMap.h"
 #include "Entity.h"
 
 namespace Swan {
 
+class World;
 class WorldPlane;
 
 class WorldGen {
@@ -15,7 +15,7 @@ public:
 	class Factory {
 	public:
 		virtual ~Factory() = default;
-		virtual WorldGen *create(TileMap &tmap) = 0;
+		virtual WorldGen *create(World &tmap) = 0;
 		std::string name_;
 	};
 
