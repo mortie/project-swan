@@ -25,7 +25,8 @@ public:
 	static sf::Image INVALID_IMAGE;
 	static Tile INVALID_TILE;
 	static ID INVALID_ID;
-	static void initInvalid();
+	static Tile *createInvalid();
+	static void initGlobal();
 };
 
 }

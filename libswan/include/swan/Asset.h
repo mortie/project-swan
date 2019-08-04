@@ -9,20 +9,15 @@ class Asset {
 public:
 	Asset(std::string path): path_(path) {}
 
-	bool load(std::string pfx) {
-		if (!img_.loadFromFile(pfx + "/" + path_))
-			return false;
-
-		auto size = img_.getSize();
-		tex_.create(size.x, size.y);
-		tex_.update(img_);
-		return true;
-	}
+	bool load(const std::string &pfx);
 
 	std::string name_;
 	std::string path_;
-	sf::Image img_;
+	sf::Image image_;
 	sf::Texture tex_;
+
+	static Asset INVALID_ASSET;
+	static void initGlobal();
 };
 
 }

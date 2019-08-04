@@ -55,7 +55,7 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 }
 
 Tile &WorldPlane::getTile(TilePos pos) {
-	return *getChunk(chunkPos(pos)).getTile(*world_, relPos(pos));
+	return getChunk(chunkPos(pos)).getTile(*world_, relPos(pos));
 }
 
 Entity &WorldPlane::spawnPlayer() {

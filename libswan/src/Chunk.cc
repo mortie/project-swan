@@ -9,12 +9,12 @@ void Chunk::setTileID(World &world, RelPos pos, Tile::ID id) {
 	drawBlock(world, pos, id);
 }
 
-Tile *Chunk::getTile(World &world, RelPos pos) {
+Tile &Chunk::getTile(World &world, RelPos pos) {
 	return world.getTileByID(tiles_[pos.x_][pos.y_]);
 }
 
-void Chunk::drawBlock(RelPos pos, const Tile *t) {
-	texture_.update(t->image_, pos.x_ * TILE_SIZE, pos.y_ * TILE_SIZE);
+void Chunk::drawBlock(RelPos pos, const Tile &t) {
+	texture_.update(t.	image_, pos.x_ * TILE_SIZE, pos.y_ * TILE_SIZE);
 	dirty_ = true;
 }
 

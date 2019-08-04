@@ -26,11 +26,11 @@ public:
 	void registerEntity(std::shared_ptr<Entity::Factory> ent);
 	void registerAsset(std::shared_ptr<Asset> asset);
 
-	Asset *getAsset(const std::string &name);
-	Item *getItem(const std::string &name);
+	Asset &getAsset(const std::string &name);
+	Item &getItem(const std::string &name);
 	Tile::ID getTileID(const std::string &name);
-	Tile *getTileByID(Tile::ID id);
-	Tile *getTile(const std::string &name);
+	Tile &getTileByID(Tile::ID id);
+	Tile &getTile(const std::string &name);
 
 	void draw(Win &win);
 	void update(float dt);

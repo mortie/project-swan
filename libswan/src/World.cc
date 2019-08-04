@@ -59,24 +59,24 @@ void World::registerAsset(std::shared_ptr<Asset> asset) {
 	assets_[asset->name_] = asset;
 }
 
-Asset *World::getAsset(const std::string &name) {
+Asset &World::getAsset(const std::string &name) {
 	auto iter = assets_.find(name);
 	if (iter == assets_.end()) {
 		fprintf(stderr, "Tried to get non-existant asset ''%s'!\n", name.c_str());
-		return NULL;
+		return Asset::INVALID_ASSET;
 	}
 
-	return iter->second.get();
+	return *iter->second;
 }
 
-Item *World::getItem(const std::string &name) {
+Item &World::getItem(const std::string &name) {
 	auto iter = items_.find(name);
 	if (iter == items_.end()) {
 		fprintf(stderr, "Tried to get non-existant item ''%s'!\n", name.c_str());
-		return NULL;
+		return Item::INVALID_ITEM;
 	}
 
-	return iter->second.get();
+	return *iter->second;
 }
 
 Tile::ID World::getTileID(const std::string &name) {
@@ -89,14 +89,12 @@ Tile::ID World::getTileID(const std::string &name) {
 	return iter->second;
 }
 
-Tile *World::getTileByID(Tile::ID id) {
-	return tiles_[id].get();
+Tile &World::getTileByID(Tile::ID id) {
+	return *tiles_[id];
 }
 
-Tile *World::getTile(const std::string &name) {
+Tile &World::getTile(const std::string &name) {
 	Tile::ID id = getTileID(name);
-	if (id == Tile::INVALID_ID)
-		return &Tile::INVALID_TILE;
 	return getTileByID(id);
 }
 

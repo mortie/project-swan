@@ -2,12 +2,12 @@
 
 namespace Swan {
 
-void Animation::init(int w, int h, double interval, const Asset *asset, int flags) {
+void Animation::init(int w, int h, double interval, const Asset &asset, int flags) {
 	width_ = w;
 	height_ = h;
 	interval_ = interval;
-	asset_ = asset;
-	fcount_ = asset_->img_.getSize().y / height_;
+	asset_ = &asset;
+	fcount_ = asset_->image_.getSize().y / height_;
 	sprite_.setTexture(asset_->tex_);
 	sprite_.setTextureRect(sf::IntRect(0, 0, width_, height_));
 

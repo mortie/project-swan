@@ -20,7 +20,7 @@ public:
 	}
 
 	void setTileID(World &world, RelPos pos, Tile::ID id);
-	Tile *getTile(World &world, RelPos pos);
+	Tile &getTile(World &world, RelPos pos);
 	void redraw(World &world);
 	void draw(Win &win);
 
@@ -28,7 +28,7 @@ public:
 	Tile::ID tiles_[CHUNK_WIDTH][CHUNK_HEIGHT];
 
 private:
-	void drawBlock(RelPos pos, const Tile *t);
+	void drawBlock(RelPos pos, const Tile &t);
 	void drawBlock(World &world, RelPos pos, Tile::ID id);
 	bool dirty_ = false;
 	sf::Texture texture_;

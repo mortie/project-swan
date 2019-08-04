@@ -1,8 +1,10 @@
 add_library(libswan SHARED
 	src/Animation.cc
+	src/Asset.cc
 	src/Body.cc
 	src/Chunk.cc
 	src/Game.cc
+	src/Item.cc
 	src/Mod.cc
 	src/Tile.cc
 	src/Timer.cc

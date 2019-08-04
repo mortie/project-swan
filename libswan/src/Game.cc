@@ -3,6 +3,7 @@
 #include <dlfcn.h>
 
 #include "Tile.h"
+#include "Asset.h"
 
 namespace Swan {
 
@@ -28,6 +29,9 @@ void Game::loadMod(const std::string &path) {
 void Game::createWorld(std::string worldgen) {
 	world_.reset(new World());
 	for (auto &mod: registered_mods_) {
+		// Register invalids
+		world_->registerTile(std::shared_ptr<Tile>(Tile::createInvalid()));
+
 		for (auto &tile: mod.tiles_)
 			world_->registerTile(tile);
 		for (auto &worldgen: mod.worldgens_)
@@ -56,7 +60,8 @@ void Game::tick() {
 }
 
 void Game::initGlobal() {
-	Tile::initInvalid();
+	Tile::initGlobal();
+	Asset::initGlobal();
 }
 
 }
