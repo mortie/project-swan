@@ -16,7 +16,7 @@ public:
 	const Swan::Vec2 &getPos() override { return body_.pos_; }
 
 	void draw(Swan::Win &win) override;
-	void update(Swan::WorldPlane &plane, float dt) override;
+	void update(Swan::Game &game, Swan::WorldPlane &plane, float dt) override;
 
 private:
 	static constexpr float FORCE = 3000;
@@ -34,6 +34,8 @@ private:
 
 	State state_ = State::IDLE;
 	Swan::Animation anims_[(int)State::COUNT];
+
+	Swan::TilePos mouse_tile_;
 
 	Swan::Body body_;
 };

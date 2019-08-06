@@ -80,10 +80,10 @@ void WorldPlane::draw(Win &win) {
 	}
 }
 
-void WorldPlane::update(float dt) {
+void WorldPlane::update(Game &game, float dt) {
 	debug_boxes_.clear();
 	for (auto &ent: entities_)
-		ent->update(*this, dt);
+		ent->update(game, *this, dt);
 }
 
 void WorldPlane::tick() {

@@ -22,11 +22,11 @@ void Body::collide(WorldPlane &plane) {
 		Tile &wall = plane.getTile(TilePos(x, y));
 		if (x == startx && vel_.x_ < 0 && wall.is_solid_) {
 			vel_.x_ = 0;
-			pos_.x_ = startx + 1.01;
+			pos_.x_ = startx + 1.001;
 			startx = (int)floor(pos_.x_);
 		} else if (x == endx && vel_.x_ > 0 && wall.is_solid_) {
 			vel_.x_ = 0;
-			pos_.x_ = endx - size_.x_ - 0.01;
+			pos_.x_ = endx - size_.x_ - 0.001;
 			endx = (int)floor(pos_.x_ + size_.x_);
 		}
 		plane.debugBox(TilePos(x, y));

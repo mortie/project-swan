@@ -8,6 +8,7 @@ namespace Swan {
 
 class World;
 class WorldPlane;
+class Game;
 
 class Entity {
 public:
@@ -23,7 +24,7 @@ public:
 	virtual const Vec2 &getPos() { return Vec2::ZERO; }
 
 	virtual void draw(Win &win) {}
-	virtual void update(WorldPlane &plane, float dt) {}
+	virtual void update(Game &game, WorldPlane &plane, float dt) {}
 	virtual void tick() {}
 };
 

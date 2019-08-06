@@ -31,7 +31,7 @@ public:
 	Entity &spawnPlayer();
 
 	void draw(Win &win);
-	void update(float dt);
+	void update(Game &game, float dt);
 	void tick();
 
 	void debugBox(TilePos pos);

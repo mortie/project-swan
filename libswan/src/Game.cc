@@ -1,6 +1,8 @@
 #include "Game.h"
 
 #include <dlfcn.h>
+#include <math.h>
+#include <SFML/Window/Mouse.hpp>
 
 #include "Tile.h"
 #include "Asset.h"
@@ -47,12 +49,19 @@ void Game::createWorld(std::string worldgen) {
 	world_->spawnPlayer();
 }
 
-void Game::draw(Win &win) {
-	world_->draw(win);
+TilePos Game::getMouseTile() {
+	auto mousePos = sf::Mouse::getPosition(*win_.window_);
+	return TilePos(
+		(int)floor(win_.cam_.x_ + mousePos.x / (Swan::TILE_SIZE * win_.scale_)),
+		(int)floor(win_.cam_.y_ + mousePos.y / (Swan::TILE_SIZE * win_.scale_)));
+}
+
+void Game::draw() {
+	world_->draw(win_);
 }
 
 void Game::update(float dt) {
-	world_->update(dt);
+	world_->update(*this, dt);
 }
 
 void Game::tick() {

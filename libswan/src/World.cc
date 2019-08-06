@@ -116,9 +116,9 @@ void World::draw(Win &win) {
 	planes_[current_plane_].draw(win);
 }
 
-void World::update(float dt) {
+void World::update(Game &game, float dt) {
 	for (auto &plane: planes_)
-		plane.update(dt);
+		plane.update(game, dt);
 }
 
 void World::tick() {

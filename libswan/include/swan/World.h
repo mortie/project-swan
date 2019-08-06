@@ -33,7 +33,7 @@ public:
 	Tile &getTile(const std::string &name);
 
 	void draw(Win &win);
-	void update(float dt);
+	void update(Game &game, float dt);
 	void tick();
 
 	std::map<std::string, std::shared_ptr<WorldGen::Factory>> worldgens_;

@@ -17,9 +17,12 @@ void EntPlayer::draw(Swan::Win &win) {
 	anims_[(int)state_].draw(win);
 }
 
-void EntPlayer::update(Swan::WorldPlane &plane, float dt) {
+void EntPlayer::update(Swan::Game &game, Swan::WorldPlane &plane, float dt) {
 	State oldState = state_;
 	state_ = State::IDLE;
+
+	mouse_tile_ = game.getMouseTile();
+	plane.debugBox(mouse_tile_);
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
 		body_.force_ += Swan::Vec2(-FORCE, 0);

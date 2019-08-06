@@ -17,14 +17,14 @@ int main() {
 		abort();
 	}
 
-	sf::RenderWindow window(sf::VideoMode(800, 600), "good gaem");
+	sf::RenderWindow window(sf::VideoMode(800, 600), "Project: SWAN");
 	window.setVerticalSyncEnabled(true);
 	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 	Win win(&window);
 
 	Game::initGlobal();
 
-	Game game;
+	Game game(win);
 	game.loadMod("core.mod");
 
 	game.createWorld("core::default");
@@ -80,7 +80,7 @@ int main() {
 		}
 
 		window.clear();
-		game.draw(win);
+		game.draw();
 		window.display();
 	}
 

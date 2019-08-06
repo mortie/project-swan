@@ -12,10 +12,14 @@ namespace Swan {
 
 class Game {
 public:
+	Game(Win &win): win_(win) {}
+
 	void loadMod(const std::string &path);
 	void createWorld(std::string worldgen);
 
-	void draw(Win &win);
+	TilePos getMouseTile();
+
+	void draw();
 	void update(float dt);
 	void tick();
 
@@ -25,6 +29,7 @@ public:
 
 private:
 	std::vector<Mod> registered_mods_;
+	Win &win_;
 };
 
 }
