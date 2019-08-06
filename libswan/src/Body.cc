@@ -15,23 +15,42 @@ void Body::gravity(Vec2 g) {
 void Body::collide(WorldPlane &plane) {
 	int startx, endx, y;
 
+	// This collission code is horrible and in dire need of some more abstractions.
+	// I will fix later, ok? This works for now while working on more interesting things.
+
+	// Collide with sides
 	startx = (int)floor(pos_.x_);
 	endx = (int)floor(pos_.x_ + size_.x_);
 	y = (int)ceil(pos_.y_ + size_.y_ - 1.3);
 	for (int x = startx; x <= endx; ++x) {
-		Tile &wall = plane.getTile(TilePos(x, y));
-		if (x == startx && vel_.x_ < 0 && wall.is_solid_) {
-			vel_.x_ = 0;
-			pos_.x_ = startx + 1.001;
-			startx = (int)floor(pos_.x_);
-		} else if (x == endx && vel_.x_ > 0 && wall.is_solid_) {
-			vel_.x_ = 0;
-			pos_.x_ = endx - size_.x_ - 0.001;
-			endx = (int)floor(pos_.x_ + size_.x_);
+		for (int ry = y - 1; ry <= y; ++ry) {
+			Tile &wall = plane.getTile(TilePos(x, ry));
+			if (x == startx && vel_.x_ < 0 && wall.is_solid_) {
+				vel_.x_ = 0;
+				pos_.x_ = startx + 1.001;
+				startx = (int)floor(pos_.x_);
+			} else if (x == endx && vel_.x_ > 0 && wall.is_solid_) {
+				vel_.x_ = 0;
+				pos_.x_ = endx - size_.x_ - 0.001;
+				endx = (int)floor(pos_.x_ + size_.x_);
+			}
+			plane.debugBox(TilePos(x, ry));
 		}
+	}
+
+	// Collide with top
+	y = (int)ceil(pos_.y_ - 1);
+	for (int x = startx; x <= endx; ++x) {
+		Tile &roof = plane.getTile(TilePos(x, y));
+		if (roof.is_solid_ && vel_.y_ < 0) {
+			pos_.y_ = y + 1;
+			vel_.y_ = 0;
+		}
+
 		plane.debugBox(TilePos(x, y));
 	}
 
+	// Collide with floor
 	on_ground_ = false;
 	y = (int)ceil(pos_.y_ + size_.y_ - 1);
 	for (int x = startx; x <= endx; ++x) {
