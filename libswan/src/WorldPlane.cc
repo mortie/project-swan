@@ -1,5 +1,7 @@
 #include "WorldPlane.h"
 
+#include <math.h>
+
 #include "World.h"
 #include "Timer.h"
 
@@ -67,8 +69,21 @@ Entity &WorldPlane::spawnPlayer() {
 }
 
 void WorldPlane::draw(Win &win) {
-	for (auto &ch: chunks_)
-		ch.second->draw(win);
+	const Vec2 &ppos = world_->player_->getPos();
+	ChunkPos pcpos = ChunkPos(
+		(int)floor(ppos.x_ / CHUNK_WIDTH),
+		(int)floor(ppos.y_ / CHUNK_HEIGHT));
+
+	for (int x = -1; x <= 1; ++x) {
+		for (int y = -1; y <= 1; ++y) {
+			auto chunk = chunks_.find(pcpos + ChunkPos(x, y));
+			if (chunk != chunks_.end())
+				chunk->second->draw(win);
+		}
+	}
+
+	//for (auto &ch: chunks_)
+	//	ch.second->draw(win);
 	for (auto &ent: entities_)
 		ent->draw(win);
 
