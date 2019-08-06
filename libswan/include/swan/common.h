@@ -9,8 +9,8 @@ namespace Swan {
 
 static constexpr int TILE_SIZE = 32;
 static constexpr int TICK_RATE = 20;
-static constexpr int CHUNK_HEIGHT = 4;
-static constexpr int CHUNK_WIDTH = 8;
+static constexpr int CHUNK_HEIGHT = 16;
+static constexpr int CHUNK_WIDTH = 24;
 
 using TilePos = Vec2i;
 using ChunkPos = Vec2i;

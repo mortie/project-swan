@@ -20,9 +20,9 @@ public:
 
 private:
 	static constexpr float FORCE = 3000;
-	static constexpr float JUMP_FORCE = 9;
+	static constexpr float JUMP_FORCE = 10;
 	static constexpr float MASS = 80;
-	static constexpr Swan::Vec2 FRICTION = Swan::Vec2(400, 0);
+	static constexpr Swan::Vec2 FRICTION = Swan::Vec2(400, 25);
 	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.6, 1.9);
 
 	enum class State {
