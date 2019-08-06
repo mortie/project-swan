@@ -1,17 +1,17 @@
+#pragma once
+
 #include <string>
 
 namespace Swan {
 
 class Timer {
 public:
-	Timer &start();
-	Timer &print(const std::string &str);
-
-	static double now();
+	void tick(float dt) { time_ += dt; }
+	void reset() { time_ = 0; }
+	bool periodic(float secs);
 
 private:
-	std::string name_;
-	double start_;
+	float time_ = 0;
 };
 
 }

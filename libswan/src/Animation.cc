@@ -18,17 +18,15 @@ void Animation::init(int w, int h, double interval, const Asset &asset, int flag
 }
 
 void Animation::tick(double dt) {
-	if (time_ > interval_) {
+	timer_.tick(dt);
+	if (timer_.periodic(interval_)) {
 		dirty_ = true;
 		frame_ += 1;
-		time_ = 0;
 		if (frame_ >= fcount_)
 			frame_ = 0;
 
 		sprite_.setTextureRect(sf::IntRect(0, height_ * frame_, width_, height_));
 	}
-
-	time_ += dt;
 }
 
 void Animation::draw(Win &win) {
@@ -36,7 +34,7 @@ void Animation::draw(Win &win) {
 }
 
 void Animation::reset() {
-    time_ = 0;
+	timer_.reset();
     frame_ = 0;
     dirty_ = true;
 }

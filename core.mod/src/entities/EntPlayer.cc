@@ -23,12 +23,21 @@ void EntPlayer::update(Swan::Game &game, Swan::WorldPlane &plane, float dt) {
 
 	mouse_tile_ = game.getMouseTile();
 	plane.debugBox(mouse_tile_);
+	break_timer_.tick(dt);
 
+	// Break block
+	if (game.isMousePressed() && break_timer_.periodic(0.25)) {
+		fprintf(stderr, "button pressed\n");
+		plane.setTile(mouse_tile_, "core::air");
+	}
+
+	// Move left
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
 		body_.force_ += Swan::Vec2(-FORCE, 0);
 		state_ = State::RUNNING_L;
 	}
 
+	// Move right
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
 		body_.force_ += Swan::Vec2(FORCE, 0);
 		if (state_ == State::RUNNING_L)
@@ -37,6 +46,7 @@ void EntPlayer::update(Swan::Game &game, Swan::WorldPlane &plane, float dt) {
 			state_ = State::RUNNING_R;
 	}
 
+	// Jump
 	if (body_.on_ground_ && sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
 		body_.vel_.y_ = -JUMP_FORCE;
 	}

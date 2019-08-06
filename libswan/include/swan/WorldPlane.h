@@ -26,6 +26,7 @@ public:
 	bool hasChunk(ChunkPos pos);
 	Chunk &getChunk(ChunkPos pos);
 	void setTileID(TilePos pos, Tile::ID id);
+	void setTile(TilePos pos, const std::string &name);
 	Tile &getTile(TilePos pos);
 
 	Entity &spawnPlayer();

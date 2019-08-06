@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "Asset.h"
+#include "Timer.h"
 
 namespace Swan {
 
@@ -32,7 +33,7 @@ private:
 	int fcount_;
 	int frame_ = 0;
 	bool dirty_ = true;
-	double time_ = 0;
+	Timer timer_;
 	sf::Sprite sprite_;
 };
 

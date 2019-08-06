@@ -18,6 +18,7 @@ public:
 	void createWorld(std::string worldgen);
 
 	TilePos getMouseTile();
+	bool isMousePressed();
 
 	void draw();
 	void update(float dt);

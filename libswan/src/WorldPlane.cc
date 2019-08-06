@@ -54,6 +54,10 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 	getChunk(chunkPos(pos)).setTileID(*world_, relPos(pos), id);
 }
 
+void WorldPlane::setTile(TilePos pos, const std::string &name) {
+	setTileID(pos, world_->getTileID(name));
+}
+
 Tile &WorldPlane::getTile(TilePos pos) {
 	return getChunk(chunkPos(pos)).getTile(*world_, relPos(pos));
 }

@@ -56,6 +56,10 @@ TilePos Game::getMouseTile() {
 		(int)floor(win_.cam_.y_ + mousePos.y / (Swan::TILE_SIZE * win_.scale_)));
 }
 
+bool Game::isMousePressed() {
+	return win_.window_->hasFocus() && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+}
+
 void Game::draw() {
 	world_->draw(win_);
 }

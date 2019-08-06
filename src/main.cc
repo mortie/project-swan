@@ -8,6 +8,8 @@
 #include <swan/Game.h>
 #include <swan/Timer.h>
 
+#include <SFML/System/Clock.hpp>
+
 using namespace Swan;
 
 int main() {
@@ -29,9 +31,9 @@ int main() {
 
 	game.createWorld("core::default");
 
-	double prevtime = Timer::now();
-	double fpsAcc = 0;
-	double tickAcc = 0;
+	sf::Clock clock;
+	float fpsAcc = 0;
+	float tickAcc = 0;
 	int fcount = 0;
 	int slowFrames = 0;
 
@@ -46,10 +48,9 @@ int main() {
 			}
 		}
 
+		float dt = clock.restart().asSeconds();
+
 		// Display FPS
-		double now = Timer::now();
-		double dt = now - prevtime;
-		prevtime = now;
 		fpsAcc += dt;
 		fcount += 1;
 		if (fpsAcc >= 4) {
