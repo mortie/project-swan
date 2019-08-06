@@ -35,7 +35,7 @@ private:
 	State state_ = State::IDLE;
 	Swan::Animation anims_[(int)State::COUNT];
 
-	Swan::Timer break_timer_;
+	Swan::Timer jump_timer_;
 	Swan::TilePos mouse_tile_;
 
 	Swan::Body body_;
