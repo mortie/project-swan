@@ -9,6 +9,7 @@
 #include <swan/Timer.h>
 
 #include <SFML/System/Clock.hpp>
+#include <SFML/Audio.hpp>
 
 using namespace Swan;
 
@@ -19,10 +20,22 @@ int main() {
 		abort();
 	}
 
+	// Cretate window
 	sf::RenderWindow window(sf::VideoMode(800, 600), "Project: SWAN");
 	window.setVerticalSyncEnabled(true);
 	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 	Win win(&window);
+
+	// Create music
+	sf::SoundBuffer musicbuf;
+	sf::Sound music;
+	if (musicbuf.loadFromFile("assets/music/happy-1.wav")) {
+		music.setBuffer(musicbuf);
+		music.setLoop(true);
+		music.play();
+	} else {
+		fprintf(stderr, "Failed to load music! Am very sad.\n");
+	}
 
 	Game::initGlobal();
 

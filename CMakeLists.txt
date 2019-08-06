@@ -22,5 +22,5 @@ add_subdirectory(libswan)
 add_subdirectory(core.mod)
 
 add_executable(swan src/main.cc)
-target_link_libraries(swan libswan sfml-graphics sfml-system sfml-window dl)
+target_link_libraries(swan libswan sfml-graphics sfml-system sfml-window sfml-audio dl)
 file(COPY assets DESTINATION .)
