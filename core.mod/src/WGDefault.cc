@@ -10,13 +10,13 @@ void WGDefault::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 					chunk.pos_.x_ * Swan::CHUNK_WIDTH, chunk.pos_.y_ * Swan::CHUNK_HEIGHT);
 
 			if (tpos.y_ == height)
-				chunk.tiles_[cx][cy] = tGrass_;
+				chunk.setTileID(Swan::TilePos(cx, cy), tGrass_);
 			else if (tpos.y_ > height && tpos.y_ <= depth)
-				chunk.tiles_[cx][cy] = tDirt_;
+				chunk.setTileID(Swan::TilePos(cx, cy), tDirt_);
 			else if (tpos.y_ > depth)
-				chunk.tiles_[cx][cy] = tStone_;
+				chunk.setTileID(Swan::TilePos(cx, cy), tStone_);
 			else
-				chunk.tiles_[cx][cy] = tAir_;
+				chunk.setTileID(Swan::TilePos(cx, cy), tAir_);
 		}
 	}
 }

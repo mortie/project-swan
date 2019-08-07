@@ -61,7 +61,7 @@ bool Game::isMousePressed() {
 }
 
 void Game::draw() {
-	world_->draw(win_);
+	world_->draw(*this, win_);
 }
 
 void Game::update(float dt) {

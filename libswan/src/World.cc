@@ -2,6 +2,8 @@
 
 #include <SFML/System/Clock.hpp>
 
+#include "Game.h"
+
 namespace Swan {
 
 static bool chunkLine(int l, sf::Clock &clock, WorldPlane &plane, ChunkPos &abspos, const Vec2i &dir) {
@@ -24,7 +26,7 @@ void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
 	sf::Clock clock;
 	int l = 0;
 
-	for (int i = 0; i < 8; ++i) {
+	for (int i = 0; i < 4; ++i) {
 		if (chunkLine(l, clock, plane, abspos, Vec2i(0, -1))) break;
 		if (chunkLine(l, clock, plane, abspos, Vec2i(1, 0))) break;
 		l += 1;
@@ -116,9 +118,9 @@ WorldPlane &World::addPlane(std::string gen) {
 	return planes_[id];
 }
 
-void World::draw(Win &win) {
+void World::draw(Game &game, Win &win) {
 	win.cam_ = player_->getPos() - (win.getSize() / 2) + 0.5;
-	planes_[current_plane_].draw(win);
+	planes_[current_plane_].draw(game, win);
 }
 
 void World::update(Game &game, float dt) {

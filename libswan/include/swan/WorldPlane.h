@@ -13,6 +13,7 @@
 namespace Swan {
 
 class World;
+class Game;
 
 class WorldPlane {
 public:
@@ -31,7 +32,7 @@ public:
 
 	Entity &spawnPlayer();
 
-	void draw(Win &win);
+	void draw(Game &game, Win &win);
 	void update(Game &game, float dt);
 	void tick();
 
@@ -42,7 +43,7 @@ public:
 	std::shared_ptr<WorldGen> gen_;
 
 private:
-	std::map<std::pair<int, int>, std::unique_ptr<Chunk>> chunks_;
+	std::map<std::pair<int, int>, Chunk> chunks_;
 	std::vector<std::unique_ptr<Entity>> entities_;
 	std::vector<TilePos> debug_boxes_;
 };

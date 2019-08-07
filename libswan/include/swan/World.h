@@ -14,6 +14,8 @@
 
 namespace Swan {
 
+class Game;
+
 class World {
 public:
 	WorldPlane &addPlane(std::string gen);
@@ -32,7 +34,7 @@ public:
 	Tile &getTileByID(Tile::ID id);
 	Tile &getTile(const std::string &name);
 
-	void draw(Win &win);
+	void draw(Game &game, Win &win);
 	void update(Game &game, float dt);
 	void tick();
 

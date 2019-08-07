@@ -1,8 +1,10 @@
 #include "WorldPlane.h"
 
 #include <math.h>
+#include <SFML/System/Clock.hpp>
 
 #include "World.h"
+#include "Game.h"
 #include "Timer.h"
 
 namespace Swan {
@@ -44,16 +46,19 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 	auto iter = chunks_.find(pos);
 
 	if (iter == chunks_.end()) {
-		iter = chunks_.emplace(pos, new Chunk(pos)).first;
-		gen_->genChunk(*this, *iter->second);
-		iter->second->render(*world_);
+		iter = chunks_.emplace(pos, Chunk(pos)).first;
+		gen_->genChunk(*this, iter->second);
+		iter->second.render(*world_);
 	}
 
-	return *iter->second;
+	return iter->second;
 }
 
 void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
-	getChunk(chunkPos(pos)).setTileID(*world_, relPos(pos), id);
+	Chunk &chunk = getChunk(chunkPos(pos));
+	Chunk::RelPos rp = relPos(pos);
+	chunk.setTileID(rp, id);
+	chunk.drawBlock(rp, world_->getTileByID(id));
 }
 
 void WorldPlane::setTile(TilePos pos, const std::string &name) {
@@ -61,14 +66,16 @@ void WorldPlane::setTile(TilePos pos, const std::string &name) {
 }
 
 Tile &WorldPlane::getTile(TilePos pos) {
-	return getChunk(chunkPos(pos)).getTile(*world_, relPos(pos));
+	Chunk &chunk = getChunk(chunkPos(pos));
+	Tile::ID id = chunk.getTileID(relPos(pos));
+	return world_->getTileByID(id);
 }
 
 Entity &WorldPlane::spawnPlayer() {
 	return gen_->spawnPlayer(*this);
 }
 
-void WorldPlane::draw(Win &win) {
+void WorldPlane::draw(Game &game, Win &win) {
 	const Vec2 &ppos = world_->player_->getPos();
 	ChunkPos pcpos = ChunkPos(
 		(int)floor(ppos.x_ / CHUNK_WIDTH),
@@ -78,12 +85,10 @@ void WorldPlane::draw(Win &win) {
 		for (int y = -1; y <= 1; ++y) {
 			auto chunk = chunks_.find(pcpos + ChunkPos(x, y));
 			if (chunk != chunks_.end())
-				chunk->second->draw(win);
+				chunk->second.draw(game, win);
 		}
 	}
 
-	//for (auto &ch: chunks_)
-	//	ch.second->draw(win);
 	for (auto &ent: entities_)
 		ent->draw(win);
 
