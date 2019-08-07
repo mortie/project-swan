@@ -46,7 +46,7 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 	if (iter == chunks_.end()) {
 		iter = chunks_.emplace(pos, new Chunk(pos)).first;
 		gen_->genChunk(*this, *iter->second);
-		iter->second->redraw(*world_);
+		iter->second->render(*world_);
 	}
 
 	return *iter->second;

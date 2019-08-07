@@ -21,13 +21,15 @@ public:
 
 	void setTileID(World &world, RelPos pos, Tile::ID id);
 	Tile &getTile(World &world, RelPos pos);
-	void redraw(World &world);
+	void render(World &world);
 	void draw(Win &win);
 
 	ChunkPos pos_;
 	Tile::ID tiles_[CHUNK_WIDTH][CHUNK_HEIGHT];
 
 private:
+	static sf::Uint8 *imgbuf;
+
 	void drawBlock(RelPos pos, const Tile &t);
 	void drawBlock(World &world, RelPos pos, Tile::ID id);
 	bool dirty_ = false;
