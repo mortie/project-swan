@@ -4,4 +4,14 @@ add_library(core.mod SHARED
 	src/entities/EntPlayer.cc)
 set_target_properties(core.mod PROPERTIES OUTPUT_NAME mod PREFIX "")
 target_link_libraries(core.mod libswan)
-file(COPY assets DESTINATION .)
+
+set(assets
+	assets/entities/player-still.png
+	assets/entities/player-running.png
+	assets/tiles/grass.png
+	assets/tiles/air.png
+	assets/tiles/stone.png
+	assets/tiles/dirt.png)
+foreach(a ${assets})
+	configure_file("${a}" "${a}" COPYONLY)
+endforeach(a)
