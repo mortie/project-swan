@@ -6,6 +6,7 @@ add_library(libswan SHARED
 	src/Game.cc
 	src/Item.cc
 	src/Mod.cc
+	src/SRF.cc
 	src/Tile.cc
 	src/Timer.cc
 	src/World.cc
