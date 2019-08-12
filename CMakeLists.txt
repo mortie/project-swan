@@ -3,7 +3,7 @@ project(swan)
 
 find_package(SFML 2.5 COMPONENTS graphics system window REQUIRED)
 
-add_compile_options(-std=c++17 -Wall -Wextra -Wpedantic -Wno-unused-parameter)
+add_compile_options(-std=c++2a -Wall -Wextra -Wpedantic -Wno-unused-parameter)
 if(CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL "")
 	message(STATUS "Build mode: Debug")
 	add_compile_options(-g -fsanitize=address)

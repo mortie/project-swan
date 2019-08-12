@@ -6,10 +6,23 @@
 extern "C" void mod_init(Swan::Mod &mod) {
 	mod.init("core");
 
-	mod.registerTile("air", (new Swan::Tile("assets/tiles/air.png"))->solid(false));
-	mod.registerTile("stone", (new Swan::Tile("assets/tiles/stone.png"))->drops("core::stone"));
-	mod.registerTile("dirt", (new Swan::Tile("assets/tiles/dirt.png"))->drops("core::dirt"));
-	mod.registerTile("grass", (new Swan::Tile("assets/tiles/grass.png"))->drops("core::dirt"));
+	mod.registerTile("air", new Swan::Tile{
+		.image = mod.loadImage("assets/tiles/air.png"),
+		.is_solid = false,
+		.dropped_item = "dirt",
+	});
+	mod.registerTile("stone", new Swan::Tile{
+		.image = mod.loadImage("assets/tiles/stone.png"),
+		.dropped_item = "stone",
+	});
+	mod.registerTile("dirt", new Swan::Tile{
+		.image = mod.loadImage("assets/tiles/dirt.png"),
+		.dropped_item = "dirt",
+	});
+	mod.registerTile("grass", new Swan::Tile{
+		.image = mod.loadImage("assets/tiles/grass.png"),
+		.dropped_item = "grass",
+	});
 
 	mod.registerWorldGen("default", new WGDefault::Factory());
 

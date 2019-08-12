@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <SFML/Graphics/Image.hpp>
 
 #include "Tile.h"
 #include "WorldGen.h"
@@ -21,6 +22,8 @@ public:
 	void registerWorldGen(const std::string &name, WorldGen::Factory *gen);
 	void registerEntity(const std::string &name, Entity::Factory *ent);
 	void registerAsset(const std::string &name, Asset *asset);
+
+	std::unique_ptr<sf::Image> loadImage(const std::string &path);
 
 	std::string name_;
 	std::string path_;

@@ -29,7 +29,7 @@ void Chunk::drawBlock(RelPos pos, const Tile &t) {
 	if (compressed_size_ != -1)
 		decompress();
 
-	visuals_->tex_.update(t.image_, pos.x_ * TILE_SIZE, pos.y_ * TILE_SIZE);
+	visuals_->tex_.update(*t.image, pos.x_ * TILE_SIZE, pos.y_ * TILE_SIZE);
 	visuals_->dirty_ = true;
 }
 
@@ -91,17 +91,17 @@ void Chunk::decompress() {
 
 void Chunk::render(World &world) {
 	Tile::ID prevID = Tile::INVALID_ID;
-	Tile &tile = Tile::INVALID_TILE;
+	Tile *tile = &Tile::INVALID_TILE;
 
 	for (int x = 0; x < CHUNK_WIDTH; ++x) {
 		for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 			Tile::ID id = getTileID(RelPos(x, y));
 			if (id != prevID) {
 				prevID = id;
-				tile = world.getTileByID(id);
+				tile = &world.getTileByID(id);
 			}
 
-			const sf::Uint8 *imgptr = tile.image_.getPixelsPtr();
+			const sf::Uint8 *imgptr = tile->image->getPixelsPtr();
 			for (int imgy = 0; imgy < TILE_SIZE; ++imgy) {
 				int pixx = x * TILE_SIZE;
 				int pixy = y * TILE_SIZE + imgy;

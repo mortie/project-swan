@@ -25,11 +25,11 @@ void Body::collide(WorldPlane &plane) {
 	for (int x = startx; x <= endx; ++x) {
 		for (int ry = y - 1; ry <= y; ++ry) {
 			Tile &wall = plane.getTile(TilePos(x, ry));
-			if (x == startx && vel_.x_ < 0 && wall.is_solid_) {
+			if (x == startx && vel_.x_ < 0 && wall.is_solid) {
 				vel_.x_ = 0;
 				pos_.x_ = startx + 1.001;
 				startx = (int)floor(pos_.x_);
-			} else if (x == endx && vel_.x_ > 0 && wall.is_solid_) {
+			} else if (x == endx && vel_.x_ > 0 && wall.is_solid) {
 				vel_.x_ = 0;
 				pos_.x_ = endx - size_.x_ - 0.001;
 				endx = (int)floor(pos_.x_ + size_.x_);
@@ -42,7 +42,7 @@ void Body::collide(WorldPlane &plane) {
 	y = (int)ceil(pos_.y_ - 1);
 	for (int x = startx; x <= endx; ++x) {
 		Tile &roof = plane.getTile(TilePos(x, y));
-		if (roof.is_solid_ && vel_.y_ < 0) {
+		if (roof.is_solid && vel_.y_ < 0) {
 			pos_.y_ = y + 1;
 			vel_.y_ = 0;
 		}
@@ -55,7 +55,7 @@ void Body::collide(WorldPlane &plane) {
 	y = (int)ceil(pos_.y_ + size_.y_ - 1);
 	for (int x = startx; x <= endx; ++x) {
 		Tile &ground = plane.getTile(TilePos(x, y));
-		if (ground.is_solid_ && vel_.y_ > 0) {
+		if (ground.is_solid && vel_.y_ > 0) {
 			pos_.y_ = y - size_.y_;
 			vel_.y_ = 0;
 			on_ground_ = true;

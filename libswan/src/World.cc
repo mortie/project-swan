@@ -51,7 +51,7 @@ void World::spawnPlayer() {
 void World::registerTile(std::shared_ptr<Tile> t) {
 	Tile::ID id = tiles_.size();
 	tiles_.push_back(t);
-	tiles_map_[t->name_] = id;
+	tiles_map_[t->name] = id;
 }
 
 void World::registerWorldGen(std::shared_ptr<WorldGen::Factory> gen) {

@@ -12,15 +12,8 @@ void Mod::init(const std::string &name) {
 }
 
 void Mod::registerTile(const std::string &name, Tile *tile) {
-	tile->name_ = name_ + "::" + name;
-	fprintf(stderr, "Adding tile: %s\n", tile->name_.c_str());
-
-	std::string asset_path = path_ + "/" + tile->path_;
-	if (!tile->image_.loadFromFile(asset_path)) {
-		fprintf(stderr, "Tile %s: Failed to load image %s\n", tile->name_.c_str(), asset_path.c_str());
-		tile->image_ = Tile::INVALID_IMAGE;
-	}
-
+	tile->name = name_ + "::" + name;
+	fprintf(stderr, "Adding tile: %s\n", tile->name.c_str());
 	tiles_.push_back(std::shared_ptr<Tile>(tile));
 }
 
@@ -43,6 +36,14 @@ void Mod::registerAsset(const std::string &name, Asset *asset) {
 	}
 
 	assets_.push_back(std::shared_ptr<Asset>(asset));
+}
+
+std::unique_ptr<sf::Image> Mod::loadImage(const std::string &path) {
+	std::unique_ptr<sf::Image> img(new sf::Image());
+	if (!img->loadFromFile(path_ + "/" + path))
+		img->create(TILE_SIZE, TILE_SIZE, sf::Color(245, 66, 242));
+
+	return img;
 }
 
 }
