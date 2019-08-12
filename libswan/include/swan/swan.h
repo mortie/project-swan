@@ -7,6 +7,7 @@
 #include <swan/Entity.h>
 #include <swan/Game.h>
 #include <swan/Mod.h>
+#include <swan/SRF.h>
 #include <swan/Tile.h>
 #include <swan/Timer.h>
 #include <swan/Vector2.h>

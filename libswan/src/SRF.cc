@@ -105,9 +105,9 @@ static std::string readString(std::istream &is) {
 	return str;
 }
 
-SRFTag *SRFTag::read(std::istream &is) {
+SRFVal *SRFVal::read(std::istream &is) {
 	Type type = (Type)readByte(is);
-	SRFTag *tag;
+	SRFVal *tag;
 
 	switch (type) {
 	case Type::OBJECT:
@@ -140,6 +140,11 @@ SRFTag *SRFTag::read(std::istream &is) {
 	return tag;
 }
 
+SRFObject::SRFObject(std::initializer_list<std::pair<std::string, SRFVal *>> &lst) {
+	for (auto &pair: lst)
+		val[pair.first] = std::unique_ptr<SRFVal>(pair.second);
+}
+
 void SRFObject::serialize(std::ostream &os) {
 	writeByte(os, (uint8_t)Type::OBJECT);
 	writeInt(os, val.size());
@@ -155,8 +160,13 @@ void SRFObject::parse(std::istream &is) {
 
 	for (int32_t i = 0; i < count; ++i) {
 		std::string key = readString(is);
-		val[key] = std::unique_ptr<SRFTag>(SRFTag::read(is));
+		val[key] = std::unique_ptr<SRFVal>(SRFVal::read(is));
 	}
+}
+
+SRFArray::SRFArray(std::initializer_list<SRFVal *> &lst) {
+	for (auto &tag: lst)
+		val.push_back(std::unique_ptr<SRFVal>(tag));
 }
 
 void SRFArray::serialize(std::ostream &os) {
@@ -173,7 +183,7 @@ void SRFArray::parse(std::istream &is) {
 	val.resize(count);
 
 	for (int32_t i = 0; i < count; ++i) {
-		val[i] = std::unique_ptr<SRFTag>(SRFTag::read(is));
+		val[i] = std::unique_ptr<SRFVal>(SRFVal::read(is));
 	}
 }
 
