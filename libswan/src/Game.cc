@@ -31,11 +31,12 @@ void Game::loadMod(const std::string &path) {
 void Game::createWorld(std::string worldgen) {
 	world_.reset(new World());
 	for (auto &mod: registered_mods_) {
-		// Register invalids
 		world_->registerTile(std::shared_ptr<Tile>(Tile::createInvalid()));
 
 		for (auto &tile: mod.tiles_)
 			world_->registerTile(tile);
+		for (auto &item: mod.items_)
+			world_->registerItem(item);
 		for (auto &worldgen: mod.worldgens_)
 			world_->registerWorldGen(worldgen);
 		for (auto &entity: mod.entities_)
@@ -74,6 +75,7 @@ void Game::tick() {
 
 void Game::initGlobal() {
 	Tile::initGlobal();
+	Item::initGlobal();
 	Asset::initGlobal();
 }
 

@@ -17,13 +17,21 @@ void Mod::registerTile(const std::string &name, Tile *tile) {
 	tiles_.push_back(std::shared_ptr<Tile>(tile));
 }
 
+void Mod::registerItem(const std::string &name, Item *item) {
+	item->name = name_ + "::" + name;
+	fprintf(stderr, "Adding item: %s\n", item->name.c_str());
+	items_.push_back(std::shared_ptr<Item>(item));
+}
+
 void Mod::registerWorldGen(const std::string &name, WorldGen::Factory *gen) {
 	gen->name_ = name_ + "::" + name;
+	fprintf(stderr, "Adding world gen: %s\n", gen->name_.c_str());
 	worldgens_.push_back(std::shared_ptr<WorldGen::Factory>(gen));
 }
 
 void Mod::registerEntity(const std::string &name, Entity::Factory *ent) {
 	ent->name_ = name_ + "::" + name;
+	fprintf(stderr, "Adding entity: %s\n",ent->name_.c_str());
 	entities_.push_back(std::shared_ptr<Entity::Factory>(ent));
 }
 

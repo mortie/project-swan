@@ -24,26 +24,27 @@ public:
 	void setWorldGen(const std::string &gen);
 	void spawnPlayer();
 	void registerTile(std::shared_ptr<Tile> t);
+	void registerItem(std::shared_ptr<Item> i);
 	void registerWorldGen(std::shared_ptr<WorldGen::Factory> gen);
 	void registerEntity(std::shared_ptr<Entity::Factory> ent);
 	void registerAsset(std::shared_ptr<Asset> asset);
 
-	Asset &getAsset(const std::string &name);
-	Item &getItem(const std::string &name);
-	Tile::ID getTileID(const std::string &name);
 	Tile &getTileByID(Tile::ID id);
+	Tile::ID getTileID(const std::string &name);
 	Tile &getTile(const std::string &name);
+	Item &getItem(const std::string &name);
+	Asset &getAsset(const std::string &name);
 
 	void draw(Game &game, Win &win);
 	void update(Game &game, float dt);
 	void tick();
 
+	std::vector<std::shared_ptr<Tile>> tiles_;
+	std::map<std::string, Tile::ID> tiles_map_;
+	std::map<std::string, std::shared_ptr<Item>> items_;
 	std::map<std::string, std::shared_ptr<WorldGen::Factory>> worldgens_;
 	std::map<std::string, std::shared_ptr<Entity::Factory>> ents_;
 	std::map<std::string, std::shared_ptr<Asset>> assets_;
-	std::map<std::string, std::shared_ptr<Item>> items_;
-	std::vector<std::shared_ptr<Tile>> tiles_;
-	std::map<std::string, Tile::ID> tiles_map_;
 	Entity *player_;
 
 private:

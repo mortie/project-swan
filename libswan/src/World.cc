@@ -54,6 +54,10 @@ void World::registerTile(std::shared_ptr<Tile> t) {
 	tiles_map_[t->name] = id;
 }
 
+void World::registerItem(std::shared_ptr<Item> i) {
+	items_[i->name] = i;
+}
+
 void World::registerWorldGen(std::shared_ptr<WorldGen::Factory> gen) {
 	worldgens_[gen->name_] = gen;
 }

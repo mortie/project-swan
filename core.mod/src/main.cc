@@ -24,15 +24,20 @@ extern "C" void mod_init(Swan::Mod &mod) {
 		.dropped_item = "grass",
 	});
 
+	mod.registerItem("stone", new Swan::Item{
+		.image = mod.loadImage("assets/tiles/stone.png"),
+	});
+	mod.registerItem("dirt", new Swan::Item{
+		.image = mod.loadImage("assets/tiles/stone.png"),
+	});
+	mod.registerItem("grass", new Swan::Item{
+		.image = mod.loadImage("assets/tiles/grass.png"),
+	});
+
 	mod.registerWorldGen("default", new WGDefault::Factory());
 
 	mod.registerEntity("player", new EntPlayer::Factory());
 
 	mod.registerAsset("player-running", new Swan::Asset("assets/entities/player-running.png"));
 	mod.registerAsset("player-still", new Swan::Asset("assets/entities/player-still.png"));
-}
-
-int main() {
-	Swan::Mod mod;
-	mod.init("core");
 }
