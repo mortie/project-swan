@@ -53,11 +53,37 @@ int main() {
 	while (window.isOpen()) {
 		sf::Event event;
 		while (window.pollEvent(event)) {
-			if (event.type == sf::Event::Closed) {
+			switch (event.type) {
+			case sf::Event::Closed:
 				window.close();
-			} else if (event.type == sf::Event::Resized) {
-				sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
-				window.setView(sf::View(visibleArea));
+				break;
+
+			case sf::Event::Resized:
+				window.setView(sf::View(sf::FloatRect(
+					0, 0, event.size.width, event.size.height)));
+				break;
+
+			case sf::Event::KeyPressed:
+				game.onKeyPressed(event.key.code);
+				break;
+
+			case sf::Event::KeyReleased:
+				game.onKeyReleased(event.key.code);
+				break;
+
+			case sf::Event::MouseMoved:
+				game.onMouseMove(event.mouseMove.x, event.mouseMove.y);
+				break;
+
+			case sf::Event::MouseButtonPressed:
+				game.onMousePressed(event.mouseButton.button);
+				break;
+
+			case sf::Event::MouseButtonReleased:
+				game.onMouseReleased(event.mouseButton.button);
+				break;
+
+			default: break;
 			}
 		}
 

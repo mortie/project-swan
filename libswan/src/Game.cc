@@ -51,14 +51,10 @@ void Game::createWorld(std::string worldgen) {
 }
 
 TilePos Game::getMouseTile() {
-	auto mousePos = sf::Mouse::getPosition(*win_.window_);
+	auto mousePos = getMousePos();
 	return TilePos(
-		(int)floor(win_.cam_.x_ + mousePos.x / (Swan::TILE_SIZE * win_.scale_)),
-		(int)floor(win_.cam_.y_ + mousePos.y / (Swan::TILE_SIZE * win_.scale_)));
-}
-
-bool Game::isMousePressed() {
-	return win_.window_->hasFocus() && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+		(int)floor(win_.cam_.x_ + mousePos.x_ / (Swan::TILE_SIZE * win_.scale_)),
+		(int)floor(win_.cam_.y_ + mousePos.y_ / (Swan::TILE_SIZE * win_.scale_)));
 }
 
 void Game::draw() {

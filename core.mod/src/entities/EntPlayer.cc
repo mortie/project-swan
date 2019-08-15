@@ -26,17 +26,17 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 	jump_timer_.tick(dt);
 
 	// Break block
-	if (ctx.game.isMousePressed())
+	if (ctx.game.isMousePressed(sf::Mouse::Button::Left))
 		ctx.plane.setTile(mouse_tile_, "core::air");
 
 	// Move left
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+	if (ctx.game.isKeyPressed(sf::Keyboard::A) || ctx.game.isKeyPressed(sf::Keyboard::Left)) {
 		body_.force_ += Swan::Vec2(-FORCE, 0);
 		state_ = State::RUNNING_L;
 	}
 
 	// Move right
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+	if (ctx.game.isKeyPressed(sf::Keyboard::D) || ctx.game.isKeyPressed(sf::Keyboard::Right)) {
 		body_.force_ += Swan::Vec2(FORCE, 0);
 		if (state_ == State::RUNNING_L)
 			state_ = State::IDLE;
@@ -45,7 +45,7 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 	}
 
 	// Jump
-	if (body_.on_ground_ && sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && jump_timer_.periodic(0.5)) {
+	if (body_.on_ground_ && ctx.game.isKeyPressed(sf::Keyboard::Space) && jump_timer_.periodic(0.5)) {
 		body_.vel_.y_ = -JUMP_FORCE;
 	}
 
