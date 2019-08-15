@@ -24,6 +24,8 @@ public:
 
 	Entity &spawnEntity(const std::string &name, const Vec2 &pos);
 
+	Context getContext();
+
 	bool hasChunk(ChunkPos pos);
 	Chunk &getChunk(ChunkPos pos);
 	void setTileID(TilePos pos, Tile::ID id);
@@ -32,8 +34,8 @@ public:
 
 	Entity &spawnPlayer();
 
-	void draw(Game &game, Win &win);
-	void update(Game &game, float dt);
+	void draw(Win &win);
+	void update(float dt);
 	void tick();
 
 	void debugBox(TilePos pos);

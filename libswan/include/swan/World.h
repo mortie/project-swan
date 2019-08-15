@@ -18,6 +18,8 @@ class Game;
 
 class World {
 public:
+	World(Game *game): game_(game) {}
+
 	WorldPlane &addPlane(std::string gen);
 	WorldPlane &addPlane() { return addPlane(default_world_gen_); }
 	void setCurrentPlane(WorldPlane &plane);
@@ -35,8 +37,8 @@ public:
 	Item &getItem(const std::string &name);
 	Asset &getAsset(const std::string &name);
 
-	void draw(Game &game, Win &win);
-	void update(Game &game, float dt);
+	void draw(Win &win);
+	void update(float dt);
 	void tick();
 
 	std::vector<std::shared_ptr<Tile>> tiles_;
@@ -46,6 +48,7 @@ public:
 	std::map<std::string, std::shared_ptr<Entity::Factory>> ents_;
 	std::map<std::string, std::shared_ptr<Asset>> assets_;
 	Entity *player_;
+	Game *game_;
 
 private:
 	class ChunkRenderer {

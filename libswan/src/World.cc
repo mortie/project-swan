@@ -122,14 +122,14 @@ WorldPlane &World::addPlane(std::string gen) {
 	return planes_[id];
 }
 
-void World::draw(Game &game, Win &win) {
+void World::draw(Win &win) {
 	win.cam_ = player_->getPos() - (win.getSize() / 2) + 0.5;
-	planes_[current_plane_].draw(game, win);
+	planes_[current_plane_].draw(win);
 }
 
-void World::update(Game &game, float dt) {
+void World::update(float dt) {
 	for (auto &plane: planes_)
-		plane.update(game, dt);
+		plane.update(dt);
 }
 
 void World::tick() {

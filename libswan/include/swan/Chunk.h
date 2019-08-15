@@ -32,8 +32,8 @@ public:
 
 	void compress();
 	void decompress();
-	void render(World &world);
-	void draw(Game &game, Win &win);
+	void render(const Context &ctx);
+	void draw(const Context &ctx, Win &win);
 
 	ChunkPos pos_;
 

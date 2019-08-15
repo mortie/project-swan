@@ -25,6 +25,10 @@ static Chunk::RelPos relPos(TilePos pos) {
 	return Chunk::RelPos(rx, ry);
 }
 
+Context WorldPlane::getContext() {
+	return { .game = *world_->game_, .world = *world_, .plane = *this };
+}
+
 Entity &WorldPlane::spawnEntity(const std::string &name, const Vec2 &pos) {
 	if (world_->ents_.find(name) == world_->ents_.end()) {
 		fprintf(stderr, "Tried to spawn non-existant entity %s!",
@@ -32,7 +36,7 @@ Entity &WorldPlane::spawnEntity(const std::string &name, const Vec2 &pos) {
 		abort();
 	}
 
-	Entity *ent = world_->ents_[name]->create(*world_, pos);
+	Entity *ent = world_->ents_[name]->create(getContext(), pos);
 	entities_.push_back(std::unique_ptr<Entity>(ent));
 	fprintf(stderr, "Spawned %s at %f,%f.\n", name.c_str(), pos.x_, pos.y_);
 	return *ent;
@@ -48,7 +52,7 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 	if (iter == chunks_.end()) {
 		iter = chunks_.emplace(pos, Chunk(pos)).first;
 		gen_->genChunk(*this, iter->second);
-		iter->second.render(*world_);
+		iter->second.render(getContext());
 	}
 
 	return iter->second;
@@ -75,7 +79,7 @@ Entity &WorldPlane::spawnPlayer() {
 	return gen_->spawnPlayer(*this);
 }
 
-void WorldPlane::draw(Game &game, Win &win) {
+void WorldPlane::draw(Win &win) {
 	const Vec2 &ppos = world_->player_->getPos();
 	ChunkPos pcpos = ChunkPos(
 		(int)floor(ppos.x_ / CHUNK_WIDTH),
@@ -85,12 +89,12 @@ void WorldPlane::draw(Game &game, Win &win) {
 		for (int y = -1; y <= 1; ++y) {
 			auto chunk = chunks_.find(pcpos + ChunkPos(x, y));
 			if (chunk != chunks_.end())
-				chunk->second.draw(game, win);
+				chunk->second.draw(getContext(), win);
 		}
 	}
 
 	for (auto &ent: entities_)
-		ent->draw(win);
+		ent->draw(getContext(), win);
 
 	if (debug_boxes_.size() > 0) {
 		sf::RectangleShape rect(Vec2(TILE_SIZE, TILE_SIZE));
@@ -104,10 +108,10 @@ void WorldPlane::draw(Game &game, Win &win) {
 	}
 }
 
-void WorldPlane::update(Game &game, float dt) {
+void WorldPlane::update(float dt) {
 	debug_boxes_.clear();
 	for (auto &ent: entities_)
-		ent->update(game, *this, dt);
+		ent->update(getContext(), dt);
 }
 
 void WorldPlane::tick() {

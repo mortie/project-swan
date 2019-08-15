@@ -29,7 +29,7 @@ void Game::loadMod(const std::string &path) {
 }
 
 void Game::createWorld(std::string worldgen) {
-	world_.reset(new World());
+	world_.reset(new World(this));
 	for (auto &mod: registered_mods_) {
 		world_->registerTile(std::shared_ptr<Tile>(Tile::createInvalid()));
 
@@ -62,11 +62,11 @@ bool Game::isMousePressed() {
 }
 
 void Game::draw() {
-	world_->draw(*this, win_);
+	world_->draw(win_);
 }
 
 void Game::update(float dt) {
-	world_->update(*this, dt);
+	world_->update(dt);
 }
 
 void Game::tick() {

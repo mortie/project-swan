@@ -15,10 +15,17 @@ static constexpr int CHUNK_WIDTH = 32;
 using TilePos = Vec2i;
 using ChunkPos = Vec2i;
 
+class Game;
+class World;
 class WorldPlane;
 
+struct Context {
+	Game &game;
+	World &world;
+	WorldPlane &plane;
+};
+
 struct Win {
-public:
 	sf::RenderWindow *window_;
 	sf::Transform transform_;
 	Vec2 cam_;

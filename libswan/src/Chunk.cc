@@ -89,7 +89,7 @@ void Chunk::decompress() {
 	compressed_size_ = -1;
 }
 
-void Chunk::render(World &world) {
+void Chunk::render(const Context &ctx) {
 	Tile::ID prevID = Tile::INVALID_ID;
 	Tile *tile = &Tile::INVALID_TILE;
 
@@ -98,7 +98,7 @@ void Chunk::render(World &world) {
 			Tile::ID id = getTileID(RelPos(x, y));
 			if (id != prevID) {
 				prevID = id;
-				tile = &world.getTileByID(id);
+				tile = &ctx.world.getTileByID(id);
 			}
 
 			const sf::Uint8 *imgptr = tile->image->getPixelsPtr();
@@ -117,12 +117,12 @@ void Chunk::render(World &world) {
 	visuals_->dirty_ = true;
 }
 
-void Chunk::draw(Game &game, Win &win) {
+void Chunk::draw(const Context &ctx, Win &win) {
 	if (compressed_size_ != -1)
 		decompress();
 
 	if (need_render_) {
-		render(*game.world_);
+		render(ctx);
 		need_render_ = false;
 	}
 

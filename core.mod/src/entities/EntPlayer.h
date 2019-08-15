@@ -6,17 +6,17 @@ class EntPlayer: public Swan::Entity {
 public:
 	class Factory: public Swan::Entity::Factory {
 	public:
-		Swan::Entity *create(Swan::World &world, const Swan::Vec2 &pos) override {
-			return new EntPlayer(world, pos);
+		Swan::Entity *create(const Swan::Context &ctx, const Swan::Vec2 &pos) override {
+			return new EntPlayer(ctx, pos);
 		}
 	};
 
-	EntPlayer(Swan::World &world, const Swan::Vec2 &pos);
+	EntPlayer(const Swan::Context &ctx, const Swan::Vec2 &pos);
 
 	const Swan::Vec2 &getPos() override { return body_.pos_; }
 
-	void draw(Swan::Win &win) override;
-	void update(Swan::Game &game, Swan::WorldPlane &plane, float dt) override;
+	void draw(const Swan::Context &ctx, Swan::Win &win) override;
+	void update(const Swan::Context &ctx, float dt) override;
 
 private:
 	static constexpr float FORCE = 3000;

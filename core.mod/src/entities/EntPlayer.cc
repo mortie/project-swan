@@ -1,33 +1,33 @@
 #include "EntPlayer.h"
 
-EntPlayer::EntPlayer(Swan::World &world, const Swan::Vec2 &pos):
+EntPlayer::EntPlayer(const Swan::Context &ctx, const Swan::Vec2 &pos):
 		body_(pos, SIZE, MASS) {
 	anims_[(int)State::IDLE].init(32, 64, 0.8,
-		world.getAsset("core::player-still"));
+		ctx.world.getAsset("core::player-still"));
 	anims_[(int)State::RUNNING_R].init(32, 64, 1,
-		world.getAsset("core::player-running"));
+		ctx.world.getAsset("core::player-running"));
 	anims_[(int)State::RUNNING_L].init(32, 64, 1,
-		world.getAsset("core::player-running"), (int)Swan::Animation::Flags::HFLIP);
+		ctx.world.getAsset("core::player-running"), (int)Swan::Animation::Flags::HFLIP);
 }
 
-void EntPlayer::draw(Swan::Win &win) {
+void EntPlayer::draw(const Swan::Context &ctx, Swan::Win &win) {
 	body_.outline(win);
 
 	win.setPos(body_.pos_ - Swan::Vec2(0.2, 0.1));
 	anims_[(int)state_].draw(win);
 }
 
-void EntPlayer::update(Swan::Game &game, Swan::WorldPlane &plane, float dt) {
+void EntPlayer::update(const Swan::Context &ctx, float dt) {
 	State oldState = state_;
 	state_ = State::IDLE;
 
-	mouse_tile_ = game.getMouseTile();
-	plane.debugBox(mouse_tile_);
+	mouse_tile_ = ctx.game.getMouseTile();
+	ctx.plane.debugBox(mouse_tile_);
 	jump_timer_.tick(dt);
 
 	// Break block
-	if (game.isMousePressed())
-		plane.setTile(mouse_tile_, "core::air");
+	if (ctx.game.isMousePressed())
+		ctx.plane.setTile(mouse_tile_, "core::air");
 
 	// Move left
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
@@ -56,5 +56,5 @@ void EntPlayer::update(Swan::Game &game, Swan::WorldPlane &plane, float dt) {
 	body_.friction(FRICTION);
 	body_.gravity();
 	body_.update(dt);
-	body_.collide(plane);
+	body_.collide(ctx.plane);
 }
