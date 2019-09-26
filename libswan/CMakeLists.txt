@@ -13,3 +13,6 @@ add_library(libswan SHARED
 	src/WorldPlane.cc)
 target_include_directories(libswan PUBLIC "include/swan")
 set_target_properties(libswan PROPERTIES OUTPUT_NAME swan)
+target_link_libraries(libswan sfml-graphics sfml-system sfml-window sfml-audio dl)
+
+install(TARGETS libswan DESTINATION swan/libswan)

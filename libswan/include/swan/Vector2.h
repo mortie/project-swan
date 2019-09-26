@@ -91,8 +91,10 @@ public:
 	T x_;
 	T y_;
 
-	static constexpr Vector2<T> ZERO = Vector2<T>(0, 0);
+	static const Vector2<T> ZERO;
 };
+
+template<typename T> const Vector2<T> Vector2<T>::ZERO = Vector2<T>(0, 0);
 
 using Vec2 = Vector2<float>;
 using Vec2i = Vector2<int>;

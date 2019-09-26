@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 project(swan)
 
 find_package(SFML 2.5 COMPONENTS graphics system window REQUIRED)
+
+message(STATUS "SFML is ${SFML_INCLUDE_PATH}")
 
 add_compile_options(-std=c++2a -Wall -Wextra -Wpedantic -Wno-unused-parameter)
 if(CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL "")
@@ -16,13 +18,16 @@ else()
 	message(FATAL_ERROR "CMAKE_BUILD_TYPE must be Debug or Release.")
 endif()
 
-include_directories("${PROJECT_SOURCE_DIR}/libswan/include" "${PROJECT_SOURCE_DIR}/third_party")
+include_directories(
+	${PROJECT_SOURCE_DIR}/libswan/include
+	${PROJECT_SOURCE_DIR}/third_party)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/swan/libswan")
 
 add_subdirectory(libswan)
 add_subdirectory(core.mod)
 
 add_executable(swan src/main.cc)
-target_link_libraries(swan libswan sfml-graphics sfml-system sfml-window sfml-audio dl)
+target_link_libraries(swan libswan)
 
 set(assets
 	assets/icon.png
@@ -30,3 +35,6 @@ set(assets
 foreach(a ${assets})
 	configure_file("${a}" "${a}" COPYONLY)
 endforeach(a)
+
+install(TARGETS swan DESTINATION swan)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/assets DESTINATION swan)

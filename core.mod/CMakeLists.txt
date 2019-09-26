@@ -15,3 +15,6 @@ set(assets
 foreach(a ${assets})
 	configure_file("${a}" "${a}" COPYONLY)
 endforeach(a)
+
+install(TARGETS core.mod DESTINATION swan/core.mod)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/assets DESTINATION swan/core.mod)
