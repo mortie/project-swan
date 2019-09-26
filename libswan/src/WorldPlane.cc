@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <SFML/System/Clock.hpp>
+#include <iostream>
 
 #include "World.h"
 #include "Game.h"
@@ -29,16 +30,16 @@ Context WorldPlane::getContext() {
 	return { .game = *world_->game_, .world = *world_, .plane = *this };
 }
 
-Entity &WorldPlane::spawnEntity(const std::string &name, const Vec2 &pos) {
+Entity &WorldPlane::spawnEntity(const std::string &name, const SRF &params) {
 	if (world_->ents_.find(name) == world_->ents_.end()) {
-		fprintf(stderr, "Tried to spawn non-existant entity %s!",
-				name.c_str());
+		fprintf(stderr, "Tried to spawn non-existant entity %s!", name.c_str());
 		abort();
 	}
 
-	Entity *ent = world_->ents_[name]->create(getContext(), pos);
+	Entity *ent = world_->ents_[name]->create(getContext(), params);
 	entities_.push_back(std::unique_ptr<Entity>(ent));
-	fprintf(stderr, "Spawned %s at %f,%f.\n", name.c_str(), pos.x_, pos.y_);
+	fprintf(stderr, "Spawned %s. SRF: ", name.c_str());
+	params.pretty(std::cerr) << '\n';
 	return *ent;
 }
 

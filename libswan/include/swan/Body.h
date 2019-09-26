@@ -9,8 +9,8 @@ namespace Swan {
 
 class Body {
 public:
-	Body(Vec2 pos, Vec2 size, float mass):
-		pos_(pos), size_(size), mass_(mass) {};
+	Body(Vec2 size, float mass, Vec2 pos = Vec2::ZERO):
+		size_(size), mass_(mass), pos_(pos) {};
 
 	void friction(Vec2 coef);
 	void gravity(Vec2 g = Vec2(0, 20));
@@ -21,9 +21,9 @@ public:
 
 	Vec2 force_ = { 0, 0 };
 	Vec2 vel_ = { 0, 0 };
-	Vec2 pos_;
 	Vec2 size_;
 	float mass_;
+	Vec2 pos_;
 	bool on_ground_ = false;
 };
 

@@ -10,6 +10,12 @@ class Vector2 {
 public:
 	constexpr Vector2(T x = 0, T y = 0): x_(x), y_(y) {}
 
+	Vector2<T> &set(T x, T y) {
+		x_ = x;
+		y_ = y;
+		return *this;
+	}
+
 	operator sf::Vector2<T>() const {
 		return sf::Vector2<T>(x_, y_);
 	}

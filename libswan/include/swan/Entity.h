@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "common.h"
+#include "SRF.h"
 
 namespace Swan {
 
@@ -15,7 +16,7 @@ public:
 	class Factory {
 	public:
 		virtual ~Factory() = default;
-		virtual Entity *create(const Context &ctx, const Vec2 &pos) = 0;
+		virtual Entity *create(const Context &ctx, const SRF &params) = 0;
 		std::string name_;
 	};
 
@@ -26,6 +27,8 @@ public:
 	virtual void draw(const Context &ctx, Win &win) {}
 	virtual void update(const Context &ctx, float dt) {}
 	virtual void tick() {}
+	virtual void readSRF(const SRF &srf) {}
+	virtual SRF *writeSRF() { return new SRFNone(); }
 };
 
 }

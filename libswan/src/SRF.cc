@@ -105,53 +105,60 @@ static std::string readString(std::istream &is) {
 	return str;
 }
 
-SRFVal *SRFVal::read(std::istream &is) {
+static char hexchr(uint8_t nibble) {
+	if (nibble < 10)
+		return '0' + nibble;
+	else
+		return 'a' + (nibble - 10);
+}
+
+SRF *SRF::read(std::istream &is) {
 	Type type = (Type)readByte(is);
-	SRFVal *tag;
+	SRF *srf;
 
 	switch (type) {
 	case Type::OBJECT:
-		tag = new SRFObject(); break;
+		srf = new SRFObject(); break;
 	case Type::ARRAY:
-		tag = new SRFArray(); break;
+		srf = new SRFArray(); break;
 	case Type::STRING:
-		tag = new SRFString(); break;
+		srf = new SRFString(); break;
 	case Type::INT:
-		tag = new SRFInt(); break;
+		srf = new SRFInt(); break;
 	case Type::FLOAT:
-		tag = new SRFFloat(); break;
+		srf = new SRFFloat(); break;
 	case Type::DOUBLE:
-		tag = new SRFDouble(); break;
+		srf = new SRFDouble(); break;
 	case Type::NONE:
-		tag = new SRFNone(); break;
+		srf = new SRFNone(); break;
 	case Type::BYTE_ARRAY:
-		tag = new SRFByteArray(); break;
+		srf = new SRFByteArray(); break;
 	case Type::WORD_ARRAY:
-		tag = new SRFWordArray(); break;
+		srf = new SRFWordArray(); break;
 	case Type::INT_ARRAY:
-		tag = new SRFIntArray(); break;
+		srf = new SRFIntArray(); break;
 	case Type::FLOAT_ARRAY:
-		tag = new SRFFloatArray(); break;
+		srf = new SRFFloatArray(); break;
 	case Type::DOUBLE_ARRAY:
-		tag = new SRFDoubleArray(); break;
+		srf = new SRFDoubleArray(); break;
 	}
 
-	tag->parse(is);
-	return tag;
+	srf->parse(is);
+	return srf;
 }
 
-SRFObject::SRFObject(std::initializer_list<std::pair<std::string, SRFVal *>> &lst) {
-	for (auto &pair: lst)
-		val[pair.first] = std::unique_ptr<SRFVal>(pair.second);
+SRFObject::SRFObject(std::initializer_list<std::pair<std::string, SRF *>> &lst) {
+	for (auto &[k, v]: lst)
+		val[k] = std::unique_ptr<SRF>(v);
 }
 
-void SRFObject::serialize(std::ostream &os) {
+void SRFObject::serialize(std::ostream &os) const {
 	writeByte(os, (uint8_t)Type::OBJECT);
 	writeInt(os, val.size());
 
-	for (auto &pair: val) {
-		writeString(os, pair.first);
-		pair.second->serialize(os);
+	for (auto &[k, v]: val) {
+		writeString(os, k);
+		v->serialize(os);
 	}
 }
 
@@ -160,21 +167,36 @@ void SRFObject::parse(std::istream &is) {
 
 	for (int32_t i = 0; i < count; ++i) {
 		std::string key = readString(is);
-		val[key] = std::unique_ptr<SRFVal>(SRFVal::read(is));
+		val[key] = std::unique_ptr<SRF>(SRF::read(is));
 	}
 }
 
-SRFArray::SRFArray(std::initializer_list<SRFVal *> &lst) {
-	for (auto &tag: lst)
-		val.push_back(std::unique_ptr<SRFVal>(tag));
+std::ostream &SRFObject::pretty(std::ostream &os) const {
+	os << "{ ";
+	bool first = true;
+	for (auto &[k, v]: val) {
+		if (!first)
+			os << ", ";
+
+		os << '\'' << k << "': ";
+		v->pretty(os);
+		first = false;
+	}
+
+	return os << " }";
 }
 
-void SRFArray::serialize(std::ostream &os) {
+SRFArray::SRFArray(std::initializer_list<SRF *> &lst) {
+	for (auto &v: lst)
+		val.push_back(std::unique_ptr<SRF>(v));
+}
+
+void SRFArray::serialize(std::ostream &os) const {
 	writeByte(os, (uint8_t)Type::ARRAY);
 	writeInt(os, val.size());
 
-	for (auto &tag: val) {
-		tag->serialize(os);
+	for (auto &v: val) {
+		v->serialize(os);
 	}
 }
 
@@ -183,11 +205,25 @@ void SRFArray::parse(std::istream &is) {
 	val.resize(count);
 
 	for (int32_t i = 0; i < count; ++i) {
-		val[i] = std::unique_ptr<SRFVal>(SRFVal::read(is));
+		val[i] = std::unique_ptr<SRF>(SRF::read(is));
 	}
 }
 
-void SRFString::serialize(std::ostream &os) {
+std::ostream &SRFArray::pretty(std::ostream &os) const {
+	os << "[ ";
+	bool first = true;
+	for (auto &v: val) {
+		if (!first)
+			os << ", ";
+
+		v->pretty(os);
+		first = false;
+	}
+
+	return os << " ]";
+}
+
+void SRFString::serialize(std::ostream &os) const {
 	writeByte(os, (uint8_t)Type::STRING);
 	writeString(os, val);
 }
@@ -196,7 +232,11 @@ void SRFString::parse(std::istream &is) {
 	val = readString(is);
 }
 
-void SRFInt::serialize(std::ostream &os) {
+std::ostream &SRFString::pretty(std::ostream &os) const {
+	return os << '"' << val << '"';
+}
+
+void SRFInt::serialize(std::ostream &os) const {
 	writeByte(os, (uint8_t)Type::INT);
 	writeInt(os, val);
 }
@@ -205,7 +245,11 @@ void SRFInt::parse(std::istream &is) {
 	val = readInt(is);
 }
 
-void SRFFloat::serialize(std::ostream &os) {
+std::ostream &SRFInt::pretty(std::ostream &os) const {
+	return os << val;
+}
+
+void SRFFloat::serialize(std::ostream &os) const {
 	writeByte(os, (uint8_t)Type::FLOAT);
 	writeFloat(os, val);
 }
@@ -214,7 +258,11 @@ void SRFFloat::parse(std::istream &is) {
 	val = readFloat(is);
 }
 
-void SRFDouble::serialize(std::ostream &os) {
+std::ostream &SRFFloat::pretty(std::ostream &os) const {
+	return os << val;
+}
+
+void SRFDouble::serialize(std::ostream &os) const {
 	writeByte(os, (uint8_t)Type::DOUBLE);
 	writeDouble(os, val);
 }
@@ -223,13 +271,21 @@ void SRFDouble::parse(std::istream &is) {
 	val = readDouble(is);
 }
 
-void SRFNone::serialize(std::ostream &os) {
+std::ostream &SRFDouble::pretty(std::ostream &os) const {
+	return os << val;
+}
+
+void SRFNone::serialize(std::ostream &os) const {
 	writeByte(os, (uint8_t)Type::NONE);
 }
 
 void SRFNone::parse(std::istream &is) {}
 
-void SRFByteArray::serialize(std::ostream &os) {
+std::ostream &SRFNone::pretty(std::ostream &os) const {
+	return os << "(null)";
+}
+
+void SRFByteArray::serialize(std::ostream &os) const {
 	writeByte(os, (uint8_t)Type::BYTE_ARRAY);
 	writeInt(os, val.size());
 	os.write((const char *)val.data(), val.size());
@@ -241,7 +297,16 @@ void SRFByteArray::parse(std::istream &is) {
 	is.read((char *)val.data(), count);
 }
 
-void SRFWordArray::serialize(std::ostream &os) {
+std::ostream &SRFByteArray::pretty(std::ostream &os) const {
+	os << "byte[ " << std::hex;
+	for (auto v: val) {
+		os << hexchr((v & 0xf0) >> 4) << hexchr((v & 0x0f) >> 0) << ' ';
+	}
+
+	return os << ']';
+}
+
+void SRFWordArray::serialize(std::ostream &os) const {
 	writeByte(os, (uint8_t)Type::WORD_ARRAY);
 	writeInt(os, val.size());
 
@@ -259,7 +324,21 @@ void SRFWordArray::parse(std::istream &is) {
 	}
 }
 
-void SRFIntArray::serialize(std::ostream &os) {
+std::ostream &SRFWordArray::pretty(std::ostream &os) const {
+	os << "word[ ";
+	for (auto v: val) {
+		os
+			<< hexchr((v & 0xf000) >> 12)
+			<< hexchr((v & 0x0f00) >> 8)
+			<< hexchr((v & 0x00f0) >> 4)
+			<< hexchr((v & 0x000f) >> 0)
+			<< ' ';
+	}
+
+	return os << ']';
+}
+
+void SRFIntArray::serialize(std::ostream &os) const {
 	writeByte(os, (uint8_t)Type::INT_ARRAY);
 	writeInt(os, val.size());
 
@@ -277,7 +356,16 @@ void SRFIntArray::parse(std::istream &is) {
 	}
 }
 
-void SRFFloatArray::serialize(std::ostream &os) {
+std::ostream &SRFIntArray::pretty(std::ostream &os) const {
+	os << "int[ ";
+	for (auto v: val) {
+		os << v << ' ';
+	}
+
+	return os << ']';
+}
+
+void SRFFloatArray::serialize(std::ostream &os) const {
 	writeByte(os, (uint8_t)Type::FLOAT_ARRAY);
 	writeInt(os, val.size());
 
@@ -295,7 +383,16 @@ void SRFFloatArray::parse(std::istream &is) {
 	}
 }
 
-void SRFDoubleArray::serialize(std::ostream &os) {
+std::ostream &SRFFloatArray::pretty(std::ostream &os) const {
+	os << "float[ ";
+	for (auto v: val) {
+		os << v << ' ';
+	}
+
+	return os << ']';
+}
+
+void SRFDoubleArray::serialize(std::ostream &os) const {
 	writeByte(os, (uint8_t)Type::DOUBLE_ARRAY);
 	writeInt(os, val.size());
 
@@ -311,6 +408,15 @@ void SRFDoubleArray::parse(std::istream &is) {
 	for (int32_t i = 0; i < count; ++i) {
 		val[i] = readDouble(is);
 	}
+}
+
+std::ostream &SRFDoubleArray::pretty(std::ostream &os) const {
+	os << "double[ ";
+	for (auto v: val) {
+		os << v << ' ';
+	}
+
+	return os << ']';
 }
 
 }

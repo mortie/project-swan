@@ -1,7 +1,10 @@
 #include "EntPlayer.h"
 
-EntPlayer::EntPlayer(const Swan::Context &ctx, const Swan::Vec2 &pos):
-		body_(pos, SIZE, MASS) {
+EntPlayer::EntPlayer(const Swan::Context &ctx, const Swan::SRF &params):
+		body_(SIZE, MASS) {
+
+	readSRF(params);
+
 	anims_[(int)State::IDLE].init(32, 64, 0.8,
 		ctx.world.getAsset("core::player-still"));
 	anims_[(int)State::RUNNING_R].init(32, 64, 1,
@@ -57,4 +60,13 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 	body_.gravity();
 	body_.update(dt);
 	body_.collide(ctx.plane);
+}
+
+void EntPlayer::readSRF(const Swan::SRF &srf) {
+	auto pos = dynamic_cast<const Swan::SRFFloatArray &>(srf);
+	body_.pos_.set(pos.val[0], pos.val[1]);
+}
+
+Swan::SRF *EntPlayer::writeSRF() {
+	return new Swan::SRFFloatArray{ body_.pos_.x_, body_.pos_.y_ };
 }

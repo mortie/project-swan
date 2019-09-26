@@ -18,6 +18,11 @@ else()
 	message(FATAL_ERROR "CMAKE_BUILD_TYPE must be Debug or Release.")
 endif()
 
+# We want to be able to use C++20 designated initializers,
+# but Clang doesn't support them yet.
+# Remove once Clang 9.1 or something comes out.
+add_compile_options(-Wno-c99-extensions)
+
 include_directories(
 	${PROJECT_SOURCE_DIR}/libswan/include
 	${PROJECT_SOURCE_DIR}/third_party)

@@ -22,5 +22,5 @@ void WGDefault::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 }
 
 Swan::Entity &WGDefault::spawnPlayer(Swan::WorldPlane &plane) {
-	return plane.spawnEntity("core::player", Swan::Vec2(0, 0));
+	return plane.spawnEntity("core::player", Swan::SRFFloatArray{0, 0});
 }

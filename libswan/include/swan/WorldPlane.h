@@ -22,7 +22,7 @@ public:
 	WorldPlane(ID id, World *world, std::shared_ptr<WorldGen> gen):
 			id_(id), world_(world), gen_(gen) {}
 
-	Entity &spawnEntity(const std::string &name, const Vec2 &pos);
+	Entity &spawnEntity(const std::string &name, const SRF &params);
 
 	Context getContext();
 
