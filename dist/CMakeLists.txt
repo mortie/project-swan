@@ -11,7 +11,11 @@ ExternalProject_Add(compiler
 	LIST_SEPARATOR ::
 	CMAKE_ARGS
 		-DCMAKE_BUILD_TYPE=Release
-		-DLLVM_ENABLE_PROJECTS=clang::clang-tools-extra::libcxx::libcxxabi::libunwind::compiler-rt::lld
+		-DLLVM_BUILD_LLVM_DYLIB=ON
+		-DLLVM_LINK_LLVM_DYLIB=ON
+		-DCLANG_LINK_CLANG_DYLIB=ON
+		-DLLVM_ENABLE_RTTI=ON
+		-DLLVM_ENABLE_PROJECTS=clang::libcxx::libcxxabi::compiler-rt::lld
 		-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/prefix)
 
 set(PREFIX_DIR ${PROJECT_BINARY_DIR}/prefix)
