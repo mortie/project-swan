@@ -24,7 +24,7 @@ struct SRF {
 
 struct SRFObject: SRF {
 	SRFObject() {}
-	SRFObject(std::initializer_list<std::pair<std::string, SRF *>> &lst);
+	SRFObject(std::initializer_list<std::pair<std::string, SRF *>> lst);
 
 	void serialize(std::ostream &os) const override;
 	void parse(std::istream &os) override;
@@ -35,7 +35,7 @@ struct SRFObject: SRF {
 
 struct SRFArray: SRF {
 	SRFArray() {}
-	SRFArray(std::initializer_list<SRF *> &lst);
+	SRFArray(std::initializer_list<SRF *> lst);
 
 	void serialize(std::ostream &os) const override;
 	void parse(std::istream &os) override;
@@ -53,6 +53,28 @@ struct SRFString: SRF {
 	std::ostream &pretty(std::ostream &os) const override;
 
 	std::string val;
+};
+
+struct SRFByte: SRF {
+	SRFByte(): val(0) {}
+	SRFByte(uint8_t v): val(v) {}
+
+	void serialize(std::ostream &os) const override;
+	void parse(std::istream &os) override;
+	std::ostream &pretty(std::ostream &os) const override;
+
+	uint8_t val;
+};
+
+struct SRFWord: SRF {
+	SRFWord(): val(0) {}
+	SRFWord(uint16_t v): val(v) {}
+
+	void serialize(std::ostream &os) const override;
+	void parse(std::istream &os) override;
+	std::ostream &pretty(std::ostream &os) const override;
+
+	uint16_t val;
 };
 
 struct SRFInt: SRF {

@@ -11,9 +11,7 @@ namespace Swan {
 sf::Uint8 *Chunk::renderbuf = new sf::Uint8[CHUNK_WIDTH * TILE_SIZE * CHUNK_HEIGHT * TILE_SIZE * 4];
 
 Tile::ID *Chunk::getTileData() {
-	if (compressed_size_ != -1)
-		decompress();
-
+	keepActive();
 	return (Tile::ID *)data_.get();
 }
 
@@ -26,15 +24,14 @@ void Chunk::setTileID(RelPos pos, Tile::ID id) {
 }
 
 void Chunk::drawBlock(RelPos pos, const Tile &t) {
-	if (compressed_size_ != -1)
-		decompress();
+	keepActive();
 
 	visuals_->tex_.update(*t.image, pos.x_ * TILE_SIZE, pos.y_ * TILE_SIZE);
 	visuals_->dirty_ = true;
 }
 
 void Chunk::compress() {
-	if (compressed_size_ != -1)
+	if (isCompressed())
 		return;
 
 	sf::Clock clock;
@@ -68,6 +65,11 @@ void Chunk::compress() {
 }
 
 void Chunk::decompress() {
+	if (!isCompressed())
+		return;
+
+	sf::Clock clock;
+
 	uint8_t *dest = new uint8_t[CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)];
 	uLongf destlen = CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID);
 	int ret = uncompress(
@@ -86,6 +88,9 @@ void Chunk::decompress() {
 	visuals_->sprite_ = sf::Sprite();
 	visuals_->dirty_ = true;
 	need_render_ = true;
+	fprintf(stderr, "Decompressed chunk %i,%i from %li bytes to %lu bytes in %.3fs.\n",
+			pos_.x_, pos_.y_, compressed_size_, CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID),
+			clock.getElapsedTime().asSeconds());
 	compressed_size_ = -1;
 }
 
@@ -118,8 +123,8 @@ void Chunk::render(const Context &ctx) {
 }
 
 void Chunk::draw(const Context &ctx, Win &win) {
-	if (compressed_size_ != -1)
-		decompress();
+	if (isCompressed())
+		return;
 
 	if (need_render_) {
 		render(ctx);
@@ -133,6 +138,27 @@ void Chunk::draw(const Context &ctx, Win &win) {
 
 	win.setPos(pos_ * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT));
 	win.draw(visuals_->sprite_);
+}
+
+void Chunk::tick() {
+	if (active_timer_ == 0)
+		return;
+
+	active_timer_ -= 1;
+	if (active_timer_ == 0) {
+		compress();
+	}
+}
+
+bool Chunk::keepActive() {
+	bool wasActive = isActive();
+	active_timer_ = ACTIVE_TIMEOUT;
+
+	if (wasActive)
+		return false;
+
+	decompress();
+	return true;
 }
 
 }

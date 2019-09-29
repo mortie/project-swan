@@ -3,7 +3,7 @@
 EntPlayer::EntPlayer(const Swan::Context &ctx, const Swan::SRF &params):
 		body_(SIZE, MASS) {
 
-	readSRF(params);
+	readSRF(ctx, params);
 
 	anims_[(int)State::IDLE].init(32, 64, 0.8,
 		ctx.world.getAsset("core::player-still"));
@@ -30,7 +30,7 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 
 	// Break block
 	if (ctx.game.isMousePressed(sf::Mouse::Button::Left))
-		ctx.plane.setTile(mouse_tile_, "core::air");
+		ctx.plane.breakBlock(mouse_tile_);
 
 	// Move left
 	if (ctx.game.isKeyPressed(sf::Keyboard::A) || ctx.game.isKeyPressed(sf::Keyboard::Left)) {
@@ -62,11 +62,11 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 	body_.collide(ctx.plane);
 }
 
-void EntPlayer::readSRF(const Swan::SRF &srf) {
+void EntPlayer::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
 	auto pos = dynamic_cast<const Swan::SRFFloatArray &>(srf);
 	body_.pos_.set(pos.val[0], pos.val[1]);
 }
 
-Swan::SRF *EntPlayer::writeSRF() {
+Swan::SRF *EntPlayer::writeSRF(const Swan::Context &ctx) {
 	return new Swan::SRFFloatArray{ body_.pos_.x_, body_.pos_.y_ };
 }

@@ -53,7 +53,10 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 	if (iter == chunks_.end()) {
 		iter = chunks_.emplace(pos, Chunk(pos)).first;
 		gen_->genChunk(*this, iter->second);
+		active_chunks_.insert(&iter->second);
 		iter->second.render(getContext());
+	} else if (iter->second.keepActive()) {
+		active_chunks_.insert(&iter->second);
 	}
 
 	return iter->second;
@@ -64,20 +67,43 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 	Chunk::RelPos rp = relPos(pos);
 	chunk.setTileID(rp, id);
 	chunk.drawBlock(rp, world_->getTileByID(id));
+
+	if (active_chunks_.find(&chunk) == active_chunks_.end())
+		active_chunks_.insert(&chunk);
 }
 
 void WorldPlane::setTile(TilePos pos, const std::string &name) {
 	setTileID(pos, world_->getTileID(name));
 }
 
-Tile &WorldPlane::getTile(TilePos pos) {
+Tile::ID WorldPlane::getTileID(TilePos pos) {
 	Chunk &chunk = getChunk(chunkPos(pos));
-	Tile::ID id = chunk.getTileID(relPos(pos));
-	return world_->getTileByID(id);
+
+	if (active_chunks_.find(&chunk) == active_chunks_.end())
+		active_chunks_.insert(&chunk);
+
+	return chunk.getTileID(relPos(pos));
+
+}
+
+Tile &WorldPlane::getTile(TilePos pos) {
+	return world_->getTileByID(getTileID(pos));
 }
 
 Entity &WorldPlane::spawnPlayer() {
 	return gen_->spawnPlayer(*this);
+}
+
+void WorldPlane::breakBlock(TilePos pos) {
+	Tile &t = getTile(pos);
+	setTile(pos, "core::air");
+
+	if (t.dropped_item != "") {
+		spawnEntity("core::item-stack", SRFArray{
+			new SRFFloatArray{ pos.x_ + 0.5f, pos.y_ + 0.5f },
+			new SRFString{ t.dropped_item },
+		});
+	}
 }
 
 void WorldPlane::draw(Win &win) {
@@ -88,9 +114,9 @@ void WorldPlane::draw(Win &win) {
 
 	for (int x = -1; x <= 1; ++x) {
 		for (int y = -1; y <= 1; ++y) {
-			auto chunk = chunks_.find(pcpos + ChunkPos(x, y));
-			if (chunk != chunks_.end())
-				chunk->second.draw(getContext(), win);
+			auto iter = chunks_.find(pcpos + ChunkPos(x, y));
+			if (iter != chunks_.end())
+				iter->second.draw(getContext(), win);
 		}
 	}
 
@@ -111,13 +137,21 @@ void WorldPlane::draw(Win &win) {
 
 void WorldPlane::update(float dt) {
 	debug_boxes_.clear();
-	for (auto &ent: entities_)
-		ent->update(getContext(), dt);
+
+	// Don't use iterators, because an entity's update method might push_back to entities
+	for (size_t len = entities_.size(), i = 0; i < len; ++i)
+		entities_[i]->update(getContext(), dt);
 }
 
 void WorldPlane::tick() {
 	for (auto &ent: entities_)
 		ent->tick();
+
+	for (auto &chunk: active_chunks_) {
+		chunk->tick();
+		if (!chunk->isActive())
+			active_chunks_.erase(chunk);
+	}
 }
 
 void WorldPlane::debugBox(TilePos pos) {

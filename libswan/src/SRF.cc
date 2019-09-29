@@ -6,15 +6,17 @@ enum class Type {
 	OBJECT = 0,
 	ARRAY = 1,
 	STRING = 2,
-	INT = 3,
-	FLOAT = 4,
-	DOUBLE = 5,
-	NONE = 6,
-	BYTE_ARRAY = 7,
-	WORD_ARRAY = 8,
-	INT_ARRAY = 9,
-	FLOAT_ARRAY = 10,
-	DOUBLE_ARRAY = 11,
+	BYTE = 3,
+	WORD = 4,
+	INT = 5,
+	FLOAT = 6,
+	DOUBLE = 7,
+	NONE = 8,
+	BYTE_ARRAY = 9,
+	WORD_ARRAY = 10,
+	INT_ARRAY = 11,
+	FLOAT_ARRAY = 12,
+	DOUBLE_ARRAY = 13,
 };
 
 static void writeByte(std::ostream &os, uint8_t val) {
@@ -123,6 +125,10 @@ SRF *SRF::read(std::istream &is) {
 		srf = new SRFArray(); break;
 	case Type::STRING:
 		srf = new SRFString(); break;
+	case Type::BYTE:
+		srf = new SRFByte(); break;
+	case Type::WORD:
+		srf = new SRFWord(); break;
 	case Type::INT:
 		srf = new SRFInt(); break;
 	case Type::FLOAT:
@@ -147,7 +153,7 @@ SRF *SRF::read(std::istream &is) {
 	return srf;
 }
 
-SRFObject::SRFObject(std::initializer_list<std::pair<std::string, SRF *>> &lst) {
+SRFObject::SRFObject(std::initializer_list<std::pair<std::string, SRF *>> lst) {
 	for (auto &[k, v]: lst)
 		val[k] = std::unique_ptr<SRF>(v);
 }
@@ -186,7 +192,7 @@ std::ostream &SRFObject::pretty(std::ostream &os) const {
 	return os << " }";
 }
 
-SRFArray::SRFArray(std::initializer_list<SRF *> &lst) {
+SRFArray::SRFArray(std::initializer_list<SRF *> lst) {
 	for (auto &v: lst)
 		val.push_back(std::unique_ptr<SRF>(v));
 }
@@ -234,6 +240,38 @@ void SRFString::parse(std::istream &is) {
 
 std::ostream &SRFString::pretty(std::ostream &os) const {
 	return os << '"' << val << '"';
+}
+
+void SRFByte::serialize(std::ostream &os) const {
+	writeByte(os, (uint8_t)Type::BYTE);
+	writeByte(os, val);
+}
+
+void SRFByte::parse(std::istream &is) {
+	val = readByte(is);
+}
+
+std::ostream &SRFByte::pretty(std::ostream &os) const {
+	return os << "0x"
+		<< hexchr((val & 0xf0) >> 4)
+		<< hexchr((val & 0x0f) >> 0);
+}
+
+void SRFWord::serialize(std::ostream &os) const {
+	writeByte(os, (uint8_t)Type::WORD);
+	writeWord(os, val);
+}
+
+void SRFWord::parse(std::istream &is) {
+	val = readWord(is);
+}
+
+std::ostream &SRFWord::pretty(std::ostream &os) const {
+	return os << "0x"
+		<< hexchr((val & 0xf000) >> 12)
+		<< hexchr((val & 0x0f00) >> 8)
+		<< hexchr((val & 0x00f0) >> 4)
+		<< hexchr((val & 0x000f) >> 0);
 }
 
 void SRFInt::serialize(std::ostream &os) const {
@@ -300,7 +338,9 @@ void SRFByteArray::parse(std::istream &is) {
 std::ostream &SRFByteArray::pretty(std::ostream &os) const {
 	os << "byte[ " << std::hex;
 	for (auto v: val) {
-		os << hexchr((v & 0xf0) >> 4) << hexchr((v & 0x0f) >> 0) << ' ';
+		os
+			<< hexchr((v & 0xf0) >> 4)
+			<< hexchr((v & 0x0f) >> 0) << ' ';
 	}
 
 	return os << ']';

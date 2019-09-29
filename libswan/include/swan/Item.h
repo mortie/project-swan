@@ -6,8 +6,7 @@
 
 namespace Swan {
 
-class Item {
-public:
+struct Item {
 	std::unique_ptr<sf::Image> image;
 
 	std::string name = "";

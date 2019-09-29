@@ -8,14 +8,12 @@ namespace Swan {
 
 static bool chunkLine(int l, sf::Clock &clock, WorldPlane &plane, ChunkPos &abspos, const Vec2i &dir) {
 	for (int i = 0; i < l; ++i) {
-		if (!plane.hasChunk(abspos)) {
-			plane.getChunk(abspos);
+		plane.getChunk(abspos);
 
-			// Don't blow our frame budget on generating chunks,
-			// but generate as many as possible within the budget
-			if (clock.getElapsedTime().asSeconds() > 1.0 / 100)
-				return true;
-		}
+		// Don't blow our frame budget on generating chunks,
+		// but generate as many as possible within the budget
+		if (clock.getElapsedTime().asSeconds() > 1.0 / 100)
+			return true;
 		abspos += dir;
 	}
 

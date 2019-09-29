@@ -17,8 +17,8 @@ public:
 
 	void draw(const Swan::Context &ctx, Swan::Win &win) override;
 	void update(const Swan::Context &ctx, float dt) override;
-	void readSRF(const Swan::SRF &srf) override;
-	Swan::SRF *writeSRF() override;
+	void readSRF(const Swan::Context &ctx, const Swan::SRF &srf) override;
+	Swan::SRF *writeSRF(const Swan::Context &ctx) override;
 
 private:
 	static constexpr float FORCE = 3000;
