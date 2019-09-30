@@ -12,6 +12,8 @@ public:
 
 	EntItemStack(const Swan::Context &ctx, const Swan::SRF &params);
 
+	void draw(const Swan::Context &ctx, Swan::Win &win) override;
+	void update(const Swan::Context &ctx, float dt) override;
 	void readSRF(const Swan::Context &ctx, const Swan::SRF &srf) override;
 	Swan::SRF *writeSRF(const Swan::Context &ctx) override;
 

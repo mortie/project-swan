@@ -44,7 +44,7 @@ struct Win {
 	}
 
 	Vec2 getSize() {
-		sf::Vector2 v = window_->getSize();
+		sf::Vector2u v = window_->getSize();
 		return Vec2(v.x, v.y) / (TILE_SIZE * scale_);
 	}
 };

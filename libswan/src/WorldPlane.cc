@@ -100,7 +100,7 @@ void WorldPlane::breakBlock(TilePos pos) {
 
 	if (t.dropped_item != "") {
 		spawnEntity("core::item-stack", SRFArray{
-			new SRFFloatArray{ pos.x_ + 0.5f, pos.y_ + 0.5f },
+			new SRFFloatArray{ (float)pos.x_, (float)pos.y_ },
 			new SRFString{ t.dropped_item },
 		});
 	}

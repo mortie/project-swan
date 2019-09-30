@@ -18,6 +18,8 @@ else()
 	message(FATAL_ERROR "CMAKE_BUILD_TYPE must be Debug or Release.")
 endif()
 
+set(LIBRARIES sfml-graphics sfml-system sfml-window sfml-audio dl)
+
 # We want to be able to use C++20 designated initializers,
 # but Clang doesn't support them yet.
 # Remove once Clang 9.1 or something comes out.
@@ -32,7 +34,7 @@ add_subdirectory(libswan)
 add_subdirectory(core.mod)
 
 add_executable(swan src/main.cc)
-target_link_libraries(swan libswan)
+target_link_libraries(swan libswan ${LIBRARIES})
 
 set(assets
 	assets/icon.png

@@ -6,13 +6,23 @@ EntItemStack::EntItemStack(const Swan::Context &ctx, const Swan::SRF &params):
 	readSRF(ctx, params);
 }
 
+void EntItemStack::draw(const Swan::Context &ctx, Swan::Win &win) {
+	body_.outline(win);
+}
+
+void EntItemStack::update(const Swan::Context &ctx, float dt) {
+	body_.gravity();
+	body_.update(dt);
+	body_.collide(ctx.plane);
+}
+
 void EntItemStack::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
 	auto &arr = dynamic_cast<const Swan::SRFArray &>(srf);
 	auto *pos = dynamic_cast<Swan::SRFFloatArray *>(arr.val[0].get());
 	auto *name = dynamic_cast<Swan::SRFString *>(arr.val[1].get());
 
 	body_.pos_.set(pos->val[0], pos->val[1]);
-	item_ = &ctx.world.getItem(name->val); 
+	item_ = &ctx.world.getItem(name->val);
 }
 
 Swan::SRF *EntItemStack::writeSRF(const Swan::Context &ctx) {
