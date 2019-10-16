@@ -23,4 +23,6 @@ private:
 
 	Swan::Item *item_ = &Swan::Item::INVALID_ITEM;
 	Swan::Body body_;
+	sf::Texture tex_;
+	sf::Sprite sprite_;
 };
