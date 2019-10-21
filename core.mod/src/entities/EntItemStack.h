@@ -2,7 +2,7 @@
 
 #include <swan/swan.h>
 
-class EntItemStack: public Swan::Entity {
+class EntItemStack: public Swan::PhysicsEntity {
 public:
 	class Factory: public Swan::Entity::Factory {
 		Swan::Entity *create(const Swan::Context &ctx, const Swan::SRF &params) override {
@@ -13,7 +13,6 @@ public:
 	EntItemStack(const Swan::Context &ctx, const Swan::SRF &params);
 
 	void draw(const Swan::Context &ctx, Swan::Win &win) override;
-	void update(const Swan::Context &ctx, float dt) override;
 	void readSRF(const Swan::Context &ctx, const Swan::SRF &srf) override;
 	Swan::SRF *writeSRF(const Swan::Context &ctx) override;
 
@@ -22,7 +21,6 @@ private:
 	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.5, 0.5);
 
 	Swan::Item *item_ = &Swan::Item::INVALID_ITEM;
-	Swan::Body body_;
 	sf::Texture tex_;
 	sf::Sprite sprite_;
 };

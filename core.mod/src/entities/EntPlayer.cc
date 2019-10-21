@@ -1,7 +1,7 @@
 #include "EntPlayer.h"
 
 EntPlayer::EntPlayer(const Swan::Context &ctx, const Swan::SRF &params):
-		body_(SIZE, MASS) {
+		PhysicsEntity(SIZE, MASS) {
 
 	readSRF(ctx, params);
 
@@ -56,10 +56,7 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 		anims_[(int)state_].reset();
 	anims_[(int)state_].tick(dt);
 
-	body_.friction(FRICTION);
-	body_.gravity();
-	body_.update(dt);
-	body_.collide(ctx.plane);
+	Swan::PhysicsEntity::update(ctx, dt);
 }
 
 void EntPlayer::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {

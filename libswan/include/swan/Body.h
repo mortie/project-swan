@@ -3,17 +3,18 @@
 #include <SFML/Graphics.hpp>
 
 #include "common.h"
-#include "WorldPlane.h"
 #include "BoundingBox.h"
 
 namespace Swan {
+
+class WorldPlane;
 
 class Body {
 public:
 	Body(Vec2 size, float mass, Vec2 pos = Vec2::ZERO):
 		size_(size), mass_(mass), pos_(pos) {};
 
-	void friction(Vec2 coef);
+	void friction(Vec2 coef = Vec2(400, 50));
 	void gravity(Vec2 g = Vec2(0, 20));
 	void collide(WorldPlane &plane);
 

@@ -1,7 +1,7 @@
 #include "EntItemStack.h"
 
 EntItemStack::EntItemStack(const Swan::Context &ctx, const Swan::SRF &params):
-		body_(SIZE, MASS) {
+		PhysicsEntity(SIZE, MASS) {
 
 	readSRF(ctx, params);
 }
@@ -9,12 +9,6 @@ EntItemStack::EntItemStack(const Swan::Context &ctx, const Swan::SRF &params):
 void EntItemStack::draw(const Swan::Context &ctx, Swan::Win &win) {
 	win.setPos(body_.pos_);
 	win.draw(sprite_);
-}
-
-void EntItemStack::update(const Swan::Context &ctx, float dt) {
-	body_.gravity();
-	body_.update(dt);
-	body_.collide(ctx.plane);
 }
 
 void EntItemStack::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {

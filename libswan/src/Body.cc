@@ -2,6 +2,8 @@
 
 #include <math.h>
 
+#include "WorldPlane.h"
+
 namespace Swan {
 
 void Body::friction(Vec2 coef) {
@@ -34,7 +36,7 @@ void Body::collide(WorldPlane &plane) {
 				pos_.x = endx - size_.x - 0.001;
 				endx = (int)floor(pos_.x + size_.x);
 			}
-			plane.debugBox(TilePos(x, ry));
+			//plane.debugBox(TilePos(x, ry));
 		}
 	}
 
@@ -47,7 +49,7 @@ void Body::collide(WorldPlane &plane) {
 			vel_.y = 0;
 		}
 
-		plane.debugBox(TilePos(x, y));
+		//plane.debugBox(TilePos(x, y));
 	}
 
 	// Collide with floor
@@ -60,7 +62,7 @@ void Body::collide(WorldPlane &plane) {
 			vel_.y = 0;
 			on_ground_ = true;
 		}
-		plane.debugBox(TilePos(x, y));
+		//plane.debugBox(TilePos(x, y));
 	}
 }
 
