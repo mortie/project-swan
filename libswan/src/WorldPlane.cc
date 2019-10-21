@@ -37,7 +37,7 @@ Entity &WorldPlane::spawnEntity(const std::string &name, const SRF &params) {
 	}
 
 	Entity *ent = world_->ents_[name]->create(getContext(), params);
-	entities_.push_back(std::unique_ptr<Entity>(ent));
+	spawn_list_.push_back(std::unique_ptr<Entity>(ent));
 	fprintf(stderr, "Spawned %s. SRF: ", name.c_str());
 	params.pretty(std::cerr) << '\n';
 	return *ent;
@@ -138,9 +138,12 @@ void WorldPlane::draw(Win &win) {
 void WorldPlane::update(float dt) {
 	debug_boxes_.clear();
 
-	// Don't use iterators, because an entity's update method might push_back to entities
-	for (size_t len = entities_.size(), i = 0; i < len; ++i)
-		entities_[i]->update(getContext(), dt);
+	for (auto &ent: entities_)
+		ent->update(getContext(), dt);
+
+	for (auto &ent: spawn_list_)
+		entities_.push_back(std::move(ent));
+	spawn_list_.clear();
 }
 
 void WorldPlane::tick() {

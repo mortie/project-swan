@@ -29,6 +29,7 @@ public:
 	virtual void draw(const Context &ctx, Win &win) {}
 	virtual void update(const Context &ctx, float dt) {}
 	virtual void tick() {}
+	virtual void despawn() {}
 	virtual void readSRF(const Swan::Context &ctx, const SRF &srf) {}
 	virtual SRF *writeSRF(const Swan::Context &ctx) { return new SRFNone(); }
 };
