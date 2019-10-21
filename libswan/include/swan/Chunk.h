@@ -36,13 +36,13 @@ public:
 	void decompress();
 	void render(const Context &ctx);
 	void draw(const Context &ctx, Win &win);
-	void tick();
+	void tick(float dt);
 
 	bool keepActive(); // Returns true if chunk was inactive
-	bool isActive() { return active_timer_ != 0; }
+	bool isActive() { return deactivate_timer_ > 0; }
 
 private:
-	static constexpr int ACTIVE_TIMEOUT = 200;
+	static constexpr float DEACTIVATE_TIME = 20;
 	static sf::Uint8 *renderbuf;
 
 	bool isCompressed() { return compressed_size_ != -1; }
@@ -51,7 +51,7 @@ private:
 
 	ssize_t compressed_size_ = -1; // -1 if not compressed, a positive number if compressed
 	bool need_render_ = false;
-	int active_timer_ = ACTIVE_TIMEOUT;
+	int deactivate_timer_ = DEACTIVATE_TIME;
 
 	struct Visuals {
 		sf::Texture tex_;

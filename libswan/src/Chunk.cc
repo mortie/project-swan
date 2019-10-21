@@ -140,19 +140,19 @@ void Chunk::draw(const Context &ctx, Win &win) {
 	win.draw(visuals_->sprite_);
 }
 
-void Chunk::tick() {
-	if (active_timer_ == 0)
+void Chunk::tick(float dt) {
+	if (deactivate_timer_ <= 0)
 		return;
 
-	active_timer_ -= 1;
-	if (active_timer_ == 0) {
+	deactivate_timer_ -= dt;
+	if (deactivate_timer_ <= 0) {
 		compress();
 	}
 }
 
 bool Chunk::keepActive() {
 	bool wasActive = isActive();
-	active_timer_ = ACTIVE_TIMEOUT;
+	deactivate_timer_ = DEACTIVATE_TIME;
 
 	if (wasActive)
 		return false;

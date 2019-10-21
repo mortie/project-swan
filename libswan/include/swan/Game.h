@@ -34,7 +34,7 @@ public:
 
 	void draw();
 	void update(float dt);
-	void tick();
+	void tick(float dt);
 
 	static void initGlobal();
 

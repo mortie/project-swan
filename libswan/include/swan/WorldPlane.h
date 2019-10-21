@@ -25,6 +25,7 @@ public:
 			id_(id), world_(world), gen_(gen) {}
 
 	Entity &spawnEntity(const std::string &name, const SRF &params);
+	void despawnEntity(Entity &ent);
 
 	Context getContext();
 
@@ -40,7 +41,7 @@ public:
 
 	void draw(Win &win);
 	void update(float dt);
-	void tick();
+	void tick(float dt);
 
 	void debugBox(TilePos pos);
 
@@ -53,7 +54,7 @@ private:
 	std::set<Chunk *> active_chunks_;
 	std::vector<std::unique_ptr<Entity>> entities_;
 	std::vector<std::unique_ptr<Entity>> spawn_list_;
-	std::vector<Entity *> kill_list_;
+	std::vector<Entity *> despawn_list_;
 	std::vector<TilePos> debug_boxes_;
 };
 

@@ -11,6 +11,13 @@ void EntItemStack::draw(const Swan::Context &ctx, Swan::Win &win) {
 	win.draw(sprite_);
 }
 
+void EntItemStack::tick(const Swan::Context &ctx, float dt) {
+	despawn_timer_ -= dt;
+	if (despawn_timer_ <= 0) {
+			ctx.plane.despawnEntity(*this);
+	}
+}
+
 void EntItemStack::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
 	auto &arr = dynamic_cast<const Swan::SRFArray &>(srf);
 	auto *pos = dynamic_cast<Swan::SRFFloatArray *>(arr.val[0].get());

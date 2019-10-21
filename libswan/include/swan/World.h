@@ -39,7 +39,7 @@ public:
 
 	void draw(Win &win);
 	void update(float dt);
-	void tick();
+	void tick(float dt);
 
 	std::vector<std::shared_ptr<Tile>> tiles_;
 	std::map<std::string, Tile::ID> tiles_map_;

@@ -131,9 +131,9 @@ void World::update(float dt) {
 		plane.update(dt);
 }
 
-void World::tick() {
+void World::tick(float dt) {
 	for (auto &plane: planes_)
-		plane.tick();
+		plane.tick(dt);
 
 	auto bounds = *player_->getBounds();
 	chunk_renderer_.tick(

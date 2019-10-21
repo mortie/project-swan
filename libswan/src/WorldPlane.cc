@@ -47,6 +47,11 @@ Entity &WorldPlane::spawnEntity(const std::string &name, const SRF &params) {
 	return *ent;
 }
 
+void WorldPlane::despawnEntity(Entity &ent) {
+	fprintf(stderr, "Despawned entity.\n");
+	despawn_list_.push_back(&ent);
+}
+
 bool WorldPlane::hasChunk(ChunkPos pos) {
 	return chunks_.find(pos) != chunks_.end();
 }
@@ -148,14 +153,24 @@ void WorldPlane::update(float dt) {
 	for (auto &ent: spawn_list_)
 		entities_.push_back(std::move(ent));
 	spawn_list_.clear();
+
+	for (auto entptr: despawn_list_) {
+		for (auto it = std::begin(entities_); it != std::end(entities_); ++it) {
+			if (it->get() == entptr) {
+				entities_.erase(it);
+				break;
+			}
+		}
+	}
+	despawn_list_.clear();
 }
 
-void WorldPlane::tick() {
+void WorldPlane::tick(float dt) {
 	for (auto &ent: entities_)
-		ent->tick();
+		ent->tick(getContext(), dt);
 
 	for (auto &chunk: active_chunks_) {
-		chunk->tick();
+		chunk->tick(dt);
 		if (!chunk->isActive())
 			active_chunks_.erase(chunk);
 	}

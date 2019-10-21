@@ -13,13 +13,16 @@ public:
 	EntItemStack(const Swan::Context &ctx, const Swan::SRF &params);
 
 	void draw(const Swan::Context &ctx, Swan::Win &win) override;
+	void tick(const Swan::Context &ctx, float dt) override;
 	void readSRF(const Swan::Context &ctx, const Swan::SRF &srf) override;
 	Swan::SRF *writeSRF(const Swan::Context &ctx) override;
 
 private:
 	static constexpr float MASS = 80;
 	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.5, 0.5);
+	static constexpr float DESPAWN_TIME = 5 * 60;
 
+	float despawn_timer_ = DESPAWN_TIME;
 	Swan::Item *item_ = &Swan::Item::INVALID_ITEM;
 	sf::Texture tex_;
 	sf::Sprite sprite_;

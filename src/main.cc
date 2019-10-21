@@ -115,7 +115,7 @@ int main() {
 			tickAcc += dt;
 			while (tickAcc >= 1.0 / TICK_RATE) {
 				tickAcc -= 1.0 / TICK_RATE;
-				game.tick();
+				game.tick(1.0 / TICK_RATE);
 			}
 		}
 

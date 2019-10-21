@@ -65,8 +65,8 @@ void Game::update(float dt) {
 	world_->update(dt);
 }
 
-void Game::tick() {
-	world_->tick();
+void Game::tick(float dt) {
+	world_->tick(dt);
 }
 
 void Game::initGlobal() {
