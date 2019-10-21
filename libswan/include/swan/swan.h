@@ -3,6 +3,7 @@
 #include <swan/Animation.h>
 #include <swan/Asset.h>
 #include <swan/Body.h>
+#include <swan/BoundingBox.h>
 #include <swan/Chunk.h>
 #include <swan/Entity.h>
 #include <swan/Game.h>

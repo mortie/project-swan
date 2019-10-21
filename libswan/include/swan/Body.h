@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "WorldPlane.h"
+#include "BoundingBox.h"
 
 namespace Swan {
 
@@ -18,6 +19,8 @@ public:
 
 	void outline(Win &win);
 	void update(float dt);
+
+	BoundingBox getBounds() { return { pos_, size_ }; }
 
 	Vec2 force_ = { 0, 0 };
 	Vec2 vel_ = { 0, 0 };

@@ -107,10 +107,10 @@ void WorldPlane::breakBlock(TilePos pos) {
 }
 
 void WorldPlane::draw(Win &win) {
-	const Vec2 &ppos = world_->player_->getPos();
+	auto pbounds = *world_->player_->getBounds();
 	ChunkPos pcpos = ChunkPos(
-		(int)floor(ppos.x_ / CHUNK_WIDTH),
-		(int)floor(ppos.y_ / CHUNK_HEIGHT));
+		(int)floor(pbounds.pos.x_ / CHUNK_WIDTH),
+		(int)floor(pbounds.pos.y_ / CHUNK_HEIGHT));
 
 	for (int x = -1; x <= 1; ++x) {
 		for (int y = -1; y <= 1; ++y) {

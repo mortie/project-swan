@@ -1,9 +1,11 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
 #include "common.h"
 #include "SRF.h"
+#include "BoundingBox.h"
 
 namespace Swan {
 
@@ -22,7 +24,7 @@ public:
 
 	virtual ~Entity() = default;
 
-	virtual const Vec2 &getPos() { return Vec2::ZERO; }
+	virtual std::optional<BoundingBox> getBounds() { return std::nullopt; }
 
 	virtual void draw(const Context &ctx, Win &win) {}
 	virtual void update(const Context &ctx, float dt) {}

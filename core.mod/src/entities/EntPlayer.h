@@ -13,7 +13,7 @@ public:
 
 	EntPlayer(const Swan::Context &ctx, const Swan::SRF &params);
 
-	const Swan::Vec2 &getPos() override { return body_.pos_; }
+	std::optional<Swan::BoundingBox> getBounds() override { return body_.getBounds(); }
 
 	void draw(const Swan::Context &ctx, Swan::Win &win) override;
 	void update(const Swan::Context &ctx, float dt) override;
