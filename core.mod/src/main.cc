@@ -21,14 +21,14 @@ extern "C" void mod_init(Swan::Mod &mod) {
 	});
 	mod.registerTile("grass", new Swan::Tile{
 		.image = mod.loadImage("assets/tiles/grass.png"),
-		.dropped_item = "core::grass",
+		.dropped_item = "core::dirt",
 	});
 
 	mod.registerItem("stone", new Swan::Item{
 		.image = mod.loadImage("assets/tiles/stone.png"),
 	});
 	mod.registerItem("dirt", new Swan::Item{
-		.image = mod.loadImage("assets/tiles/stone.png"),
+		.image = mod.loadImage("assets/tiles/dirt.png"),
 	});
 	mod.registerItem("grass", new Swan::Item{
 		.image = mod.loadImage("assets/tiles/grass.png"),
