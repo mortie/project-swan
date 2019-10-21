@@ -16,17 +16,17 @@ Tile::ID *Chunk::getTileData() {
 }
 
 Tile::ID Chunk::getTileID(RelPos pos) {
-	return getTileData()[pos.y_ * CHUNK_WIDTH + pos.x_];
+	return getTileData()[pos.y * CHUNK_WIDTH + pos.x];
 }
 
 void Chunk::setTileID(RelPos pos, Tile::ID id) {
-	getTileData()[pos.y_ * CHUNK_WIDTH + pos.x_] = id;
+	getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
 }
 
 void Chunk::drawBlock(RelPos pos, const Tile &t) {
 	keepActive();
 
-	visuals_->tex_.update(*t.image, pos.x_ * TILE_SIZE, pos.y_ * TILE_SIZE);
+	visuals_->tex_.update(*t.image, pos.x * TILE_SIZE, pos.y * TILE_SIZE);
 	visuals_->dirty_ = true;
 }
 
@@ -54,11 +54,11 @@ void Chunk::compress() {
 		compressed_size_ = destlen;
 
 		fprintf(stderr, "Compressed chunk %i,%i from %lu bytes to %lu bytes in %.3fs.\n",
-				pos_.x_, pos_.y_, CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID), destlen,
+				pos_.x, pos_.y, CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID), destlen,
 				clock.getElapsedTime().asSeconds());
 	} else if (ret == Z_BUF_ERROR) {
 		fprintf(stderr, "Didn't compress chunk %i,%i because compressing it would've made it bigger.\n",
-				pos_.x_, pos_.y_);
+				pos_.x, pos_.y);
 	} else {
 		fprintf(stderr, "Chunk compression error: %i (Out of memory?)\n", ret);
 	}
@@ -89,7 +89,7 @@ void Chunk::decompress() {
 	visuals_->dirty_ = true;
 	need_render_ = true;
 	fprintf(stderr, "Decompressed chunk %i,%i from %li bytes to %lu bytes in %.3fs.\n",
-			pos_.x_, pos_.y_, compressed_size_, CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID),
+			pos_.x, pos_.y, compressed_size_, CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID),
 			clock.getElapsedTime().asSeconds());
 	compressed_size_ = -1;
 }

@@ -31,7 +31,7 @@ void EntItemStack::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
 
 Swan::SRF *EntItemStack::writeSRF(const Swan::Context &ctx) {
 	return new Swan::SRFArray{
-		new Swan::SRFFloatArray{ body_.pos_.x_, body_.pos_.y_ },
+		new Swan::SRFFloatArray{ body_.pos_.x, body_.pos_.y },
 		new Swan::SRFString{ item_->name },
 	};
 }

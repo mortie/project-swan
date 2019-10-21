@@ -122,7 +122,7 @@ WorldPlane &World::addPlane(std::string gen) {
 
 void World::draw(Win &win) {
 	auto bounds = *player_->getBounds();
-	win.cam_ = bounds.pos - (win.getSize() / 2) + (bounds.size.x_ / 2);
+	win.cam_ = bounds.pos - (win.getSize() / 2) + (bounds.size / 2);
 	planes_[current_plane_].draw(win);
 }
 
@@ -138,7 +138,7 @@ void World::tick() {
 	auto bounds = *player_->getBounds();
 	chunk_renderer_.tick(
 			planes_[current_plane_],
-			ChunkPos((int)bounds.pos.x_ / CHUNK_WIDTH, (int)bounds.pos.y_ / CHUNK_HEIGHT));
+			ChunkPos((int)bounds.pos.x / CHUNK_WIDTH, (int)bounds.pos.y / CHUNK_HEIGHT));
 }
 
 }

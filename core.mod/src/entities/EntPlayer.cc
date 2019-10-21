@@ -49,7 +49,7 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 
 	// Jump
 	if (body_.on_ground_ && ctx.game.isKeyPressed(sf::Keyboard::Space) && jump_timer_.periodic(0.5)) {
-		body_.vel_.y_ = -JUMP_FORCE;
+		body_.vel_.y = -JUMP_FORCE;
 	}
 
 	if (state_ != oldState)
@@ -68,5 +68,5 @@ void EntPlayer::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
 }
 
 Swan::SRF *EntPlayer::writeSRF(const Swan::Context &ctx) {
-	return new Swan::SRFFloatArray{ body_.pos_.x_, body_.pos_.y_ };
+	return new Swan::SRFFloatArray{ body_.pos_.x, body_.pos_.y };
 }

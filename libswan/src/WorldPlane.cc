@@ -11,17 +11,17 @@
 namespace Swan {
 
 static ChunkPos chunkPos(TilePos pos) {
-	int chx = pos.x_ / CHUNK_WIDTH;
-	if (pos.x_ < 0 && pos.x_ % CHUNK_WIDTH != 0) chx -= 1;
-	int chy = pos.y_ / CHUNK_HEIGHT;
-	if (pos.y_ < 0 && pos.y_ % CHUNK_HEIGHT != 0) chy -= 1;
+	int chx = pos.x / CHUNK_WIDTH;
+	if (pos.x < 0 && pos.x % CHUNK_WIDTH != 0) chx -= 1;
+	int chy = pos.y / CHUNK_HEIGHT;
+	if (pos.y < 0 && pos.y % CHUNK_HEIGHT != 0) chy -= 1;
 	return ChunkPos(chx, chy);
 }
 
 static Chunk::RelPos relPos(TilePos pos) {
-	int rx = pos.x_ % CHUNK_WIDTH;
+	int rx = pos.x % CHUNK_WIDTH;
 	if (rx < 0) rx += CHUNK_WIDTH;
-	int ry = pos.y_ % CHUNK_HEIGHT;
+	int ry = pos.y % CHUNK_HEIGHT;
 	if (ry < 0) ry += CHUNK_HEIGHT;
 	return Chunk::RelPos(rx, ry);
 }
@@ -100,7 +100,7 @@ void WorldPlane::breakBlock(TilePos pos) {
 
 	if (t.dropped_item != "") {
 		spawnEntity("core::item-stack", SRFArray{
-			new SRFFloatArray{ (float)pos.x_, (float)pos.y_ },
+			new SRFFloatArray{ (float)pos.x, (float)pos.y },
 			new SRFString{ t.dropped_item },
 		});
 	}
@@ -109,8 +109,8 @@ void WorldPlane::breakBlock(TilePos pos) {
 void WorldPlane::draw(Win &win) {
 	auto pbounds = *world_->player_->getBounds();
 	ChunkPos pcpos = ChunkPos(
-		(int)floor(pbounds.pos.x_ / CHUNK_WIDTH),
-		(int)floor(pbounds.pos.y_ / CHUNK_HEIGHT));
+		(int)floor(pbounds.pos.x / CHUNK_WIDTH),
+		(int)floor(pbounds.pos.y / CHUNK_HEIGHT));
 
 	for (int x = -1; x <= 1; ++x) {
 		for (int y = -1; y <= 1; ++y) {
