@@ -37,6 +37,10 @@ Entity &WorldPlane::spawnEntity(const std::string &name, const SRF &params) {
 	}
 
 	Entity *ent = world_->ents_[name]->create(getContext(), params);
+	if (auto bounds = ent->getBounds(); bounds) {
+		ent->move({ 0.5f - bounds->size.x / 2, 0 });
+	}
+
 	spawn_list_.push_back(std::unique_ptr<Entity>(ent));
 	fprintf(stderr, "Spawned %s. SRF: ", name.c_str());
 	params.pretty(std::cerr) << '\n';

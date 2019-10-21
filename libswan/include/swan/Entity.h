@@ -30,6 +30,7 @@ public:
 	virtual void draw(const Context &ctx, Win &win) {}
 	virtual void update(const Context &ctx, float dt) {}
 	virtual void tick() {}
+	virtual void move(const Vec2 &pos) {}
 	virtual void moveTo(const Vec2 &pos) {}
 	virtual void readSRF(const Swan::Context &ctx, const SRF &srf) {}
 	virtual SRF *writeSRF(const Swan::Context &ctx) { return new SRFNone(); }
@@ -49,9 +50,8 @@ public:
 		body_.collide(ctx.plane);
 	}
 
-	virtual void moveTo(const Vec2 &pos) override {
-		body_.pos_ = pos;
-	}
+	virtual void move(const Vec2 &rel) override { body_.pos_ += rel; }
+	virtual void moveTo(const Vec2 &pos) override { body_.pos_ = pos; }
 
 protected:
 	Body body_;
