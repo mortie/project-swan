@@ -22,7 +22,7 @@ public:
 	using ID = uint16_t;
 
 	WorldPlane(ID id, World *world, std::shared_ptr<WorldGen> gen):
-			id_(id), world_(world), gen_(gen) {}
+			id_(id), world_(world), gen_(std::move(gen)) {}
 
 	Entity &spawnEntity(const std::string &name, const SRF &params);
 	void despawnEntity(Entity &ent);

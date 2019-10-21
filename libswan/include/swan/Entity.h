@@ -39,7 +39,7 @@ public:
 
 class PhysicsEntity: public Entity {
 public:
-	PhysicsEntity(Vec2 size, double mass):
+	PhysicsEntity(Vec2 size, float mass):
 		body_(size, mass) {}
 
 	virtual std::optional<BoundingBox> getBounds() { return body_.getBounds(); }

@@ -29,7 +29,7 @@ struct Win {
 	sf::RenderWindow *window_;
 	sf::Transform transform_;
 	Vec2 cam_;
-	double scale_ = 2;
+	float scale_ = 2;
 
 	Win(sf::RenderWindow *win): window_(win) {}
 

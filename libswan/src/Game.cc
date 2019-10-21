@@ -28,7 +28,7 @@ void Game::loadMod(const std::string &path) {
 	mod_init(mod);
 }
 
-void Game::createWorld(std::string worldgen) {
+void Game::createWorld(const std::string &worldgen) {
 	world_.reset(new World(this));
 	for (auto &mod: registered_mods_) {
 		world_->registerTile(std::shared_ptr<Tile>(Tile::createInvalid()));

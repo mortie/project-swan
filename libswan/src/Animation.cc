@@ -2,12 +2,12 @@
 
 namespace Swan {
 
-void Animation::init(int w, int h, double interval, const Asset &asset, int flags) {
+void Animation::init(int w, int h, float interval, const Asset &asset, int flags) {
 	width_ = w;
 	height_ = h;
 	interval_ = interval;
 	asset_ = &asset;
-	fcount_ = asset_->image_.getSize().y / height_;
+	fcount_ = (int)asset_->image_.getSize().y / height_;
 	sprite_.setTexture(asset_->tex_);
 	sprite_.setTextureRect(sf::IntRect(0, 0, width_, height_));
 
@@ -17,7 +17,7 @@ void Animation::init(int w, int h, double interval, const Asset &asset, int flag
 	}
 }
 
-void Animation::tick(double dt) {
+void Animation::tick(float dt) {
 	timer_.tick(dt);
 	if (timer_.periodic(interval_)) {
 		dirty_ = true;

@@ -51,7 +51,7 @@ private:
 
 	ssize_t compressed_size_ = -1; // -1 if not compressed, a positive number if compressed
 	bool need_render_ = false;
-	int deactivate_timer_ = DEACTIVATE_TIME;
+	float deactivate_timer_ = DEACTIVATE_TIME;
 
 	struct Visuals {
 		sf::Texture tex_;

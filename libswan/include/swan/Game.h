@@ -19,7 +19,7 @@ public:
 		win_(win) {}
 
 	void loadMod(const std::string &path);
-	void createWorld(std::string worldgen);
+	void createWorld(const std::string &worldgen);
 
 	void onKeyPressed(sf::Keyboard::Key key) { keys_pressed_[(int)key] = true; }
 	void onKeyReleased(sf::Keyboard::Key key) { keys_pressed_[(int)key] = false; }

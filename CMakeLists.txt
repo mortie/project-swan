@@ -3,7 +3,10 @@ project(swan)
 
 find_package(SFML 2.5 COMPONENTS graphics system window REQUIRED)
 
-message(STATUS "SFML is ${SFML_INCLUDE_PATH}")
+set(CMAKE_CXX_CLANG_TIDY
+	clang-tidy;
+	-header-filter=.*
+	-checks=-*,-checks=bugprone-*,cert-*,performance-*,clang-analyzer-*,-cert-dcl16-c,-cert-err58-cpp,-clang-analyzer-optin.cplusplus.VirtualCall)
 
 add_compile_options(-std=c++2a -Wall -Wextra -Wpedantic -Wno-unused-parameter)
 if(CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL "")

@@ -48,24 +48,24 @@ void World::spawnPlayer() {
 
 void World::registerTile(std::shared_ptr<Tile> t) {
 	Tile::ID id = tiles_.size();
-	tiles_.push_back(t);
 	tiles_map_[t->name] = id;
+	tiles_.push_back(std::move(t));
 }
 
 void World::registerItem(std::shared_ptr<Item> i) {
-	items_[i->name] = i;
+	items_[i->name] = std::move(i);
 }
 
 void World::registerWorldGen(std::shared_ptr<WorldGen::Factory> gen) {
-	worldgens_[gen->name_] = gen;
+	worldgens_[gen->name_] = std::move(gen);
 }
 
 void World::registerEntity(std::shared_ptr<Entity::Factory> ent) {
-	ents_[ent->name_] = ent;
+	ents_[ent->name_] = std::move(ent);
 }
 
 void World::registerAsset(std::shared_ptr<Asset> asset) {
-	assets_[asset->name_] = asset;
+	assets_[asset->name_] = std::move(asset);
 }
 
 Asset &World::getAsset(const std::string &name) {
@@ -107,7 +107,7 @@ Tile &World::getTile(const std::string &name) {
 	return getTileByID(id);
 }
 
-WorldPlane &World::addPlane(std::string gen) {
+WorldPlane &World::addPlane(const std::string &gen) {
 	WorldPlane::ID id = planes_.size();
 	if (worldgens_.find(gen) == worldgens_.end()) {
 		fprintf(stderr, "Tried to add plane with non-existant world gen '%s'!\n",

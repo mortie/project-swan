@@ -20,7 +20,7 @@ class World {
 public:
 	World(Game *game): game_(game) {}
 
-	WorldPlane &addPlane(std::string gen);
+	WorldPlane &addPlane(const std::string &gen);
 	WorldPlane &addPlane() { return addPlane(default_world_gen_); }
 	void setCurrentPlane(WorldPlane &plane);
 	void setWorldGen(const std::string &gen);

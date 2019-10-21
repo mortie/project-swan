@@ -7,7 +7,7 @@ namespace Swan {
 
 class Asset {
 public:
-	Asset(std::string path): path_(path) {}
+	Asset(const std::string &path): path_(path) {}
 
 	bool load(const std::string &pfx);
 

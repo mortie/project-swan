@@ -33,7 +33,7 @@ void Body::collide(WorldPlane &plane) {
 				startx = (int)floor(pos_.x);
 			} else if (x == endx && vel_.x > 0 && wall.is_solid) {
 				vel_.x = 0;
-				pos_.x = endx - size_.x - 0.001;
+				pos_.x = (float)endx - size_.x - 0.001;
 				endx = (int)floor(pos_.x + size_.x);
 			}
 			//plane.debugBox(TilePos(x, ry));
@@ -58,7 +58,7 @@ void Body::collide(WorldPlane &plane) {
 	for (int x = startx; x <= endx; ++x) {
 		Tile &ground = plane.getTile(TilePos(x, y));
 		if (ground.is_solid && vel_.y > 0) {
-			pos_.y = y - size_.y;
+			pos_.y = (float)y - size_.y;
 			vel_.y = 0;
 			on_ground_ = true;
 		}

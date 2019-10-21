@@ -15,20 +15,20 @@ public:
 	};
 
 	Animation() = default;
-	Animation(int w, int h, double interval, const Asset &asset, int flags = 0) {
+	Animation(int w, int h, float interval, const Asset &asset, int flags = 0) {
 		init(w, h, interval, asset, flags);
 	}
 
-	void init(int w, int h, double interval, const Asset &asset, int flags = 0);
+	void init(int w, int h, float interval, const Asset &asset, int flags = 0);
 
-	void tick(double dt);
+	void tick(float dt);
 	void draw(Win &win);
     void reset();
 
 	int width_, height_;
 
 private:
-	double interval_;
+	float interval_;
 	const Asset *asset_;
 	int fcount_;
 	int frame_ = 0;

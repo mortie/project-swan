@@ -119,7 +119,7 @@ struct SRFNone: SRF {
 struct SRFByteArray: SRF {
 	SRFByteArray() = default;
 	SRFByteArray(std::initializer_list<uint8_t> lst): val(lst) {}
-	SRFByteArray(std::vector<uint8_t> v): val(v) {}
+	SRFByteArray(std::vector<uint8_t> &v): val(v) {}
 
 	void serialize(std::ostream &os) const override;
 	void parse(std::istream &os) override;
@@ -131,7 +131,7 @@ struct SRFByteArray: SRF {
 struct SRFWordArray: SRF {
 	SRFWordArray() = default;
 	SRFWordArray(std::initializer_list<uint16_t> v): val(v) {}
-	SRFWordArray(std::vector<uint16_t> v): val(v) {}
+	SRFWordArray(std::vector<uint16_t> &v): val(v) {}
 
 	void serialize(std::ostream &os) const override;
 	void parse(std::istream &os) override;
@@ -143,7 +143,7 @@ struct SRFWordArray: SRF {
 struct SRFIntArray: SRF {
 	SRFIntArray() = default;
 	SRFIntArray(std::initializer_list<int> v): val(v) {}
-	SRFIntArray(std::vector<int32_t> v): val(v) {}
+	SRFIntArray(std::vector<int32_t> &v): val(v) {}
 
 	void serialize(std::ostream &os) const override;
 	void parse(std::istream &os) override;
@@ -155,7 +155,7 @@ struct SRFIntArray: SRF {
 struct SRFFloatArray: SRF {
 	SRFFloatArray() = default;
 	SRFFloatArray(std::initializer_list<float> v): val(v) {}
-	SRFFloatArray(std::vector<float> v): val(v) {}
+	SRFFloatArray(std::vector<float> &v): val(v) {}
 
 	void serialize(std::ostream &os) const override;
 	void parse(std::istream &os) override;
@@ -167,7 +167,7 @@ struct SRFFloatArray: SRF {
 struct SRFDoubleArray: SRF {
 	SRFDoubleArray() = default;
 	SRFDoubleArray(std::initializer_list<double> v): val(v) {}
-	SRFDoubleArray(std::vector<double> v): val(v) {}
+	SRFDoubleArray(std::vector<double> &v): val(v) {}
 
 	void serialize(std::ostream &os) const override;
 	void parse(std::istream &os) override;

@@ -109,9 +109,9 @@ static std::string readString(std::istream &is) {
 
 static char hexchr(uint8_t nibble) {
 	if (nibble < 10)
-		return '0' + nibble;
+		return (char)('0' + nibble);
 	else
-		return 'a' + (nibble - 10);
+		return (char)('a' + (nibble - 10));
 }
 
 SRF *SRF::read(std::istream &is) {
