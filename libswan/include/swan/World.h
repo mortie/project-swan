@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <random>
 
 #include "common.h"
 #include "Asset.h"
@@ -18,7 +19,7 @@ class Game;
 
 class World {
 public:
-	World(Game *game): game_(game) {}
+	World(Game *game, unsigned long rand_seed): game_(game), random_(rand_seed) {}
 
 	WorldPlane &addPlane(const std::string &gen);
 	WorldPlane &addPlane() { return addPlane(default_world_gen_); }
@@ -49,6 +50,8 @@ public:
 	std::map<std::string, std::shared_ptr<Asset>> assets_;
 	Entity *player_;
 	Game *game_;
+
+	std::mt19937 random_;
 
 private:
 	class ChunkRenderer {

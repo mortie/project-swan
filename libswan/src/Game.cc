@@ -3,6 +3,7 @@
 #include <dlfcn.h>
 #include <math.h>
 #include <SFML/Window/Mouse.hpp>
+#include <time.h>
 
 #include "Tile.h"
 #include "Asset.h"
@@ -30,7 +31,7 @@ void Game::loadMod(const std::string &path) {
 }
 
 void Game::createWorld(const std::string &worldgen) {
-	world_.reset(new World(this));
+	world_.reset(new World(this, time(NULL)));
 	for (auto &mod: registered_mods_) {
 		world_->registerTile(std::shared_ptr<Tile>(Tile::createInvalid()));
 

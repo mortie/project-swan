@@ -1,9 +1,15 @@
 #include "EntItemStack.h"
 
+#include <random>
+
 EntItemStack::EntItemStack(const Swan::Context &ctx, const Swan::SRF &params):
 		PhysicsEntity(SIZE, MASS) {
 
 	readSRF(ctx, params);
+
+	static std::uniform_real_distribution dis(-0.2f, 0.2f);
+
+	body_.pos_ += Swan::Vec2{ dis(ctx.world.random_), dis(ctx.world.random_) };
 }
 
 void EntItemStack::draw(const Swan::Context &ctx, Swan::Win &win) {

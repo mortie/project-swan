@@ -6,9 +6,6 @@ namespace Swan {
 
 class Win {
 public:
-	float scale_ = 2;
-	Vec2 cam_;
-
 	Win(sf::RenderWindow *win): window_(win) {}
 
 	void setPos(const Vec2 &pos) {
@@ -25,6 +22,9 @@ public:
 		sf::Vector2u v = window_->getSize();
 		return Vec2(v.x, v.y) / (TILE_SIZE * scale_);
 	}
+
+	float scale_ = 2;
+	Vec2 cam_;
 
 private:
 	sf::RenderWindow *window_;
