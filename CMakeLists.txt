@@ -4,7 +4,7 @@ project(swan)
 find_package(SFML 2.5 COMPONENTS graphics system window REQUIRED)
 
 set(CMAKE_CXX_CLANG_TIDY
-	clang-tidy;
+	clang-tidy
 	-header-filter=.*
 	-checks=-*,-checks=bugprone-*,cert-*,performance-*,clang-analyzer-*,-cert-dcl16-c,-cert-err58-cpp,-clang-analyzer-optin.cplusplus.VirtualCall)
 

@@ -18,35 +18,12 @@ using ChunkPos = Vec2i;
 class Game;
 class World;
 class WorldPlane;
+class Win;
 
 struct Context {
 	Game &game;
 	World &world;
 	WorldPlane &plane;
-};
-
-struct Win {
-	sf::RenderWindow *window_;
-	sf::Transform transform_;
-	Vec2 cam_;
-	float scale_ = 2;
-
-	Win(sf::RenderWindow *win): window_(win) {}
-
-	void setPos(const Vec2 &pos) {
-		transform_ = sf::Transform()
-			.scale(scale_, scale_)
-			.translate((pos - cam_) * TILE_SIZE);
-	}
-
-	void draw(const sf::Drawable &drawable) {
-		window_->draw(drawable, transform_);
-	}
-
-	Vec2 getSize() {
-		sf::Vector2u v = window_->getSize();
-		return Vec2(v.x, v.y) / (TILE_SIZE * scale_);
-	}
 };
 
 }

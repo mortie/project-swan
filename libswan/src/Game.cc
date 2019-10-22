@@ -6,6 +6,7 @@
 
 #include "Tile.h"
 #include "Asset.h"
+#include "Win.h"
 
 namespace Swan {
 

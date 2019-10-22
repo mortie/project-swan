@@ -12,6 +12,7 @@
 #include <swan/Tile.h>
 #include <swan/Timer.h>
 #include <swan/Vector2.h>
+#include <swan/Win.h>
 #include <swan/World.h>
 #include <swan/WorldGen.h>
 #include <swan/WorldPlane.h>

@@ -1,5 +1,7 @@
 #include "Animation.h"
 
+#include "Win.h"
+
 namespace Swan {
 
 void Animation::init(int w, int h, float interval, const Asset &asset, int flags) {

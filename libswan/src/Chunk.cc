@@ -5,6 +5,7 @@
 
 #include "World.h"
 #include "Game.h"
+#include "Win.h"
 
 namespace Swan {
 

@@ -7,6 +7,7 @@
 #include <swan/World.h>
 #include <swan/Game.h>
 #include <swan/Timer.h>
+#include <swan/Win.h>
 
 #include <SFML/System/Clock.hpp>
 #include <SFML/Audio.hpp>

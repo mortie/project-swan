@@ -3,6 +3,7 @@
 #include <SFML/System/Clock.hpp>
 
 #include "Game.h"
+#include "Win.h"
 
 namespace Swan {
 

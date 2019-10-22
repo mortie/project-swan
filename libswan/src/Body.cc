@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "WorldPlane.h"
+#include "Win.h"
 
 namespace Swan {
 

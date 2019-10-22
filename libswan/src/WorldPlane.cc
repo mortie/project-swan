@@ -7,6 +7,7 @@
 #include "World.h"
 #include "Game.h"
 #include "Timer.h"
+#include "Win.h"
 
 namespace Swan {
 
