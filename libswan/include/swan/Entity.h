@@ -47,8 +47,7 @@ public:
 	virtual void update(const Context &ctx, float dt) override {
 		body_.friction();
 		body_.gravity();
-		body_.update(dt);
-		body_.collide(ctx.plane);
+		body_.update(ctx.plane, dt);
 	}
 
 	virtual void move(const Vec2 &rel) override { body_.pos_ += rel; }

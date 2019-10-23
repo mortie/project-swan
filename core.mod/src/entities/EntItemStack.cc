@@ -4,12 +4,15 @@
 
 EntItemStack::EntItemStack(const Swan::Context &ctx, const Swan::SRF &params):
 		PhysicsEntity(SIZE, MASS) {
+	PhysicsEntity::body_.bounciness_ = 0.6;
 
 	readSRF(ctx, params);
 
-	static std::uniform_real_distribution dis(-0.2f, 0.2f);
+	static std::uniform_real_distribution vx(-2.3f, 2.3f);
+	static std::uniform_real_distribution vy(-2.3f, -1.2f);
 
-	body_.pos_ += Swan::Vec2{ dis(ctx.world.random_), dis(ctx.world.random_) };
+	body_.pos_.y += 0.5 - body_.size_.y / 2;
+	body_.vel_ += Swan::Vec2{ vx(ctx.world.random_), vy(ctx.world.random_) };
 }
 
 void EntItemStack::draw(const Swan::Context &ctx, Swan::Win &win) {
@@ -19,9 +22,8 @@ void EntItemStack::draw(const Swan::Context &ctx, Swan::Win &win) {
 
 void EntItemStack::tick(const Swan::Context &ctx, float dt) {
 	despawn_timer_ -= dt;
-	if (despawn_timer_ <= 0) {
-			ctx.plane.despawnEntity(*this);
-	}
+	if (despawn_timer_ <= 0)
+		ctx.plane.despawnEntity(*this);
 }
 
 void EntItemStack::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {

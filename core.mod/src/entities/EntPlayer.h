@@ -20,7 +20,7 @@ public:
 
 private:
 	static constexpr float FORCE = 3000;
-	static constexpr float JUMP_FORCE = 10;
+	static constexpr float JUMP_FORCE = 11;
 	static constexpr float MASS = 80;
 	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.6, 1.9);
 

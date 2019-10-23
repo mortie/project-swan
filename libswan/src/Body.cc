@@ -1,11 +1,15 @@
 #include "Body.h"
 
 #include <math.h>
+#include <array>
+#include <algorithm>
 
 #include "WorldPlane.h"
 #include "Win.h"
 
 namespace Swan {
+
+static float epsilon = 0.0001;
 
 void Body::friction(Vec2 coef) {
 	force_ += -vel_ * coef;
@@ -15,55 +19,67 @@ void Body::gravity(Vec2 g) {
 	force_ += g * mass_;
 }
 
-void Body::collide(WorldPlane &plane) {
-	int startx, endx, y;
+void Body::collideX(WorldPlane &plane) {
+	auto bounds = getBounds();
+	bool collided = false;
 
-	// This collission code is horrible and in dire need of some more abstractions.
-	// I will fix later, ok? This works for now while working on more interesting things.
+	for (int y = (int)floor(bounds.top() + epsilon); y <= (int)floor(bounds.bottom() - epsilon); ++y) {
+		int lx = (int)floor(bounds.left() + epsilon);
+		Tile &left = plane.getTile({ lx, y });
+		if (left.is_solid) {
+			bounds.pos.x = (float)lx + 1.0;
+			collided = true;
+			break;
+		}
 
-	// Collide with sides
-	startx = (int)floor(pos_.x);
-	endx = (int)floor(pos_.x + size_.x);
-	y = (int)ceil(pos_.y + size_.y - 1.3);
-	for (int x = startx; x <= endx; ++x) {
-		for (int ry = y - 1; ry <= y; ++ry) {
-			Tile &wall = plane.getTile(TilePos(x, ry));
-			if (x == startx && vel_.x < 0 && wall.is_solid) {
-				vel_.x = 0;
-				pos_.x = startx + 1.001;
-				startx = (int)floor(pos_.x);
-			} else if (x == endx && vel_.x > 0 && wall.is_solid) {
-				vel_.x = 0;
-				pos_.x = (float)endx - size_.x - 0.001;
-				endx = (int)floor(pos_.x + size_.x);
-			}
-			//plane.debugBox(TilePos(x, ry));
+		int rx = (int)floor(bounds.right() - epsilon);
+		Tile &right = plane.getTile({ rx, y });
+		if (right.is_solid) {
+			bounds.pos.x = (float)rx - bounds.size.x;
+			collided = true;
+			break;
 		}
 	}
 
-	// Collide with top
-	y = (int)ceil(pos_.y - 1);
-	for (int x = startx; x <= endx; ++x) {
-		Tile &roof = plane.getTile(TilePos(x, y));
-		if (roof.is_solid && vel_.y < 0) {
-			pos_.y = y + 1;
-			vel_.y = 0;
-		}
+	if (collided) {
+		pos_.x = bounds.pos.x;
 
-		//plane.debugBox(TilePos(x, y));
+		vel_.x *= -bounciness_;
+		if (abs(vel_.x) < mushyness_)
+			vel_.x = 0;
 	}
+}
 
-	// Collide with floor
+void Body::collideY(WorldPlane &plane) {
+	auto bounds = getBounds();
+	bool collided = false;
 	on_ground_ = false;
-	y = (int)ceil(pos_.y + size_.y - 1);
-	for (int x = startx; x <= endx; ++x) {
-		Tile &ground = plane.getTile(TilePos(x, y));
-		if (ground.is_solid && vel_.y > 0) {
-			pos_.y = (float)y - size_.y;
-			vel_.y = 0;
-			on_ground_ = true;
+
+	for (int x = (int)floor(bounds.left() + epsilon); x <= (int)floor(bounds.right() - epsilon); ++x) {
+		int ty = (int)floor(bounds.top() + epsilon);
+		Tile &top = plane.getTile({ x, ty });
+		if (top.is_solid) {
+			bounds.pos.y = (float)ty + 1.0;
+			collided = true;
+			break;
 		}
-		//plane.debugBox(TilePos(x, y));
+
+		int by = (int)floor(bounds.bottom() - epsilon);
+		Tile &right = plane.getTile({ x, by });
+		if (right.is_solid) {
+			bounds.pos.y = (float)by - bounds.size.y;
+			collided = true;
+			on_ground_ = true;
+			break;
+		}
+	}
+
+	if (collided) {
+		pos_.y = bounds.pos.y;
+
+		vel_.y *= -bounciness_;
+		if (abs(vel_.y) < mushyness_)
+			vel_.y = 0;
 	}
 }
 
@@ -76,7 +92,17 @@ void Body::outline(Win &win) {
 	win.draw(rect);
 }
 
-void Body::update(float dt) {
+void Body::update(WorldPlane &plane, float dt) {
+	vel_ += (force_ / mass_) * dt;
+	force_ = { 0, 0 };
+
+	pos_.x += vel_.x * dt;
+	collideX(plane);
+	pos_.y += vel_.y * dt;
+	collideY(plane);
+}
+
+void Body::updateWithoutCollision(float dt) {
 	vel_ += (force_ / mass_) * dt;
 	pos_ += vel_ * dt;
 	force_ = { 0, 0 };

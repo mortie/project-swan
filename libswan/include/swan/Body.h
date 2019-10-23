@@ -16,19 +16,25 @@ public:
 
 	void friction(Vec2 coef = Vec2(400, 50));
 	void gravity(Vec2 g = Vec2(0, 20));
-	void collide(WorldPlane &plane);
 
 	void outline(Win &win);
-	void update(float dt);
+	void update(WorldPlane &plane, float dt);
+	void updateWithoutCollision(float dt);
 
 	BoundingBox getBounds() { return { pos_, size_ }; }
 
 	Vec2 force_ = { 0, 0 };
 	Vec2 vel_ = { 0, 0 };
+	bool on_ground_ = false;
 	Vec2 size_;
 	float mass_;
 	Vec2 pos_;
-	bool on_ground_ = false;
+	float bounciness_ = 0;
+	float mushyness_ = 2;
+
+private:
+	void collideX(WorldPlane &plane);
+	void collideY(WorldPlane &plane);
 };
 
 }
