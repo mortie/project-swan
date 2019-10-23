@@ -2,29 +2,11 @@ cmake_minimum_required(VERSION 3.0)
 project(swan-dist)
 include(ExternalProject)
 
-ExternalProject_Add(compiler
-	GIT_REPOSITORY https://github.com/llvm/llvm-project.git
-	GIT_TAG llvmorg-9.0.0
-	GIT_SHALLOW true
-	GIT_PROGRESS true
-	SOURCE_SUBDIR llvm
-	LIST_SEPARATOR ::
-	CMAKE_ARGS
-		-DCMAKE_BUILD_TYPE=Release
-		-DLLVM_BUILD_LLVM_DYLIB=ON
-		-DLLVM_LINK_LLVM_DYLIB=ON
-		-DCLANG_LINK_CLANG_DYLIB=ON
-		-DLLVM_ENABLE_RTTI=ON
-		-DLLVM_ENABLE_PROJECTS=clang::libcxx::libcxxabi::compiler-rt::lld
-		-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/prefix)
+set(prefix ${PROJECT_BINARY_DIR}/prefix)
 
-set(PREFIX_DIR ${PROJECT_BINARY_DIR}/prefix)
-
-set(toolchain
-	-DCMAKE_CXX_COMPILER=${PREFIX_DIR}/bin/clang++
-	-DCMAKE_C_COMPILER=${PREFIX_DIR}/bin/clang
-	-DCMAKE_LINKER=${PREFIX_DIR}/bin/lld
-	-DCMAKE_PREFIX_PATH=${PREFIX})
+set(common
+	-DCMAKE_INSTALL_PREFIX=${prefix}
+	-DCMAKE_PREFIX_PATH=${prefix})
 
 ExternalProject_Add(sfml
 	GIT_REPOSITORY https://github.com/SFML/SFML.git
@@ -33,13 +15,23 @@ ExternalProject_Add(sfml
 	GIT_PROGRESS true
 	CMAKE_ARGS
 		-DCMAKE_BUILD_TYPE=Release
-		-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/prefix
-		${toolchain}
-	DEPENDS compiler)
+		${common})
+
+ExternalProject_Add(imgui-sfml
+	GIT_REPOSITORY https://github.com/eliasdaler/imgui-sfml.git
+	GIT_TAG v2.1
+	GIT_SHALLOW true
+	GIT_PROGRESS true
+	CMAKE_ARGS
+		-DCMAKE_BUILD_TYPE=Release
+		-DIMGUI_DIR=${PROJECT_SOURCE_DIR}/../third_party/imgui
+		-DBUILD_SHARED_LIBS=true
+		${common}
+	DEPENDS sfml)
 
 ExternalProject_Add(swan
 	SOURCE_DIR ${PROJECT_SOURCE_DIR}/..
 	CMAKE_ARGS
-		-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/prefix
-		${toolchain}
-	DEPENDS compiler sfml)
+		-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+		${common}
+	DEPENDS sfml imgui-sfml)

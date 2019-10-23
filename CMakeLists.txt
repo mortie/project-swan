@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(swan)
 
 find_package(SFML 2.5 COMPONENTS graphics system window REQUIRED)
+find_package(ImGui-SFML REQUIRED)
 
 set(CMAKE_CXX_CLANG_TIDY
 	clang-tidy
@@ -9,10 +10,13 @@ set(CMAKE_CXX_CLANG_TIDY
 	--checks=-*,bugprone-*,cert-*,performance-*,clang-analyzer-*,-cert-dcl16-c,-cert-err58-cpp,-clang-analyzer-optin.cplusplus.VirtualCall)
 
 add_compile_options(-std=c++2a -Wall -Wextra -Wpedantic -Wno-unused-parameter)
-if(CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL "")
-	message(STATUS "Build mode: Debug")
+if(CMAKE_BUILD_TYPE STREQUAL Sanitize OR CMAKE_BUILD_TYPE STREQUAL "")
+	message(STATUS "Build mode: Sanitize")
 	add_compile_options(-g -fsanitize=address)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+elseif(CMAKE_BUILD_TYPE STREQUAL Debug)
+	message(STATUS "Build mode: Debug")
+	add_compile_options(-g)
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
 	message(STATUS "Build mode: Release")
 	add_compile_options(-O3 -flto)
@@ -21,7 +25,9 @@ else()
 	message(FATAL_ERROR "CMAKE_BUILD_TYPE must be Debug or Release.")
 endif()
 
-set(LIBRARIES sfml-graphics sfml-system sfml-window sfml-audio dl)
+add_subdirectory(third_party)
+
+set(libraries sfml-graphics sfml-system sfml-window sfml-audio ImGui-SFML::ImGui-SFML imgui dl)
 
 # We want to be able to use C++20 designated initializers,
 # but Clang doesn't support them yet.
@@ -31,13 +37,14 @@ add_compile_options(-Wno-c99-extensions)
 include_directories(
 	${PROJECT_SOURCE_DIR}/libswan/include
 	${PROJECT_SOURCE_DIR}/third_party)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/swan/libswan")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/swan/libswan;${CMAKE_INSTALL_PREFIX}/swan/third_party")
 
 add_subdirectory(libswan)
 add_subdirectory(core.mod)
 
-add_executable(swan src/main.cc)
-target_link_libraries(swan libswan ${LIBRARIES})
+add_executable(swan
+	src/main.cc)
+target_link_libraries(swan libswan ${libraries} imgui)
 
 set(assets
 	assets/icon.png

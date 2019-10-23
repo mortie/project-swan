@@ -12,6 +12,9 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/Audio.hpp>
 
+#include <imgui/imgui.h>
+#include <imgui-SFML.h>
+
 using namespace Swan;
 
 int main() {
@@ -26,6 +29,9 @@ int main() {
 	window.setVerticalSyncEnabled(true);
 	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 	Win win(&window);
+
+	// Initialize ImGui
+	ImGui::SFML::Init(window);
 
 	// Create music
 	sf::SoundBuffer musicbuf;
@@ -54,6 +60,8 @@ int main() {
 	while (window.isOpen()) {
 		sf::Event event;
 		while (window.pollEvent(event)) {
+			ImGui::SFML::ProcessEvent(event);
+
 			switch (event.type) {
 			case sf::Event::Closed:
 				window.close();
@@ -120,8 +128,15 @@ int main() {
 			}
 		}
 
+		ImGui::SFML::Update(window, sf::seconds(dt));
+		ImGui::Begin("Test Window");
+		ImGui::Button("No.");
+		ImGui::End();
+		ImGui::ShowTestWindow();
+
 		window.clear();
 		game.draw();
+		ImGui::SFML::Render(window);
 		window.display();
 	}
 

@@ -4,7 +4,7 @@ add_library(core.mod SHARED
 	src/entities/EntPlayer.cc
 	src/entities/EntItemStack.cc)
 set_target_properties(core.mod PROPERTIES OUTPUT_NAME mod PREFIX "")
-target_link_libraries(core.mod libswan ${LIBRARIES})
+target_link_libraries(core.mod libswan ${libraries})
 
 set(assets
 	assets/entities/player-still.png

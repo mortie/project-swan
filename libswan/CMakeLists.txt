@@ -13,6 +13,6 @@ add_library(libswan SHARED
 	src/WorldPlane.cc)
 target_include_directories(libswan PUBLIC "include/swan")
 set_target_properties(libswan PROPERTIES OUTPUT_NAME swan)
-target_link_libraries(libswan ${LIBRARIES})
+target_link_libraries(libswan ${libraries})
 
 install(TARGETS libswan DESTINATION swan/libswan)
