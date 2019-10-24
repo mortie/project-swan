@@ -37,7 +37,7 @@ add_compile_options(-Wno-c99-extensions)
 include_directories(
 	${PROJECT_SOURCE_DIR}/libswan/include
 	${PROJECT_SOURCE_DIR}/third_party)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/swan/libswan;${CMAKE_INSTALL_PREFIX}/swan/third_party")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/lib64;${CMAKE_INSTALL_PREFIX}/swan/libswan;${CMAKE_INSTALL_PREFIX}/swan/third_party")
 
 add_subdirectory(libswan)
 add_subdirectory(core.mod)
