@@ -23,7 +23,5 @@ private:
 	static constexpr float DESPAWN_TIME = 5 * 60;
 
 	float despawn_timer_ = DESPAWN_TIME;
-	Swan::Item *item_ = &Swan::Item::INVALID_ITEM;
-	sf::Texture tex_;
-	sf::Sprite sprite_;
+	Swan::Item *item_ = NULL;
 };

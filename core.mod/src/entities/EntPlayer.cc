@@ -1,16 +1,13 @@
 #include "EntPlayer.h"
 
 EntPlayer::EntPlayer(const Swan::Context &ctx, const Swan::SRF &params):
-		PhysicsEntity(SIZE, MASS) {
+		PhysicsEntity(SIZE, MASS),
+		anims_{
+			Swan::Animation(ctx.world.getImage("core::player-still"), 0.8),
+			Swan::Animation(ctx.world.getImage("core::player-running"), 1),
+			Swan::Animation(ctx.world.getImage("core::player-running"), 1, Swan::Animation::Flags::HFLIP) } {
 
 	readSRF(ctx, params);
-
-	anims_[(int)State::IDLE].init(32, 64, 0.8,
-		ctx.world.getAsset("core::player-still"));
-	anims_[(int)State::RUNNING_R].init(32, 64, 1,
-		ctx.world.getAsset("core::player-running"));
-	anims_[(int)State::RUNNING_L].init(32, 64, 1,
-		ctx.world.getAsset("core::player-running"), (int)Swan::Animation::Flags::HFLIP);
 }
 
 void EntPlayer::draw(const Swan::Context &ctx, Swan::Win &win) {

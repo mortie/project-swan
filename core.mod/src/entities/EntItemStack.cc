@@ -17,7 +17,7 @@ EntItemStack::EntItemStack(const Swan::Context &ctx, const Swan::SRF &params):
 
 void EntItemStack::draw(const Swan::Context &ctx, Swan::Win &win) {
 	win.setPos(body_.pos_);
-	win.draw(sprite_);
+	SDL_RenderCopy(win.renderer_, item_->image_.texture_.get(), NULL, NULL);
 }
 
 void EntItemStack::tick(const Swan::Context &ctx, float dt) {
@@ -33,14 +33,11 @@ void EntItemStack::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
 
 	body_.pos_.set(pos->val[0], pos->val[1]);
 	item_ = &ctx.world.getItem(name->val);
-	tex_.loadFromImage(*item_->image);
-	sprite_.setTexture(tex_);
-	sprite_.setScale(SIZE);
 }
 
 Swan::SRF *EntItemStack::writeSRF(const Swan::Context &ctx) {
 	return new Swan::SRFArray{
 		new Swan::SRFFloatArray{ body_.pos_.x, body_.pos_.y },
-		new Swan::SRFString{ item_->name },
+		new Swan::SRFString{ item_->name_ },
 	};
 }

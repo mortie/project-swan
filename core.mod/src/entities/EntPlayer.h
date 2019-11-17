@@ -1,6 +1,7 @@
 #pragma once
 
 #include <swan/swan.h>
+#include <array>
 
 class EntPlayer: public Swan::PhysicsEntity {
 public:
@@ -32,7 +33,7 @@ private:
 	};
 
 	State state_ = State::IDLE;
-	Swan::Animation anims_[(int)State::COUNT];
+	std::array<Swan::Animation, (int)State::COUNT> anims_;
 
 	Swan::Timer jump_timer_;
 	Swan::TilePos mouse_tile_;

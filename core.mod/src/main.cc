@@ -48,8 +48,8 @@ extern "C" void mod_init(Swan::Mod &mod) {
 		.image = "core::grass",
 	});
 
-	mod.registerWorldGen("default", new WGDefault::Factory());
+	mod.registerWorldGen("default", std::make_unique<WGDefault::Factory>());
 
-	mod.registerEntity("player", new EntPlayer::Factory());
-	mod.registerEntity("item-stack", new EntItemStack::Factory());
+	mod.registerEntity("player", std::make_unique<EntPlayer::Factory>());
+	mod.registerEntity("item-stack", std::make_unique<EntItemStack::Factory>());
 }

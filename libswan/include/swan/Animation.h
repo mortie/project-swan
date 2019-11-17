@@ -13,8 +13,8 @@ public:
 		HFLIP = 1,
 	};
 
-	Animation(ImageResource &resource, float interval):
-		resource_(resource), interval_(interval), timer_(interval) {}
+	Animation(ImageResource &resource, float interval, Flags flags = (Flags)0):
+		resource_(resource), interval_(interval), timer_(interval), flags_(flags) {}
 
 	void tick(float dt);
 	void draw(Win &win);
@@ -24,6 +24,7 @@ private:
 	ImageResource &resource_;
 	float interval_;
 	float timer_;
+	Flags flags_;
 	int frame_ = 0;
 	bool dirty_ = true;
 };
