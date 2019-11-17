@@ -13,22 +13,20 @@ class Game {
 public:
 	Game(Win &win):
 		win_(win),
-		mouse_pos_(0, 0),
-		keys_pressed_(sf::Keyboard::Key::KeyCount, false),
-		mouse_pressed_(sf::Mouse::Button::ButtonCount, false) {}
+		mouse_pos_(0, 0) {}
 
 	void createWorld(const std::string &worldgen);
 
-	void onKeyPressed(sf::Keyboard::Key key) { keys_pressed_[(int)key] = true; }
-	void onKeyReleased(sf::Keyboard::Key key) { keys_pressed_[(int)key] = false; }
-	void onMouseMove(int x, int y) { mouse_pos_ = Vec2i(x, y); }
-	void onMousePressed(sf::Mouse::Button button) { mouse_pressed_[(int)button] = true; }
-	void onMouseReleased(sf::Mouse::Button button) { mouse_pressed_[(int)button] = false; }
+	void onKeyDown(SDL_Keysym sym) { pressed_keys_[sym.scancode] = true; }
+	void onKeyUp(SDL_Keysym sym) { pressed_keys_[sym.scancode] = false; }
+	void onMouseMove(Sint32 x, Sint32 y) { mouse_pos_ = { x, y }; }
+	void onMouseDown(Sint32 x, Sint32 y, Uint8 button) { mouse_pos_ = { x, y }; pressed_buttons_[button] = true; }
+	void onMouseUp(Sint32 x, Sint32 y, Uint8 button) { mouse_pos_ = { x, y }; pressed_buttons_[button] = false; }
 
+	bool isKeyPressed(SDL_Scancode code) { return pressed_keys_[code]; }
 	TilePos getMouseTile();
 	Vec2i getMousePos() { return mouse_pos_; }
-	bool isKeyPressed(sf::Keyboard::Key key) { return keys_pressed_[(int)key]; }
-	bool isMousePressed(sf::Mouse::Button button) { return mouse_pressed_[(int)button]; }
+	bool isMousePressed(Uint8 button) { return pressed_buttons_[button]; }
 
 	void draw();
 	void update(float dt);
@@ -41,9 +39,9 @@ public:
 	Win &win_;
 
 private:
+	std::unordered_map<SDL_Scancode, bool> pressed_keys_;
 	Vec2i mouse_pos_;
-	std::vector<bool> keys_pressed_;
-	std::vector<bool> mouse_pressed_;
+	std::unordered_map<Uint8, bool> pressed_buttons_;
 };
 
 }

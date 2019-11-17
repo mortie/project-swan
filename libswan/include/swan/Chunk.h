@@ -1,6 +1,5 @@
 #pragma once
 
-#include <SFML/Graphics/Texture.hpp>
 #include <string.h>
 #include <stdint.h>
 #include <memory>
@@ -22,8 +21,6 @@ public:
 	Chunk(ChunkPos pos): pos_(pos) {
 		data_.reset(new uint8_t[CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)]);
 		visuals_.reset(new Visuals());
-		visuals_->tex_.create(CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE);
-		visuals_->sprite_ = sf::Sprite(visuals_->tex_);
 		visuals_->dirty_ = false;
 	}
 
@@ -43,7 +40,7 @@ public:
 
 private:
 	static constexpr float DEACTIVATE_INTERVAL = 20;
-	static sf::Uint8 *renderbuf;
+	static uint8_t *renderbuf;
 
 	bool isCompressed() { return compressed_size_ != -1; }
 
@@ -54,8 +51,7 @@ private:
 	float deactivate_timer_ = DEACTIVATE_INTERVAL;
 
 	struct Visuals {
-		sf::Texture tex_;
-		sf::Sprite sprite_;
+		std::unique_ptr<SDL_Texture, void (*)(SDL_Texture *)> texture_{nullptr, SDL_DestroyTexture};
 		bool dirty_;
 	};
 	std::unique_ptr<Visuals> visuals_;

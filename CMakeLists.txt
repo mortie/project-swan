@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(swan)
 
-find_package(SFML 2.5 COMPONENTS graphics system window REQUIRED)
-find_package(ImGui-SFML REQUIRED)
-
 set(CMAKE_CXX_CLANG_TIDY
 	clang-tidy
 	--header-filter=.*
@@ -27,9 +24,7 @@ endif()
 
 add_subdirectory(third_party)
 
-set(libraries
-	sfml-graphics sfml-system sfml-window sfml-audio ImGui-SFML::ImGui-SFML
-	imgui SDL2 SDL2_image dl z)
+set(libraries	imgui SDL2 SDL2_image dl z)
 
 # We want to be able to use C++20 designated initializers,
 # but Clang doesn't support them yet.

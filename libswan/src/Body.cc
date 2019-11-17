@@ -85,11 +85,11 @@ void Body::collideY(WorldPlane &plane) {
 
 void Body::outline(Win &win) {
 	win.setPos(pos_);
-	sf::RectangleShape rect(size_ * TILE_SIZE);
-	rect.setFillColor(sf::Color::Transparent);
-	rect.setOutlineColor(sf::Color(128, 128, 128));
-	rect.setOutlineThickness(1);
-	win.draw(rect);
+	//sf::RectangleShape rect(size_ * TILE_SIZE);
+	//rect.setFillColor(sf::Color::Transparent);
+	//rect.setOutlineColor(sf::Color(128, 128, 128));
+	//rect.setOutlineThickness(1);
+	//win.draw(rect);
 }
 
 void Body::update(WorldPlane &plane, float dt) {

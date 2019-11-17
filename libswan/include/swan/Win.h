@@ -16,10 +16,6 @@ public:
 		//	.translate((pos - cam_) * TILE_SIZE);
 	}
 
-	void draw(const sf::Drawable &drawable) {
-		//window_->draw(drawable, transform_);
-	}
-
 	Vec2 getSize() {
 		//sf::Vector2u v = window_->getSize();
 		//return Vec2(v.x, v.y) / (TILE_SIZE * scale_);

@@ -63,6 +63,35 @@ int main() {
 	int fcount = 0;
 	int slowFrames = 0;
 	while (1) {
+		SDL_Event evt;
+		while (SDL_PollEvent(&evt)) {
+			switch (evt.type) {
+			case SDL_QUIT:
+				goto exit;
+				break;
+
+			case SDL_KEYDOWN:
+				game.onKeyDown(evt.key.keysym);
+				break;
+
+			case SDL_KEYUP:
+				game.onKeyUp(evt.key.keysym);
+				break;
+
+			case SDL_MOUSEMOTION:
+				game.onMouseMove(evt.motion.x, evt.motion.y);
+				break;
+
+			case SDL_MOUSEBUTTONDOWN:
+				game.onMouseDown(evt.button.x, evt.button.y, evt.button.button);
+				break;
+
+			case SDL_MOUSEBUTTONUP:
+				game.onMouseUp(evt.button.x, evt.button.y, evt.button.button);
+				break;
+			}
+		}
+
 		auto now = std::chrono::steady_clock::now();
 		std::chrono::duration<float> dur(prevTime - now);
 		prevTime = now;
@@ -101,5 +130,6 @@ int main() {
 		SDL_UpdateWindowSurface(window.get());
 	}
 
+exit:
 	return EXIT_SUCCESS;
 }

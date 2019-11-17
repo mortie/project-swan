@@ -1,6 +1,5 @@
 #include "Chunk.h"
 
-#include <SFML/System/Clock.hpp>
 #include <zlib.h>
 
 #include "World.h"
@@ -35,8 +34,6 @@ void Chunk::compress() {
 	if (isCompressed())
 		return;
 
-	sf::Clock clock;
-
 	// We only need a fixed-length temp buffer;
 	// if the compressed data gets too big, there's no point in compressing
 	uint8_t dest[CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)];
@@ -54,9 +51,8 @@ void Chunk::compress() {
 		visuals_.reset();
 		compressed_size_ = destlen;
 
-		fprintf(stderr, "Compressed chunk %i,%i from %lu bytes to %lu bytes in %.3fs.\n",
-				pos_.x, pos_.y, CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID), destlen,
-				clock.getElapsedTime().asSeconds());
+		fprintf(stderr, "Compressed chunk %i,%i from %lu bytes to %lu bytes.\n",
+				pos_.x, pos_.y, CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID), destlen);
 	} else if (ret == Z_BUF_ERROR) {
 		fprintf(stderr, "Didn't compress chunk %i,%i because compressing it would've made it bigger.\n",
 				pos_.x, pos_.y);
@@ -68,8 +64,6 @@ void Chunk::compress() {
 void Chunk::decompress() {
 	if (!isCompressed())
 		return;
-
-	sf::Clock clock;
 
 	uint8_t *dest = new uint8_t[CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)];
 	uLongf destlen = CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID);
@@ -89,9 +83,8 @@ void Chunk::decompress() {
 	visuals_->sprite_ = sf::Sprite();
 	visuals_->dirty_ = true;
 	need_render_ = true;
-	fprintf(stderr, "Decompressed chunk %i,%i from %li bytes to %lu bytes in %.3fs.\n",
-			pos_.x, pos_.y, compressed_size_, CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID),
-			clock.getElapsedTime().asSeconds());
+	fprintf(stderr, "Decompressed chunk %i,%i from %li bytes to %lu bytes.\n",
+			pos_.x, pos_.y, compressed_size_, CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID));
 	compressed_size_ = -1;
 }
 
