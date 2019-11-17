@@ -1,19 +1,25 @@
 #pragma once
 
-#include <memory>
 #include <string>
-#include <SFML/Graphics/Image.hpp>
+
+#include "Resource.h"
 
 namespace Swan {
 
-struct Item {
-	std::unique_ptr<sf::Image> image;
+class Item {
+public:
+	struct Builder {
+		std::string name;
+		std::string image;
+	};
 
-	std::string name = "";
+	Item(const ImageResource &image, const std::string &mod, const Builder &builder):
+		name_(mod+"::"+builder.name), image_(image) {}
 
-	static Item INVALID_ITEM;
-	static Item *createInvalid();
-	static void initGlobal();
+	const std::string name_;
+	const ImageResource &image_;
+
+	static std::unique_ptr<Item> createInvalid(Context &ctx);
 };
 
 }

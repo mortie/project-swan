@@ -7,38 +7,49 @@
 extern "C" void mod_init(Swan::Mod &mod) {
 	mod.init("core");
 
-	mod.registerTile("air", new Swan::Tile{
-		.image = mod.loadImage("assets/tiles/air.png"),
+	mod.registerImage("air", "tiles/air.png");
+	mod.registerImage("stone", "tiles/stone.png");
+	mod.registerImage("dirt", "tiles/dirt.png");
+	mod.registerImage("grass", "tiles/grass.png");
+	mod.registerImage("player-running", "entities/player-running.png");
+	mod.registerImage("player-still", "entities/player-still.png");
+
+	mod.registerTile({
+		.name = "air",
+		.image = "core::air",
 		.is_solid = false,
 	});
-	mod.registerTile("stone", new Swan::Tile{
-		.image = mod.loadImage("assets/tiles/stone.png"),
+	mod.registerTile({
+		.name = "stone",
+		.image = "core::stone",
 		.dropped_item = "core::stone",
 	});
-	mod.registerTile("dirt", new Swan::Tile{
-		.image = mod.loadImage("assets/tiles/dirt.png"),
+	mod.registerTile({
+		.name = "dirt",
+		.image = "core::dirt",
 		.dropped_item = "core::dirt",
 	});
-	mod.registerTile("grass", new Swan::Tile{
-		.image = mod.loadImage("assets/tiles/grass.png"),
+	mod.registerTile({
+		.name = "grass",
+		.image = "core::grass",
 		.dropped_item = "core::dirt",
 	});
 
-	mod.registerItem("stone", new Swan::Item{
-		.image = mod.loadImage("assets/tiles/stone.png"),
+	mod.registerItem({
+		.name = "stone",
+		.image = "core::stone",
 	});
-	mod.registerItem("dirt", new Swan::Item{
-		.image = mod.loadImage("assets/tiles/dirt.png"),
+	mod.registerItem({
+		.name = "dirt",
+		.image = "core::dirt",
 	});
-	mod.registerItem("grass", new Swan::Item{
-		.image = mod.loadImage("assets/tiles/grass.png"),
+	mod.registerItem({
+		.name = "grass",
+		.image = "core::grass",
 	});
 
 	mod.registerWorldGen("default", new WGDefault::Factory());
 
 	mod.registerEntity("player", new EntPlayer::Factory());
 	mod.registerEntity("item-stack", new EntItemStack::Factory());
-
-	mod.registerAsset("player-running", new Swan::Asset("assets/entities/player-running.png"));
-	mod.registerAsset("player-still", new Swan::Asset("assets/entities/player-still.png"));
 }

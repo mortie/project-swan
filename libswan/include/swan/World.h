@@ -6,12 +6,12 @@
 #include <random>
 
 #include "common.h"
-#include "Asset.h"
 #include "Item.h"
 #include "Tile.h"
 #include "WorldPlane.h"
 #include "WorldGen.h"
 #include "Entity.h"
+#include "Resource.h"
 
 namespace Swan {
 
@@ -30,13 +30,13 @@ public:
 	void registerItem(std::shared_ptr<Item> i);
 	void registerWorldGen(std::shared_ptr<WorldGen::Factory> gen);
 	void registerEntity(std::shared_ptr<Entity::Factory> ent);
-	void registerAsset(std::shared_ptr<Asset> asset);
+	void registerImage(std::shared_ptr<ImageResource> i);
 
 	Tile &getTileByID(Tile::ID id);
 	Tile::ID getTileID(const std::string &name);
 	Tile &getTile(const std::string &name);
 	Item &getItem(const std::string &name);
-	Asset &getAsset(const std::string &name);
+	ImageResource &getImage(const std::string &name);
 
 	void draw(Win &win);
 	void update(float dt);
@@ -47,7 +47,7 @@ public:
 	std::map<std::string, std::shared_ptr<Item>> items_;
 	std::map<std::string, std::shared_ptr<WorldGen::Factory>> worldgens_;
 	std::map<std::string, std::shared_ptr<Entity::Factory>> ents_;
-	std::map<std::string, std::shared_ptr<Asset>> assets_;
+	std::map<std::string, std::shared_ptr<ImageResource>> images_;
 	Entity *player_;
 	Game *game_;
 

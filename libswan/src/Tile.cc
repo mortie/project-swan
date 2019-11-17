@@ -1,26 +1,17 @@
 #include "Tile.h"
+
 #include "common.h"
+#include <Game.h>
 
 namespace Swan {
 
-Tile Tile::INVALID_TILE;
 Tile::ID Tile::INVALID_ID = 0;
 
-static void initInvalid(Tile *t) {
-	t->name = "@internal::invalid";
-	t->image.reset(new sf::Image());
-	t->image->create(TILE_SIZE, TILE_SIZE, sf::Color(245, 66, 242));
-	t->is_solid = false;
-}
-
-Tile *Tile::createInvalid() {
-	Tile *t = new Tile();
-	initInvalid(t);
-	return t;
-}
-
-void Tile::initGlobal() {
-	initInvalid(&INVALID_TILE);
+std::unique_ptr<Tile> Tile::createInvalid(Context &ctx) {
+	return std::make_unique<Tile>(*ctx.game.invalid_image_, "@internal", Builder{
+		.name = "invalid",
+		.image = "invalid",
+	});
 }
 
 }

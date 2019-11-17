@@ -108,10 +108,10 @@ void WorldPlane::breakBlock(TilePos pos) {
 	Tile &t = getTile(pos);
 	setTile(pos, "core::air");
 
-	if (t.dropped_item != "") {
+	if (t.dropped_item_ != std::nullopt) {
 		spawnEntity("core::item-stack", SRFArray{
 			new SRFFloatArray{ (float)pos.x, (float)pos.y },
-			new SRFString{ t.dropped_item },
+			new SRFString{ *t.dropped_item_ },
 		});
 	}
 }

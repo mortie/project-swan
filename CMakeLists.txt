@@ -13,7 +13,7 @@ add_compile_options(-std=c++2a -Wall -Wextra -Wpedantic -Wno-unused-parameter)
 if(CMAKE_BUILD_TYPE STREQUAL Sanitize OR CMAKE_BUILD_TYPE STREQUAL "")
 	message(STATUS "Build mode: Sanitize")
 	add_compile_options(-g -fsanitize=address)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+	add_link_options(-fsanitize=address)
 elseif(CMAKE_BUILD_TYPE STREQUAL Debug)
 	message(STATUS "Build mode: Debug")
 	add_compile_options(-g)
@@ -27,7 +27,9 @@ endif()
 
 add_subdirectory(third_party)
 
-set(libraries sfml-graphics sfml-system sfml-window sfml-audio ImGui-SFML::ImGui-SFML imgui dl)
+set(libraries
+	sfml-graphics sfml-system sfml-window sfml-audio ImGui-SFML::ImGui-SFML
+	imgui SDL2 SDL2_image dl z)
 
 # We want to be able to use C++20 designated initializers,
 # but Clang doesn't support them yet.
@@ -44,7 +46,7 @@ add_subdirectory(core.mod)
 
 add_executable(swan
 	src/main.cc)
-target_link_libraries(swan libswan ${libraries} imgui)
+target_link_libraries(swan libswan ${libraries})
 
 set(assets
 	assets/icon.png

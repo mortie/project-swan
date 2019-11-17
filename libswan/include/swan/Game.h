@@ -6,19 +6,17 @@
 
 #include "common.h"
 #include "World.h"
-#include "Mod.h"
 
 namespace Swan {
 
 class Game {
 public:
 	Game(Win &win):
+		win_(win),
 		mouse_pos_(0, 0),
 		keys_pressed_(sf::Keyboard::Key::KeyCount, false),
-		mouse_pressed_(sf::Mouse::Button::ButtonCount, false),
-		win_(win) {}
+		mouse_pressed_(sf::Mouse::Button::ButtonCount, false) {}
 
-	void loadMod(const std::string &path);
 	void createWorld(const std::string &worldgen);
 
 	void onKeyPressed(sf::Keyboard::Key key) { keys_pressed_[(int)key] = true; }
@@ -36,16 +34,16 @@ public:
 	void update(float dt);
 	void tick(float dt);
 
-	static void initGlobal();
-
 	std::unique_ptr<World> world_ = NULL;
+	std::unique_ptr<ImageResource> invalid_image_ = NULL;
+	std::unique_ptr<Tile> invalid_tile_ = NULL;
+	std::unique_ptr<Item> invalid_item_ = NULL;
+	Win &win_;
 
 private:
 	Vec2i mouse_pos_;
 	std::vector<bool> keys_pressed_;
 	std::vector<bool> mouse_pressed_;
-	std::vector<Mod> registered_mods_;
-	Win &win_;
 };
 
 }

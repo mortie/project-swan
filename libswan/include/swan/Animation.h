@@ -1,10 +1,9 @@
 #pragma once
 
-#include <SFML/Graphics/Sprite.hpp>
-
 #include "common.h"
-#include "Asset.h"
+#include "Resource.h"
 #include "Timer.h"
+#include "Resource.h"
 
 namespace Swan {
 
@@ -14,27 +13,19 @@ public:
 		HFLIP = 1,
 	};
 
-	Animation() = default;
-	Animation(int w, int h, float interval, const Asset &asset, int flags = 0) {
-		init(w, h, interval, asset, flags);
-	}
-
-	void init(int w, int h, float interval, const Asset &asset, int flags = 0);
+	Animation(ImageResource &resource, float interval):
+		resource_(resource), interval_(interval), timer_(interval) {}
 
 	void tick(float dt);
 	void draw(Win &win);
-    void reset();
-
-	int width_, height_;
+	void reset();
 
 private:
+	ImageResource &resource_;
 	float interval_;
-	const Asset *asset_;
-	int fcount_;
+	float timer_;
 	int frame_ = 0;
 	bool dirty_ = true;
-	Timer timer_;
-	sf::Sprite sprite_;
 };
 
 }

@@ -27,7 +27,7 @@ void Chunk::setTileID(RelPos pos, Tile::ID id) {
 void Chunk::drawBlock(RelPos pos, const Tile &t) {
 	keepActive();
 
-	visuals_->tex_.update(*t.image, pos.x * TILE_SIZE, pos.y * TILE_SIZE);
+	//visuals_->tex_.update(*t.image_, pos.x * TILE_SIZE, pos.y * TILE_SIZE);
 	visuals_->dirty_ = true;
 }
 
@@ -97,7 +97,7 @@ void Chunk::decompress() {
 
 void Chunk::render(const Context &ctx) {
 	Tile::ID prevID = Tile::INVALID_ID;
-	Tile *tile = &Tile::INVALID_TILE;
+	Tile *tile = ctx.game.invalid_tile_.get();
 
 	for (int x = 0; x < CHUNK_WIDTH; ++x) {
 		for (int y = 0; y < CHUNK_HEIGHT; ++y) {
@@ -107,7 +107,8 @@ void Chunk::render(const Context &ctx) {
 				tile = &ctx.world.getTileByID(id);
 			}
 
-			const sf::Uint8 *imgptr = tile->image->getPixelsPtr();
+			const sf::Uint8 *imgptr = NULL;
+			//const sf::Uint8 *imgptr = tile->image->getPixelsPtr();
 			for (int imgy = 0; imgy < TILE_SIZE; ++imgy) {
 				int pixx = x * TILE_SIZE;
 				int pixy = y * TILE_SIZE + imgy;
@@ -153,7 +154,7 @@ void Chunk::tick(float dt) {
 
 bool Chunk::keepActive() {
 	bool wasActive = isActive();
-	deactivate_timer_ = DEACTIVATE_TIME;
+	deactivate_timer_ = DEACTIVATE_INTERVAL;
 
 	if (wasActive)
 		return false;

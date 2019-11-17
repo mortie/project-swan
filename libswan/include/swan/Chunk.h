@@ -42,7 +42,7 @@ public:
 	bool isActive() { return deactivate_timer_ > 0; }
 
 private:
-	static constexpr float DEACTIVATE_TIME = 20;
+	static constexpr float DEACTIVATE_INTERVAL = 20;
 	static sf::Uint8 *renderbuf;
 
 	bool isCompressed() { return compressed_size_ != -1; }
@@ -51,7 +51,7 @@ private:
 
 	ssize_t compressed_size_ = -1; // -1 if not compressed, a positive number if compressed
 	bool need_render_ = false;
-	float deactivate_timer_ = DEACTIVATE_TIME;
+	float deactivate_timer_ = DEACTIVATE_INTERVAL;
 
 	struct Visuals {
 		sf::Texture tex_;

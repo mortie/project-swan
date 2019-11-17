@@ -4,36 +4,36 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <SFML/Graphics/Image.hpp>
+#include <SDL2/SDL.h>
 
 #include "Tile.h"
 #include "Item.h"
 #include "WorldGen.h"
 #include "Entity.h"
-#include "Asset.h"
+#include "Resource.h"
 
 namespace Swan {
 
 class Mod {
 public:
-	using ModID = uint32_t;
-
 	void init(const std::string &name);
-	void registerTile(const std::string &name, Tile *tile);
-	void registerItem(const std::string &name, Item *item);
-	void registerWorldGen(const std::string &name, WorldGen::Factory *gen);
-	void registerEntity(const std::string &name, Entity::Factory *ent);
-	void registerAsset(const std::string &name, Asset *asset);
 
-	std::unique_ptr<sf::Image> loadImage(const std::string &path);
+	void registerImage(const std::string &name, const std::string &path, int frame_height = -1);
+
+	void registerTile(const Tile::Builder &tile);
+	void registerItem(const Item::Builder &item);
+	void registerWorldGen(const std::string &name, std::unique_ptr<WorldGen::Factory> gen);
+	void registerEntity(const std::string &name, std::unique_ptr<Entity::Factory> ent);
 
 	std::string name_;
 	std::string path_;
-	std::vector<std::shared_ptr<Tile>> tiles_;
-	std::vector<std::shared_ptr<Item>> items_;
-	std::vector<std::shared_ptr<WorldGen::Factory>> worldgens_;
-	std::vector<std::shared_ptr<Entity::Factory>> entities_;
-	std::vector<std::shared_ptr<Asset>> assets_;
+
+	std::unordered_map<std::string, std::unique_ptr<ImageResource>> images_;
+	std::unordered_map<std::string, Tile::Builder> tiles_;
+	std::unordered_map<std::string, Item::Builder> items_;
+	std::unordered_map<std::string, std::unique_ptr<WorldGen::Factory>> worldgens_;
+	std::unordered_map<std::string, std::unique_ptr<Entity::Factory>> entities_;
+	SDL_Renderer *renderer_;
 	bool inited_ = false;
 };
 

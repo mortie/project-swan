@@ -26,7 +26,7 @@ void Body::collideX(WorldPlane &plane) {
 	for (int y = (int)floor(bounds.top() + epsilon); y <= (int)floor(bounds.bottom() - epsilon); ++y) {
 		int lx = (int)floor(bounds.left() + epsilon);
 		Tile &left = plane.getTile({ lx, y });
-		if (left.is_solid) {
+		if (left.is_solid_) {
 			bounds.pos.x = (float)lx + 1.0;
 			collided = true;
 			break;
@@ -34,7 +34,7 @@ void Body::collideX(WorldPlane &plane) {
 
 		int rx = (int)floor(bounds.right() - epsilon);
 		Tile &right = plane.getTile({ rx, y });
-		if (right.is_solid) {
+		if (right.is_solid_) {
 			bounds.pos.x = (float)rx - bounds.size.x;
 			collided = true;
 			break;
@@ -58,7 +58,7 @@ void Body::collideY(WorldPlane &plane) {
 	for (int x = (int)floor(bounds.left() + epsilon); x <= (int)floor(bounds.right() - epsilon); ++x) {
 		int ty = (int)floor(bounds.top() + epsilon);
 		Tile &top = plane.getTile({ x, ty });
-		if (top.is_solid) {
+		if (top.is_solid_) {
 			bounds.pos.y = (float)ty + 1.0;
 			collided = true;
 			break;
@@ -66,7 +66,7 @@ void Body::collideY(WorldPlane &plane) {
 
 		int by = (int)floor(bounds.bottom() - epsilon);
 		Tile &right = plane.getTile({ x, by });
-		if (right.is_solid) {
+		if (right.is_solid_) {
 			bounds.pos.y = (float)by - bounds.size.y;
 			collided = true;
 			on_ground_ = true;

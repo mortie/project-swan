@@ -2,33 +2,33 @@
 
 #include "common.h"
 
+#include <SDL2/SDL.h>
+
 namespace Swan {
 
 class Win {
 public:
-	Win(sf::RenderWindow *win): window_(win) {}
+	Win(SDL_Renderer *renderer): renderer_(renderer) {}
 
 	void setPos(const Vec2 &pos) {
-		transform_ = sf::Transform()
-			.scale(scale_, scale_)
-			.translate((pos - cam_) * TILE_SIZE);
+		//transform_ = sf::Transform()
+		//	.scale(scale_, scale_)
+		//	.translate((pos - cam_) * TILE_SIZE);
 	}
 
 	void draw(const sf::Drawable &drawable) {
-		window_->draw(drawable, transform_);
+		//window_->draw(drawable, transform_);
 	}
 
 	Vec2 getSize() {
-		sf::Vector2u v = window_->getSize();
-		return Vec2(v.x, v.y) / (TILE_SIZE * scale_);
+		//sf::Vector2u v = window_->getSize();
+		//return Vec2(v.x, v.y) / (TILE_SIZE * scale_);
+		return Vec2(10, 10);
 	}
 
 	float scale_ = 2;
 	Vec2 cam_;
-
-private:
-	sf::RenderWindow *window_;
-	sf::Transform transform_;
+	SDL_Renderer *renderer_;
 };
 
 }

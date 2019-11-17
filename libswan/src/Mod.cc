@@ -11,47 +11,32 @@ void Mod::init(const std::string &name) {
 	fprintf(stderr, "Mod initing: %s\n", name_.c_str());
 }
 
-void Mod::registerTile(const std::string &name, Tile *tile) {
-	tile->name = name_ + "::" + name;
-	fprintf(stderr, "Adding tile: %s\n", tile->name.c_str());
-	tiles_.push_back(std::shared_ptr<Tile>(tile));
+void Mod::registerImage(const std::string &name, const std::string &path, int frame_height) {
+	images_[name] = std::make_unique<ImageResource>(
+		renderer_, name_ = "::" + name, path, frame_height);
+	fprintf(stderr, "Adding image: %s\n", images_[name]->name_.c_str());
 }
 
-void Mod::registerItem(const std::string &name, Item *item) {
-	item->name = name_ + "::" + name;
-	fprintf(stderr, "Adding item: %s\n", item->name.c_str());
-	items_.push_back(std::shared_ptr<Item>(item));
+void Mod::registerTile(const Tile::Builder &tile) {
+	tiles_[tile.name] = tile;
+	fprintf(stderr, "Adding tile: %s::%s\n", name_.c_str(), tile.name.c_str());
 }
 
-void Mod::registerWorldGen(const std::string &name, WorldGen::Factory *gen) {
+void Mod::registerItem(const Item::Builder &item) {
+	items_[item.name] = item;
+	fprintf(stderr, "Adding item: %s::%s\n", name_.c_str(), item.name.c_str());
+}
+
+void Mod::registerWorldGen(const std::string &name, std::unique_ptr<WorldGen::Factory> gen) {
 	gen->name_ = name_ + "::" + name;
 	fprintf(stderr, "Adding world gen: %s\n", gen->name_.c_str());
-	worldgens_.push_back(std::shared_ptr<WorldGen::Factory>(gen));
+	worldgens_[name] = std::move(gen);
 }
 
-void Mod::registerEntity(const std::string &name, Entity::Factory *ent) {
+void Mod::registerEntity(const std::string &name, std::unique_ptr<Entity::Factory> ent) {
 	ent->name_ = name_ + "::" + name;
 	fprintf(stderr, "Adding entity: %s\n",ent->name_.c_str());
-	entities_.push_back(std::shared_ptr<Entity::Factory>(ent));
-}
-
-void Mod::registerAsset(const std::string &name, Asset *asset) {
-	asset->name_ = name_ + "::" + name;
-
-	if (!asset->load(path_)) {
-		fprintf(stderr, "Asset %s: Failed to load image '%s'", name.c_str(), (path_ + "/" + asset->path_).c_str());
-		abort();
-	}
-
-	assets_.push_back(std::shared_ptr<Asset>(asset));
-}
-
-std::unique_ptr<sf::Image> Mod::loadImage(const std::string &path) {
-	std::unique_ptr<sf::Image> img(new sf::Image());
-	if (!img->loadFromFile(path_ + "/" + path))
-		img->create(TILE_SIZE, TILE_SIZE, sf::Color(245, 66, 242));
-
-	return img;
+	entities_[name] = std::move(ent);
 }
 
 }

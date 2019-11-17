@@ -2,25 +2,36 @@
 
 #include <stdint.h>
 #include <string>
+#include <optional>
 #include <memory>
-#include <SFML/Graphics/Image.hpp>
+
+#include "Item.h"
+#include "Resource.h"
 
 namespace Swan {
 
-struct Tile {
+class Tile {
 public:
 	using ID = uint16_t;
 
-	std::unique_ptr<sf::Image> image;
-	bool is_solid = true;
-	std::string dropped_item = "";
+	struct Builder {
+		std::string name;
+		std::string image;
+		bool is_solid = true;
+		std::optional<std::string> dropped_item = std::nullopt;
+	};
 
-	std::string name = "";
+	Tile(const ImageResource &image, const std::string &mod, const Builder &builder):
+		name_(mod+"::"+builder.name), image_(image),
+		is_solid_(builder.is_solid), dropped_item_(builder.dropped_item) {}
 
-	static Tile INVALID_TILE;
+	const std::string name_;
+	const ImageResource &image_;
+	const bool is_solid_;
+	const std::optional<std::string> dropped_item_;
+
+	static std::unique_ptr<Tile> createInvalid(Context &ctx);
 	static ID INVALID_ID;
-	static Tile *createInvalid();
-	static void initGlobal();
 };
 
 }
