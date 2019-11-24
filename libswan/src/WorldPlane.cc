@@ -1,7 +1,6 @@
 #include "WorldPlane.h"
 
 #include <math.h>
-#include <SFML/System/Clock.hpp>
 #include <iostream>
 
 #include "World.h"
@@ -134,14 +133,14 @@ void WorldPlane::draw(Win &win) {
 		ent->draw(getContext(), win);
 
 	if (debug_boxes_.size() > 0) {
-		sf::RectangleShape rect(Vec2(TILE_SIZE, TILE_SIZE));
-		rect.setFillColor(sf::Color(60, 70, 200, 100));
-		rect.setOutlineThickness(1);
-		rect.setOutlineColor(sf::Color(50, 65, 170, 200));
-		for (auto &pos: debug_boxes_) {
-			win.setPos(pos);
-			win.draw(rect);
-		}
+		//sf::RectangleShape rect(Vec2(TILE_SIZE, TILE_SIZE));
+		//rect.setFillColor(sf::Color(60, 70, 200, 100));
+		//rect.setOutlineThickness(1);
+		//rect.setOutlineColor(sf::Color(50, 65, 170, 200));
+		//for (auto &pos: debug_boxes_) {
+		//	win.setPos(pos);
+		//	win.draw(rect);
+		//}
 	}
 }
 

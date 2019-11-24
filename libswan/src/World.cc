@@ -1,20 +1,18 @@
 #include "World.h"
 
-#include <SFML/System/Clock.hpp>
-
 #include "Game.h"
 #include "Win.h"
 
 namespace Swan {
 
-static bool chunkLine(int l, sf::Clock &clock, WorldPlane &plane, ChunkPos &abspos, const Vec2i &dir) {
+static bool chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &dir) {
 	for (int i = 0; i < l; ++i) {
 		plane.getChunk(abspos);
 
 		// Don't blow our frame budget on generating chunks,
 		// but generate as many as possible within the budget
-		if (clock.getElapsedTime().asSeconds() > 1.0 / 100)
-			return true;
+		//if (clock.getElapsedTime().asSeconds() > 1.0 / 100)
+		//	return true;
 		abspos += dir;
 	}
 
@@ -22,15 +20,14 @@ static bool chunkLine(int l, sf::Clock &clock, WorldPlane &plane, ChunkPos &absp
 }
 
 void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
-	sf::Clock clock;
 	int l = 0;
 
 	for (int i = 0; i < 4; ++i) {
-		if (chunkLine(l, clock, plane, abspos, Vec2i(0, -1))) break;
-		if (chunkLine(l, clock, plane, abspos, Vec2i(1, 0))) break;
+		if (chunkLine(l, plane, abspos, Vec2i(0, -1))) break;
+		if (chunkLine(l, plane, abspos, Vec2i(1, 0))) break;
 		l += 1;
-		if (chunkLine(l, clock, plane, abspos, Vec2i(0, 1))) break;
-		if (chunkLine(l, clock, plane, abspos, Vec2i(-1, 0))) break;
+		if (chunkLine(l, plane, abspos, Vec2i(0, 1))) break;
+		if (chunkLine(l, plane, abspos, Vec2i(-1, 0))) break;
 		l += 1;
 	}
 }

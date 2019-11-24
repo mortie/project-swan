@@ -2,7 +2,6 @@
 
 #include <dlfcn.h>
 #include <math.h>
-#include <SFML/Window/Mouse.hpp>
 #include <time.h>
 #include <memory>
 

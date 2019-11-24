@@ -51,7 +51,7 @@ private:
 	float deactivate_timer_ = DEACTIVATE_INTERVAL;
 
 	struct Visuals {
-		std::unique_ptr<SDL_Texture, void (*)(SDL_Texture *)> texture_{nullptr, SDL_DestroyTexture};
+		std::unique_ptr<SDL_Surface, void (*)(SDL_Surface *)> surface_{nullptr, SDL_FreeSurface};
 		bool dirty_;
 	};
 	std::unique_ptr<Visuals> visuals_;
