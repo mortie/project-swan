@@ -5,6 +5,7 @@
 #include <string>
 
 #include "common.h"
+#include "Mod.h"
 #include "World.h"
 
 namespace Swan {
@@ -15,7 +16,8 @@ public:
 		win_(win),
 		mouse_pos_(0, 0) {}
 
-	void createWorld(const std::string &worldgen);
+	std::unique_ptr<Mod> loadMod(const std::string &path);
+	void createWorld(const std::string &worldgen, std::vector<std::unique_ptr<Mod>> &&mods);
 
 	void onKeyDown(SDL_Keysym sym) { pressed_keys_[sym.scancode] = true; }
 	void onKeyUp(SDL_Keysym sym) { pressed_keys_[sym.scancode] = false; }

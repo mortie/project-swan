@@ -67,4 +67,17 @@ std::unique_ptr<ImageResource> ImageResource::createInvalid(Context &ctx) {
 		PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE);
 }
 
+void ResourceManager::tick(float dt) {
+	for (auto &[k, v]: images_) {
+		v->tick(dt);
+	}
+}
+
+ImageResource &ResourceManager::getImage(const std::string &name) const {
+	auto it = images_.find(name);
+	if (it == end(images_))
+		return *invalid_image_;
+	return *it->second;
+}
+
 }

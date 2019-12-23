@@ -11,28 +11,38 @@
 #include "WorldGen.h"
 #include "Entity.h"
 #include "Resource.h"
+#include "util.h"
 
 namespace Swan {
 
 class Mod {
 public:
+	Mod(const std::string &path, SDL_Renderer *renderer): path_(path), renderer_(renderer) {}
+
 	void init(const std::string &name);
 
 	void registerImage(const std::string &name, const std::string &path, int frame_height = -1);
 
-	void registerTile(const Tile::Builder &tile);
-	void registerItem(const Item::Builder &item);
+	void registerTile(Tile::Builder tile);
+	void registerItem(Item::Builder item);
 	void registerWorldGen(const std::string &name, std::unique_ptr<WorldGen::Factory> gen);
 	void registerEntity(const std::string &name, std::unique_ptr<Entity::Factory> ent);
 
-	std::string name_;
-	std::string path_;
+	Iter<std::unique_ptr<Tile>> buildTiles(const ResourceManager &resources);
+	Iter<std::unique_ptr<Item>> buildItems(const ResourceManager &resources);
+	Iter<WorldGen::Factory *> getWorldGens();
+	Iter<Entity::Factory *> getEntities();
 
-	std::unordered_map<std::string, std::unique_ptr<ImageResource>> images_;
-	std::unordered_map<std::string, Tile::Builder> tiles_;
-	std::unordered_map<std::string, Item::Builder> items_;
-	std::unordered_map<std::string, std::unique_ptr<WorldGen::Factory>> worldgens_;
-	std::unordered_map<std::string, std::unique_ptr<Entity::Factory>> entities_;
+	std::string name_ = "@uninitialized";
+
+private:
+	std::vector<std::unique_ptr<ImageResource>> images_;
+	std::vector<Tile::Builder> tiles_;
+	std::vector<Item::Builder> items_;
+	std::vector<std::unique_ptr<WorldGen::Factory>> worldgens_;
+	std::vector<std::unique_ptr<Entity::Factory>> entities_;
+
+	std::string path_;
 	SDL_Renderer *renderer_;
 	bool inited_ = false;
 };

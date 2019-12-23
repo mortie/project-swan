@@ -10,6 +10,7 @@
 
 namespace Swan {
 
+// TODO: Switch to struct
 class Tile {
 public:
 	using ID = uint16_t;
@@ -21,8 +22,8 @@ public:
 		std::optional<std::string> dropped_item = std::nullopt;
 	};
 
-	Tile(const ImageResource &image, const std::string &mod, const Builder &builder):
-		name_(mod+"::"+builder.name), image_(image),
+	Tile(const ResourceManager &resources, const Builder &builder):
+		name_(builder.name), image_(resources.getImage(builder.image)),
 		is_solid_(builder.is_solid), dropped_item_(builder.dropped_item) {}
 
 	const std::string name_;

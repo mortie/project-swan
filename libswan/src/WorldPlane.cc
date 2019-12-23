@@ -27,7 +27,7 @@ static Chunk::RelPos relPos(TilePos pos) {
 }
 
 Context WorldPlane::getContext() {
-	return { .game = *world_->game_, .world = *world_, .plane = *this };
+	return { .game = *world_->game_, .world = *world_, .plane = *this, .resources = world_->resources_ };
 }
 
 Entity &WorldPlane::spawnEntity(const std::string &name, const SRF &params) {

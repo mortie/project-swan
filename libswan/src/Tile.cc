@@ -8,9 +8,9 @@ namespace Swan {
 Tile::ID Tile::INVALID_ID = 0;
 
 std::unique_ptr<Tile> Tile::createInvalid(Context &ctx) {
-	return std::make_unique<Tile>(*ctx.game.invalid_image_, "@internal", Builder{
-		.name = "invalid",
-		.image = "invalid",
+	return std::make_unique<Tile>(ctx.resources, Builder{
+		.name = "@internal::invalid",
+		.image = "@internal::invalid",
 	});
 }
 

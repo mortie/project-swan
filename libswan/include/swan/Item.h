@@ -6,6 +6,7 @@
 
 namespace Swan {
 
+// TODO: Switch to struct
 class Item {
 public:
 	struct Builder {
@@ -13,8 +14,8 @@ public:
 		std::string image;
 	};
 
-	Item(const ImageResource &image, const std::string &mod, const Builder &builder):
-		name_(mod+"::"+builder.name), image_(image) {}
+	Item(const ResourceManager &resources, const Builder &builder):
+		name_(builder.name), image_(resources.getImage(builder.image)) {}
 
 	const std::string name_;
 	const ImageResource &image_;

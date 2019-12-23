@@ -1,17 +1,35 @@
 #include "Game.h"
 
-#include <dlfcn.h>
 #include <math.h>
 #include <time.h>
 #include <memory>
 
 #include "Tile.h"
+#include "OS.h"
 #include "Win.h"
 
 namespace Swan {
 
-void Game::createWorld(const std::string &worldgen) {
+std::unique_ptr<Mod> Game::loadMod(const std::string &path) {
+	OS::Dynlib dl(path + "/mod");
+
+	auto init = dl.get<void (*)(Swan::Mod &)>("mod_init");
+	if (init == NULL) {
+		fprintf(stderr, "%s: No 'mod_init' function!\n", path.c_str());
+		return NULL;
+	}
+
+	std::unique_ptr<Mod> mod = std::make_unique<Mod>(path, win_.renderer_);
+	init(*mod);
+	return mod;
+}
+
+void Game::createWorld(const std::string &worldgen, std::vector<std::unique_ptr<Mod>> &&mods) {
 	world_.reset(new World(this, time(NULL)));
+
+	for (auto &mod: mods) {
+		world_->addMod(std::move(mod));
+	}
 
 	world_->setWorldGen(worldgen);
 	world_->setCurrentPlane(world_->addPlane());

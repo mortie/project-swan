@@ -3,9 +3,9 @@
 EntPlayer::EntPlayer(const Swan::Context &ctx, const Swan::SRF &params):
 		PhysicsEntity(SIZE, MASS),
 		anims_{
-			Swan::Animation(ctx.world.getImage("core::player-still"), 0.8),
-			Swan::Animation(ctx.world.getImage("core::player-running"), 1),
-			Swan::Animation(ctx.world.getImage("core::player-running"), 1, Swan::Animation::Flags::HFLIP) } {
+			Swan::Animation(ctx.resources.getImage("core::player-still"), 0.8),
+			Swan::Animation(ctx.resources.getImage("core::player-running"), 1),
+			Swan::Animation(ctx.resources.getImage("core::player-running"), 1, Swan::Animation::Flags::HFLIP) } {
 
 	readSRF(ctx, params);
 }

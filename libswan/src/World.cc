@@ -9,6 +9,7 @@ static bool chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &d
 	for (int i = 0; i < l; ++i) {
 		plane.getChunk(abspos);
 
+		// TODO: Fix this with a non-SFML clock implementation
 		// Don't blow our frame budget on generating chunks,
 		// but generate as many as possible within the budget
 		//if (clock.getElapsedTime().asSeconds() > 1.0 / 100)
@@ -32,8 +33,28 @@ void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
 	}
 }
 
-void World::setCurrentPlane(WorldPlane &plane) {
-	current_plane_ = plane.id_;
+void World::addMod(std::unique_ptr<Mod> mod) {
+	printf("World: Adding mod %s\n", mod->name_.c_str());
+
+	for (auto t: mod->buildTiles(resources_)) {
+		Tile::ID id = tiles_.size();
+		tiles_map_[t->name_] = id;
+		tiles_.push_back(std::move(t));
+	}
+
+	for (auto i: mod->buildItems(resources_)) {
+		items_[i->name_] = std::move(i);
+	}
+
+	for (auto *gen: mod->getWorldGens()) {
+		worldgens_[gen->name_] = gen;
+	}
+
+	for (auto *ent: mod->getEntities()) {
+		ents_[ent->name_] = ent;
+	}
+
+	mods_.push_back(std::move(mod));
 }
 
 void World::setWorldGen(const std::string &gen) {
@@ -44,36 +65,21 @@ void World::spawnPlayer() {
 	player_ = &planes_[current_plane_].spawnPlayer();
 }
 
-void World::registerTile(std::shared_ptr<Tile> t) {
-	Tile::ID id = tiles_.size();
-	tiles_map_[t->name_] = id;
-	tiles_.push_back(std::move(t));
+void World::setCurrentPlane(WorldPlane &plane) {
+	current_plane_ = plane.id_;
 }
 
-void World::registerItem(std::shared_ptr<Item> i) {
-	items_[i->name_] = std::move(i);
-}
-
-void World::registerWorldGen(std::shared_ptr<WorldGen::Factory> gen) {
-	worldgens_[gen->name_] = std::move(gen);
-}
-
-void World::registerEntity(std::shared_ptr<Entity::Factory> ent) {
-	ents_[ent->name_] = std::move(ent);
-}
-
-void World::registerImage(std::shared_ptr<ImageResource> i) {
-	images_[i->name_] = std::move(i);
-}
-
-ImageResource &World::getImage(const std::string &name) {
-	auto iter = images_.find(name);
-	if (iter == images_.end()) {
-		fprintf(stderr, "Tried to get non-existant asset ''%s'!\n", name.c_str());
+WorldPlane &World::addPlane(const std::string &gen) {
+	WorldPlane::ID id = planes_.size();
+	if (worldgens_.find(gen) == worldgens_.end()) {
+		fprintf(stderr, "Tried to add plane with non-existant world gen '%s'!\n",
+				gen.c_str());
 		abort();
 	}
 
-	return *iter->second;
+	WorldGen *g = worldgens_[gen]->create(*this);
+	planes_.push_back(WorldPlane(id, this, std::shared_ptr<WorldGen>(g)));
+	return planes_[id];
 }
 
 Item &World::getItem(const std::string &name) {
@@ -103,19 +109,6 @@ Tile &World::getTileByID(Tile::ID id) {
 Tile &World::getTile(const std::string &name) {
 	Tile::ID id = getTileID(name);
 	return getTileByID(id);
-}
-
-WorldPlane &World::addPlane(const std::string &gen) {
-	WorldPlane::ID id = planes_.size();
-	if (worldgens_.find(gen) == worldgens_.end()) {
-		fprintf(stderr, "Tried to add plane with non-existant world gen '%s'!\n",
-				gen.c_str());
-		abort();
-	}
-
-	WorldGen *g = worldgens_[gen]->create(*this);
-	planes_.push_back(WorldPlane(id, this, std::shared_ptr<WorldGen>(g)));
-	return planes_[id];
 }
 
 void World::draw(Win &win) {

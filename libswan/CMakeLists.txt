@@ -4,8 +4,9 @@ add_library(libswan SHARED
 	src/Chunk.cc
 	src/Game.cc
 	src/Item.cc
-	src/Resource.cc
 	src/Mod.cc
+	src/OS.cc
+	src/Resource.cc
 	src/SRF.cc
 	src/Tile.cc
 	src/Timer.cc

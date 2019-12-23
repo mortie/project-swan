@@ -19,11 +19,13 @@ class Game;
 class World;
 class WorldPlane;
 class Win;
+class ResourceManager;
 
 struct Context {
 	Game &game;
 	World &world;
 	WorldPlane &plane;
+	ResourceManager &resources;
 };
 
 }

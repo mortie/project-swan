@@ -7,9 +7,9 @@
 namespace Swan {
 
 std::unique_ptr<Item> Item::createInvalid(Context &ctx) {
-	return std::make_unique<Item>(*ctx.game.invalid_image_, "@internal", Builder{
-		.name = "invalid",
-		.image = "invalid",
+	return std::make_unique<Item>(ctx.resources, Builder{
+		.name = "@internal::invalid",
+		.image = "@internal::invalid",
 	});
 }
 

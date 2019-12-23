@@ -16,8 +16,6 @@ class Chunk {
 public:
 	using RelPos = TilePos;
 
-	ChunkPos pos_;
-
 	Chunk(ChunkPos pos): pos_(pos) {
 		data_.reset(new uint8_t[CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)]);
 		visuals_.reset(new Visuals());
@@ -37,6 +35,8 @@ public:
 
 	bool keepActive(); // Returns true if chunk was inactive
 	bool isActive() { return deactivate_timer_ > 0; }
+
+	ChunkPos pos_;
 
 private:
 	static constexpr float DEACTIVATE_INTERVAL = 20;

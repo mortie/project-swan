@@ -55,6 +55,9 @@ int main() {
 	Win win(renderer.get());
 
 	Game game(win);
+	std::vector<std::unique_ptr<Mod>> mods;
+	mods.push_back(game.loadMod("core.mod"));
+	game.createWorld("core::default", std::move(mods));
 
 	auto prevTime = std::chrono::steady_clock::now();
 

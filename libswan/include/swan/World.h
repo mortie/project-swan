@@ -12,6 +12,7 @@
 #include "WorldGen.h"
 #include "Entity.h"
 #include "Resource.h"
+#include "Mod.h"
 
 namespace Swan {
 
@@ -21,33 +22,36 @@ class World {
 public:
 	World(Game *game, unsigned long rand_seed): game_(game), random_(rand_seed) {}
 
-	WorldPlane &addPlane(const std::string &gen);
-	WorldPlane &addPlane() { return addPlane(default_world_gen_); }
-	void setCurrentPlane(WorldPlane &plane);
+	void addMod(std::unique_ptr<Mod> mod);
 	void setWorldGen(const std::string &gen);
 	void spawnPlayer();
-	void registerTile(std::shared_ptr<Tile> t);
-	void registerItem(std::shared_ptr<Item> i);
-	void registerWorldGen(std::shared_ptr<WorldGen::Factory> gen);
-	void registerEntity(std::shared_ptr<Entity::Factory> ent);
-	void registerImage(std::shared_ptr<ImageResource> i);
+
+	void setCurrentPlane(WorldPlane &plane);
+	WorldPlane &addPlane(const std::string &gen);
+	WorldPlane &addPlane() { return addPlane(default_world_gen_); }
 
 	Tile &getTileByID(Tile::ID id);
 	Tile::ID getTileID(const std::string &name);
 	Tile &getTile(const std::string &name);
 	Item &getItem(const std::string &name);
-	ImageResource &getImage(const std::string &name);
 
 	void draw(Win &win);
 	void update(float dt);
 	void tick(float dt);
 
-	std::vector<std::shared_ptr<Tile>> tiles_;
-	std::map<std::string, Tile::ID> tiles_map_;
-	std::map<std::string, std::shared_ptr<Item>> items_;
-	std::map<std::string, std::shared_ptr<WorldGen::Factory>> worldgens_;
-	std::map<std::string, std::shared_ptr<Entity::Factory>> ents_;
-	std::map<std::string, std::shared_ptr<ImageResource>> images_;
+	std::vector<std::unique_ptr<Mod>> mods_;
+
+	// World owns tiles and items, the mod just has Builder objects
+	std::vector<std::unique_ptr<Tile>> tiles_;
+	std::unordered_map<std::string, Tile::ID> tiles_map_;
+	std::unordered_map<std::string, std::unique_ptr<Item>> items_;
+
+	// The mods themselves retain ownership of world gens and entities,
+	// the world just has non-owning pointers to them
+	std::unordered_map<std::string, WorldGen::Factory *> worldgens_;
+	std::unordered_map<std::string, Entity::Factory *> ents_;
+
+	ResourceManager resources_;
 	Entity *player_;
 	Game *game_;
 
