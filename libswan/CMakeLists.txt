@@ -12,7 +12,9 @@ add_library(libswan SHARED
 	src/Timer.cc
 	src/World.cc
 	src/WorldPlane.cc)
-target_include_directories(libswan PUBLIC "include/swan")
+target_include_directories(libswan
+	PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include"
+	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/include/swan")
 set_target_properties(libswan PROPERTIES OUTPUT_NAME swan)
 target_link_libraries(libswan ${libraries})
 

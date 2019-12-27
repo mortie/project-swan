@@ -24,7 +24,7 @@ endif()
 
 add_subdirectory(third_party)
 
-set(libraries	imgui SDL2 SDL2_image dl z)
+set(libraries imgui SDL2 SDL2_image dl z)
 
 # We want to be able to use C++20 designated initializers,
 # but Clang doesn't support them yet.
@@ -32,7 +32,6 @@ set(libraries	imgui SDL2 SDL2_image dl z)
 add_compile_options(-Wno-c99-extensions)
 
 include_directories(
-	${PROJECT_SOURCE_DIR}/libswan/include
 	${PROJECT_SOURCE_DIR}/third_party)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/lib64;${CMAKE_INSTALL_PREFIX}/swan/libswan;${CMAKE_INSTALL_PREFIX}/swan/third_party")
 

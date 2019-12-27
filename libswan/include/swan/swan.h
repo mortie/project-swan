@@ -6,7 +6,9 @@
 #include <swan/Chunk.h>
 #include <swan/Entity.h>
 #include <swan/Game.h>
+#include <swan/Item.h>
 #include <swan/Mod.h>
+#include <swan/OS.h>
 #include <swan/Resource.h>
 #include <swan/SRF.h>
 #include <swan/Tile.h>
@@ -17,3 +19,4 @@
 #include <swan/WorldGen.h>
 #include <swan/WorldPlane.h>
 #include <swan/common.h>
+#include <swan/util.h>
