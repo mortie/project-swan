@@ -19,3 +19,29 @@ set_target_properties(libswan PROPERTIES OUTPUT_NAME swan)
 target_link_libraries(libswan ${libraries})
 
 install(TARGETS libswan DESTINATION swan/libswan)
+
+add_executable(test_libswan
+	test/lib/test.cc
+	test/Animation.t.cc
+	test/Body.t.cc
+	test/BoundingBox.t.cc
+	test/common.t.cc
+	test/Entity.t.cc
+	test/Game.t.cc
+	test/Item.t.cc
+	test/Mod.t.cc
+	test/OS.t.cc
+	test/Resource.t.cc
+	test/SRF.t.cc
+	test/swan.t.cc
+	test/Tile.t.cc
+	test/Timer.t.cc
+	test/util.t.cc
+	test/Vector2.t.cc
+	test/Win.t.cc
+	test/World.t.cc
+	test/WorldGen.t.cc
+	test/WorldPlane.t.cc)
+target_link_libraries(test_libswan libswan)
+target_include_directories(test_libswan
+	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/include/swan")
