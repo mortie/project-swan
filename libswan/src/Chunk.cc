@@ -101,6 +101,7 @@ void Chunk::render(const Context &ctx) {
 				tile = &ctx.world.getTileByID(id);
 			}
 
+			// TODO: Reimplement this for SDL
 			/*
 			const sf::Uint8 *imgptr = NULL;
 			//const sf::Uint8 *imgptr = tile->image->getPixelsPtr();
