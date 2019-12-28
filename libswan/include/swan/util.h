@@ -11,7 +11,7 @@ class Deferred {
 public:
 	Deferred(Func func): func_(func) {}
 	Deferred(const Deferred &def) = delete;
-	Deferred(const Deferred &&def) noexcept: func_(def.func_) { def.active = false; }
+	Deferred(Deferred &&def) noexcept: func_(def.func_) { def.active_ = false; }
 	~Deferred() { if (active_) func_(); }
 
 private:

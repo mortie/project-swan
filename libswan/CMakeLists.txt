@@ -37,6 +37,7 @@ add_executable(test_libswan
 	test/Tile.t.cc
 	test/Timer.t.cc
 	test/util.t.cc
+	test/log.t.cc
 	test/Vector2.t.cc
 	test/Win.t.cc
 	test/World.t.cc
