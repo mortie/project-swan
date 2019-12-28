@@ -19,4 +19,5 @@
 #include <swan/WorldGen.h>
 #include <swan/WorldPlane.h>
 #include <swan/common.h>
+#include <swan/log.h>
 #include <swan/util.h>
