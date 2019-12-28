@@ -40,12 +40,12 @@ int main() {
 			"Project: SWAN",
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 			640, 480,
-			SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE),
+			SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI),
 		SDL_DestroyWindow);
 
 	auto renderer = makeRaiiPtr(
 		SDL_CreateRenderer(
-			window.get(), -1, SDL_RENDERER_ACCELERATED),
+			window.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
 		SDL_DestroyRenderer);
 	sdlassert(renderer, "Could not create renderer\n");
 
@@ -126,8 +126,9 @@ int main() {
 			}
 		}
 
+		SDL_RenderClear(renderer.get());
 		game.draw();
-		SDL_UpdateWindowSurface(window.get());
+		SDL_RenderPresent(renderer.get());
 	}
 
 exit:
