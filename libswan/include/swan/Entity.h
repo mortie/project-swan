@@ -42,7 +42,7 @@ public:
 	PhysicsEntity(Vec2 size, float mass):
 		body_(size, mass) {}
 
-	virtual std::optional<BoundingBox> getBounds() { return body_.getBounds(); }
+	virtual std::optional<BoundingBox> getBounds() override { return body_.getBounds(); }
 
 	virtual void update(const Context &ctx, float dt) override {
 		body_.friction();
