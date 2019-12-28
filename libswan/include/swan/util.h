@@ -2,8 +2,32 @@
 
 #include <optional>
 #include <functional>
+#include <memory>
 
 namespace Swan {
+
+template<typename Func>
+class Deferred {
+public:
+	Deferred(Func func): func_(func) {}
+	Deferred(const Deferred &def) = delete;
+	Deferred(const Deferred &&def) noexcept: func_(def.func_) { def.active = false; }
+	~Deferred() { if (active_) func_(); }
+
+private:
+	Func func_;
+	bool active_ = true;
+};
+
+template<typename T, typename Del>
+std::unique_ptr<T, Del> makeRaiiPtr(T *val, Del d) {
+	return std::unique_ptr<T, Del>(val, d);
+}
+
+template<typename Func>
+Deferred<Func> makeDeferred(Func func) {
+	return Deferred(func);
+}
 
 // Ret can't be a reference, because C++ doesn't support optional<T&>.
 template<typename Ret, typename Func = std::function<std::optional<Ret>()>>

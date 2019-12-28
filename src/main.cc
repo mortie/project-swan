@@ -9,11 +9,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#include <swan/common.h>
-#include <swan/World.h>
-#include <swan/Game.h>
-#include <swan/Timer.h>
-#include <swan/Win.h>
+#include <swan/swan.h>
+#include <swan/util.h>
 
 using namespace Swan;
 
@@ -32,13 +29,13 @@ using DeleteFunc = void (*)(T *);
 
 int main() {
 	sdlassert(SDL_Init(SDL_INIT_VIDEO) >= 0, "Could not initialize SDL");
-	std::unique_ptr<void, DeleteFunc<void>> sdl(nullptr, [](void *){ SDL_Quit(); });
+	auto sdl = makeDeferred([] { SDL_Quit(); });
 
 	int imgflags = IMG_INIT_PNG;
 	imgassert(IMG_Init(imgflags) == imgflags, "Could not initialize SDL_Image");
-	std::unique_ptr<void, DeleteFunc<void>> sdl_image(nullptr, [](void *){ IMG_Quit(); });
+	auto sdl_image = makeDeferred([] { IMG_Quit(); });
 
-	std::unique_ptr<SDL_Window, DeleteFunc<SDL_Window>> window(
+	auto window = makeRaiiPtr(
 		SDL_CreateWindow(
 			"Project: SWAN",
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -46,9 +43,9 @@ int main() {
 			SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE),
 		SDL_DestroyWindow);
 
-	std::unique_ptr<SDL_Renderer, DeleteFunc<SDL_Renderer>> renderer(
+	auto renderer = makeRaiiPtr(
 		SDL_CreateRenderer(
-			window.get(),  -1, SDL_RENDERER_ACCELERATED),
+			window.get(), -1, SDL_RENDERER_ACCELERATED),
 		SDL_DestroyRenderer);
 	sdlassert(renderer, "Could not create renderer\n");
 
@@ -96,7 +93,7 @@ int main() {
 		}
 
 		auto now = std::chrono::steady_clock::now();
-		std::chrono::duration<float> dur(prevTime - now);
+		std::chrono::duration<float> dur(now - prevTime);
 		prevTime = now;
 		float dt = dur.count();
 
