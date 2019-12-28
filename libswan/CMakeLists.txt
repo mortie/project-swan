@@ -13,8 +13,8 @@ add_library(libswan SHARED
 	src/World.cc
 	src/WorldPlane.cc)
 target_include_directories(libswan
-	PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include"
-	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/include/swan")
+	PUBLIC "include"
+	PRIVATE "include/swan")
 set_target_properties(libswan PROPERTIES OUTPUT_NAME swan)
 target_link_libraries(libswan ${libraries})
 
@@ -44,4 +44,4 @@ add_executable(test_libswan
 	test/WorldPlane.t.cc)
 target_link_libraries(test_libswan libswan)
 target_include_directories(test_libswan
-	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/include/swan")
+	PRIVATE "include/swan")
