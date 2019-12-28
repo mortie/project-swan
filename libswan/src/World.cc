@@ -20,6 +20,9 @@ static bool chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &d
 	return false;
 }
 
+World::World(Game *game, unsigned long rand_seed):
+	game_(game), random_(rand_seed), resources_(game->win_) {}
+
 void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
 	int l = 0;
 
@@ -34,7 +37,7 @@ void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
 }
 
 void World::addMod(std::unique_ptr<Mod> mod) {
-	printf("World: Adding mod %s\n", mod->name_.c_str());
+	fprintf(stderr, "World: Adding mod %s\n", mod->name_.c_str());
 
 	for (auto t: mod->buildTiles(resources_)) {
 		Tile::ID id = tiles_.size();

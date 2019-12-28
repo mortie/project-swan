@@ -20,7 +20,7 @@ class Game;
 
 class World {
 public:
-	World(Game *game, unsigned long rand_seed): game_(game), random_(rand_seed) {}
+	World(Game *game, unsigned long rand_seed);
 
 	void addMod(std::unique_ptr<Mod> mod);
 	void setWorldGen(const std::string &gen);
@@ -51,11 +51,11 @@ public:
 	std::unordered_map<std::string, WorldGen::Factory *> worldgens_;
 	std::unordered_map<std::string, Entity::Factory *> ents_;
 
-	ResourceManager resources_;
 	Entity *player_;
 	Game *game_;
 
 	std::mt19937 random_;
+	ResourceManager resources_;
 
 private:
 	class ChunkRenderer {

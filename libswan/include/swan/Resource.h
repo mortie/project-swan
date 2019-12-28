@@ -21,7 +21,7 @@ public:
 
 	void tick(float dt);
 
-	static std::unique_ptr<ImageResource> createInvalid(Context &ctx);
+	static std::unique_ptr<ImageResource> createInvalid(Win &win);
 
 	std::unique_ptr<SDL_Surface, void (*)(SDL_Surface *)> surface_{nullptr, &SDL_FreeSurface};
 	std::unique_ptr<SDL_Texture, void (*)(SDL_Texture *)> texture_{nullptr, &SDL_DestroyTexture};
@@ -37,6 +37,8 @@ private:
 
 class ResourceManager {
 public:
+	ResourceManager(Win &win);
+
 	void tick(float dt);
 
 	ImageResource &getImage(const std::string &name) const;

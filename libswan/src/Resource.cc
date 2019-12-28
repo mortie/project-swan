@@ -61,10 +61,14 @@ void ImageResource::tick(float dt) {
 	}
 }
 
-std::unique_ptr<ImageResource> ImageResource::createInvalid(Context &ctx) {
+std::unique_ptr<ImageResource> ImageResource::createInvalid(Win &win) {
 	return std::make_unique<ImageResource>(
-		ctx.game.win_.renderer_, "@internal::invalid", TILE_SIZE, TILE_SIZE,
+		win.renderer_, "@internal::invalid", TILE_SIZE, TILE_SIZE,
 		PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE);
+}
+
+ResourceManager::ResourceManager(Win &win) {
+	invalid_image_ = ImageResource::createInvalid(win);
 }
 
 void ResourceManager::tick(float dt) {
