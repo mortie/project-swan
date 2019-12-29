@@ -43,8 +43,7 @@ Entity &WorldPlane::spawnEntity(const std::string &name, const SRF &params) {
 	}
 
 	spawn_list_.push_back(std::unique_ptr<Entity>(ent));
-	info << "Spawned " << name << ". SRF:";
-	params.pretty(std::clog) << '\n';
+	info << "Spawned " << name << ". SRF: " << params;
 	return *ent;
 }
 

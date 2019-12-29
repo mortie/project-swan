@@ -153,6 +153,11 @@ SRF *SRF::read(std::istream &is) {
 	return srf;
 }
 
+std::ostream &operator<<(std::ostream &os, const SRF &srf) {
+	srf.pretty(os);
+	return os;
+}
+
 SRFObject::SRFObject(std::initializer_list<std::pair<std::string, SRF *>> lst) {
 	for (auto &[k, v]: lst)
 		val[k] = std::unique_ptr<SRF>(v);

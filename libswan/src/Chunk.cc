@@ -54,12 +54,12 @@ void Chunk::compress() {
 		compressed_size_ = destlen;
 
 		info
-			<< "Compressed chunk " << pos_.x << "," << pos_.y << " "
+			<< "Compressed chunk " << pos_ << " "
 			<< "from " << CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID) << "bytes "
 			<< "to " << destlen << " bytes.";
 	} else if (ret == Z_BUF_ERROR) {
 		info
-			<< "Didn't compress chunk " << pos_.x << "," << pos_.y << " "
+			<< "Didn't compress chunk " << pos_ << " "
 			<< "because compressing it would've made it bigger.";
 	} else {
 		warn << "Chunk compression error: " << ret << " (Out of memory?)";
@@ -88,7 +88,7 @@ void Chunk::decompress() {
 	need_render_ = true;
 
 	info
-		<< "Decompressed chunk " << pos_.x << "," << pos_.y << " from "
+		<< "Decompressed chunk " << pos_ << " from "
 		<< compressed_size_ << " bytes to "
 		<< CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID) << " bytes.";
 	compressed_size_ = -1;

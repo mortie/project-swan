@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+#include <ostream>
 
 namespace Swan {
 
@@ -92,9 +93,19 @@ struct Vector2 {
 	}
 
 	static const Vector2<T> ZERO;
+
+	template<typename U>
+	friend std::ostream &operator<<(std::ostream &os, const Vector2<U> &vec);
 };
 
-template<typename T> const Vector2<T> Vector2<T>::ZERO = Vector2<T>(0, 0);
+template<typename T>
+const Vector2<T> Vector2<T>::ZERO = Vector2<T>(0, 0);
+
+template<typename T>
+std::ostream &operator<<(std::ostream &os, const Vector2<T> &vec) {
+	os << '(' << vec.x << ", " << vec.y << ')';
+	return os;
+}
 
 using Vec2 = Vector2<float>;
 using Vec2i = Vector2<int>;

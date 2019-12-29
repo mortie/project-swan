@@ -20,6 +20,8 @@ struct SRF {
 	virtual std::ostream &pretty(std::ostream &os) const = 0;
 
 	static SRF *read(std::istream &is);
+
+	friend std::ostream &operator<<(std::ostream &os, const SRF &srf);
 };
 
 struct SRFObject: SRF {
