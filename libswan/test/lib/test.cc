@@ -86,7 +86,8 @@ int main() {
 			testcase.func();
 			std::cout
 				<< "\r" << color(color_highlight + color_success, "✓ ")
-				<< color(color_success, "Success: ") << "\n";
+				<< color(color_success, "Success: ")
+				<< color(color_desc, testcase.description) << "\n";
 		} catch (const TestFailure &failure) {
 			failed = true;
 			std::cout << printFailure(failure).str();

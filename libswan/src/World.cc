@@ -75,12 +75,13 @@ void World::setCurrentPlane(WorldPlane &plane) {
 
 WorldPlane &World::addPlane(const std::string &gen) {
 	WorldPlane::ID id = planes_.size();
-	if (worldgens_.find(gen) == worldgens_.end()) {
+	auto it = worldgens_.find(gen);
+	if (it ==  end(worldgens_)) {
 		panic << "Tried to add plane with non-existant world gen " << gen << "!";
 		abort();
 	}
 
-	WorldGen *g = worldgens_[gen]->create(*this);
+	WorldGen *g = it->second->create(*this);
 	planes_.push_back(WorldPlane(id, this, std::shared_ptr<WorldGen>(g)));
 	return planes_[id];
 }

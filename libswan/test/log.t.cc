@@ -4,7 +4,7 @@
 
 #include "lib/test.h"
 
-test("basic logging") {
+test("Basic logging") {
 	std::stringstream ostream;
 	Swan::Logger log(ostream, "test");
 	log << "Hello World, a number: " << 100 << ", and a string";

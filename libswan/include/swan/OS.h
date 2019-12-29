@@ -1,9 +1,13 @@
 #pragma once
 
 #include <string>
+#include <ostream>
+#include <stdio.h>
 
 namespace Swan {
 namespace OS {
+
+bool isTTY(FILE *f);
 
 class Dynlib {
 public:
