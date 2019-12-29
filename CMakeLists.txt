@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 3.0)
 project(swan)
 
-set(CMAKE_CXX_CLANG_TIDY
-	clang-tidy
-	--header-filter=.*
-	--checks=-*,bugprone-*,cert-*,performance-*,clang-analyzer-*,-cert-dcl16-c,-cert-err58-cpp,-clang-analyzer-optin.cplusplus.VirtualCall)
+option(USE_CLANG_TIDY "Use clang-tidy for additional checks" ON)
+if(USE_CLANG_TIDY)
+	set(CMAKE_CXX_CLANG_TIDY
+		clang-tidy
+		--header-filter=.*
+		--checks=-*,bugprone-*,cert-*,performance-*,clang-analyzer-*,-cert-dcl16-c,-cert-err58-cpp,-clang-analyzer-optin.cplusplus.VirtualCall)
+endif()
 
 add_compile_options(-std=c++2a -Wall -Wextra -Wpedantic -Wno-unused-parameter)
 if(CMAKE_BUILD_TYPE STREQUAL Sanitize OR CMAKE_BUILD_TYPE STREQUAL "")

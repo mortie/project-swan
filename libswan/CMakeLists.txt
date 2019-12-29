@@ -20,7 +20,7 @@ target_link_libraries(libswan ${libraries})
 
 install(TARGETS libswan DESTINATION swan/libswan)
 
-add_executable(test_libswan
+add_executable(test_libswan EXCLUDE_FROM_ALL
 	test/lib/test.cc
 	test/Animation.t.cc
 	test/Body.t.cc
