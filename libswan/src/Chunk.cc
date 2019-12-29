@@ -2,6 +2,7 @@
 
 #include <zlib.h>
 
+#include "log.h"
 #include "World.h"
 #include "Game.h"
 #include "Win.h"
@@ -51,13 +52,16 @@ void Chunk::compress() {
 		visuals_.reset();
 		compressed_size_ = destlen;
 
-		fprintf(stderr, "Compressed chunk %i,%i from %lu bytes to %lu bytes.\n",
-				pos_.x, pos_.y, CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID), destlen);
+		info
+			<< "Compressed chunk " << pos_.x << "," << pos_.y << " "
+			<< "from " << CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID) << "bytes "
+			<< "to " << destlen << " bytes.";
 	} else if (ret == Z_BUF_ERROR) {
-		fprintf(stderr, "Didn't compress chunk %i,%i because compressing it would've made it bigger.\n",
-				pos_.x, pos_.y);
+		info
+			<< "Didn't compress chunk " << pos_.x << "," << pos_.y << " "
+			<< "because compressing it would've made it bigger.";
 	} else {
-		fprintf(stderr, "Chunk compression error: %i (Out of memory?)\n", ret);
+		warn << "Chunk compression error: " << ret << " (Out of memory?)";
 	}
 }
 
@@ -72,7 +76,7 @@ void Chunk::decompress() {
 			(Bytef *)data_.get(), compressed_size_);
 
 	if (ret != Z_OK) {
-		fprintf(stderr, "Decompressing chunk failed: %i\n", ret);
+		panic << "Decompressing chunk failed: " << ret;
 		abort();
 	}
 
@@ -84,8 +88,10 @@ void Chunk::decompress() {
 	visuals_->dirty_ = true;
 	need_render_ = true;
 
-	fprintf(stderr, "Decompressed chunk %i,%i from %li bytes to %lu bytes.\n",
-			pos_.x, pos_.y, compressed_size_, CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID));
+	info
+		<< "Decompressed chunk " << pos_.x << "," << pos_.y << " from "
+		<< compressed_size_ << " bytes to "
+		<< CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID) << " bytes.";
 	compressed_size_ = -1;
 }
 

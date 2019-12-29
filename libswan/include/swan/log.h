@@ -36,9 +36,8 @@ private:
 	std::string name_;
 };
 
-static Logger log(std::clog, "log");
 static Logger info(std::clog, "info");
-static Logger warning(std::clog, "warning");
+static Logger warn(std::clog, "warning");
 static Logger panic(std::clog, "panic");
 
 }

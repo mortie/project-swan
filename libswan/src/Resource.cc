@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <SDL2/SDL_image.h>
 
+#include "log.h"
 #include "common.h"
 #include "Game.h"
 #include "Win.h"
@@ -15,7 +16,7 @@ ImageResource::ImageResource(
 
 	surface_.reset(IMG_Load(path.c_str()));
 	if (surface_ == nullptr) {
-		fprintf(stderr, "Loading %s failed: %s\n", path.c_str(), SDL_GetError());
+		warn << "Loading " << path << " failed: " << SDL_GetError();
 
 		surface_.reset(SDL_CreateRGBSurface(
 			0, TILE_SIZE, TILE_SIZE, 32, 0, 0, 0, 0));

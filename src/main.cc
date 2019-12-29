@@ -1,6 +1,5 @@
 #include <time.h>
 #include <unistd.h>
-#include <stdio.h>
 #include <vector>
 #include <memory>
 #include <chrono>
@@ -16,7 +15,7 @@ using namespace Swan;
 
 #define errassert(expr, str, errfn) do { \
 	if (!(expr)) { \
-		fprintf(stderr, "%s: %s\n", str, errfn()); \
+		panic << (str) << ": " << errfn(); \
 		return EXIT_FAILURE; \
 	} \
 } while (0)
@@ -47,7 +46,7 @@ int main() {
 		SDL_CreateRenderer(
 			window.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
 		SDL_DestroyRenderer);
-	sdlassert(renderer, "Could not create renderer\n");
+	sdlassert(renderer, "Could not create renderer");
 
 	Win win(renderer.get());
 
@@ -101,7 +100,7 @@ int main() {
 		fpsAcc += dt;
 		fcount += 1;
 		if (fpsAcc >= 4) {
-			fprintf(stderr, "FPS: %.3f\n", fcount / 4.0);
+			info << "FPS: " << fcount / 4.0;
 			fpsAcc -= 4;
 			fcount = 0;
 		}
@@ -110,12 +109,12 @@ int main() {
 
 		if (dt > 0.1) {
 			if (slowFrames == 0)
-				fprintf(stderr, "Warning: delta time is too high! (%.3fs).\n", dt);
+				warn << "Delta time too high! (" << dt << "s)";
 			slowFrames += 1;
 		} else {
 			if (slowFrames > 0) {
 				if (slowFrames > 1)
-					fprintf(stderr, "%i consecutive slow frames.\n", slowFrames);
+					warn << slowFrames << " consecutive slow frames.";
 				slowFrames = 0;
 			}
 

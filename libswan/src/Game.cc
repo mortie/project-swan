@@ -4,6 +4,7 @@
 #include <time.h>
 #include <memory>
 
+#include "log.h"
 #include "Tile.h"
 #include "OS.h"
 #include "Win.h"
@@ -15,7 +16,7 @@ std::unique_ptr<Mod> Game::loadMod(const std::string &path) {
 
 	auto init = dl.get<void (*)(Swan::Mod &)>("mod_init");
 	if (init == NULL) {
-		fprintf(stderr, "%s: No 'mod_init' function!\n", path.c_str());
+		warn << path << ": No 'mod_init' function!";
 		return NULL;
 	}
 

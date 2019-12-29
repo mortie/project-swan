@@ -3,6 +3,7 @@
 #include <math.h>
 #include <iostream>
 
+#include "log.h"
 #include "World.h"
 #include "Game.h"
 #include "Timer.h"
@@ -32,7 +33,7 @@ Context WorldPlane::getContext() {
 
 Entity &WorldPlane::spawnEntity(const std::string &name, const SRF &params) {
 	if (world_->ents_.find(name) == world_->ents_.end()) {
-		fprintf(stderr, "Tried to spawn non-existant entity %s!", name.c_str());
+		panic << "Tried to spawn a non-existant entity " << name << "!";
 		abort();
 	}
 
@@ -42,13 +43,13 @@ Entity &WorldPlane::spawnEntity(const std::string &name, const SRF &params) {
 	}
 
 	spawn_list_.push_back(std::unique_ptr<Entity>(ent));
-	fprintf(stderr, "Spawned %s. SRF: ", name.c_str());
-	params.pretty(std::cerr) << '\n';
+	info << "Spawned " << name << ". SRF:";
+	params.pretty(std::clog) << '\n';
 	return *ent;
 }
 
 void WorldPlane::despawnEntity(Entity &ent) {
-	fprintf(stderr, "Despawned entity.\n");
+	info << "Despawned entity.";
 	despawn_list_.push_back(&ent);
 }
 

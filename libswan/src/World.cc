@@ -1,5 +1,6 @@
 #include "World.h"
 
+#include "log.h"
 #include "Game.h"
 #include "Win.h"
 
@@ -37,7 +38,7 @@ void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
 }
 
 void World::addMod(std::unique_ptr<Mod> mod) {
-	fprintf(stderr, "World: Adding mod %s\n", mod->name_.c_str());
+	info << "World: adding mod " << mod->name_;
 
 	for (auto t: mod->buildTiles(resources_)) {
 		Tile::ID id = tiles_.size();
@@ -75,8 +76,7 @@ void World::setCurrentPlane(WorldPlane &plane) {
 WorldPlane &World::addPlane(const std::string &gen) {
 	WorldPlane::ID id = planes_.size();
 	if (worldgens_.find(gen) == worldgens_.end()) {
-		fprintf(stderr, "Tried to add plane with non-existant world gen '%s'!\n",
-				gen.c_str());
+		panic << "Tried to add plane with non-existant world gen " << gen << "!";
 		abort();
 	}
 
@@ -88,7 +88,7 @@ WorldPlane &World::addPlane(const std::string &gen) {
 Item &World::getItem(const std::string &name) {
 	auto iter = items_.find(name);
 	if (iter == items_.end()) {
-		fprintf(stderr, "Tried to get non-existant item ''%s'!\n", name.c_str());
+		warn << "Tried to get non-existant item " << name << "!";
 		return *game_->invalid_item_;
 	}
 
@@ -98,7 +98,7 @@ Item &World::getItem(const std::string &name) {
 Tile::ID World::getTileID(const std::string &name) {
 	auto iter = tiles_map_.find(name);
 	if (iter == tiles_map_.end()) {
-		fprintf(stderr, "Tried to get non-existant tile ''%s'!\n", name.c_str());
+		warn << "Tried to get non-existant item " << name << "!";
 		return Tile::INVALID_ID;
 	}
 
