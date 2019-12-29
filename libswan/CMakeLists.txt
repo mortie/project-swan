@@ -46,3 +46,7 @@ add_executable(test_libswan EXCLUDE_FROM_ALL
 target_link_libraries(test_libswan libswan)
 target_include_directories(test_libswan
 	PRIVATE "include/swan")
+
+add_custom_target(check_libswan
+	COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_libswan
+	DEPENDS test_libswan)
