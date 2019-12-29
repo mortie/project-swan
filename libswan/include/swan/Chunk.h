@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <memory>
 
+#include "util.h"
 #include "common.h"
 #include "Tile.h"
 
@@ -51,8 +52,8 @@ private:
 	float deactivate_timer_ = DEACTIVATE_INTERVAL;
 
 	struct Visuals {
-		std::unique_ptr<SDL_Surface, void (*)(SDL_Surface *)> surface_{nullptr, SDL_FreeSurface};
-		bool dirty_;
+		RaiiPtr<SDL_Texture> texture_ = makeRaiiPtr<SDL_Texture>(nullptr, SDL_DestroyTexture);
+		bool dirty_ = true;
 	};
 	std::unique_ptr<Visuals> visuals_;
 };

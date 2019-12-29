@@ -1,10 +1,18 @@
-#pragma once
+ #pragma once
 
 #include <optional>
 #include <functional>
 #include <memory>
 
 namespace Swan {
+
+template<typename T, typename Del = void (*)(T *)>
+using RaiiPtr = std::unique_ptr<T, Del>;
+
+template<typename T, typename Del>
+RaiiPtr<T, Del> makeRaiiPtr(T *val, Del d) {
+return std::unique_ptr<T, Del>(val, d);
+}
 
 template<typename Func>
 class Deferred {
@@ -18,11 +26,6 @@ private:
 	Func func_;
 	bool active_ = true;
 };
-
-template<typename T, typename Del>
-std::unique_ptr<T, Del> makeRaiiPtr(T *val, Del d) {
-	return std::unique_ptr<T, Del>(val, d);
-}
 
 template<typename Func>
 Deferred<Func> makeDeferred(Func func) {

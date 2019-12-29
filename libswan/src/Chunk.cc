@@ -1,6 +1,7 @@
 #include "Chunk.h"
 
 #include <zlib.h>
+#include <stdint.h>
 
 #include "log.h"
 #include "World.h"
@@ -83,8 +84,6 @@ void Chunk::decompress() {
 	data_ = std::move(dest);
 
 	visuals_.reset(new Visuals());
-	visuals_->surface_.reset(SDL_CreateRGBSurface(
-		0, CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE, 24, 0, 0, 0, 0));
 	visuals_->dirty_ = true;
 	need_render_ = true;
 
@@ -96,8 +95,24 @@ void Chunk::decompress() {
 }
 
 void Chunk::render(const Context &ctx) {
+	// The texture might not be created yet
+	if (!visuals_->texture_) {
+		visuals_->texture_.reset(SDL_CreateTexture(
+			ctx.game.win_.renderer_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
+			CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE));
+	}
+
 	Tile::ID prevID = Tile::INVALID_ID;
 	Tile *tile = ctx.game.invalid_tile_.get();
+
+	SDL_Rect rect{ 0, 0, CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE };
+	uint8_t *pixels;
+	int pitch;
+	if (SDL_LockTexture(visuals_->texture_.get(), &rect, (void **)&pixels, &pitch) < 0) {
+		panic << "Failed to lock texture: " << SDL_GetError();
+		abort();
+	}
+	auto lock = makeDeferred([this] { SDL_UnlockTexture(visuals_->texture_.get()); });
 
 	for (int x = 0; x < CHUNK_WIDTH; ++x) {
 		for (int y = 0; y < CHUNK_HEIGHT; ++y) {
@@ -107,23 +122,16 @@ void Chunk::render(const Context &ctx) {
 				tile = &ctx.world.getTileByID(id);
 			}
 
-			// TODO: Reimplement this for SDL
-			/*
-			const sf::Uint8 *imgptr = NULL;
-			//const sf::Uint8 *imgptr = tile->image->getPixelsPtr();
+			auto &tilesurf = tile->image_.surface_;
+
 			for (int imgy = 0; imgy < TILE_SIZE; ++imgy) {
-				int pixx = x * TILE_SIZE;
-				int pixy = y * TILE_SIZE + imgy;
-				sf::Uint8 *pix = renderbuf +
-					pixy * CHUNK_WIDTH * TILE_SIZE * 4 +
-					pixx * 4;
-				memcpy(pix, imgptr + imgy * TILE_SIZE * 4, TILE_SIZE * 4);
+				uint8_t *tilepix = (uint8_t *)tilesurf->pixels + (imgy * tilesurf->pitch) * 4;
+				uint8_t *destpix = pixels + (y * pitch + x * TILE_SIZE) * 4;
+				memcpy(destpix, tilepix, TILE_SIZE * 4);
 			}
-			*/
 		}
 	}
 
-	//visuals_->tex_.update(renderbuf, CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE, 0, 0);
 	visuals_->dirty_ = true;
 }
 
@@ -132,7 +140,7 @@ void Chunk::draw(const Context &ctx, Win &win) {
 		return;
 
 	if (need_render_) {
-		render(ctx);
+		info << "OK need render, so we create texture";
 		need_render_ = false;
 	}
 
