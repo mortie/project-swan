@@ -22,7 +22,16 @@ static bool chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &d
 }
 
 World::World(Game *game, unsigned long rand_seed):
-	game_(game), random_(rand_seed), resources_(game->win_) {}
+		game_(game), random_(rand_seed), resources_(game->win_) {
+
+	std::unique_ptr<Tile> invalid_tile = Tile::createInvalid(resources_);
+	tiles_map_[invalid_tile->name_] = 0;
+
+	// tiles_ is empty, so pushing back now will ensure invalid_tile
+	// ends up at location 0
+	tiles_.push_back(std::move(invalid_tile));
+
+}
 
 void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
 	int l = 0;

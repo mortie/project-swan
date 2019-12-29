@@ -18,30 +18,30 @@ void Mod::init(const std::string &name) {
 void Mod::registerImage(const std::string &name, const std::string &path, int frame_height) {
 	images_.push_back(std::make_unique<ImageResource>(
 		renderer_, name_ + "::" + name, path_ + "/assets/" + path, frame_height));
-	info << "Adding image: " << name_ << "::" << name;
+	info << "  Adding image: " << name_ << "::" << name << " (" << path << ')';
 }
 
 void Mod::registerTile(Tile::Builder tile) {
 	tile.name = name_ + "::" + tile.name;
 	tiles_.push_back(tile);
-	info << "Adding tile: " << tile.name;
+	info << "  Adding tile: " << tile.name;
 }
 
 void Mod::registerItem(Item::Builder item) {
 	item.name = name_ + "::" + item.name;
 	items_.push_back(item);
-	info << "Adding item: " << item.name;
+	info << "  Adding item: " << item.name;
 }
 
 void Mod::registerWorldGen(const std::string &name, std::unique_ptr<WorldGen::Factory> gen) {
 	gen->name_ = name_ + "::" + name;
-	info << "Adding world gen: " << gen->name_;
+	info << "  Adding world gen: " << gen->name_;
 	worldgens_.push_back(std::move(gen));
 }
 
 void Mod::registerEntity(const std::string &name, std::unique_ptr<Entity::Factory> ent) {
 	ent->name_ = name_ + "::" + name;
-	info << "Adding entity: " << ent->name_;
+	info << "  Adding entity: " << ent->name_;
 	entities_.push_back(std::move(ent));
 }
 

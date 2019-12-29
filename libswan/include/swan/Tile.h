@@ -31,7 +31,7 @@ public:
 	const bool is_solid_;
 	const std::optional<std::string> dropped_item_;
 
-	static std::unique_ptr<Tile> createInvalid(Context &ctx);
+	static std::unique_ptr<Tile> createInvalid(const ResourceManager &ctx);
 	static ID INVALID_ID;
 };
 

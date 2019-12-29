@@ -54,8 +54,8 @@ void Chunk::compress() {
 		compressed_size_ = destlen;
 
 		info
-			<< "Compressed chunk " << pos_ << " "
-			<< "from " << CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID) << "bytes "
+			<< "Compressed chunk " << pos_ << " from "
+			<< CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID) << " bytes "
 			<< "to " << destlen << " bytes.";
 	} else if (ret == Z_BUF_ERROR) {
 		info
@@ -125,8 +125,8 @@ void Chunk::render(const Context &ctx) {
 			auto &tilesurf = tile->image_.surface_;
 
 			for (int imgy = 0; imgy < TILE_SIZE; ++imgy) {
-				uint8_t *tilepix = (uint8_t *)tilesurf->pixels + (imgy * tilesurf->pitch) * 4;
-				uint8_t *destpix = pixels + (y * pitch + x * TILE_SIZE) * 4;
+				uint8_t *tilepix = (uint8_t *)tilesurf->pixels + imgy * tilesurf->pitch;
+				uint8_t *destpix = pixels + y * pitch + (x * TILE_SIZE) * 4;
 				memcpy(destpix, tilepix, TILE_SIZE * 4);
 			}
 		}
@@ -140,7 +140,7 @@ void Chunk::draw(const Context &ctx, Win &win) {
 		return;
 
 	if (need_render_) {
-		info << "OK need render, so we create texture";
+		render(ctx);
 		need_render_ = false;
 	}
 
@@ -149,7 +149,8 @@ void Chunk::draw(const Context &ctx, Win &win) {
 		visuals_->dirty_ = false;
 	}
 
-	win.setPos(pos_ * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT));
+	SDL_Rect rect{ 0, 0, CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE };
+	win.showTexture(pos_, visuals_->texture_.get(), &rect);
 	//win.draw(visuals_->sprite_);
 }
 
