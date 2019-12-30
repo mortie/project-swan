@@ -20,7 +20,7 @@ std::unique_ptr<Mod> Game::loadMod(const std::string &path) {
 		return NULL;
 	}
 
-	std::unique_ptr<Mod> mod = std::make_unique<Mod>(path, win_.renderer_);
+	std::unique_ptr<Mod> mod = std::make_unique<Mod>(path);
 	init(*mod);
 	return mod;
 }

@@ -24,7 +24,11 @@ public:
 	}
 
 	void showTexture(const Vec2 &pos, SDL_Texture *tex, SDL_Rect *srcrect) {
-		SDL_Rect destrect{ (int)pos.x, (int)pos.y, srcrect->w, srcrect->h };
+		SDL_Rect destrect{
+			(int)pos.x * TILE_SIZE, (int)pos.y * TILE_SIZE,
+			srcrect->w, srcrect->h,
+		};
+
 		if (SDL_RenderCopy(renderer_, tex, srcrect, &destrect) < 0) {
 			panic << "RenderCopy failed: " << SDL_GetError();
 			abort();

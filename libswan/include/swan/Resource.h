@@ -12,9 +12,14 @@ namespace Swan {
 
 class ImageResource {
 public:
-	ImageResource(
-		SDL_Renderer *renderer, const std::string &name,
-		const std::string &path, int frame_height = -1);
+	struct Builder {
+		std::string name;
+		std::string path;
+		int frame_height = -1;
+		std::string modpath = "";
+	};
+
+	ImageResource(SDL_Renderer *renderer, const Builder &builder);
 	ImageResource(
 		SDL_Renderer *renderer, const std::string &name,
 		int w, int h, uint8_t r, uint8_t g, uint8_t b);
@@ -42,7 +47,7 @@ public:
 	void tick(float dt);
 
 	ImageResource &getImage(const std::string &name) const;
-	void addImage(std::string name, std::unique_ptr<ImageResource> img);
+	void addImage(std::unique_ptr<ImageResource> img) { images_[img->name_] = std::move(img); }
 
 	std::unique_ptr<ImageResource> invalid_image_;
 

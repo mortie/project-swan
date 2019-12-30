@@ -15,10 +15,11 @@ void Mod::init(const std::string &name) {
 	info << "Mod initing: " << name_;
 }
 
-void Mod::registerImage(const std::string &name, const std::string &path, int frame_height) {
-	images_.push_back(std::make_unique<ImageResource>(
-		renderer_, name_ + "::" + name, path_ + "/assets/" + path, frame_height));
-	info << "  Adding image: " << name_ << "::" << name << " (" << path << ')';
+void Mod::registerImage(ImageResource::Builder image) {
+	image.name = name_ + "::" + image.name;
+	image.modpath = path_;
+	images_.push_back(image);
+	info << "  Adding image: " << image.name << " (" << image.path << ')';
 }
 
 void Mod::registerTile(Tile::Builder tile) {
@@ -43,6 +44,12 @@ void Mod::registerEntity(const std::string &name, std::unique_ptr<Entity::Factor
 	ent->name_ = name_ + "::" + name;
 	info << "  Adding entity: " << ent->name_;
 	entities_.push_back(std::move(ent));
+}
+
+Iter<std::unique_ptr<ImageResource>> Mod::buildImages(SDL_Renderer *renderer) {
+	return map(begin(images_), end(images_), [&](const ImageResource::Builder &builder) {
+		return std::make_unique<ImageResource>(renderer, builder);
+	});
 }
 
 Iter<std::unique_ptr<Tile>> Mod::buildTiles(const ResourceManager &resources) {

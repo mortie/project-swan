@@ -10,13 +10,10 @@
 
 namespace Swan {
 
-ImageResource::ImageResource(
-		SDL_Renderer *renderer, const std::string &name,
-		const std::string &path, int frame_height) {
-
-	surface_.reset(IMG_Load(path.c_str()));
+ImageResource::ImageResource(SDL_Renderer *renderer, const Builder &builder) {
+	surface_.reset(IMG_Load((builder.modpath + "/assets/" + builder.path).c_str()));
 	if (surface_ == nullptr) {
-		warn << "Loading " << path << " failed: " << SDL_GetError();
+		warn << "Loading image " << builder.name << " failed: " << SDL_GetError();
 
 		surface_.reset(SDL_CreateRGBSurface(
 			0, TILE_SIZE, TILE_SIZE, 32, 0, 0, 0, 0));
@@ -25,16 +22,16 @@ ImageResource::ImageResource(
 			PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE));
 	}
 
-	if (frame_height < 0)
-		frame_height = surface_->h;
+	frame_height_ = builder.frame_height;
+	if (frame_height_ < 0)
+		frame_height_ = surface_->h;
 
 	texture_.reset(SDL_CreateTexture(
-			renderer, surface_->format->format, SDL_TEXTUREACCESS_STATIC,
-			surface_->w, frame_height));
+		renderer, surface_->format->format, SDL_TEXTUREACCESS_STATIC,
+		surface_->w, frame_height_));
 
-	frame_height_ = frame_height;
 	num_frames_ = surface_->h / frame_height_;
-	name_ = name;
+	name_ = builder.name;
 }
 
 ImageResource::ImageResource(
@@ -44,6 +41,7 @@ ImageResource::ImageResource(
 	surface_.reset(SDL_CreateRGBSurface(
 		0, TILE_SIZE, TILE_SIZE, 32, 0, 0, 0, 0));
 	SDL_FillRect(surface_.get(), NULL, SDL_MapRGB(surface_->format, r, g, b));
+
 	texture_.reset(SDL_CreateTexture(
 		renderer, surface_->format->format, SDL_TEXTUREACCESS_STATIC, w, h));
 
@@ -80,8 +78,10 @@ void ResourceManager::tick(float dt) {
 
 ImageResource &ResourceManager::getImage(const std::string &name) const {
 	auto it = images_.find(name);
-	if (it == end(images_))
+	if (it == end(images_)) {
+		warn << "Couldn't find image " << name << "!";
 		return *invalid_image_;
+	}
 	return *it->second;
 }
 

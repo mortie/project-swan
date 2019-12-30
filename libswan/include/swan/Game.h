@@ -5,6 +5,7 @@
 #include <string>
 
 #include "common.h"
+#include "Resource.h"
 #include "Mod.h"
 #include "World.h"
 

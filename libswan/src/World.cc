@@ -49,6 +49,10 @@ void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
 void World::addMod(std::unique_ptr<Mod> mod) {
 	info << "World: adding mod " << mod->name_;
 
+	for (auto i: mod->buildImages(game_->win_.renderer_)) {
+		resources_.addImage(std::move(i));
+	}
+
 	for (auto t: mod->buildTiles(resources_)) {
 		Tile::ID id = tiles_.size();
 		tiles_map_[t->name_] = id;

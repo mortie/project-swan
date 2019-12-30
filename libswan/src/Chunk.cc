@@ -102,6 +102,10 @@ void Chunk::render(const Context &ctx) {
 			CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE));
 	}
 
+	if (pos_ != ChunkPos(0, 0))
+		return;
+	info << "Rendering chunk " << pos_;
+
 	Tile::ID prevID = Tile::INVALID_ID;
 	Tile *tile = ctx.game.invalid_tile_.get();
 
@@ -114,8 +118,8 @@ void Chunk::render(const Context &ctx) {
 	}
 	auto lock = makeDeferred([this] { SDL_UnlockTexture(visuals_->texture_.get()); });
 
-	for (int x = 0; x < CHUNK_WIDTH; ++x) {
-		for (int y = 0; y < CHUNK_HEIGHT; ++y) {
+	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
+		for (int x = 0; x < CHUNK_WIDTH; ++x) {
 			Tile::ID id = getTileID(RelPos(x, y));
 			if (id != prevID) {
 				prevID = id;
@@ -126,7 +130,9 @@ void Chunk::render(const Context &ctx) {
 
 			for (int imgy = 0; imgy < TILE_SIZE; ++imgy) {
 				uint8_t *tilepix = (uint8_t *)tilesurf->pixels + imgy * tilesurf->pitch;
-				uint8_t *destpix = pixels + y * pitch + (x * TILE_SIZE) * 4;
+				uint8_t *destpix = pixels +
+					((y * TILE_SIZE + imgy) * pitch) +
+					(x * TILE_SIZE) * 4;
 				memcpy(destpix, tilepix, TILE_SIZE * 4);
 			}
 		}
@@ -150,8 +156,9 @@ void Chunk::draw(const Context &ctx, Win &win) {
 	}
 
 	SDL_Rect rect{ 0, 0, CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE };
-	win.showTexture(pos_, visuals_->texture_.get(), &rect);
-	//win.draw(visuals_->sprite_);
+	win.showTexture(
+		pos_ * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT),
+		visuals_->texture_.get(), &rect);
 }
 
 void Chunk::tick(float dt) {

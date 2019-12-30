@@ -7,12 +7,12 @@
 extern "C" void mod_init(Swan::Mod &mod) {
 	mod.init("core");
 
-	mod.registerImage("air", "tiles/air.png");
-	mod.registerImage("stone", "tiles/stone.png");
-	mod.registerImage("dirt", "tiles/dirt.png");
-	mod.registerImage("grass", "tiles/grass.png");
-	mod.registerImage("player-running", "entities/player-running.png");
-	mod.registerImage("player-still", "entities/player-still.png");
+	mod.registerImage({ "air", "tiles/air.png" });
+	mod.registerImage({ "stone", "tiles/stone.png" });
+	mod.registerImage({ "dirt", "tiles/dirt.png" });
+	mod.registerImage({ "grass", "tiles/grass.png" });
+	mod.registerImage({ "player-running", "entities/player-running.png" });
+	mod.registerImage({ "player-still", "entities/player-still.png" });
 
 	mod.registerTile({
 		.name = "air",

@@ -45,8 +45,8 @@ private:
 };
 
 static std::ostream &logstream = std::clog;
-static Logger info(std::clog, "info", OS::isTTY(stderr), "\033[36m");
-static Logger warn(std::clog, "warning", OS::isTTY(stderr), "\033[33m");
-static Logger panic(std::clog, "panic", OS::isTTY(stderr), "\033[1m\033[31m");
+static Logger info(logstream, "info", OS::isTTY(stderr), "\033[36m");
+static Logger warn(logstream, "warning", OS::isTTY(stderr), "\033[33m");
+static Logger panic(logstream, "panic", OS::isTTY(stderr), "\033[1m\033[31m");
 
 }
