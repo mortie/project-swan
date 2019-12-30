@@ -151,7 +151,6 @@ void Chunk::render(const Context &ctx) {
 			auto &srcsurf = tile->image_.surface_;
 			SDL_Rect srcrect{ 0, 0, srcsurf->w, srcsurf->h };
 
-			//SDL_Rect destrect{ x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE };
 			destsurf->pixels = pixels + (y * TILE_SIZE * pitch) + x * TILE_SIZE * 4;
 			SDL_Rect destrect{ 0, 0, TILE_SIZE, TILE_SIZE };
 

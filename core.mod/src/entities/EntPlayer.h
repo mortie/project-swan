@@ -35,6 +35,6 @@ private:
 	State state_ = State::IDLE;
 	std::array<Swan::Animation, (int)State::COUNT> anims_;
 
-	Swan::Timer jump_timer_;
+	Swan::Clock jump_timer_;
 	Swan::TilePos mouse_tile_;
 };

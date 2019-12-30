@@ -11,8 +11,8 @@ extern "C" void mod_init(Swan::Mod &mod) {
 	mod.registerImage({ "stone", "tiles/stone.png" });
 	mod.registerImage({ "dirt", "tiles/dirt.png" });
 	mod.registerImage({ "grass", "tiles/grass.png" });
-	mod.registerImage({ "player-running", "entities/player-running.png" });
-	mod.registerImage({ "player-still", "entities/player-still.png" });
+	mod.registerImage({ "player-running", "entities/player-running.png", 64 });
+	mod.registerImage({ "player-still", "entities/player-still.png", 64 });
 
 	mod.registerTile({
 		.name = "air",

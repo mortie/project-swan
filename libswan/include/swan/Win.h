@@ -9,7 +9,7 @@ namespace Swan {
 
 class Win {
 public:
-	Win(SDL_Renderer *renderer): renderer_(renderer) {
+	Win(SDL_Window *window, SDL_Renderer *renderer): window_(window), renderer_(renderer) {
 		if (SDL_GetRendererInfo(renderer_, &rinfo_) < 0) {
 			panic << "GetRenedrerInfo failed: " << SDL_GetError();
 			abort();
@@ -18,25 +18,22 @@ public:
 		info << "Using renderer: " << rinfo_.name;
 	}
 
-	void setPos(const Vec2 &pos) {
-		//transform_ = sf::Transform()
-		//	.scale(scale_, scale_)
-		//	.translate((pos - cam_) * TILE_SIZE);
-	}
-
 	Vec2 getSize() {
-		//sf::Vector2u v = window_->getSize();
-		//return Vec2(v.x, v.y) / (TILE_SIZE * scale_);
-		return Vec2(10, 10);
+		int w, h;
+		SDL_GetWindowSize(window_, &w, &h);
+		return Vec2((float)w / TILE_SIZE, (float)h / TILE_SIZE);
 	}
 
-	void showTexture(const Vec2 &pos, SDL_Texture *tex, SDL_Rect *srcrect) {
+	void showTexture(
+			const Vec2 &pos, SDL_Texture *tex, SDL_Rect *srcrect,
+			SDL_RendererFlip flip = SDL_FLIP_NONE, double angle = 0) {
+
 		SDL_Rect destrect{
-			(int)pos.x * TILE_SIZE, (int)pos.y * TILE_SIZE,
+			(int)((pos.x - cam_.x) * TILE_SIZE), (int)((pos.y - cam_.y) * TILE_SIZE),
 			srcrect->w, srcrect->h,
 		};
 
-		if (SDL_RenderCopy(renderer_, tex, srcrect, &destrect) < 0) {
+		if (SDL_RenderCopyEx(renderer_, tex, srcrect, &destrect, angle, NULL, flip) < 0) {
 			panic << "RenderCopy failed: " << SDL_GetError();
 			abort();
 		}
@@ -44,6 +41,7 @@ public:
 
 	float scale_ = 2;
 	Vec2 cam_;
+	SDL_Window *window_;
 	SDL_Renderer *renderer_;
 	SDL_RendererInfo rinfo_;
 };

@@ -16,8 +16,8 @@ EntItemStack::EntItemStack(const Swan::Context &ctx, const Swan::SRF &params):
 }
 
 void EntItemStack::draw(const Swan::Context &ctx, Swan::Win &win) {
-	win.setPos(body_.pos_);
-	SDL_RenderCopy(win.renderer_, item_->image_.texture_.get(), NULL, NULL);
+	SDL_Rect rect = item_->image_.frameRect();
+	win.showTexture(body_.pos_, item_->image_.texture_.get(), &rect);
 }
 
 void EntItemStack::tick(const Swan::Context &ctx, float dt) {

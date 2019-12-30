@@ -30,7 +30,7 @@ ImageResource::ImageResource(SDL_Renderer *renderer, const Builder &builder) {
 	// If we have a surface, and it's the wrong pixel format, convert it
 	if (surface_ && surface_->format->format != format) {
 		info
-			<< builder.name << ": Converting from "
+			<< "  " << builder.name << ": Converting from "
 			<< SDL_GetPixelFormatName(surface_->format->format) << " to "
 			<< SDL_GetPixelFormatName(format);
 		surface_.reset(SDL_ConvertSurfaceFormat(surface_.get(), format, 0));
@@ -43,7 +43,6 @@ ImageResource::ImageResource(SDL_Renderer *renderer, const Builder &builder) {
 
 		surface_.reset(SDL_CreateRGBSurface(
 			0, TILE_SIZE, TILE_SIZE, bpp, rmask, gmask, bmask, amask));
-
 		SDL_FillRect(surface_.get(), NULL, SDL_MapRGB(surface_->format,
 			PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE));
 	}
@@ -52,9 +51,7 @@ ImageResource::ImageResource(SDL_Renderer *renderer, const Builder &builder) {
 	if (frame_height_ < 0)
 		frame_height_ = surface_->h;
 
-	texture_.reset(SDL_CreateTexture(
-		renderer, surface_->format->format, SDL_TEXTUREACCESS_STATIC,
-		surface_->w, frame_height_));
+	texture_.reset(SDL_CreateTextureFromSurface(renderer, surface_.get()));
 	if (!texture_) {
 		panic << "CreateTexture failed: " << SDL_GetError();
 		abort();
@@ -72,8 +69,11 @@ ImageResource::ImageResource(
 		0, TILE_SIZE, TILE_SIZE, 32, 0, 0, 0, 0));
 	SDL_FillRect(surface_.get(), NULL, SDL_MapRGB(surface_->format, r, g, b));
 
-	texture_.reset(SDL_CreateTexture(
-		renderer, surface_->format->format, SDL_TEXTUREACCESS_STATIC, w, h));
+	texture_.reset(SDL_CreateTextureFromSurface(renderer, surface_.get()));
+	if (!texture_) {
+		panic << "CreateTexture failed: " << SDL_GetError();
+		abort();
+	}
 
 	frame_height_ = h;
 	num_frames_ = 1;

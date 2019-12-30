@@ -48,7 +48,7 @@ int main() {
 		SDL_DestroyRenderer);
 	sdlassert(renderer, "Could not create renderer");
 
-	Win win(renderer.get());
+	Win win(window.get(), renderer.get());
 
 	Game game(win);
 	std::vector<std::unique_ptr<Mod>> mods;

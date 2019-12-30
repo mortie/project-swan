@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SDL2/SDL.h>
+
 #include "common.h"
 #include "Resource.h"
 #include "Clock.h"
@@ -9,24 +11,19 @@ namespace Swan {
 
 class Animation {
 public:
-	enum class Flags {
-		HFLIP = 1,
-	};
-
-	Animation(ImageResource &resource, float interval, Flags flags = (Flags)0):
-		resource_(resource), interval_(interval), timer_(interval), flags_(flags) {}
+	Animation(ImageResource &resource, float interval, SDL_RendererFlip flip = SDL_FLIP_NONE):
+		resource_(resource), interval_(interval), timer_(interval), flip_(flip) {}
 
 	void tick(float dt);
-	void draw(Win &win);
+	void draw(const Vec2 &pos, Win &win);
 	void reset();
 
 private:
 	ImageResource &resource_;
 	float interval_;
 	float timer_;
-	Flags flags_;
+	SDL_RendererFlip flip_;
 	int frame_ = 0;
-	bool dirty_ = true;
 };
 
 }

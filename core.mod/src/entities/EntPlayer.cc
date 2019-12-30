@@ -4,17 +4,15 @@ EntPlayer::EntPlayer(const Swan::Context &ctx, const Swan::SRF &params):
 		PhysicsEntity(SIZE, MASS),
 		anims_{
 			Swan::Animation(ctx.resources.getImage("core::player-still"), 0.8),
-			Swan::Animation(ctx.resources.getImage("core::player-running"), 1),
-			Swan::Animation(ctx.resources.getImage("core::player-running"), 1, Swan::Animation::Flags::HFLIP) } {
+			Swan::Animation(ctx.resources.getImage("core::player-running"), 1, SDL_FLIP_HORIZONTAL),
+			Swan::Animation(ctx.resources.getImage("core::player-running"), 1) } {
 
 	readSRF(ctx, params);
 }
 
 void EntPlayer::draw(const Swan::Context &ctx, Swan::Win &win) {
-	body_.outline(win);
-
-	win.setPos(body_.pos_ - Swan::Vec2(0.2, 0.1));
-	anims_[(int)state_].draw(win);
+	//body_.outline(win);
+	anims_[(int)state_].draw(body_.pos_ - Swan::Vec2(0.2, 0.1), win);
 }
 
 void EntPlayer::update(const Swan::Context &ctx, float dt) {
@@ -53,7 +51,7 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 		anims_[(int)state_].reset();
 	anims_[(int)state_].tick(dt);
 
-	Swan::PhysicsEntity::update(ctx, dt);
+	//Swan::PhysicsEntity::update(ctx, dt);
 }
 
 void EntPlayer::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {

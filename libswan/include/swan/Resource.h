@@ -26,6 +26,11 @@ public:
 
 	void tick(float dt);
 
+	SDL_Rect frameRect(int frame = -1) const {
+		if (frame == -1) frame = frame_;
+		return SDL_Rect{ 0, frame_height_ * frame, surface_->w, frame_height_ };
+	}
+
 	static std::unique_ptr<ImageResource> createInvalid(Win &win);
 
 	std::unique_ptr<SDL_Surface, void (*)(SDL_Surface *)> surface_{nullptr, &SDL_FreeSurface};
