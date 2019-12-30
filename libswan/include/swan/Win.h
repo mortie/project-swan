@@ -9,7 +9,14 @@ namespace Swan {
 
 class Win {
 public:
-	Win(SDL_Renderer *renderer): renderer_(renderer) {}
+	Win(SDL_Renderer *renderer): renderer_(renderer) {
+		if (SDL_GetRendererInfo(renderer_, &rinfo_) < 0) {
+			panic << "GetRenedrerInfo failed: " << SDL_GetError();
+			abort();
+		}
+
+		info << "Using renderer: " << rinfo_.name;
+	}
 
 	void setPos(const Vec2 &pos) {
 		//transform_ = sf::Transform()
@@ -38,6 +45,7 @@ public:
 	float scale_ = 2;
 	Vec2 cam_;
 	SDL_Renderer *renderer_;
+	SDL_RendererInfo rinfo_;
 };
 
 }

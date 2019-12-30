@@ -4,6 +4,7 @@
 #include <swan/Body.h>
 #include <swan/BoundingBox.h>
 #include <swan/Chunk.h>
+#include <swan/Clock.h>
 #include <swan/Entity.h>
 #include <swan/Game.h>
 #include <swan/Item.h>
@@ -12,7 +13,6 @@
 #include <swan/Resource.h>
 #include <swan/SRF.h>
 #include <swan/Tile.h>
-#include <swan/Timer.h>
 #include <swan/Vector2.h>
 #include <swan/Win.h>
 #include <swan/World.h>

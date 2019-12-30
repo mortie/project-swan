@@ -1,10 +1,10 @@
-#include "Timer.h"
+#include "Clock.h"
 
 #include <time.h>
 
 namespace Swan {
 
-bool Timer::periodic(float secs) {
+bool Clock::periodic(float secs) {
 	if (time_ >= secs) {
 		time_ = 0;
 		return true;

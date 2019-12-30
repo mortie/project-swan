@@ -47,7 +47,7 @@ void Mod::registerEntity(const std::string &name, std::unique_ptr<Entity::Factor
 }
 
 Iter<std::unique_ptr<ImageResource>> Mod::buildImages(SDL_Renderer *renderer) {
-	return map(begin(images_), end(images_), [&](const ImageResource::Builder &builder) {
+	return map(begin(images_), end(images_), [=](const ImageResource::Builder &builder) {
 		return std::make_unique<ImageResource>(renderer, builder);
 	});
 }

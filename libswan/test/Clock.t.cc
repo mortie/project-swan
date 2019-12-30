@@ -1,3 +1,3 @@
-#include "Timer.h"
+#include "Clock.h"
 
 #include "lib/test.h"

@@ -2,7 +2,7 @@
 
 #include "common.h"
 #include "Resource.h"
-#include "Timer.h"
+#include "Clock.h"
 #include "Resource.h"
 
 namespace Swan {

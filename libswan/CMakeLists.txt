@@ -2,6 +2,7 @@ add_library(libswan SHARED
 	src/Animation.cc
 	src/Body.cc
 	src/Chunk.cc
+	src/Clock.cc
 	src/Game.cc
 	src/Item.cc
 	src/Mod.cc
@@ -9,7 +10,6 @@ add_library(libswan SHARED
 	src/Resource.cc
 	src/SRF.cc
 	src/Tile.cc
-	src/Timer.cc
 	src/World.cc
 	src/WorldPlane.cc)
 target_include_directories(libswan
@@ -25,6 +25,7 @@ add_executable(test_libswan EXCLUDE_FROM_ALL
 	test/Animation.t.cc
 	test/Body.t.cc
 	test/BoundingBox.t.cc
+	test/Clock.t.cc
 	test/common.t.cc
 	test/Entity.t.cc
 	test/Game.t.cc
@@ -35,7 +36,6 @@ add_executable(test_libswan EXCLUDE_FROM_ALL
 	test/SRF.t.cc
 	test/swan.t.cc
 	test/Tile.t.cc
-	test/Timer.t.cc
 	test/util.t.cc
 	test/log.t.cc
 	test/Vector2.t.cc

@@ -3,6 +3,7 @@
 #include <optional>
 #include <functional>
 #include <memory>
+#include <chrono>
 
 namespace Swan {
 

@@ -11,12 +11,38 @@
 namespace Swan {
 
 ImageResource::ImageResource(SDL_Renderer *renderer, const Builder &builder) {
+	SDL_RendererInfo rinfo;
+	if (SDL_GetRendererInfo(renderer, &rinfo) < 0) {
+		panic << "GetRendererInfo failed: " << SDL_GetError();
+		abort();
+	}
+
+	uint32_t format = rinfo.texture_formats[0];
+	int bpp = 32;
+	uint32_t rmask, gmask, bmask, amask;
+	if (SDL_PixelFormatEnumToMasks(format, &bpp, &rmask, &gmask, &bmask, &amask) < 0) {
+		panic << "PixelFormatEnumToMasks failed: " << SDL_GetError();
+		abort();
+	}
+
 	surface_.reset(IMG_Load((builder.modpath + "/assets/" + builder.path).c_str()));
-	if (surface_ == nullptr) {
+
+	// If we have a surface, and it's the wrong pixel format, convert it
+	if (surface_ && surface_->format->format != format) {
+		info
+			<< builder.name << ": Converting from "
+			<< SDL_GetPixelFormatName(surface_->format->format) << " to "
+			<< SDL_GetPixelFormatName(format);
+		surface_.reset(SDL_ConvertSurfaceFormat(surface_.get(), format, 0));
+	}
+
+	// If we don't have a surface yet (either loading or conversion failed),
+	// create a placeholder
+	if (!surface_) {
 		warn << "Loading image " << builder.name << " failed: " << SDL_GetError();
 
 		surface_.reset(SDL_CreateRGBSurface(
-			0, TILE_SIZE, TILE_SIZE, 32, 0, 0, 0, 0));
+			0, TILE_SIZE, TILE_SIZE, bpp, rmask, gmask, bmask, amask));
 
 		SDL_FillRect(surface_.get(), NULL, SDL_MapRGB(surface_->format,
 			PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE));
@@ -29,6 +55,10 @@ ImageResource::ImageResource(SDL_Renderer *renderer, const Builder &builder) {
 	texture_.reset(SDL_CreateTexture(
 		renderer, surface_->format->format, SDL_TEXTUREACCESS_STATIC,
 		surface_->w, frame_height_));
+	if (!texture_) {
+		panic << "CreateTexture failed: " << SDL_GetError();
+		abort();
+	}
 
 	num_frames_ = surface_->h / frame_height_;
 	name_ = builder.name;
@@ -67,7 +97,7 @@ std::unique_ptr<ImageResource> ImageResource::createInvalid(Win &win) {
 }
 
 ResourceManager::ResourceManager(Win &win) {
-	invalid_image_ = ImageResource::createInvalid(win);
+	addImage(std::move(ImageResource::createInvalid(win)));
 }
 
 void ResourceManager::tick(float dt) {
@@ -80,7 +110,7 @@ ImageResource &ResourceManager::getImage(const std::string &name) const {
 	auto it = images_.find(name);
 	if (it == end(images_)) {
 		warn << "Couldn't find image " << name << "!";
-		return *invalid_image_;
+		return getImage("@internal::invalid");
 	}
 	return *it->second;
 }

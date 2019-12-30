@@ -49,8 +49,6 @@ public:
 	ImageResource &getImage(const std::string &name) const;
 	void addImage(std::unique_ptr<ImageResource> img) { images_[img->name_] = std::move(img); }
 
-	std::unique_ptr<ImageResource> invalid_image_;
-
 private:
 	std::unordered_map<std::string, std::unique_ptr<ImageResource>> images_;
 };
