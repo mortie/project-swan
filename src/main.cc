@@ -42,6 +42,13 @@ int main() {
 			SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI),
 		SDL_DestroyWindow);
 
+	// Load and display application icon
+	auto icon = makeRaiiPtr(
+		IMG_Load("assets/icon.png"),
+		SDL_FreeSurface);
+	sdlassert(icon, "Could not load icon");
+	SDL_SetWindowIcon(window.get(), icon.get());
+
 	auto renderer = makeRaiiPtr(
 		SDL_CreateRenderer(
 			window.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
