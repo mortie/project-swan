@@ -15,7 +15,7 @@ public:
 	class Factory {
 	public:
 		virtual ~Factory() = default;
-		virtual WorldGen *create(World &tmap) = 0;
+		virtual WorldGen *create(World &world) = 0;
 		std::string name_;
 	};
 

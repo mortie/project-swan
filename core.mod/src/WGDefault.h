@@ -8,7 +8,7 @@ class WGDefault: public Swan::WorldGen {
 public:
 	class Factory: public Swan::WorldGen::Factory {
 	public:
-		WorldGen *create(Swan::World &world) { return new WGDefault(world); }
+		WorldGen *create(Swan::World &world) override { return new WGDefault(world); }
 	};
 
 	WGDefault(Swan::World &world):

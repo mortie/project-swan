@@ -116,7 +116,7 @@ static char hexchr(uint8_t nibble) {
 
 SRF *SRF::read(std::istream &is) {
 	Type type = (Type)readByte(is);
-	SRF *srf;
+	SRF *srf = nullptr;
 
 	switch (type) {
 	case Type::OBJECT:
