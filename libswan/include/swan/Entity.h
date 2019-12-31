@@ -4,6 +4,7 @@
 #include <optional>
 
 #include "common.h"
+#include "log.h"
 #include "SRF.h"
 #include "BoundingBox.h"
 #include "Body.h"

@@ -105,24 +105,26 @@ int main() {
 			fcount = 0;
 		}
 
-		game.update(dt);
 
 		if (dt > 0.1) {
 			if (slowFrames == 0)
 				warn << "Delta time too high! (" << dt << "s)";
 			slowFrames += 1;
-		} else {
-			if (slowFrames > 0) {
-				if (slowFrames > 1)
-					warn << slowFrames << " consecutive slow frames.";
-				slowFrames = 0;
-			}
+			dt = 0.1;
+		}
 
-			tickAcc += dt;
-			while (tickAcc >= 1.0 / TICK_RATE) {
-				tickAcc -= 1.0 / TICK_RATE;
-				game.tick(1.0 / TICK_RATE);
-			}
+		game.update(dt);
+
+		if (slowFrames > 0) {
+			if (slowFrames > 1)
+				warn << slowFrames << " consecutive slow frames.";
+			slowFrames = 0;
+		}
+
+		tickAcc += dt;
+		while (tickAcc >= 1.0 / TICK_RATE) {
+			tickAcc -= 1.0 / TICK_RATE;
+			game.tick(1.0 / TICK_RATE);
 		}
 
 		SDL_RenderClear(renderer.get());

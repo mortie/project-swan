@@ -51,7 +51,7 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 		anims_[(int)state_].reset();
 	anims_[(int)state_].tick(dt);
 
-	//Swan::PhysicsEntity::update(ctx, dt);
+	Swan::PhysicsEntity::update(ctx, dt);
 }
 
 void EntPlayer::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
