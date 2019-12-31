@@ -11,7 +11,7 @@ EntPlayer::EntPlayer(const Swan::Context &ctx, const Swan::SRF &params):
 }
 
 void EntPlayer::draw(const Swan::Context &ctx, Swan::Win &win) {
-	//body_.outline(win);
+	body_.outline(win);
 	anims_[(int)state_].draw(body_.pos_ - Swan::Vec2(0.2, 0.1), win);
 }
 

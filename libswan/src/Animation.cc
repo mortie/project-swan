@@ -18,7 +18,7 @@ void Animation::tick(float dt) {
 
 void Animation::draw(const Vec2 &pos, Win &win) {
 	SDL_Rect rect = resource_.frameRect(frame_);
-	win.showTexture(pos, resource_.texture_.get(), &rect, flip_);
+	win.showTexture(pos, resource_.texture_.get(), &rect, { .flip = flip_ });
 }
 
 void Animation::reset() {
