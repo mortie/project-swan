@@ -13,7 +13,7 @@ static bool chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &d
 
 		// Don't blow our frame budget on generating chunks,
 		// but generate as many as possible within the budget
-		if (clock.duration() > 0.01)
+		if (clock.duration() > 1 / 120.0)
 			return true;
 		abspos += dir;
 	}
