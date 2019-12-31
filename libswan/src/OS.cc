@@ -21,7 +21,7 @@ Dynlib::Dynlib(const std::string &path) {
 	}
 }
 
-Dynlib::Dynlib(Dynlib &&dl) {
+Dynlib::Dynlib(Dynlib &&dl) noexcept {
 	handle_ = dl.handle_;
 	dl.handle_ = nullptr;
 }
