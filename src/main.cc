@@ -7,6 +7,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <string.h>
 
 #include <swan/swan.h>
 #include <swan/util.h>
@@ -26,7 +27,27 @@ using namespace Swan;
 template<typename T>
 using DeleteFunc = void (*)(T *);
 
-int main() {
+int main(int argc, char **argv) {
+	uint32_t winflags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+	uint32_t renderflags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
+
+	for (int i = 1; i < argc; ++i) {
+		if (strcmp(argv[i], "--lodpi") == 0) {
+			winflags &= ~SDL_WINDOW_ALLOW_HIGHDPI;
+		} else if (strcmp(argv[i], "--fullscreen") == 0) {
+			winflags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		} else if (strcmp(argv[i], "--no-vsync") == 0) {
+			renderflags &= ~SDL_RENDERER_PRESENTVSYNC;
+		} else if (strcmp(argv[i], "--vulkan") == 0) {
+			winflags |= SDL_WINDOW_VULKAN;
+		} else if (strcmp(argv[i], "--sw-render") == 0) {
+			renderflags &= ~SDL_RENDERER_ACCELERATED;
+			renderflags |= SDL_RENDERER_SOFTWARE;
+		} else {
+			warn << "Unknown argument: " << argv[i];
+		}
+	}
+
 	sdlassert(SDL_Init(SDL_INIT_VIDEO) >= 0, "Could not initialize SDL");
 	auto sdl = makeDeferred([] { SDL_Quit(); });
 
@@ -38,8 +59,7 @@ int main() {
 		SDL_CreateWindow(
 			"Project: SWAN",
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-			640, 480,
-			SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI),
+			640, 480, winflags),
 		SDL_DestroyWindow);
 
 	// Load and display application icon
@@ -50,8 +70,7 @@ int main() {
 	SDL_SetWindowIcon(window.get(), icon.get());
 
 	auto renderer = makeRaiiPtr(
-		SDL_CreateRenderer(
-			window.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+		SDL_CreateRenderer(window.get(), -1, renderflags),
 		SDL_DestroyRenderer);
 	sdlassert(renderer, "Could not create renderer");
 
