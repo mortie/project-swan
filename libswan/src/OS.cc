@@ -16,13 +16,19 @@ bool isTTY(FILE *f) {
 
 Dynlib::Dynlib(const std::string &path) {
 	handle_ = dlopen((path + ".so").c_str(), RTLD_LAZY);
-	if (handle_ == NULL) {
+	if (handle_ == nullptr) {
 		throw std::runtime_error(dlerror());
 	}
 }
 
+Dynlib::Dynlib(Dynlib &&dl) {
+	handle_ = dl.handle_;
+	dl.handle_ = nullptr;
+}
+
 Dynlib::~Dynlib() {
-	dlclose(handle_);
+	if (handle_ != nullptr)
+		dlclose(handle_);
 }
 
 void *Dynlib::getVoid(const std::string &name) {

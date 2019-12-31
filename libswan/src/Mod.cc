@@ -8,6 +8,14 @@
 
 namespace Swan {
 
+Mod::~Mod() {
+	images_.clear();
+	tiles_.clear();
+	items_.clear();
+	worldgens_.clear();
+	entities_.clear();
+}
+
 void Mod::init(const std::string &name) {
 	name_ = name;
 	inited_ = true;

@@ -11,13 +11,19 @@
 #include "WorldGen.h"
 #include "Entity.h"
 #include "Resource.h"
+#include "OS.h"
 #include "util.h"
 
 namespace Swan {
 
 class Mod {
 public:
-	Mod(const std::string &path): path_(path) {}
+	Mod(const std::string &path, OS::Dynlib &&dynlib):
+		path_(path), dynlib_(std::move(dynlib)) {}
+
+	// We have to manually ensure anything created from the dynlib
+	// is destructed before the dynlib itself is destructed
+	~Mod();
 
 	void init(const std::string &name);
 
@@ -43,6 +49,7 @@ private:
 	std::vector<std::unique_ptr<Entity::Factory>> entities_;
 
 	std::string path_;
+	OS::Dynlib dynlib_;
 	bool inited_ = false;
 };
 

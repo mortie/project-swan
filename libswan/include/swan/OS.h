@@ -12,6 +12,8 @@ bool isTTY(FILE *f);
 class Dynlib {
 public:
 	Dynlib(const std::string &path);
+	Dynlib(const Dynlib &) = delete;
+	Dynlib(Dynlib &&dl);
 	~Dynlib();
 
 	template<typename T> T get(const std::string &name) { return (T)getVoid(name); }

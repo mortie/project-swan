@@ -13,14 +13,13 @@ namespace Swan {
 
 std::unique_ptr<Mod> Game::loadMod(const std::string &path) {
 	OS::Dynlib dl(path + "/mod");
-
 	auto init = dl.get<void (*)(Swan::Mod &)>("mod_init");
 	if (init == NULL) {
 		warn << path << ": No 'mod_init' function!";
-		return NULL;
+		return nullptr;
 	}
 
-	std::unique_ptr<Mod> mod = std::make_unique<Mod>(path);
+	std::unique_ptr<Mod> mod = std::make_unique<Mod>(path, std::move(dl));
 	init(*mod);
 	return mod;
 }
