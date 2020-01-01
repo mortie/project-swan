@@ -42,8 +42,15 @@ TexLock::TexLock(SDL_Texture *tex, SDL_Rect *rect): tex_(tex) {
 		32, pitch, rmask, gmask, bmask, amask));
 }
 
+TexLock::TexLock(TexLock &&lock) noexcept {
+	tex_ = lock.tex_;
+	surf_ = std::move(lock.surf_);
+	lock.tex_ = nullptr;
+}
+
 TexLock::~TexLock() {
-	SDL_UnlockTexture(tex_);
+	if (tex_ != nullptr)
+		SDL_UnlockTexture(tex_);
 }
 
 }

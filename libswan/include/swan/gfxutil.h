@@ -15,6 +15,8 @@ inline std::ostream &operator<<(std::ostream &os, const SDL_Rect &rect) {
 class TexLock {
 public:
 	TexLock(SDL_Texture *tex, SDL_Rect *rect = nullptr);
+	TexLock(const TexLock &) = delete;
+	TexLock(TexLock &&lock) noexcept;
 	~TexLock();
 
 	int blit(SDL_Rect *destrect, SDL_Surface *srcsurf, SDL_Rect *srcrect = nullptr) {
