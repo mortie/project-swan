@@ -17,7 +17,11 @@ EntItemStack::EntItemStack(const Swan::Context &ctx, const Swan::SRF &params):
 
 void EntItemStack::draw(const Swan::Context &ctx, Swan::Win &win) {
 	SDL_Rect rect = item_->image_.frameRect();
-	win.showTexture(body_.pos_, item_->image_.texture_.get(), &rect,
+
+	SDL_Texture *tex = item_->image_.texture_.get();
+	Swan::TexColorMod darken(tex, 220, 220, 220);
+
+	win.showTexture(body_.pos_, tex, &rect,
 		{ .hscale = 0.5, .vscale = 0.5 });
 }
 
