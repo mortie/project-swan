@@ -12,7 +12,7 @@ using RaiiPtr = std::unique_ptr<T, Del>;
 
 template<typename T, typename Del>
 RaiiPtr<T, Del> makeRaiiPtr(T *val, Del d) {
-return std::unique_ptr<T, Del>(val, d);
+	return std::unique_ptr<T, Del>(val, d);
 }
 
 template<typename Func>
