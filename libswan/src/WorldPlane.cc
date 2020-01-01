@@ -61,9 +61,11 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 
 	if (iter == chunks_.end()) {
 		iter = chunks_.emplace(pos, Chunk(pos)).first;
-		gen_->genChunk(*this, iter->second);
-		active_chunks_.insert(&iter->second);
-		iter->second.render(getContext());
+		Chunk &chunk = iter->second;
+
+		gen_->genChunk(*this, chunk);
+		active_chunks_.insert(&chunk);
+		chunk.render(getContext());
 	} else if (iter->second.keepActive()) {
 		active_chunks_.insert(&iter->second);
 	}
