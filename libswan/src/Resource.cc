@@ -97,7 +97,7 @@ std::unique_ptr<ImageResource> ImageResource::createInvalid(Win &win) {
 }
 
 ResourceManager::ResourceManager(Win &win) {
-	addImage(std::move(ImageResource::createInvalid(win)));
+	addImage(ImageResource::createInvalid(win));
 }
 
 void ResourceManager::tick(float dt) {

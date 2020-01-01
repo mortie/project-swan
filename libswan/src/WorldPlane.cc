@@ -164,11 +164,10 @@ void WorldPlane::tick(float dt) {
 	for (auto &ent: entities_)
 		ent->tick(getContext(), dt);
 
-	for (auto &chunk: active_chunks_) {
+	for (auto &chunk: active_chunks_)
 		chunk->tick(dt);
-		if (!chunk->isActive())
-			active_chunks_.erase(chunk);
-	}
+
+	std::erase_if(active_chunks_, [](Chunk *chunk) { return !chunk->isActive(); });
 }
 
 void WorldPlane::debugBox(TilePos pos) {

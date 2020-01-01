@@ -9,6 +9,7 @@
 #include <swan/Game.h>
 #include <swan/Item.h>
 #include <swan/Mod.h>
+#include <swan/PerfCounter.h>
 #include <swan/OS.h>
 #include <swan/Resource.h>
 #include <swan/SRF.h>
