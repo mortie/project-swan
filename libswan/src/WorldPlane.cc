@@ -104,9 +104,18 @@ Entity &WorldPlane::spawnPlayer() {
 }
 
 void WorldPlane::breakBlock(TilePos pos) {
-	Tile &t = getTile(pos);
-	setTile(pos, "core::air");
 
+	// If the block is already air, do nothing
+	Tile::ID id = getTileID(pos);
+	Tile::ID air = world_->getTileID("core::air");
+	if (id == air)
+		return;
+
+	// Change the block to air...
+	setTileID(pos, air);
+
+	// Then spawn an item stack entity.
+	Tile &t = world_->getTileByID(id);
 	if (t.dropped_item_ != std::nullopt) {
 		spawnEntity("core::item-stack", SRFArray{
 			new SRFFloatArray{ (float)pos.x, (float)pos.y },
