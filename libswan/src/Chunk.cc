@@ -97,6 +97,7 @@ void Chunk::decompress() {
 }
 
 void Chunk::render(const Context &ctx) {
+
 	// The texture might not be created yet
 	if (!visuals_->texture_) {
 		visuals_->texture_.reset(SDL_CreateTexture(
@@ -104,41 +105,12 @@ void Chunk::render(const Context &ctx) {
 			CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE));
 	}
 
+	// We're caching tiles so we don't have to world.getTileByID() every time
 	Tile::ID prevID = Tile::INVALID_ID;
 	Tile *tile = ctx.game.invalid_tile_.get();
 
-	// Get info about or texture for later
-	uint32_t format;
-	int access, texw, texh;
-	if (SDL_QueryTexture(visuals_->texture_.get(), &format, &access, &texw, &texh) < 0) {
-		panic << "Failed to query texture: " << SDL_GetError();
-		abort();
-	}
-
-	// ...Now convert the format to an actually useful mask
-	int bpp = 32;
-	uint32_t rmask, gmask, bmask, amask;
-	if (SDL_PixelFormatEnumToMasks(format, &bpp, &rmask, &gmask, &bmask, &amask) != SDL_TRUE) {
-		panic << "Failed to get pixel mask: " << SDL_GetError();
-		abort();
-	}
-
-	// We lock the txture to get write access to its raw pixels
-	SDL_Rect rect{ 0, 0, CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE };
-	uint8_t *pixels;
-	int pitch;
-	if (SDL_LockTexture(visuals_->texture_.get(), &rect, (void **)&pixels, &pitch) < 0) {
-		panic << "Failed to lock texture: " << SDL_GetError();
-		abort();
-	}
-	auto lock = makeDeferred([this] { SDL_UnlockTexture(visuals_->texture_.get()); });
-
-	// This surface will refer to the pixels of our texture which we want to update.
-	auto destsurf = makeRaiiPtr(
-		SDL_CreateRGBSurfaceFrom(
-			pixels, TILE_SIZE, TILE_SIZE, 32, pitch,
-			rmask, gmask, bmask, amask),
-		SDL_FreeSurface);
+	// Locking the texture lets us write to its piexls
+	TexLock lock(visuals_->texture_.get());
 
 	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 		for (int x = 0; x < CHUNK_WIDTH; ++x) {
@@ -148,15 +120,14 @@ void Chunk::render(const Context &ctx) {
 				tile = &ctx.world.getTileByID(id);
 			}
 
+			// Find the source surface and rect...
 			auto &srcsurf = tile->image_.surface_;
 			SDL_Rect srcrect{ 0, 0, srcsurf->w, srcsurf->h };
 
-			destsurf->pixels = pixels + (y * TILE_SIZE * pitch) + x * TILE_SIZE * 4;
-			SDL_Rect destrect{ 0, 0, TILE_SIZE, TILE_SIZE };
-
-			if (SDL_BlitSurface(srcsurf.get(), &srcrect, destsurf.get(), &destrect) < 0) {
+			// ...and blit it to the appropriate place
+			SDL_Rect destrect{ x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE };
+			if (lock.blit(&destrect, srcsurf.get(), &srcrect) < 0)
 				warn << "Failed to blit surface: " << SDL_GetError();
-			}
 		}
 	}
 }

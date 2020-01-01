@@ -6,13 +6,13 @@ class PerfCounter {
 public:
 	class Counter {
 	public:
-		void count(double secs) {
-			latest_ = secs;
+		void count(double val) {
+			latest_ = val;
 			if (count_ >= 60) {
 				sum_ -= avg();
-				sum_ += secs;
+				sum_ += val;
 			} else {
-				sum_ += secs;
+				sum_ += val;
 				count_ += 1;
 			}
 		}
