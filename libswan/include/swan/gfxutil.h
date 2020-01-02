@@ -12,12 +12,10 @@ inline std::ostream &operator<<(std::ostream &os, const SDL_Rect &rect) {
 	return os;
 }
 
-class TexLock {
+class TexLock: NonCopyable {
 public:
 	TexLock(SDL_Texture *tex, SDL_Rect *rect = nullptr);
-	TexLock(const TexLock &) = delete;
-	TexLock(TexLock &&lock) noexcept;
-	~TexLock();
+	~TexLock() { SDL_UnlockTexture(tex_); }
 
 	int blit(SDL_Rect *destrect, SDL_Surface *srcsurf, SDL_Rect *srcrect = nullptr) {
 		return SDL_BlitSurface(srcsurf, srcrect, surf_.get(), destrect);
@@ -28,25 +26,15 @@ private:
 	RaiiPtr<SDL_Surface> surf_ = makeRaiiPtr<SDL_Surface>(nullptr, SDL_FreeSurface);
 };
 
-class TexColorMod {
+class TexColorMod: NonCopyable {
 public:
-	TexColorMod(const TexColorMod &) = delete;
-	TexColorMod(TexColorMod &&mod) noexcept {
-		tex_ = mod.tex_;
-		r_ = mod.r_;
-		g_ = mod.g_;
-		b_ = mod.b_;
-		mod.tex_ = nullptr;
-	}
-
 	TexColorMod(SDL_Texture *tex, uint8_t r, uint8_t g, uint8_t b): tex_(tex) {
 		SDL_GetTextureColorMod(tex_, &r_, &g_, &b_);
 		SDL_SetTextureColorMod(tex_, r, g, b);
 	}
 
 	~TexColorMod() {
-		if (tex_)
-			SDL_SetTextureColorMod(tex_, r_, g_, b_);
+		SDL_SetTextureColorMod(tex_, r_, g_, b_);
 	}
 
 private:
@@ -54,23 +42,15 @@ private:
 	uint8_t r_, g_, b_;
 };
 
-class TexAlphaMod {
+class TexAlphaMod: NonCopyable {
 public:
-	TexAlphaMod(const TexAlphaMod &) = delete;
-	TexAlphaMod(TexAlphaMod &&mod) noexcept {
-		tex_ = mod.tex_;
-		alpha_ = mod.alpha_;
-		mod.tex_ = nullptr;
-	}
-
 	TexAlphaMod(SDL_Texture *tex, uint8_t alpha): tex_(tex) {
 		SDL_GetTextureAlphaMod(tex_, &alpha_);
 		SDL_SetTextureAlphaMod(tex_, alpha);
 	}
 
 	~TexAlphaMod() {
-		if (tex_)
-			SDL_SetTextureAlphaMod(tex_, alpha_);
+		SDL_SetTextureAlphaMod(tex_, alpha_);
 	}
 
 private:

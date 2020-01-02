@@ -20,14 +20,19 @@ Dynlib::Dynlib(const std::string &path) {
 		throw std::runtime_error(dlerror());
 }
 
-Dynlib::Dynlib(Dynlib &&dl) noexcept {
-	handle_ = dl.handle_;
+Dynlib::Dynlib(Dynlib &&dl) noexcept: handle_(dl.handle_) {
 	dl.handle_ = nullptr;
 }
 
 Dynlib::~Dynlib() {
 	if (handle_)
 		dlclose(handle_);
+}
+
+Dynlib &Dynlib::operator=(Dynlib &&dl) noexcept {
+	handle_ = dl.handle_;
+	dl.handle_ = nullptr;
+	return *this;
 }
 
 void *Dynlib::getVoid(const std::string &name) {

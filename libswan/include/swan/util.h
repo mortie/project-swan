@@ -7,6 +7,16 @@
 
 namespace Swan {
 
+// Inherit from this class to make a class non-copyable
+class NonCopyable {
+protected:
+	NonCopyable() = default;
+	NonCopyable(NonCopyable &&) = default;
+
+	NonCopyable(const NonCopyable &) = delete;
+	NonCopyable &operator=(const NonCopyable &) = delete;
+};
+
 template<typename T, typename Del = void (*)(T *)>
 using RaiiPtr = std::unique_ptr<T, Del>;
 
@@ -16,12 +26,17 @@ RaiiPtr<T, Del> makeRaiiPtr(T *val, Del d) {
 }
 
 template<typename Func>
-class Deferred {
+class Deferred: NonCopyable {
 public:
 	Deferred(Func func): func_(func) {}
-	Deferred(const Deferred &def) = delete;
 	Deferred(Deferred &&def) noexcept: func_(def.func_) { def.active_ = false; }
 	~Deferred() { if (active_) func_(); }
+
+	Deferred &operator=(Deferred &&def) noexcept {
+		func_ = def.func_;
+		def.active_ = false;
+		return *this;
+	}
 
 private:
 	Func func_;
