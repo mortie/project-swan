@@ -31,7 +31,13 @@ private:
 class TexColorMod {
 public:
 	TexColorMod(const TexColorMod &) = delete;
-	TexColorMod(TexColorMod &&) = delete;
+	TexColorMod(TexColorMod &&mod) noexcept {
+		tex_ = mod.tex_;
+		r_ = mod.r_;
+		g_ = mod.g_;
+		b_ = mod.b_;
+		mod.tex_ = nullptr;
+	}
 
 	TexColorMod(SDL_Texture *tex, uint8_t r, uint8_t g, uint8_t b): tex_(tex) {
 		SDL_GetTextureColorMod(tex_, &r_, &g_, &b_);
@@ -39,7 +45,8 @@ public:
 	}
 
 	~TexColorMod() {
-		SDL_SetTextureColorMod(tex_, r_, g_, b_);
+		if (tex_)
+			SDL_SetTextureColorMod(tex_, r_, g_, b_);
 	}
 
 private:
@@ -50,7 +57,11 @@ private:
 class TexAlphaMod {
 public:
 	TexAlphaMod(const TexAlphaMod &) = delete;
-	TexAlphaMod(TexAlphaMod &&) = delete;
+	TexAlphaMod(TexAlphaMod &&mod) noexcept {
+		tex_ = mod.tex_;
+		alpha_ = mod.alpha_;
+		mod.tex_ = nullptr;
+	}
 
 	TexAlphaMod(SDL_Texture *tex, uint8_t alpha): tex_(tex) {
 		SDL_GetTextureAlphaMod(tex_, &alpha_);
@@ -58,7 +69,8 @@ public:
 	}
 
 	~TexAlphaMod() {
-		SDL_SetTextureAlphaMod(tex_, alpha_);
+		if (tex_)
+			SDL_SetTextureAlphaMod(tex_, alpha_);
 	}
 
 private:

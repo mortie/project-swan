@@ -16,9 +16,8 @@ bool isTTY(FILE *f) {
 
 Dynlib::Dynlib(const std::string &path) {
 	handle_ = dlopen((path + ".so").c_str(), RTLD_LAZY);
-	if (handle_ == nullptr) {
+	if (!handle_)
 		throw std::runtime_error(dlerror());
-	}
 }
 
 Dynlib::Dynlib(Dynlib &&dl) noexcept {
@@ -27,7 +26,7 @@ Dynlib::Dynlib(Dynlib &&dl) noexcept {
 }
 
 Dynlib::~Dynlib() {
-	if (handle_ != nullptr)
+	if (handle_)
 		dlclose(handle_);
 }
 

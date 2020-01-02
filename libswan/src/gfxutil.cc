@@ -49,7 +49,7 @@ TexLock::TexLock(TexLock &&lock) noexcept {
 }
 
 TexLock::~TexLock() {
-	if (tex_ != nullptr)
+	if (tex_)
 		SDL_UnlockTexture(tex_);
 }
 
