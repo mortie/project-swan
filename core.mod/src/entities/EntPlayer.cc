@@ -42,10 +42,16 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 			state_ = State::RUNNING_R;
 	}
 
+	bool jump_pressed = ctx.game.isKeyPressed(SDL_SCANCODE_SPACE);
+
 	// Jump
-	if (body_.on_ground_ && ctx.game.isKeyPressed(SDL_SCANCODE_SPACE) && jump_timer_.periodic(0.5)) {
+	if (body_.on_ground_ && jump_pressed && jump_timer_.periodic(0.5)) {
 		body_.vel_.y = -JUMP_FORCE;
 	}
+
+	// Fall down faster than we went up
+	if (!body_.on_ground_ && (!jump_pressed || body_.vel_.y > 0))
+		body_.force_ += Swan::Vec2(0, DOWN_FORCE);
 
 	if (state_ != oldState)
 		anims_[(int)state_].reset();
