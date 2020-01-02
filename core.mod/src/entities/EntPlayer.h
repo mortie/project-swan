@@ -20,10 +20,10 @@ public:
 	Swan::SRF *writeSRF(const Swan::Context &ctx) override;
 
 private:
-	static constexpr float FORCE = 3000;
-	static constexpr float JUMP_FORCE = 11;
-	static constexpr float DOWN_FORCE = 1500;
 	static constexpr float MASS = 80;
+	static constexpr float FORCE = 34 * MASS;
+	static constexpr float JUMP_VEL = 11;
+	static constexpr float DOWN_FORCE = 20 * MASS;
 	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.6, 1.9);
 
 	enum class State {

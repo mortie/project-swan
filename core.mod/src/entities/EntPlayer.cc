@@ -46,7 +46,7 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 
 	// Jump
 	if (body_.on_ground_ && jump_pressed && jump_timer_.periodic(0.5)) {
-		body_.vel_.y = -JUMP_FORCE;
+		body_.vel_.y = -JUMP_VEL;
 	}
 
 	// Fall down faster than we went up
