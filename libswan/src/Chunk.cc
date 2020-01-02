@@ -48,9 +48,9 @@ void Chunk::compress() {
 
 	uLongf destlen = sizeof(dest);
 	int ret = compress2(
-			(Bytef *)dest, &destlen,
-			(Bytef *)data_.get(), CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID),
-			Z_BEST_COMPRESSION);
+		(Bytef *)dest, &destlen,
+		(Bytef *)data_.get(), CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID),
+		Z_BEST_COMPRESSION);
 
 	if (ret == Z_OK) {
 		data_.reset(new uint8_t[destlen]);
@@ -79,8 +79,8 @@ void Chunk::decompress() {
 	auto dest = std::make_unique<uint8_t[]>(CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID));
 	uLongf destlen = CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID);
 	int ret = uncompress(
-			dest.get(), &destlen,
-			(Bytef *)data_.get(), compressed_size_);
+		dest.get(), &destlen,
+		(Bytef *)data_.get(), compressed_size_);
 
 	if (ret != Z_OK) {
 		panic << "Decompressing chunk failed: " << ret;
