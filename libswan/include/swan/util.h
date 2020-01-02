@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <chrono>
+#include <type_traits>
 
 namespace Swan {
 
@@ -56,11 +57,11 @@ public:
 	public:
 		It(std::optional<Ret> next, Func &func): next_(std::move(next)), func_(func) {}
 
-		bool operator==(It &other) {
+		bool operator==(const It &other) {
 			return next_ == std::nullopt && other.next_ == std::nullopt;
 		}
 
-		bool operator!=(It &other) {
+		bool operator!=(const It &other) {
 			return !(*this == other);
 		}
 
@@ -104,7 +105,51 @@ auto map(InputIterator first, InputIterator last, Func func) {
 			return std::nullopt;
 
 		RetT r = func(*first);
-		first++;
+		++first;
+		return r;
+	};
+
+	return Iter<RetT, decltype(l)>(l);
+}
+
+template<typename InputIterator, typename Func>
+auto filter(InputIterator first, InputIterator last, Func pred) {
+	using RetT = std::remove_reference_t<decltype(*first)>;
+
+	auto l = [=]() mutable -> std::optional<RetT> {
+		if (first == last)
+			return std::nullopt;
+
+		while (!pred(*first)) {
+			++first;
+			if (first == last)
+				return std::nullopt;
+		}
+
+		RetT r = *first;
+		++first;
+		return r;
+	};
+
+	return Iter<RetT, decltype(l)>(l);
+}
+
+template<typename InputIterator, typename Func>
+auto mapFilter(InputIterator first, InputIterator last, Func func) {
+	using RetT = std::remove_reference_t<decltype(*func(*first))>;
+
+	auto l = [=]() mutable -> std::optional<RetT> {
+		if (first == last)
+			return std::nullopt;
+
+		std::optional<RetT> r;
+		while ((r = func(*first)) == std::nullopt) {
+			++first;
+			if (first == last)
+				return std::nullopt;
+		}
+
+		++first;
 		return r;
 	};
 

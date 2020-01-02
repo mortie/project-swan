@@ -22,7 +22,8 @@ target_link_libraries(libswan ${libraries})
 install(TARGETS libswan DESTINATION swan/libswan)
 
 add_executable(test_libswan EXCLUDE_FROM_ALL
-	test/lib/test.cc)
+	test/lib/test.cc
+	test/util.t.cc)
 target_link_libraries(test_libswan libswan)
 target_include_directories(test_libswan
 	PRIVATE "include/swan")
