@@ -21,6 +21,7 @@ void WGDefault::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 	}
 }
 
-Swan::Entity &WGDefault::spawnPlayer(Swan::WorldPlane &plane) {
-	return plane.spawnEntity("core::player", Swan::SRFFloatArray{0, 0});
+Swan::BodyTrait::HasBody *WGDefault::spawnPlayer(Swan::WorldPlane &plane) {
+	return dynamic_cast<Swan::BodyTrait::HasBody *>(
+		plane.spawnEntity("core::player", Swan::SRFFloatArray{0, 0}));
 }

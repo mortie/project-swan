@@ -4,6 +4,7 @@
 
 #include "Chunk.h"
 #include "Entity.h"
+#include "traits/BodyTrait.h"
 
 namespace Swan {
 
@@ -22,7 +23,7 @@ public:
 	virtual ~WorldGen() = default;
 
 	virtual void genChunk(WorldPlane &plane, Chunk &chunk) = 0;
-	virtual Entity &spawnPlayer(WorldPlane &plane) = 0;
+	virtual BodyTrait::HasBody *spawnPlayer(WorldPlane &plane) = 0;
 };
 
 }

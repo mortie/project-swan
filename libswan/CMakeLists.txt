@@ -1,6 +1,6 @@
 add_library(libswan SHARED
+	src/traits/BodyTrait.cc
 	src/Animation.cc
-	src/Body.cc
 	src/Chunk.cc
 	src/Clock.cc
 	src/Game.cc

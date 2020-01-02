@@ -80,7 +80,7 @@ void World::setWorldGen(const std::string &gen) {
 }
 
 void World::spawnPlayer() {
-	player_ = &planes_[current_plane_].spawnPlayer();
+	player_ = planes_[current_plane_].spawnPlayer();
 }
 
 void World::setCurrentPlane(WorldPlane &plane) {
@@ -131,7 +131,7 @@ Tile &World::getTile(const std::string &name) {
 }
 
 void World::draw(Win &win) {
-	auto bounds = *player_->getBounds();
+	auto bounds = player_->getBody().getBounds();
 	win.cam_ = bounds.pos - (win.getSize() / 2) + (bounds.size / 2);
 	planes_[current_plane_].draw(win);
 }
@@ -145,7 +145,7 @@ void World::tick(float dt) {
 	for (auto &plane: planes_)
 		plane.tick(dt);
 
-	auto bounds = *player_->getBounds();
+	auto bounds = player_->getBody().getBounds();
 	chunk_renderer_.tick(
 			planes_[current_plane_],
 			ChunkPos((int)bounds.pos.x / CHUNK_WIDTH, (int)bounds.pos.y / CHUNK_HEIGHT));

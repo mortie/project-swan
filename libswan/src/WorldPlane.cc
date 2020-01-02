@@ -31,20 +31,23 @@ Context WorldPlane::getContext() {
 	return { .game = *world_->game_, .world = *world_, .plane = *this, .resources = world_->resources_ };
 }
 
-Entity &WorldPlane::spawnEntity(const std::string &name, const SRF &params) {
+Entity *WorldPlane::spawnEntity(const std::string &name, const SRF &params) {
 	if (world_->ents_.find(name) == world_->ents_.end()) {
 		panic << "Tried to spawn a non-existant entity " << name << "!";
 		abort();
 	}
 
 	Entity *ent = world_->ents_[name]->create(getContext(), params);
-	if (auto bounds = ent->getBounds(); bounds) {
-		ent->move({ 0.5f - bounds->size.x / 2, 0 });
+	if (auto has_body = dynamic_cast<BodyTrait::HasBody *>(ent); has_body) {
+		BodyTrait::Body &body = has_body->getBody();
+		BodyTrait::Bounds bounds = body.getBounds();
+
+		body.move({ 0.5f - bounds.size.x / 2, 0 });
 	}
 
 	spawn_list_.push_back(std::unique_ptr<Entity>(ent));
 	info << "Spawned " << name << ". SRF: " << params;
-	return *ent;
+	return ent;
 }
 
 void WorldPlane::despawnEntity(Entity &ent) {
@@ -101,7 +104,7 @@ Tile &WorldPlane::getTile(TilePos pos) {
 	return world_->getTileByID(getTileID(pos));
 }
 
-Entity &WorldPlane::spawnPlayer() {
+BodyTrait::HasBody *WorldPlane::spawnPlayer() {
 	return gen_->spawnPlayer(*this);
 }
 
@@ -127,7 +130,7 @@ void WorldPlane::breakBlock(TilePos pos) {
 }
 
 void WorldPlane::draw(Win &win) {
-	auto pbounds = *world_->player_->getBounds();
+	auto pbounds = world_->player_->getBody().getBounds();
 	ChunkPos pcpos = ChunkPos(
 		(int)floor(pbounds.pos.x / CHUNK_WIDTH),
 		(int)floor(pbounds.pos.y / CHUNK_HEIGHT));

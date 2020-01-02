@@ -51,7 +51,7 @@ public:
 	std::unordered_map<std::string, WorldGen::Factory *> worldgens_;
 	std::unordered_map<std::string, Entity::Factory *> ents_;
 
-	Entity *player_;
+	BodyTrait::HasBody *player_;
 	Game *game_;
 
 	std::mt19937 random_;

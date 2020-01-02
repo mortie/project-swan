@@ -5,9 +5,8 @@
 
 #include "common.h"
 #include "log.h"
+#include "traits/BodyTrait.h"
 #include "SRF.h"
-#include "BoundingBox.h"
-#include "Body.h"
 
 namespace Swan {
 
@@ -26,24 +25,21 @@ public:
 
 	virtual ~Entity() = default;
 
-	virtual std::optional<BoundingBox> getBounds() { return std::nullopt; }
-
 	virtual void draw(const Context &ctx, Win &win) {}
 	virtual void update(const Context &ctx, float dt) {}
 	virtual void tick(const Context &ctx, float dt) {}
-	virtual void move(const Vec2 &pos) {}
-	virtual void moveTo(const Vec2 &pos) {}
 	virtual void despawn() {}
+
 	virtual void readSRF(const Swan::Context &ctx, const SRF &srf) {}
 	virtual SRF *writeSRF(const Swan::Context &ctx) { return new SRFNone(); }
 };
 
-class PhysicsEntity: public Entity {
+class PhysicsEntity: public Entity, public BodyTrait::HasBody {
 public:
 	PhysicsEntity(Vec2 size, float mass):
 		body_(size, mass) {}
 
-	virtual std::optional<BoundingBox> getBounds() override { return body_.getBounds(); }
+	virtual BodyTrait::Body &getBody() override { return body_; }
 
 	virtual void update(const Context &ctx, float dt) override {
 		body_.friction();
@@ -51,11 +47,8 @@ public:
 		body_.update(ctx.plane, dt);
 	}
 
-	virtual void move(const Vec2 &rel) override { body_.pos_ += rel; }
-	virtual void moveTo(const Vec2 &pos) override { body_.pos_ = pos; }
-
 protected:
-	Body body_;
+	BodyTrait::PhysicsBody body_;
 };
 
 }

@@ -1,4 +1,4 @@
-#include "Body.h"
+#include "traits/BodyTrait.h"
 
 #include <math.h>
 #include <array>
@@ -8,18 +8,19 @@
 #include "Win.h"
 
 namespace Swan {
+namespace BodyTrait {
 
 static float epsilon = 0.0001;
 
-void Body::friction(Vec2 coef) {
+void PhysicsBody::friction(Vec2 coef) {
 	force_ += -vel_ * coef;
 }
 
-void Body::gravity(Vec2 g) {
+void PhysicsBody::gravity(Vec2 g) {
 	force_ += g * mass_;
 }
 
-void Body::collideX(WorldPlane &plane) {
+void PhysicsBody::collideX(WorldPlane &plane) {
 	auto bounds = getBounds();
 	bool collided = false;
 
@@ -50,7 +51,7 @@ void Body::collideX(WorldPlane &plane) {
 	}
 }
 
-void Body::collideY(WorldPlane &plane) {
+void PhysicsBody::collideY(WorldPlane &plane) {
 	auto bounds = getBounds();
 	bool collided = false;
 	on_ground_ = false;
@@ -83,11 +84,11 @@ void Body::collideY(WorldPlane &plane) {
 	}
 }
 
-void Body::outline(Win &win) {
+void PhysicsBody::outline(Win &win) {
 	win.drawRect(pos_, size_);
 }
 
-void Body::update(WorldPlane &plane, float dt) {
+void PhysicsBody::update(WorldPlane &plane, float dt) {
 	vel_ += (force_ / mass_) * dt;
 	force_ = { 0, 0 };
 
@@ -97,10 +98,11 @@ void Body::update(WorldPlane &plane, float dt) {
 	collideY(plane);
 }
 
-void Body::updateWithoutCollision(float dt) {
+void PhysicsBody::updateWithoutCollision(float dt) {
 	vel_ += (force_ / mass_) * dt;
 	pos_ += vel_ * dt;
 	force_ = { 0, 0 };
 }
 
+}
 }

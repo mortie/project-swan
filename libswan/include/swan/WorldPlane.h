@@ -7,6 +7,7 @@
 #include <set>
 
 #include "common.h"
+#include "traits/BodyTrait.h"
 #include "Chunk.h"
 #include "Tile.h"
 #include "WorldGen.h"
@@ -24,7 +25,7 @@ public:
 	WorldPlane(ID id, World *world, std::shared_ptr<WorldGen> gen):
 			id_(id), world_(world), gen_(std::move(gen)) {}
 
-	Entity &spawnEntity(const std::string &name, const SRF &params);
+	Entity *spawnEntity(const std::string &name, const SRF &params);
 	void despawnEntity(Entity &ent);
 
 	Context getContext();
@@ -36,7 +37,7 @@ public:
 	Tile::ID getTileID(TilePos pos);
 	Tile &getTile(TilePos pos);
 
-	Entity &spawnPlayer();
+	BodyTrait::HasBody *spawnPlayer();
 	void breakBlock(TilePos pos);
 
 	void draw(Win &win);

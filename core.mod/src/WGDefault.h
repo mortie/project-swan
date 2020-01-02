@@ -16,7 +16,7 @@ public:
 		tStone_(world.getTileID("core::stone")), tAir_(world.getTileID("core::air")) {}
 
 	void genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) override;
-	Swan::Entity &spawnPlayer(Swan::WorldPlane &plane) override;
+	Swan::BodyTrait::HasBody *spawnPlayer(Swan::WorldPlane &plane) override;
 
 private:
 	Swan::Tile::ID tGrass_, tDirt_, tStone_, tAir_;

@@ -1,8 +1,7 @@
 #pragma once
 
+#include <swan/traits/BodyTrait.h>
 #include <swan/Animation.h>
-#include <swan/Body.h>
-#include <swan/BoundingBox.h>
 #include <swan/Chunk.h>
 #include <swan/Clock.h>
 #include <swan/Entity.h>
