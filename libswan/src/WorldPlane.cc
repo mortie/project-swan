@@ -97,11 +97,32 @@ Tile::ID WorldPlane::getTileID(TilePos pos) {
 		active_chunks_.insert(&chunk);
 
 	return chunk.getTileID(relPos(pos));
-
 }
 
 Tile &WorldPlane::getTile(TilePos pos) {
 	return world_->getTileByID(getTileID(pos));
+}
+
+Iter<Entity *> WorldPlane::getEntsInArea(Vec2 center, float radius) {
+	// TODO: Optimize this using fancy data structures.
+	return mapFilter(entities_.begin(), entities_.end(), [=](std::unique_ptr<Entity> &ent)
+			-> std::optional<Entity *> {
+
+		// Filter out things which don't have bodies
+		auto *has_body = dynamic_cast<BodyTrait::HasBody *>(ent.get());
+		if (has_body == nullptr)
+			return std::nullopt;
+
+		// Filter out things which are too far away from 'center'
+		auto &body = has_body->getBody();
+		auto bounds = body.getBounds();
+		Vec2 entcenter = bounds.pos + (bounds.size / 2);
+		auto dist = (entcenter - center).length();
+		if (dist > radius)
+			return std::nullopt;
+
+		return ent.get();
+	});
 }
 
 BodyTrait::HasBody *WorldPlane::spawnPlayer() {
@@ -164,7 +185,7 @@ void WorldPlane::update(float dt) {
 	spawn_list_.clear();
 
 	for (auto entptr: despawn_list_) {
-		for (auto it = std::begin(entities_); it != std::end(entities_); ++it) {
+		for (auto it = entities_.begin(); it != entities_.end(); ++it) {
 			if (it->get() == entptr) {
 				entities_.erase(it);
 				break;

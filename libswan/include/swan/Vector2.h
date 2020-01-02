@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <ostream>
+#include <cmath>
 
 namespace Swan {
 
@@ -16,6 +17,10 @@ struct Vector2 {
 		this->x = x;
 		this->y = y;
 		return *this;
+	}
+
+	constexpr T length() {
+		return (T)std::sqrt((double)(this->x * this->x + this->y * this->y));
 	}
 
 	constexpr operator std::pair<T, T>() const {

@@ -8,6 +8,7 @@
 
 #include "common.h"
 #include "traits/BodyTrait.h"
+#include "util.h"
 #include "Chunk.h"
 #include "Tile.h"
 #include "WorldGen.h"
@@ -36,6 +37,8 @@ public:
 	void setTile(TilePos pos, const std::string &name);
 	Tile::ID getTileID(TilePos pos);
 	Tile &getTile(TilePos pos);
+
+	Iter<Entity *> getEntsInArea(Vec2 center, float radius);
 
 	BodyTrait::HasBody *spawnPlayer();
 	void breakBlock(TilePos pos);
