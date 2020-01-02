@@ -1,13 +1,25 @@
 #include "WGDefault.h"
 
+static int getHeightAt(const siv::PerlinNoise &perlin, int tilex) {
+	return (int)(perlin.noise(tilex / 50.0, 0) * 13);
+}
+
+static int getDepthAt(const siv::PerlinNoise &perlin, int tilex) {
+	return (int)(perlin.noise(tilex / 50.0, 10) * 10) + 10;
+}
+
 void WGDefault::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
-	int height = (int)(perlin_.octaveNoise0_1(chunk.pos_.x / (64.0 / 16), 8) * 10);
-	int depth = (int)(perlin_.octaveNoise0_1(chunk.pos_.x / (64.0 / 9), 5) * 10 + 10);
 
 	for (int cx = 0; cx < Swan::CHUNK_WIDTH; ++cx) {
+		int tilex = chunk.pos_.x * Swan::CHUNK_WIDTH + cx;
+
+		int height = getHeightAt(perlin_, tilex);
+		int depth = getDepthAt(perlin_, tilex);
+		if (depth <= height) depth = height + 1;
+
 		for (int cy = 0; cy < Swan::CHUNK_HEIGHT; ++cy) {
-			Swan::TilePos tpos = Swan::TilePos(cx, cy) + Swan::TilePos(
-					chunk.pos_.x * Swan::CHUNK_WIDTH, chunk.pos_.y * Swan::CHUNK_HEIGHT);
+			int tiley = chunk.pos_.y * Swan::CHUNK_HEIGHT + cy;
+			Swan::TilePos tpos = Swan::TilePos(tilex, tiley);
 
 			if (tpos.y == height)
 				chunk.setTileID(Swan::TilePos(cx, cy), tGrass_);
@@ -23,5 +35,5 @@ void WGDefault::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 
 Swan::BodyTrait::HasBody *WGDefault::spawnPlayer(Swan::WorldPlane &plane) {
 	return dynamic_cast<Swan::BodyTrait::HasBody *>(
-		plane.spawnEntity("core::player", Swan::SRFFloatArray{0, 0}));
+		plane.spawnEntity("core::player", Swan::SRFFloatArray{ 0, (float)getHeightAt(perlin_, 0) - 4 }));
 }
