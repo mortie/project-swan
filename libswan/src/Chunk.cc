@@ -30,8 +30,12 @@ void Chunk::setTileID(RelPos pos, Tile::ID id) {
 void Chunk::drawBlock(RelPos pos, const Tile &t) {
 	keepActive();
 
-	//visuals_->tex_.update(*t.image_, pos.x * TILE_SIZE, pos.y * TILE_SIZE);
-	visuals_->dirty_ = true;
+	SDL_Rect lockrect{ pos.x * TILE_SIZE, pos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE };
+	TexLock lock(visuals_->texture_.get(), &lockrect);
+
+	SDL_Rect srcrect{ 0, 0, t.image_.surface_->w, t.image_.surface_->h };
+	SDL_Rect destrect{ 0, 0, TILE_SIZE, TILE_SIZE };
+	lock.blit(&destrect, t.image_.surface_.get(), &srcrect);
 }
 
 void Chunk::compress() {
@@ -86,7 +90,6 @@ void Chunk::decompress() {
 	data_ = std::move(dest);
 
 	visuals_.reset(new Visuals());
-	visuals_->dirty_ = true;
 	need_render_ = true;
 
 	info
@@ -139,11 +142,6 @@ void Chunk::draw(const Context &ctx, Win &win) {
 	if (need_render_) {
 		render(ctx);
 		need_render_ = false;
-	}
-
-	if (visuals_->dirty_) {
-		need_render_ = true;
-		visuals_->dirty_ = false;
 	}
 
 	SDL_Rect rect{ 0, 0, CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE };

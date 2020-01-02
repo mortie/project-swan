@@ -20,7 +20,6 @@ public:
 	Chunk(ChunkPos pos): pos_(pos) {
 		data_.reset(new uint8_t[CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)]);
 		visuals_.reset(new Visuals());
-		visuals_->dirty_ = false;
 	}
 
 	Tile::ID *getTileData();
@@ -53,7 +52,6 @@ private:
 
 	struct Visuals {
 		RaiiPtr<SDL_Texture> texture_ = makeRaiiPtr<SDL_Texture>(nullptr, SDL_DestroyTexture);
-		bool dirty_ = true;
 	};
 	std::unique_ptr<Visuals> visuals_;
 };
