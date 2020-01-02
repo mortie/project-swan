@@ -56,20 +56,20 @@ void Body::collideY(WorldPlane &plane) {
 	on_ground_ = false;
 
 	for (int x = (int)floor(bounds.left() + epsilon); x <= (int)floor(bounds.right() - epsilon); ++x) {
+		int by = (int)floor(bounds.bottom() - epsilon);
+		Tile &bottom = plane.getTile({ x, by });
+		if (bottom.is_solid_) {
+			bounds.pos.y = (float)by - bounds.size.y;
+			collided = true;
+			on_ground_ = true;
+			break;
+		}
+
 		int ty = (int)floor(bounds.top() + epsilon);
 		Tile &top = plane.getTile({ x, ty });
 		if (top.is_solid_) {
 			bounds.pos.y = (float)ty + 1.0;
 			collided = true;
-			break;
-		}
-
-		int by = (int)floor(bounds.bottom() - epsilon);
-		Tile &right = plane.getTile({ x, by });
-		if (right.is_solid_) {
-			bounds.pos.y = (float)by - bounds.size.y;
-			collided = true;
-			on_ground_ = true;
 			break;
 		}
 	}
