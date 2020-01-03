@@ -34,10 +34,12 @@ struct TestCase {
 	int index;
 };
 
-static std::vector<TestCase> cases;
+static std::vector<TestCase> *cases;
 
 void addTestCase(TestSpec *testcase) {
-	cases.emplace_back(testcase);
+	if (!cases)
+		cases = new std::vector<TestCase>;
+	cases->emplace_back(testcase);
 }
 
 static std::stringstream printFailure(const std::string &msg) {
@@ -62,7 +64,7 @@ static std::stringstream printFailure(const TestFailure &failure) {
 int main() {
 	using namespace testlib;
 
-	std::sort(begin(cases), end(cases), [](TestCase &a, TestCase &b) {
+	std::sort(begin(*cases), end(*cases), [](TestCase &a, TestCase &b) {
 		if (a.filename != b.filename)
 			return a.filename < b.filename;
 		return a.index < b.index;
@@ -70,7 +72,7 @@ int main() {
 
 	std::string_view currfile = "";
 	bool failed = false;
-	for (TestCase &testcase: cases) {
+	for (TestCase &testcase: *cases) {
 		if (currfile != testcase.filename) {
 			currfile = testcase.filename;
 			size_t lastslash = currfile.find_last_of('/');
@@ -107,6 +109,7 @@ int main() {
 	}
 
 	std::cout << '\n';
+	delete cases;
 
 	if (failed)
 		return EXIT_FAILURE;
