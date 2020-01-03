@@ -57,20 +57,20 @@ void PhysicsBody::collideY(WorldPlane &plane) {
 	on_ground_ = false;
 
 	for (int x = (int)floor(bounds.left() + epsilon); x <= (int)floor(bounds.right() - epsilon); ++x) {
+		int ty = (int)floor(bounds.top() + epsilon);
+		Tile &top = plane.getTile({ x, ty });
+		if (top.is_solid_) {
+			bounds.pos.y = (float)ty + 1.0;
+			collided = true;
+			break;
+		}
+
 		int by = (int)floor(bounds.bottom() - epsilon);
 		Tile &bottom = plane.getTile({ x, by });
 		if (bottom.is_solid_) {
 			bounds.pos.y = (float)by - bounds.size.y;
 			collided = true;
 			on_ground_ = true;
-			break;
-		}
-
-		int ty = (int)floor(bounds.top() + epsilon);
-		Tile &top = plane.getTile({ x, ty });
-		if (top.is_solid_) {
-			bounds.pos.y = (float)ty + 1.0;
-			collided = true;
 			break;
 		}
 	}
@@ -92,9 +92,26 @@ void PhysicsBody::update(WorldPlane &plane, float dt) {
 	vel_ += (force_ / mass_) * dt;
 	force_ = { 0, 0 };
 
-	pos_.x += vel_.x * dt;
+	Vec2 dist = vel_ * dt;
+	Vec2 dir = dist.sign();
+	Vec2 step = dir * 0.4;
+
+	// Move in increments of at most 'step', on the X axis
+	while (abs(dist.x) > abs(step.x)) {
+		pos_.x += step.x;
+		collideX(plane);
+		dist.x -= step.x;
+	}
+	pos_.x += dist.x;
 	collideX(plane);
-	pos_.y += vel_.y * dt;
+
+	// Move in increments of at most 'step', on the Y axis
+	while (abs(dist.y) > abs(step.y)) {
+		pos_.y += step.y;
+		collideY(plane);
+		dist.y -= step.y;
+	}
+	pos_.y += dist.y;
 	collideY(plane);
 }
 

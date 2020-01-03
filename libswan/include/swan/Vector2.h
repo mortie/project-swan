@@ -23,6 +23,10 @@ struct Vector2 {
 		return (T)std::sqrt((double)(this->x * this->x + this->y * this->y));
 	}
 
+	constexpr Vector2<T> sign() {
+		return Vector2<T>(x > 0 ? 1 : -1, y > 0 ? 1 : -1);
+	}
+
 	constexpr operator std::pair<T, T>() const {
 		return std::pair<T, T>(x, y);
 	}
