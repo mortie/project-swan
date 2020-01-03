@@ -29,13 +29,13 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 
 	// Move left
 	if (ctx.game.isKeyPressed(SDL_SCANCODE_A) || ctx.game.isKeyPressed(SDL_SCANCODE_LEFT)) {
-		body_.force_ += Swan::Vec2(-FORCE, 0);
+		body_.force_ += Swan::Vec2(-MOVE_FORCE, 0);
 		state_ = State::RUNNING_L;
 	}
 
 	// Move right
 	if (ctx.game.isKeyPressed(SDL_SCANCODE_D) || ctx.game.isKeyPressed(SDL_SCANCODE_RIGHT)) {
-		body_.force_ += Swan::Vec2(FORCE, 0);
+		body_.force_ += Swan::Vec2(MOVE_FORCE, 0);
 		if (state_ == State::RUNNING_L)
 			state_ = State::IDLE;
 		else
