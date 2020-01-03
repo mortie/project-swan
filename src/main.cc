@@ -99,6 +99,11 @@ int main(int argc, char **argv) {
 				goto exit;
 				break;
 
+			case SDL_WINDOWEVENT:
+				if (evt.window.event == SDL_WINDOWEVENT_RESIZED)
+					win.onResize(evt.window.data1, evt.window.data2);
+				break;
+
 			case SDL_KEYDOWN:
 				game.onKeyDown(evt.key.keysym);
 				break;

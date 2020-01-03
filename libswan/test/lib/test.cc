@@ -34,12 +34,24 @@ struct TestCase {
 	int index;
 };
 
-static std::vector<TestCase> *cases;
+struct TestFile {
+	std::string_view filename;
+	std::string prettyname;
+	std::vector<TestCase> cases;
+};
+
+// This avoids initialization order dependencies;
+// test specs' constructors will call addTestCase(),
+// addTestCase will use the vector of test cases,
+// and if this was just a static global vector,
+// it might not have been initialized yet.
+static auto &cases() {
+	static std::vector<TestCase> cases;
+	return cases;
+}
 
 void addTestCase(TestSpec *testcase) {
-	if (!cases)
-		cases = new std::vector<TestCase>;
-	cases->emplace_back(testcase);
+	cases().emplace_back(testcase);
 }
 
 static std::stringstream printFailure(const std::string &msg) {
@@ -64,15 +76,18 @@ static std::stringstream printFailure(const TestFailure &failure) {
 int main() {
 	using namespace testlib;
 
-	std::sort(begin(*cases), end(*cases), [](TestCase &a, TestCase &b) {
+	std::sort(begin(cases()), end(cases()), [](TestCase &a, TestCase &b) {
 		if (a.filename != b.filename)
 			return a.filename < b.filename;
 		return a.index < b.index;
 	});
 
+	int totaltests = 0;
+	int totalsuccess = 0;
+
 	std::string_view currfile = "";
 	bool failed = false;
-	for (TestCase &testcase: *cases) {
+	for (TestCase &testcase: cases()) {
 		if (currfile != testcase.filename) {
 			currfile = testcase.filename;
 			size_t lastslash = currfile.find_last_of('/');
@@ -84,32 +99,40 @@ int main() {
 			<< color(color_maybe, "Testing: ")
 			<< color(color_desc, testcase.description) << " " << std::flush;
 
+		bool casefailed = false;
+
 		try {
+			totaltests += 1;
 			testcase.func();
 			std::cout
 				<< "\r" << color(color_highlight + color_success, "✓ ")
 				<< color(color_success, "Success: ")
 				<< color(color_desc, testcase.description) << "\n";
+			totalsuccess += 1;
 		} catch (const TestFailure &failure) {
-			failed = true;
+			casefailed = true;
 			std::cout << printFailure(failure).str();
 		} catch (const std::exception &ex) {
 			failed = true;
 			std::cout << printFailure(ex.what()).str();
 		} catch (const std::string &str) {
-			failed = true;
+			casefailed = true;
 			std::cout << printFailure(str).str();
 		} catch (const char *str) {
-			failed = true;
+			casefailed = true;
 			std::cout << printFailure(str).str();
 		} catch (...) {
-			failed = true;
+			casefailed = true;
 			std::cout << printFailure("Unknown error.").str();
 		}
+
+		if (casefailed)
+			failed = true;
 	}
 
 	std::cout << '\n';
-	delete cases;
+
+	std::cout << "Total: " << totalsuccess << '/' << totaltests << "\n\n";
 
 	if (failed)
 		return EXIT_FAILURE;
