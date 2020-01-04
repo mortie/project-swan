@@ -1,7 +1,5 @@
 #include "util.h"
 
-#include <iostream>
-
 #include "lib/test.h"
 
 test("map") {

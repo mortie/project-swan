@@ -7,6 +7,7 @@
 #include <swan/Entity.h>
 #include <swan/Game.h>
 #include <swan/Item.h>
+#include <swan/ItemStack.h>
 #include <swan/Mod.h>
 #include <swan/PerfCounter.h>
 #include <swan/OS.h>
