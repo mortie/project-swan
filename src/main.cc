@@ -164,9 +164,9 @@ int main(int argc, char **argv) {
 
 		// Complex case: run multiple steps this iteration
 		} else {
-			int count = (int)ceilf(dt / (1/30.0));
+			int count = (int)ceil(dt / (1/30.0));
 			pcounter.countGameUpdatesPerFrame(count);
-			float delta = dt / count;
+			float delta = dt / (float)count;
 			info << "Delta time " << dt << "s. Running " << count << " updates in one frame, with a delta as if we had " << 1.0 / delta << " FPS.";
 			for (int i = 0; i < count; ++i)
 				game.update(delta);
