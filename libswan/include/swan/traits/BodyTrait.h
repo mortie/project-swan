@@ -32,16 +32,16 @@ public:
 	virtual void moveTo(Vec2 pos) = 0;
 };
 
-// PhysicsBody is an implementation of BodyTrait::Body which implements
+// PhysicsBody is a BodyTrait::Body which implements
 // a bunch of physics stuff.
 class PhysicsBody: public Body {
 public:
 	PhysicsBody(Vec2 size, float mass, Vec2 pos = Vec2::ZERO):
 		size_(size), mass_(mass), pos_(pos) {};
 
-	BodyTrait::Bounds getBounds() override { return BodyTrait::Bounds{ pos_, size_ }; };
-	void move(Vec2 rel) { pos_ += rel; }
-	void moveTo(Vec2 pos) { pos_ = pos; }
+	BodyTrait::Bounds getBounds() override { return BodyTrait::Bounds{ pos_, size_ }; }
+	void move(Vec2 rel) override { pos_ += rel; }
+	void moveTo(Vec2 pos) override { pos_ = pos; }
 
 	void friction(Vec2 coef = Vec2(400, 50));
 	void gravity(Vec2 g = Vec2(0, 20));
@@ -62,6 +62,21 @@ public:
 private:
 	void collideX(WorldPlane &plane);
 	void collideY(WorldPlane &plane);
+};
+
+// StaticBody is a BodyTrait::Body which just has a static
+// position and size.
+class StaticBody: public Body {
+public:
+	StaticBody(Vec2 size, Vec2 pos):
+		size_(size), pos_(pos) {}
+
+	BodyTrait::Bounds getBounds() override { return BodyTrait::Bounds{ pos_, size_ }; }
+	void move(Vec2 rel) override { pos_ += rel; }
+	void moveTo(Vec2 pos) override { pos_ = pos; }
+
+	Vec2 size_;
+	Vec2 pos_;
 };
 
 }
