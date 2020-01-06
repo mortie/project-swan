@@ -16,8 +16,8 @@ public:
 
 		// We don't want a "partially empty" state.
 		if (item == nullptr || count == 0) {
-			item = nullptr;
-			count = 0;
+			item_ = nullptr;
+			count_ = 0;
 		}
 	}
 
