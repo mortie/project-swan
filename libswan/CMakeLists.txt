@@ -6,6 +6,7 @@ add_library(libswan SHARED
 	src/Game.cc
 	src/gfxutil.cc
 	src/Item.cc
+	src/ItemStack.cc
 	src/Mod.cc
 	src/OS.cc
 	src/Resource.cc
