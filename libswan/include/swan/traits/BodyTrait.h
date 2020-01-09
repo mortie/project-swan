@@ -12,6 +12,7 @@ namespace BodyTrait {
 class Body;
 class HasBody {
 public:
+	virtual ~HasBody() = default;
 	virtual Body &getBody() = 0;
 };
 
@@ -27,6 +28,8 @@ struct Bounds {
 
 class Body {
 public:
+	virtual ~Body() = default;
+
 	virtual Bounds getBounds() = 0;
 	virtual void move(Vec2 rel) = 0;
 	virtual void moveTo(Vec2 pos) = 0;
