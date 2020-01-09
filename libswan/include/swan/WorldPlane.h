@@ -40,6 +40,15 @@ public:
 
 	Iter<Entity *> getEntsInArea(Vec2 center, float radius);
 
+	template<typename T>
+	Iter<Entity *>getEntsOfType() {
+		return mapFilter(entities_.begin(), entities_.end(), [](Entity *ent) -> std::optional<T *> {
+			if (T *e = dynamic_cast<T *>(ent); e != nullptr)
+				return e;
+			return std::nullopt;
+		});
+	}
+
 	BodyTrait::HasBody *spawnPlayer();
 	void breakBlock(TilePos pos);
 
