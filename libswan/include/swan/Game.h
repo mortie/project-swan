@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <bitset>
 #include <map>
 #include <string>
 
@@ -20,16 +20,46 @@ public:
 	std::unique_ptr<Mod> loadMod(const std::string &path);
 	void createWorld(const std::string &worldgen, std::vector<std::unique_ptr<Mod>> &&mods);
 
-	void onKeyDown(SDL_Keysym sym) { pressed_keys_[sym.scancode] = true; }
-	void onKeyUp(SDL_Keysym sym) { pressed_keys_[sym.scancode] = false; }
-	void onMouseMove(Sint32 x, Sint32 y) { mouse_pos_ = { x, y }; }
-	void onMouseDown(Sint32 x, Sint32 y, Uint8 button) { mouse_pos_ = { x, y }; pressed_buttons_[button] = true; }
-	void onMouseUp(Sint32 x, Sint32 y, Uint8 button) { mouse_pos_ = { x, y }; pressed_buttons_[button] = false; }
+	void onKeyDown(SDL_Keysym sym) {
+		pressed_keys_[sym.scancode] = true;
+		did_press_keys_[sym.scancode] = true;
+	}
+
+	void onKeyUp(SDL_Keysym sym) {
+		pressed_keys_[sym.scancode] = false;
+		did_release_keys_[sym.scancode] = true;
+	}
+
+	void onMouseMove(Sint32 x, Sint32 y) {
+		mouse_pos_ = { x, y };
+	}
+
+	void onMouseDown(Sint32 x, Sint32 y, Uint8 button) {
+		mouse_pos_ = { x, y };
+		pressed_buttons_[button] = true;
+		did_press_buttons_[button] = true;
+
+}
+	void onMouseUp(Sint32 x, Sint32 y, Uint8 button) {
+		mouse_pos_ = { x, y };
+		pressed_buttons_[button] = false;
+		did_release_buttons_[button] = true;
+	}
+
+	void onScrollWheel(Sint32 y) {
+		did_scroll_ = (y > 0 ? 1 : -1 );
+	}
 
 	bool isKeyPressed(SDL_Scancode code) { return pressed_keys_[code]; }
-	TilePos getMouseTile();
+	bool wasKeyPressed(SDL_Scancode code) { return did_press_keys_[code]; }
+	bool wasKeyReleased(SDL_Scancode code) { return did_release_keys_[code]; }
 	Vec2i getMousePos() { return mouse_pos_; }
 	bool isMousePressed(Uint8 button) { return pressed_buttons_[button]; }
+	bool wasMousePressed(Uint8 button) { return did_press_buttons_[button]; }
+	bool wasMouseReleased(Uint8 button) { return did_release_buttons_[button]; }
+	int wasWheelScrolled() { return did_scroll_; }
+
+	TilePos getMouseTile();
 
 	void draw();
 	void update(float dt);
@@ -42,9 +72,16 @@ public:
 	Win &win_;
 
 private:
-	std::unordered_map<SDL_Scancode, bool> pressed_keys_;
+	std::bitset<SDL_NUM_SCANCODES> pressed_keys_;
+	std::bitset<SDL_NUM_SCANCODES> did_press_keys_;
+	std::bitset<SDL_NUM_SCANCODES> did_release_keys_;
+
 	Vec2i mouse_pos_;
-	std::unordered_map<Uint8, bool> pressed_buttons_;
+	std::bitset<SDL_BUTTON_X2> pressed_buttons_;
+	std::bitset<SDL_BUTTON_X2> did_press_buttons_;
+	std::bitset<SDL_BUTTON_X2> did_release_buttons_;
+
+	int did_scroll_ = 0;
 };
 
 }

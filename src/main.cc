@@ -149,17 +149,26 @@ int main(int argc, char **argv) {
 			case SDL_MOUSEMOTION:
 				imgui_io.MousePos.x = (float)evt.motion.x;
 				imgui_io.MousePos.y = (float)evt.motion.y;
-				game.onMouseMove(evt.motion.x, evt.motion.y);
+				if (!imgui_io.WantCaptureMouse)
+					game.onMouseMove(evt.motion.x, evt.motion.y);
 				break;
 
 			case SDL_MOUSEBUTTONDOWN:
 				imgui_io.MouseDown[sdlButtonToImGuiButton(evt.button.button)] = true;
-				game.onMouseDown(evt.button.x, evt.button.y, evt.button.button);
+				if (!imgui_io.WantCaptureMouse)
+					game.onMouseDown(evt.button.x, evt.button.y, evt.button.button);
 				break;
 
 			case SDL_MOUSEBUTTONUP:
 				imgui_io.MouseDown[sdlButtonToImGuiButton(evt.button.button)] = false;
-				game.onMouseUp(evt.button.x, evt.button.y, evt.button.button);
+				if (!imgui_io.WantCaptureMouse)
+					game.onMouseUp(evt.button.x, evt.button.y, evt.button.button);
+				break;
+
+			case SDL_MOUSEWHEEL:
+				imgui_io.MouseWheel += (float)evt.wheel.y;
+				if (!imgui_io.WantCaptureMouse)
+					game.onScrollWheel(evt.wheel.y);
 				break;
 			}
 		}

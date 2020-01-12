@@ -49,6 +49,19 @@ void Game::draw() {
 
 void Game::update(float dt) {
 	world_->update(dt);
+
+	// Zoom the window using the scroll wheel
+	win_.zoom_ += wasWheelScrolled() * 0.1 * win_.zoom_;
+	if (win_.zoom_ > 3)
+		win_.zoom_ = 3;
+	else if (win_.zoom_ < 0.3)
+		win_.zoom_ = 0.3;
+
+	did_scroll_ = 0;
+	did_press_keys_.reset();
+	did_release_keys_.reset();
+	did_press_buttons_.reset();
+	did_release_buttons_.reset();
 }
 
 void Game::tick(float dt) {
