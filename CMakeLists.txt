@@ -7,7 +7,7 @@ option(USE_CLANG_TIDY "Use clang-tidy for additional checks" ON)
 if(USE_CLANG_TIDY)
 	set(CMAKE_CXX_CLANG_TIDY
 		clang-tidy
-		--header-filter=.*
+		"--header-filter=(libswan|core.mod|src)/.*"
 		--checks=-*,bugprone-*,cert-*,performance-*,clang-analyzer-*,-cert-dcl16-c,-cert-err58-cpp,-clang-analyzer-optin.cplusplus.VirtualCall)
 endif()
 

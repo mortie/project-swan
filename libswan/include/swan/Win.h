@@ -21,7 +21,7 @@ public:
 		// For HiDPI, we must set the renderer's logical size.
 		int w, h;
 		SDL_GetWindowSize(window_, &w, &h);
-		SDL_RenderSetLogicalSize(renderer_, w / scale_, h / scale_);
+		onResize(w, h);
 
 		info << "Using renderer: " << rinfo_.name;
 	}
@@ -33,7 +33,7 @@ public:
 	}
 
 	void onResize(int w, int h) {
-		SDL_RenderSetLogicalSize(renderer_, w / scale_, h / scale_);
+		SDL_RenderSetLogicalSize(renderer_, (int)((float)w / scale_), (int)((float)h / scale_));
 	}
 
 	SDL_Rect createDestRect(Vec2 pos, Vec2 pixsize) {

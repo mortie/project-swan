@@ -51,7 +51,7 @@ void Game::update(float dt) {
 	world_->update(dt);
 
 	// Zoom the window using the scroll wheel
-	win_.zoom_ += wasWheelScrolled() * 0.1 * win_.zoom_;
+	win_.zoom_ += (float)wasWheelScrolled() * 0.1f * win_.zoom_;
 	if (win_.zoom_ > 3)
 		win_.zoom_ = 3;
 	else if (win_.zoom_ < 0.3)
