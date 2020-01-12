@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../common.h"
 #include "../Vector2.h"
 
 namespace Swan {
@@ -20,10 +21,22 @@ struct Bounds {
 	Vec2 pos;
 	Vec2 size;
 
-	double left() { return pos.x; }
-	double right() { return pos.x + size.x; }
-	double top() { return pos.y; }
-	double bottom() { return pos.y + size.y; }
+	float left() { return pos.x; }
+	float right() { return pos.x + size.x; }
+	float midX() { return pos.x + size.x / 2; }
+	float top() { return pos.y; }
+	float bottom() { return pos.y + size.y; }
+	float midY() { return pos.y + size.y / 2; }
+
+	Vec2 topLeft() { return { left(), top() }; }
+	Vec2 midLeft() { return { left(), midY() }; }
+	Vec2 bottomLeft() { return { left(), bottom() }; }
+	Vec2 topMid() { return { midX(), top() }; }
+	Vec2 center() { return { midX(), midY() }; }
+	Vec2 bottomMid() { return { midX(), bottom() }; }
+	Vec2 topRight() { return { right(), top() }; }
+	Vec2 midRight() { return { right(), midY() }; }
+	Vec2 bottomRight() { return { right(), bottom() }; }
 };
 
 class Body {
@@ -48,9 +61,10 @@ public:
 
 	void friction(Vec2 coef = Vec2(400, 50));
 	void gravity(Vec2 g = Vec2(0, 20));
+	void standardForces() { friction(); gravity(); }
 
 	void outline(Win &win);
-	void update(WorldPlane &plane, float dt);
+	void update(const Swan::Context &ctx, float dt);
 	void updateWithoutCollision(float dt);
 
 	Vec2 force_ = { 0, 0 };

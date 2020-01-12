@@ -42,9 +42,8 @@ public:
 	virtual BodyTrait::Body &getBody() override { return body_; }
 
 	virtual void update(const Context &ctx, float dt) override {
-		body_.friction();
-		body_.gravity();
-		body_.update(ctx.plane, dt);
+		body_.standardForces();
+		body_.update(ctx, dt);
 	}
 
 protected:

@@ -20,7 +20,11 @@ struct Vector2 {
 	}
 
 	constexpr T length() {
-		return (T)std::sqrt((double)(this->x * this->x + this->y * this->y));
+		return (T)std::sqrt((double)squareLength());
+	}
+
+	constexpr T squareLength() {
+		return this->x * this->x + this->y * this->y;
 	}
 
 	constexpr Vector2<T> sign() {

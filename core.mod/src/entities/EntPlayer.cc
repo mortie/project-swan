@@ -1,7 +1,11 @@
 #include "EntPlayer.h"
 
+#include <cmath>
+
+#include "EntItemStack.h"
+
 EntPlayer::EntPlayer(const Swan::Context &ctx, const Swan::SRF &params):
-		PhysicsEntity(SIZE, MASS),
+		PhysicsEntity(SIZE, MASS), inventory_(INVENTORY_SIZE),
 		anims_{
 			Swan::Animation(ctx.resources.getImage("core::player-still"), 0.8),
 			Swan::Animation(ctx.resources.getImage("core::player-running"), 1, SDL_FLIP_HORIZONTAL),
@@ -57,7 +61,19 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 		anims_[(int)state_].reset();
 	anims_[(int)state_].tick(dt);
 
-	Swan::PhysicsEntity::update(ctx, dt);
+	PhysicsEntity::update(ctx, dt);
+}
+
+void EntPlayer::tick(const Swan::Context &ctx, float dt) {
+	for (EntItemStack *ent: ctx.plane.getEntsOfType<EntItemStack>()) {
+		float squared_dist =
+			(getBody().getBounds().bottomMid() - ent->getBody().getBounds().center())
+			.squareLength();
+
+		if (squared_dist < 0.5 * 0.5) {
+			Swan::info << "Will pick up item at " << ent->getBody().getBounds().center() << "...";
+		}
+	}
 }
 
 void EntPlayer::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {

@@ -88,7 +88,7 @@ void PhysicsBody::outline(Win &win) {
 	win.drawRect(pos_, size_);
 }
 
-void PhysicsBody::update(WorldPlane &plane, float dt) {
+void PhysicsBody::update(const Swan::Context &ctx, float dt) {
 	vel_ += (force_ / mass_) * dt;
 	force_ = { 0, 0 };
 
@@ -99,20 +99,20 @@ void PhysicsBody::update(WorldPlane &plane, float dt) {
 	// Move in increments of at most 'step', on the X axis
 	while (abs(dist.x) > abs(step.x)) {
 		pos_.x += step.x;
-		collideX(plane);
+		collideX(ctx.plane);
 		dist.x -= step.x;
 	}
 	pos_.x += dist.x;
-	collideX(plane);
+	collideX(ctx.plane);
 
 	// Move in increments of at most 'step', on the Y axis
 	while (abs(dist.y) > abs(step.y)) {
 		pos_.y += step.y;
-		collideY(plane);
+		collideY(ctx.plane);
 		dist.y -= step.y;
 	}
 	pos_.y += dist.y;
-	collideY(plane);
+	collideY(ctx.plane);
 }
 
 void PhysicsBody::updateWithoutCollision(float dt) {
