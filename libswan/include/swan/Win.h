@@ -10,7 +10,9 @@ namespace Swan {
 
 class Win {
 public:
-	Win(SDL_Window *window, SDL_Renderer *renderer): window_(window), renderer_(renderer) {
+	Win(SDL_Window *window, SDL_Renderer *renderer, float scale):
+			window_(window), renderer_(renderer), scale_(scale) {
+
 		if (SDL_GetRendererInfo(renderer_, &rinfo_) < 0) {
 			panic << "GetRenedrerInfo failed: " << SDL_GetError();
 			abort();
@@ -19,7 +21,7 @@ public:
 		// For HiDPI, we must set the renderer's logical size.
 		int w, h;
 		SDL_GetWindowSize(window_, &w, &h);
-		SDL_RenderSetLogicalSize(renderer_, w, h);
+		SDL_RenderSetLogicalSize(renderer_, w / scale_, h / scale_);
 
 		info << "Using renderer: " << rinfo_.name;
 	}
@@ -27,18 +29,18 @@ public:
 	Vec2 getSize() {
 		int w, h;
 		SDL_GetWindowSize(window_, &w, &h);
-		return Vec2(((float)w / scale_) / TILE_SIZE, ((float)h / scale_) / TILE_SIZE);
+		return Vec2(((float)w / (scale_ * zoom_)) / TILE_SIZE, ((float)h / (scale_ * zoom_)) / TILE_SIZE);
 	}
 
 	void onResize(int w, int h) {
-		SDL_RenderSetLogicalSize(renderer_, w, h);
+		SDL_RenderSetLogicalSize(renderer_, w / scale_, h / scale_);
 	}
 
 	SDL_Rect createDestRect(Vec2 pos, Vec2 pixsize) {
 		return SDL_Rect{
-			(int)((pos.x - cam_.x) * TILE_SIZE * scale_),
-			(int)((pos.y - cam_.y) * TILE_SIZE * scale_),
-			(int)(pixsize.x * scale_), (int)(pixsize.y * scale_),
+			(int)((pos.x - cam_.x) * TILE_SIZE * zoom_),
+			(int)((pos.y - cam_.y) * TILE_SIZE * zoom_),
+			(int)(pixsize.x * zoom_), (int)(pixsize.y * zoom_),
 		};
 	}
 
@@ -74,10 +76,11 @@ public:
 			warn << "RenderDrawRect failed: " << SDL_GetError();
 	}
 
-	float scale_ = 2;
 	Vec2 cam_;
+	float zoom_ = 1;
 	SDL_Window *window_;
 	SDL_Renderer *renderer_;
+	float scale_;
 	SDL_RendererInfo rinfo_;
 };
 

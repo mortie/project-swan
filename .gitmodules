@@ -4,3 +4,6 @@
 [submodule "third_party/PerlinNoise"]
 	path = third_party/PerlinNoise
 	url = https://github.com/Reputeless/PerlinNoise.git
+[submodule "third_party/imgui_sdl"]
+	path = third_party/imgui_sdl
+	url = https://github.com/mortie/imgui_sdl

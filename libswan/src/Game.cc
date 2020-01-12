@@ -39,8 +39,8 @@ void Game::createWorld(const std::string &worldgen, std::vector<std::unique_ptr<
 TilePos Game::getMouseTile() {
 	auto mousePos = getMousePos();
 	return TilePos(
-		(int)floor(win_.cam_.x + mousePos.x / (Swan::TILE_SIZE * win_.scale_)),
-		(int)floor(win_.cam_.y + mousePos.y / (Swan::TILE_SIZE * win_.scale_)));
+		(int)floor(win_.cam_.x + mousePos.x / (Swan::TILE_SIZE * win_.zoom_)),
+		(int)floor(win_.cam_.y + mousePos.y / (Swan::TILE_SIZE * win_.zoom_)));
 }
 
 void Game::draw() {

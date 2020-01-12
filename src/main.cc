@@ -8,6 +8,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <string.h>
+#include <imgui.h>
+#include <imgui_sdl/imgui_sdl.h>
 
 #include <swan/swan.h>
 
@@ -23,8 +25,24 @@ using namespace Swan;
 #define sdlassert(expr, str) errassert(expr, str, SDL_GetError);
 #define imgassert(expr, str) errassert(expr, str, IMG_GetError);
 
-template<typename T>
-using DeleteFunc = void (*)(T *);
+// ImGUI and SDL have different numbers for mouse buttons
+int sdlButtonToImGuiButton(uint8_t button) {
+	switch (button) {
+	case SDL_BUTTON_LEFT:
+		return 0;
+	case SDL_BUTTON_RIGHT:
+		return 1;
+	case SDL_BUTTON_MIDDLE:
+		return 2;
+	case SDL_BUTTON_X1:
+		return 3;
+	case SDL_BUTTON_X2:
+		return 4;
+	default:
+		warn << "Unknown mouse button: " << button;
+		return 4; // Let's call that X2?
+	}
+}
 
 int main(int argc, char **argv) {
 	uint32_t winflags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -54,6 +72,7 @@ int main(int argc, char **argv) {
 	imgassert(IMG_Init(imgflags) == imgflags, "Could not initialize SDL_Image");
 	auto sdl_image = makeDeferred([] { IMG_Quit(); });
 
+	// Create the window
 	auto window = makeRaiiPtr(
 		SDL_CreateWindow(
 			"Project: SWAN",
@@ -73,8 +92,20 @@ int main(int argc, char **argv) {
 		SDL_DestroyRenderer);
 	sdlassert(renderer, "Could not create renderer");
 
-	Win win(window.get(), renderer.get());
+	Win win(window.get(), renderer.get(), 2);
 
+	// Init ImGUI and ImGUI_SDL
+	IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+	auto imgui = makeDeferred([] { ImGui::DestroyContext(); });
+	ImGuiSDL::Initialize(renderer.get(), 640, 480);
+	auto imgui_sdl = makeDeferred([] { ImGuiSDL::Deinitialize(); });
+
+	// ImGuiIO is to glue SDL and ImGUI together
+	ImGuiIO& imgui_io = ImGui::GetIO();
+	imgui_io.BackendPlatformName = "imgui_sdl + Project: SWAN";
+
+	// Create a world
 	Game game(win);
 	std::vector<std::unique_ptr<Mod>> mods;
 	mods.push_back(game.loadMod("core.mod"));
@@ -100,8 +131,11 @@ int main(int argc, char **argv) {
 				break;
 
 			case SDL_WINDOWEVENT:
-				if (evt.window.event == SDL_WINDOWEVENT_RESIZED)
+				if (evt.window.event == SDL_WINDOWEVENT_RESIZED) {
+					imgui_io.DisplaySize.x = (float)evt.window.data1;
+					imgui_io.DisplaySize.y = (float)evt.window.data2;
 					win.onResize(evt.window.data1, evt.window.data2);
+				}
 				break;
 
 			case SDL_KEYDOWN:
@@ -113,14 +147,18 @@ int main(int argc, char **argv) {
 				break;
 
 			case SDL_MOUSEMOTION:
+				imgui_io.MousePos.x = (float)evt.motion.x;
+				imgui_io.MousePos.y = (float)evt.motion.y;
 				game.onMouseMove(evt.motion.x, evt.motion.y);
 				break;
 
 			case SDL_MOUSEBUTTONDOWN:
+				imgui_io.MouseDown[sdlButtonToImGuiButton(evt.button.button)] = true;
 				game.onMouseDown(evt.button.x, evt.button.y, evt.button.button);
 				break;
 
 			case SDL_MOUSEBUTTONUP:
+				imgui_io.MouseDown[sdlButtonToImGuiButton(evt.button.button)] = false;
 				game.onMouseUp(evt.button.x, evt.button.y, evt.button.button);
 				break;
 			}
@@ -184,11 +222,20 @@ int main(int argc, char **argv) {
 
 		SDL_RenderClear(renderer.get());
 
+		// ImGUI
+		imgui_io.DeltaTime = dt;
+		ImGui::NewFrame();
+		ImGui::ShowDemoWindow();
+
 		RTClock draw_clock;
 		game.draw();
 		pcounter.countGameDraw(draw_clock.duration());
 
 		pcounter.countFrameTime(total_frame_clock.duration());
+
+		// Render ImGUI
+		ImGui::Render();
+		ImGuiSDL::Render(ImGui::GetDrawData());
 
 		RTClock present_clock;
 		SDL_RenderPresent(renderer.get());

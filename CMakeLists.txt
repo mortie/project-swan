@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(swan)
 
+find_package(SDL2 REQUIRED)
+
 option(USE_CLANG_TIDY "Use clang-tidy for additional checks" ON)
 if(USE_CLANG_TIDY)
 	set(CMAKE_CXX_CLANG_TIDY
@@ -8,6 +10,7 @@ if(USE_CLANG_TIDY)
 		--header-filter=.*
 		--checks=-*,bugprone-*,cert-*,performance-*,clang-analyzer-*,-cert-dcl16-c,-cert-err58-cpp,-clang-analyzer-optin.cplusplus.VirtualCall)
 endif()
+
 
 add_compile_options(-std=c++2a -Wall -Wextra -Wpedantic -Wno-unused-parameter)
 if(CMAKE_BUILD_TYPE STREQUAL Sanitize OR CMAKE_BUILD_TYPE STREQUAL "")
@@ -39,7 +42,8 @@ set(libraries imgui SDL2 SDL2_image dl z)
 add_compile_options(-Wno-c99-extensions)
 
 include_directories(
-	${PROJECT_SOURCE_DIR}/third_party)
+	${PROJECT_SOURCE_DIR}/third_party
+	${SDL2_INCLUDE_DIRS})
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/lib64;${CMAKE_INSTALL_PREFIX}/swan/libswan;${CMAKE_INSTALL_PREFIX}/swan/third_party")
 
 add_subdirectory(libswan)
