@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
 	int fcount = 0;
 	int slow_frames = 0;
 	while (1) {
-		RTClock total_frame_clock;
+		RTClock total_time_clock;
 
 		SDL_Event evt;
 		while (SDL_PollEvent(&evt)) {
@@ -241,7 +241,7 @@ int main(int argc, char **argv) {
 		game.draw();
 		pcounter.countGameDraw(draw_clock.duration());
 
-		pcounter.countFrameTime(total_frame_clock.duration());
+		pcounter.countFrameTime(total_time_clock.duration());
 		pcounter.render();
 
 		// Render ImGUI
@@ -254,6 +254,8 @@ int main(int argc, char **argv) {
 		RTClock present_clock;
 		SDL_RenderPresent(renderer.get());
 		pcounter.countRenderPresent(present_clock.duration());
+
+		pcounter.countTotalTime(total_time_clock.duration());
 	}
 
 exit:

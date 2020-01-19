@@ -32,6 +32,7 @@ public:
 
 	void render();
 
+	void countTotalTime(double secs) { total_time_.count(secs); }
 	void countFrameTime(double secs) { frame_time_.count(secs); }
 	void countGameUpdate(double secs) { game_update_.count(secs); }
 	void countGameTick(double secs) { game_tick_.count(secs); }
@@ -41,6 +42,7 @@ public:
 	void countMemoryUsage(double bytes) { memory_usage_.count(bytes); }
 
 private:
+	Counter<> total_time_;
 	Counter<> frame_time_;
 	Counter<> game_update_;
 	Counter<> game_tick_;
