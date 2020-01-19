@@ -11,6 +11,14 @@ if(USE_CLANG_TIDY)
 		--checks=-*,bugprone-*,cert-*,performance-*,clang-analyzer-*,-cert-dcl16-c,-cert-err58-cpp,-clang-analyzer-optin.cplusplus.VirtualCall)
 endif()
 
+if(CMAKE_EXPORT_COMPILE_COMMANDS)
+	add_custom_target(compile_commands
+		BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		COMMAND
+			compdb -p ${CMAKE_CURRENT_BINARY_DIR} list
+			> ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json)
+endif()
 
 add_compile_options(-std=c++2a -Wall -Wextra -Wpedantic -Wno-unused-parameter)
 if(CMAKE_BUILD_TYPE STREQUAL Sanitize OR CMAKE_BUILD_TYPE STREQUAL "")
