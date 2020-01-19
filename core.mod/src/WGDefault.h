@@ -12,7 +12,7 @@ public:
 	};
 
 	WGDefault(Swan::World &world):
-		tGrass_(world.getTileID("core::grass")), tDirt_(world.getTileID("core::dirt")),
+		tGrass_(world.getTileID("core::tree-trunk")), tDirt_(world.getTileID("core::dirt")),
 		tStone_(world.getTileID("core::stone")), tAir_(world.getTileID("core::air")) {}
 
 	void genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) override;

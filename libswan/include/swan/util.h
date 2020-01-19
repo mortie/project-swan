@@ -5,6 +5,7 @@
 #include <memory>
 #include <chrono>
 #include <type_traits>
+#include <stddef.h>
 
 namespace Swan {
 

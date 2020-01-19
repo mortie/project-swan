@@ -47,6 +47,7 @@ int sdlButtonToImGuiButton(uint8_t button) {
 int main(int argc, char **argv) {
 	uint32_t winflags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 	uint32_t renderflags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
+	float gui_scale = 2;
 
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "--lodpi") == 0) {
@@ -77,7 +78,7 @@ int main(int argc, char **argv) {
 		SDL_CreateWindow(
 			"Project: SWAN",
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-			640, 480, winflags),
+			(int)(640 * gui_scale), (int)(480 * gui_scale), winflags),
 		SDL_DestroyWindow);
 
 	// Load and display application icon
@@ -92,14 +93,15 @@ int main(int argc, char **argv) {
 		SDL_DestroyRenderer);
 	sdlassert(renderer, "Could not create renderer");
 
-	Win win(window.get(), renderer.get(), 2);
+	Win win(window.get(), renderer.get(), gui_scale);
 
 	// Init ImGUI and ImGUI_SDL
 	IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 	auto imgui = makeDeferred([] { ImGui::DestroyContext(); });
-	ImGuiSDL::Initialize(renderer.get(), 640, 480);
+	ImGuiSDL::Initialize(renderer.get(), (int)win.getPixSize().x, (int)win.getPixSize().y);
 	auto imgui_sdl = makeDeferred([] { ImGuiSDL::Deinitialize(); });
+	info << "Initialized with window size " << win.getPixSize();
 
 	// ImGuiIO is to glue SDL and ImGUI together
 	ImGuiIO& imgui_io = ImGui::GetIO();
@@ -234,17 +236,20 @@ int main(int argc, char **argv) {
 		// ImGUI
 		imgui_io.DeltaTime = dt;
 		ImGui::NewFrame();
-		ImGui::ShowDemoWindow();
 
 		RTClock draw_clock;
 		game.draw();
 		pcounter.countGameDraw(draw_clock.duration());
 
 		pcounter.countFrameTime(total_frame_clock.duration());
+		pcounter.render();
 
 		// Render ImGUI
 		ImGui::Render();
 		ImGuiSDL::Render(ImGui::GetDrawData());
+
+		// ImGuiSDL changes renderer draw color...
+		SDL_SetRenderDrawColor(renderer.get(), 0, 0, 0, 255);
 
 		RTClock present_clock;
 		SDL_RenderPresent(renderer.get());

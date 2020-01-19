@@ -11,6 +11,7 @@ extern "C" void mod_init(Swan::Mod &mod) {
 	mod.registerImage({ "stone", "tiles/stone.png" });
 	mod.registerImage({ "dirt", "tiles/dirt.png" });
 	mod.registerImage({ "grass", "tiles/grass.png" });
+	mod.registerImage({ "tree-trunk", "tiles/tree-trunk.png" });
 	mod.registerImage({ "player-running", "entities/player-running.png", 64 });
 	mod.registerImage({ "player-still", "entities/player-still.png", 64 });
 
@@ -34,6 +35,11 @@ extern "C" void mod_init(Swan::Mod &mod) {
 		.image = "core::grass",
 		.dropped_item = "core::dirt",
 	});
+	mod.registerTile({
+		.name = "tree-trunk",
+		.image = "core::tree-trunk",
+		.dropped_item = "core::tree-trunk",
+	});
 
 	mod.registerItem({
 		.name = "stone",
@@ -46,6 +52,10 @@ extern "C" void mod_init(Swan::Mod &mod) {
 	mod.registerItem({
 		.name = "grass",
 		.image = "core::grass",
+	});
+	mod.registerItem({
+		.name = "tree-trunk",
+		.image = "core::tree-trunk",
 	});
 
 	mod.registerWorldGen("default", std::make_unique<WGDefault::Factory>());

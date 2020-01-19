@@ -9,6 +9,7 @@ add_library(libswan SHARED
 	src/ItemStack.cc
 	src/Mod.cc
 	src/OS.cc
+	src/PerfCounter.cc
 	src/Resource.cc
 	src/SRF.cc
 	src/Tile.cc

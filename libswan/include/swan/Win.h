@@ -26,6 +26,12 @@ public:
 		info << "Using renderer: " << rinfo_.name;
 	}
 
+	Vec2 getPixSize() {
+		int w, h;
+		SDL_GetWindowSize(window_, &w, &h);
+		return Vec2((float)w / scale_, (float)h / scale_);
+	}
+
 	Vec2 getSize() {
 		int w, h;
 		SDL_GetWindowSize(window_, &w, &h);

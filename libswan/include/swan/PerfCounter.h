@@ -1,30 +1,36 @@
+#include "util.h"
+
+#include <array>
+
 namespace Swan {
-
-
 
 class PerfCounter {
 public:
+	template<typename T = double, size_t size = 64>
 	class Counter {
 	public:
-		void count(double val) {
-			latest_ = val;
-			if (count_ >= 60) {
-				sum_ -= avg();
-				sum_ += val;
-			} else {
-				sum_ += val;
-				count_ += 1;
-			}
+		void count(T val) {
+			buf_[idx_] = val;
+			idx_ = (idx_ + 1) % size;
 		}
 
-		double avg() { return sum_ / count_; }
-		double latest() { return latest_; }
+		// Fill a buffer with data, in the order they were written
+		template<typename DestT = T>
+		void fill(std::array<DestT, size> &buf) {
+			size_t r = idx_;
+			size_t w = 0;
+			do {
+				buf[w++] = (DestT)buf_[r];
+				r = (r + 1) % size;
+			} while (r != idx_);
+		}
 
 	private:
-		double latest_ = 0;
-		double sum_ = 0;
-		int count_ = 0;
+		T buf_[size] = {};
+		size_t idx_ = 0;
 	};
+
+	void render();
 
 	void countFrameTime(double secs) { frame_time_.count(secs); }
 	void countGameUpdate(double secs) { game_update_.count(secs); }
@@ -35,13 +41,13 @@ public:
 	void countMemoryUsage(double bytes) { memory_usage_.count(bytes); }
 
 private:
-	Counter frame_time_;
-	Counter game_update_;
-	Counter game_tick_;
-	Counter game_draw_;
-	Counter game_updates_per_frame_;
-	Counter render_present_;
-	Counter memory_usage_;
+	Counter<> frame_time_;
+	Counter<> game_update_;
+	Counter<> game_tick_;
+	Counter<> game_draw_;
+	Counter<> game_updates_per_frame_;
+	Counter<> render_present_;
+	Counter<> memory_usage_;
 };
 
 }

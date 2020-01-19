@@ -12,7 +12,8 @@ set(assets
 	assets/tiles/grass.png
 	assets/tiles/air.png
 	assets/tiles/stone.png
-	assets/tiles/dirt.png)
+	assets/tiles/dirt.png
+	assets/tiles/tree-trunk.png)
 foreach(a ${assets})
 	configure_file("${a}" "${a}" COPYONLY)
 endforeach(a)
