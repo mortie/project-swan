@@ -12,6 +12,7 @@ extern "C" void mod_init(Swan::Mod &mod) {
 	mod.registerImage({ "dirt", "tiles/dirt.png" });
 	mod.registerImage({ "grass", "tiles/grass.png" });
 	mod.registerImage({ "tree-trunk", "tiles/tree-trunk.png" });
+	mod.registerImage({ "leaves", "tiles/leaves.png" });
 	mod.registerImage({ "player-running", "entities/player-running.png", 64 });
 	mod.registerImage({ "player-still", "entities/player-still.png", 64 });
 
@@ -39,6 +40,10 @@ extern "C" void mod_init(Swan::Mod &mod) {
 		.name = "tree-trunk",
 		.image = "core::tree-trunk",
 		.dropped_item = "core::tree-trunk",
+	});
+	mod.registerTile({
+		.name = "leaves",
+		.image = "core::leaves",
 	});
 
 	mod.registerItem({

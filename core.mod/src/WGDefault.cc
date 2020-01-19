@@ -1,34 +1,37 @@
 #include "WGDefault.h"
 
-static int getHeightAt(const siv::PerlinNoise &perlin, int tilex) {
-	return (int)(perlin.noise(tilex / 50.0, 0) * 13);
+static int grassLevel(const siv::PerlinNoise &perlin, int x) {
+	return (int)(perlin.noise(x / 50.0, 0) * 13);
 }
 
-static int getDepthAt(const siv::PerlinNoise &perlin, int tilex) {
-	return (int)(perlin.noise(tilex / 50.0, 10) * 10) + 10;
+static int stoneLevel(const siv::PerlinNoise &perlin, int x) {
+	return (int)(perlin.noise(x / 50.0, 10) * 10) + 10;
+}
+
+Swan::Tile::ID WGDefault::genTile(Swan::TilePos pos) {
+	int grass_level = grassLevel(perlin_, pos.x);
+	int stone_level = stoneLevel(perlin_, pos.x);
+
+	if (pos.y > stone_level)
+		return tStone_;
+	else if (pos.y > grass_level)
+		return tDirt_;
+	else if (pos.y == grass_level)
+		return tGrass_;
+	else
+		return tAir_;
 }
 
 void WGDefault::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
-
 	for (int cx = 0; cx < Swan::CHUNK_WIDTH; ++cx) {
 		int tilex = chunk.pos_.x * Swan::CHUNK_WIDTH + cx;
 
-		int height = getHeightAt(perlin_, tilex);
-		int depth = getDepthAt(perlin_, tilex);
-		if (depth <= height) depth = height + 1;
-
 		for (int cy = 0; cy < Swan::CHUNK_HEIGHT; ++cy) {
 			int tiley = chunk.pos_.y * Swan::CHUNK_HEIGHT + cy;
-			Swan::TilePos tpos = Swan::TilePos(tilex, tiley);
 
-			if (tpos.y == height)
-				chunk.setTileID(Swan::TilePos(cx, cy), tGrass_);
-			else if (tpos.y > height && tpos.y <= depth)
-				chunk.setTileID(Swan::TilePos(cx, cy), tDirt_);
-			else if (tpos.y > depth)
-				chunk.setTileID(Swan::TilePos(cx, cy), tStone_);
-			else
-				chunk.setTileID(Swan::TilePos(cx, cy), tAir_);
+			Swan::TilePos pos(tilex, tiley);
+			Swan::Chunk::RelPos rel(cx, cy);
+			chunk.setTileID(rel, genTile(pos));
 		}
 	}
 }
@@ -36,5 +39,6 @@ void WGDefault::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 Swan::BodyTrait::HasBody *WGDefault::spawnPlayer(Swan::WorldPlane &plane) {
 	int x = 0;
 	return dynamic_cast<Swan::BodyTrait::HasBody *>(
-		plane.spawnEntity("core::player", Swan::SRFFloatArray{ (float)x, (float)getHeightAt(perlin_, x) - 4 }));
+		plane.spawnEntity("core::player", Swan::SRFFloatArray{
+			(float)x, (float)grassLevel(perlin_, x) - 4 }));
 }
