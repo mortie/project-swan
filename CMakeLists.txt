@@ -12,7 +12,7 @@ if(USE_CLANG_TIDY)
 endif()
 
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
-	add_custom_target(compile_commands
+	add_custom_target(compile_commands ALL
 		BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		COMMAND
