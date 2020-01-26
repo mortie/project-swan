@@ -58,11 +58,11 @@ public:
 	public:
 		It(std::optional<Ret> next, Func &func): next_(std::move(next)), func_(func) {}
 
-		bool operator==(const It &other) {
+		bool operator==(const It &other) const {
 			return next_ == std::nullopt && other.next_ == std::nullopt;
 		}
 
-		bool operator!=(const It &other) {
+		bool operator!=(const It &other) const {
 			return !(*this == other);
 		}
 
