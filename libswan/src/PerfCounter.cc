@@ -17,9 +17,7 @@ void PerfCounter::render() {
 
 	conf.values = { .ys = buf.data(), .count = 64 };
 	conf.scale = { 0, 1 / 60.0 };
-	conf.scale.min = 0;
-	conf.scale.max = 1 / 60.0;
-	conf.frame_size = { ImGui::GetWindowContentRegionWidth(), 20 },
+	conf.frame_size = { ImGui::GetWindowContentRegionWidth(), 30 },
 
 	total_time_.fill(buf);
 	ImGui::Text("Total Time");
@@ -46,7 +44,7 @@ void PerfCounter::render() {
 	ImGui::Plot("Game Tick", conf);
 
 	game_updates_per_frame_.fill(buf);
-	conf.scale = { 0, 5 };
+	conf.scale = { 0, 3 };
 	ImGui::Text("Game Updates Per Frame");
 	ImGui::Plot("Game Updates Per Frame", conf);
 }
