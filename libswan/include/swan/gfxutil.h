@@ -23,7 +23,7 @@ public:
 
 private:
 	SDL_Texture *tex_;
-	RaiiPtr<SDL_Surface> surf_ = makeRaiiPtr<SDL_Surface>(nullptr, SDL_FreeSurface);
+	CPtr<SDL_Surface, SDL_FreeSurface> surf_;
 };
 
 class TexColorMod: NonCopyable {

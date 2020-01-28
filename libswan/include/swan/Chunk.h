@@ -51,7 +51,7 @@ private:
 	float deactivate_timer_ = DEACTIVATE_INTERVAL;
 
 	struct Visuals {
-		RaiiPtr<SDL_Texture> texture_ = makeRaiiPtr<SDL_Texture>(nullptr, SDL_DestroyTexture);
+		CPtr<SDL_Texture, SDL_DestroyTexture> texture_;
 	};
 	std::unique_ptr<Visuals> visuals_;
 };

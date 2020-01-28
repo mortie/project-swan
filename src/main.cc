@@ -67,40 +67,37 @@ int main(int argc, char **argv) {
 	}
 
 	sdlassert(SDL_Init(SDL_INIT_VIDEO) >= 0, "Could not initialize SDL");
-	auto sdl = makeDeferred([] { SDL_Quit(); });
+	Deferred<SDL_Quit> sdl;
 
 	int imgflags = IMG_INIT_PNG;
 	imgassert(IMG_Init(imgflags) == imgflags, "Could not initialize SDL_Image");
-	auto sdl_image = makeDeferred([] { IMG_Quit(); });
+	Deferred<IMG_Quit> sdl_image;
 
 	// Create the window
-	auto window = makeRaiiPtr(
+	CPtr<SDL_Window, SDL_DestroyWindow> window(
 		SDL_CreateWindow(
 			"Project: SWAN",
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-			(int)(640 * gui_scale), (int)(480 * gui_scale), winflags),
-		SDL_DestroyWindow);
+			(int)(640 * gui_scale), (int)(480 * gui_scale), winflags));
 
 	// Load and display application icon
-	auto icon = makeRaiiPtr(
-		IMG_Load("assets/icon.png"),
-		SDL_FreeSurface);
+	CPtr<SDL_Surface, SDL_FreeSurface> icon(
+		IMG_Load("assets/icon.png"));
 	sdlassert(icon, "Could not load icon");
 	SDL_SetWindowIcon(window.get(), icon.get());
 
-	auto renderer = makeRaiiPtr(
-		SDL_CreateRenderer(window.get(), -1, renderflags),
-		SDL_DestroyRenderer);
+	CPtr<SDL_Renderer, SDL_DestroyRenderer> renderer(
+		SDL_CreateRenderer(window.get(), -1, renderflags));
 	sdlassert(renderer, "Could not create renderer");
 
 	Win win(window.get(), renderer.get(), gui_scale);
 
 	// Init ImGUI and ImGUI_SDL
 	IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-	auto imgui = makeDeferred([] { ImGui::DestroyContext(); });
+	CPtr<ImGuiContext, ImGui::DestroyContext> context(
+		ImGui::CreateContext());
 	ImGuiSDL::Initialize(renderer.get(), (int)win.getPixSize().x, (int)win.getPixSize().y);
-	auto imgui_sdl = makeDeferred([] { ImGuiSDL::Deinitialize(); });
+	Deferred<ImGuiSDL::Deinitialize> imgui_sdl;
 	info << "Initialized with window size " << win.getPixSize();
 
 	// ImGuiIO is to glue SDL and ImGUI together

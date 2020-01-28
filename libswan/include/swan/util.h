@@ -1,3 +1,4 @@
+
  #pragma once
 
 #include <optional>
@@ -19,36 +20,24 @@ protected:
 	NonCopyable &operator=(const NonCopyable &) = delete;
 };
 
-template<typename T, typename Del = void (*)(T *)>
-using RaiiPtr = std::unique_ptr<T, Del>;
-
-template<typename T, typename Del>
-RaiiPtr<T, Del> makeRaiiPtr(T *val, Del d) {
-	return std::unique_ptr<T, Del>(val, d);
-}
-
-template<typename Func>
-class Deferred: NonCopyable {
+// Take a deleter function, turn it into a class with an operator() for unique_ptr
+template<typename T, void (*Func)(T *)>
+class CPtrDeleter {
 public:
-	Deferred(Func func): func_(func) {}
-	Deferred(Deferred &&def) noexcept: func_(def.func_) { def.active_ = false; }
-	~Deferred() { if (active_) func_(); }
-
-	Deferred &operator=(Deferred &&def) noexcept {
-		func_ = def.func_;
-		def.active_ = false;
-		return *this;
-	}
-
-private:
-	Func func_;
-	bool active_ = true;
+	void operator()(T *ptr) { Func(ptr); }
 };
 
-template<typename Func>
-Deferred<Func> makeDeferred(Func func) {
-	return Deferred(func);
-}
+// This is just a bit nicer to use than using unique_ptr directly
+template<typename T, void (*Func)(T *)>
+using CPtr = std::unique_ptr<T, CPtrDeleter<T, Func>>;
+
+// Take a function, run it when the object goes out of scope
+template<void (*Func)()>
+class Deferred: NonCopyable {
+public:
+	Deferred() = default;
+	~Deferred() { Func(); }
+};
 
 // Calling begin/end is stupid...
 template<typename T>

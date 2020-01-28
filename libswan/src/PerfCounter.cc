@@ -8,7 +8,7 @@
 namespace Swan {
 
 void PerfCounter::render() {
-	Deferred win([]{ ImGui::End(); });
+	Deferred<ImGui::End> win;
 	if (!ImGui::Begin("Perf Stats"))
 		return;
 
