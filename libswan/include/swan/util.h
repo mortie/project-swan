@@ -50,6 +50,18 @@ Deferred<Func> makeDeferred(Func func) {
 	return Deferred(func);
 }
 
+// Calling begin/end is stupid...
+template<typename T>
+auto callBegin(T &v) {
+	using namespace std;
+	return begin(v);
+}
+template<typename T>
+auto callEnd(T &v) {
+	using namespace std;
+	return end(v);
+}
+
 // Ret can't be a reference, because C++ doesn't support optional<T&>.
 template<typename Ret, typename Func = std::function<std::optional<Ret>()>>
 class Iter {
@@ -113,6 +125,11 @@ auto map(InputIterator first, InputIterator last, Func func) {
 	return Iter<RetT, decltype(l)>(l);
 }
 
+template<typename Range, typename Func>
+auto map(Range &rng, Func func) {
+	return map(callBegin(rng), callEnd(rng), func);
+}
+
 template<typename InputIterator, typename Func>
 auto filter(InputIterator first, InputIterator last, Func pred) {
 	using RetT = std::remove_reference_t<decltype(*first)>;
@@ -135,6 +152,11 @@ auto filter(InputIterator first, InputIterator last, Func pred) {
 	return Iter<RetT, decltype(l)>(l);
 }
 
+template<typename Range, typename Func>
+auto filter(Range &rng, Func func) {
+	return filter(callBegin(rng), callEnd(rng), func);
+}
+
 template<typename InputIterator, typename Func>
 auto mapFilter(InputIterator first, InputIterator last, Func func) {
 	using RetT = std::remove_reference_t<decltype(*func(*first))>;
@@ -155,6 +177,11 @@ auto mapFilter(InputIterator first, InputIterator last, Func func) {
 	};
 
 	return Iter<RetT, decltype(l)>(l);
+}
+
+template<typename Range, typename Func>
+auto mapFilter(Range &rng, Func func) {
+	return mapFilter(callBegin(rng), callEnd(rng), func);
 }
 
 }
