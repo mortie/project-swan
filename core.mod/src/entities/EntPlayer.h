@@ -14,7 +14,7 @@ public:
 
 	EntPlayer(const Swan::Context &ctx, const Swan::SRF &params);
 
-	Swan::InventoryTrait::Inventory &getInventory() { return inventory_; }
+	Swan::InventoryTrait::Inventory &getInventory() override { return inventory_; }
 
 	void draw(const Swan::Context &ctx, Swan::Win &win) override;
 	void update(const Swan::Context &ctx, float dt) override;

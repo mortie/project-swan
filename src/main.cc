@@ -47,7 +47,7 @@ int sdlButtonToImGuiButton(uint8_t button) {
 int main(int argc, char **argv) {
 	uint32_t winflags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 	uint32_t renderflags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
-	float gui_scale = 2;
+	float gui_scale = 1;
 
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "--lodpi") == 0) {
