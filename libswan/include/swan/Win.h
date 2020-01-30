@@ -44,9 +44,9 @@ public:
 
 	SDL_Rect createDestRect(Vec2 pos, Vec2 pixsize) {
 		return SDL_Rect{
-			(int)((pos.x - cam_.x) * TILE_SIZE * zoom_),
-			(int)((pos.y - cam_.y) * TILE_SIZE * zoom_),
-			(int)(pixsize.x * zoom_), (int)(pixsize.y * zoom_),
+			(int)floor((pos.x - cam_.x) * TILE_SIZE * zoom_),
+			(int)floor((pos.y - cam_.y) * TILE_SIZE * zoom_),
+			(int)ceil(pixsize.x * zoom_), (int)ceil(pixsize.y * zoom_),
 		};
 	}
 
