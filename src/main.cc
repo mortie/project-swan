@@ -61,6 +61,8 @@ int main(int argc, char **argv) {
 		} else if (strcmp(argv[i], "--sw-render") == 0) {
 			renderflags &= ~SDL_RENDERER_ACCELERATED;
 			renderflags |= SDL_RENDERER_SOFTWARE;
+		} else if (strcmp(argv[i], "--2x") == 0) {
+			gui_scale = 2;
 		} else {
 			warn << "Unknown argument: " << argv[i];
 		}
@@ -200,10 +202,6 @@ int main(int argc, char **argv) {
 			if (slow_frames > 1)
 				warn << slow_frames << " consecutive slow frames.";
 			slow_frames = 0;
-		}
-
-		if (dt > 1/59.0) {
-			warn << "Dropped below 60 FPS: " << 1 / dt;
 		}
 
 		// Simple case: we can keep up, only need one physics update

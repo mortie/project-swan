@@ -16,7 +16,7 @@ void PerfCounter::render() {
 	ImGui::PlotConfig conf;
 
 	conf.values = { .ys = buf.data(), .count = 64 };
-	conf.scale = { 0, 1 / 60.0 };
+	conf.scale = { 0, 1 / 30.0 };
 	conf.frame_size = { ImGui::GetWindowContentRegionWidth(), 30 },
 
 	total_time_.fill(buf);
