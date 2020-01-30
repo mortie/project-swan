@@ -202,6 +202,10 @@ int main(int argc, char **argv) {
 			slow_frames = 0;
 		}
 
+		if (dt > 1/59.0) {
+			warn << "Dropped below 60 FPS: " << 1 / dt;
+		}
+
 		// Simple case: we can keep up, only need one physics update
 		RTClock update_clock;
 		if (dt <= 1 / 25.0) {

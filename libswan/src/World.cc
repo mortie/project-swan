@@ -7,18 +7,11 @@
 
 namespace Swan {
 
-static bool chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &dir, RTClock &clock) {
+static void chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &dir) {
 	for (int i = 0; i < l; ++i) {
 		plane.getChunk(abspos);
-
-		// Don't blow our frame budget on generating chunks,
-		// but generate as many as possible within the budget
-		if (clock.duration() > 1 / 120.0)
-			return true;
 		abspos += dir;
 	}
-
-	return false;
 }
 
 World::World(Game *game, unsigned long rand_seed):
@@ -38,11 +31,11 @@ void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
 
 	RTClock clock;
 	for (int i = 0; i < 4; ++i) {
-		if (chunkLine(l, plane, abspos, Vec2i(0, -1), clock)) break;
-		if (chunkLine(l, plane, abspos, Vec2i(1, 0), clock)) break;
+		chunkLine(l, plane, abspos, Vec2i(0, -1));
+		chunkLine(l, plane, abspos, Vec2i(1, 0));
 		l += 1;
-		if (chunkLine(l, plane, abspos, Vec2i(0, 1), clock)) break;
-		if (chunkLine(l, plane, abspos, Vec2i(-1, 0), clock)) break;
+		chunkLine(l, plane, abspos, Vec2i(0, 1));
+		chunkLine(l, plane, abspos, Vec2i(-1, 0));
 		l += 1;
 	}
 }
@@ -97,7 +90,7 @@ WorldPlane &World::addPlane(const std::string &gen) {
 
 	WorldGen::Factory *factory = it->second;
 	WorldGen *g = factory->create(*this);
-	planes_.push_back(WorldPlane(id, this, std::shared_ptr<WorldGen>(g)));
+	planes_.emplace_back(id, this, std::shared_ptr<WorldGen>(g));
 	return planes_[id];
 }
 
@@ -147,8 +140,8 @@ void World::tick(float dt) {
 
 	auto bounds = player_->getBody().getBounds();
 	chunk_renderer_.tick(
-			planes_[current_plane_],
-			ChunkPos((int)bounds.pos.x / CHUNK_WIDTH, (int)bounds.pos.y / CHUNK_HEIGHT));
+		planes_[current_plane_],
+		ChunkPos((int)bounds.pos.x / CHUNK_WIDTH, (int)bounds.pos.y / CHUNK_HEIGHT));
 }
 
 }

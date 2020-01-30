@@ -29,7 +29,11 @@ public:
 	}
 
 	friend std::ostream &operator<<(std::ostream &os, const RTClock &clock) {
-		os << (double)clock.duration() << 's';
+		double dur = clock.duration();
+		if (dur > 1)
+			os << dur << 's';
+		else
+			os << dur * 1000.0 << "ms";
 		return os;
 	}
 

@@ -31,6 +31,14 @@ struct Vector2 {
 		return Vector2<T>(x > 0 ? 1 : -1, y > 0 ? 1 : -1);
 	}
 
+	constexpr Vector2<T> scale(T sx, T sy) {
+		return Vector2<T>(x * sx, y * sy);
+	}
+
+	constexpr Vector2<T> scale(T s) {
+		return scale(s, s);
+	}
+
 	constexpr operator std::pair<T, T>() const {
 		return std::pair<T, T>(x, y);
 	}

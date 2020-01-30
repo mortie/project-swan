@@ -12,6 +12,22 @@ inline std::ostream &operator<<(std::ostream &os, const SDL_Rect &rect) {
 	return os;
 }
 
+class RenderTarget: NonCopyable {
+public:
+	RenderTarget(SDL_Renderer *rnd, SDL_Texture *tex): rnd_(rnd) {
+		prev_target_ = SDL_GetRenderTarget(rnd_);
+		SDL_SetRenderTarget(rnd_, tex);
+	}
+
+	~RenderTarget() {
+		SDL_SetRenderTarget(rnd_, prev_target_);
+	}
+
+private:
+	SDL_Renderer *rnd_;
+	SDL_Texture *prev_target_;
+};
+
 class TexLock: NonCopyable {
 public:
 	TexLock(SDL_Texture *tex, SDL_Rect *rect = nullptr);

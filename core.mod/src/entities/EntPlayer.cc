@@ -71,7 +71,7 @@ void EntPlayer::tick(const Swan::Context &ctx, float dt) {
 			.squareLength();
 
 		if (squared_dist < 0.5 * 0.5) {
-			Swan::info << "Will pick up item at " << ent->getBody().getBounds().center() << "...";
+			// TODO: Pick up
 		}
 	}
 }

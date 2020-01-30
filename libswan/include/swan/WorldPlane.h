@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <deque>
 #include <utility>
 #include <memory>
 #include <map>
@@ -19,7 +20,7 @@ namespace Swan {
 class World;
 class Game;
 
-class WorldPlane {
+class WorldPlane: NonCopyable {
 public:
 	using ID = uint16_t;
 
@@ -66,6 +67,8 @@ private:
 	std::map<std::pair<int, int>, Chunk> chunks_;
 	std::set<Chunk *> active_chunks_;
 	std::vector<std::unique_ptr<Entity>> entities_;
+
+	std::deque<Chunk *> chunk_init_list_;
 	std::vector<std::unique_ptr<Entity>> spawn_list_;
 	std::vector<Entity *> despawn_list_;
 	std::vector<TilePos> debug_boxes_;

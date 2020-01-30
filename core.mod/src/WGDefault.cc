@@ -31,7 +31,7 @@ void WGDefault::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 
 			Swan::TilePos pos(tilex, tiley);
 			Swan::Chunk::RelPos rel(cx, cy);
-			chunk.setTileID(rel, genTile(pos));
+			chunk.setTileData(rel, genTile(pos));
 		}
 	}
 }

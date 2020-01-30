@@ -68,9 +68,10 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 
 		gen_->genChunk(*this, chunk);
 		active_chunks_.insert(&chunk);
-		chunk.render(getContext());
+		chunk_init_list_.push_back(&chunk);
 	} else if (iter->second.keepActive()) {
 		active_chunks_.insert(&iter->second);
+		chunk_init_list_.push_back(&iter->second);
 	}
 
 	return iter->second;
@@ -79,11 +80,13 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 	Chunk &chunk = getChunk(chunkPos(pos));
 	Chunk::RelPos rp = relPos(pos);
-	chunk.setTileID(rp, id);
-	chunk.drawBlock(rp, world_->getTileByID(id));
 
-	if (active_chunks_.find(&chunk) == active_chunks_.end())
+	chunk.setTileID(rp, id, world_->getTileByID(id).image_.texture_.get());
+
+	if (active_chunks_.find(&chunk) == active_chunks_.end()) {
 		active_chunks_.insert(&chunk);
+		chunk_init_list_.push_back(&chunk);
+	}
 }
 
 void WorldPlane::setTile(TilePos pos, const std::string &name) {
@@ -155,6 +158,14 @@ void WorldPlane::draw(Win &win) {
 	ChunkPos pcpos = ChunkPos(
 		(int)floor(pbounds.pos.x / CHUNK_WIDTH),
 		(int)floor(pbounds.pos.y / CHUNK_HEIGHT));
+
+	// Just init one chunk per frame
+	if (chunk_init_list_.size() > 0) {
+		Chunk *chunk = chunk_init_list_.front();
+		info << "render chunk " << chunk->pos_;
+		chunk_init_list_.pop_front();
+		chunk->render(getContext(), win.renderer_);
+	}
 
 	for (int x = -1; x <= 1; ++x) {
 		for (int y = -1; y <= 1; ++y) {

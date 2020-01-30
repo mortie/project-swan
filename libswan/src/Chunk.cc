@@ -23,19 +23,14 @@ Tile::ID Chunk::getTileID(RelPos pos) {
 	return getTileData()[pos.y * CHUNK_WIDTH + pos.x];
 }
 
-void Chunk::setTileID(RelPos pos, Tile::ID id) {
+void Chunk::setTileID(RelPos pos, Tile::ID id, SDL_Texture *tex) {
 	getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
+	draw_list_.push_back({ pos, tex });
 }
 
-void Chunk::drawBlock(RelPos pos, const Tile &t) {
-	keepActive();
-
-	SDL_Rect lockrect{ pos.x * TILE_SIZE, pos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE };
-	TexLock lock(visuals_->texture_.get(), &lockrect);
-
-	SDL_Rect srcrect{ 0, 0, t.image_.surface_->w, t.image_.surface_->h };
-	SDL_Rect destrect{ 0, 0, TILE_SIZE, TILE_SIZE };
-	lock.blit(&destrect, t.image_.surface_.get(), &srcrect);
+void Chunk::setTileData(RelPos pos, Tile::ID id) {
+	getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
+	need_render_ = true;
 }
 
 void Chunk::compress() {
@@ -56,7 +51,7 @@ void Chunk::compress() {
 		data_.reset(new uint8_t[destlen]);
 		memcpy(data_.get(), dest, destlen);
 
-		visuals_.reset();
+		texture_.reset();
 		compressed_size_ = destlen;
 
 		info
@@ -88,8 +83,6 @@ void Chunk::decompress() {
 	}
 
 	data_ = std::move(dest);
-
-	visuals_.reset(new Visuals());
 	need_render_ = true;
 
 	info
@@ -99,21 +92,20 @@ void Chunk::decompress() {
 	compressed_size_ = -1;
 }
 
-void Chunk::render(const Context &ctx) {
-
+void Chunk::render(const Context &ctx, SDL_Renderer *rnd) {
 	// The texture might not be created yet
-	if (!visuals_->texture_) {
-		visuals_->texture_.reset(SDL_CreateTexture(
-			ctx.game.win_.renderer_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
+	if (!texture_) {
+		texture_.reset(SDL_CreateTexture(
+			ctx.game.win_.renderer_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET,
 			CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE));
 	}
+
+	// We wanna render directly to the texture
+	RenderTarget target(rnd, texture_.get());
 
 	// We're caching tiles so we don't have to world.getTileByID() every time
 	Tile::ID prevID = Tile::INVALID_ID;
 	Tile *tile = ctx.game.invalid_tile_.get();
-
-	// Locking the texture lets us write to its piexls
-	TexLock lock(visuals_->texture_.get());
 
 	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 		for (int x = 0; x < CHUNK_WIDTH; ++x) {
@@ -123,15 +115,22 @@ void Chunk::render(const Context &ctx) {
 				tile = &ctx.world.getTileByID(id);
 			}
 
-			// Find the source surface and rect...
-			auto &srcsurf = tile->image_.surface_;
-			SDL_Rect srcrect{ 0, 0, srcsurf->w, srcsurf->h };
-
-			// ...and blit it to the appropriate place
-			SDL_Rect destrect{ x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE };
-			if (lock.blit(&destrect, srcsurf.get(), &srcrect) < 0)
-				warn << "Failed to blit surface: " << SDL_GetError();
+			SDL_Rect dest{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+			SDL_RenderCopy(rnd, tile->image_.texture_.get(), nullptr, &dest);
 		}
+	}
+
+	need_render_ = false;
+}
+
+void Chunk::renderList(SDL_Renderer *rnd) {
+	// Here, we know that the texture is created.
+	// We still wanna render directly to the target texture
+	RenderTarget target(rnd, texture_.get());
+
+	for (auto &[pos, tex]: draw_list_) {
+		SDL_Rect dest{pos.x * TILE_SIZE, pos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+		SDL_RenderCopy(rnd, tex, nullptr, &dest);
 	}
 }
 
@@ -139,15 +138,19 @@ void Chunk::draw(const Context &ctx, Win &win) {
 	if (isCompressed())
 		return;
 
-	if (need_render_) {
-		render(ctx);
-		need_render_ = false;
+	// The world plane is responsible for managing initial renders
+	if (need_render_)
+		return;
+
+	if (draw_list_.size() > 0) {
+		renderList(win.renderer_);
+		draw_list_.clear();
 	}
 
 	SDL_Rect rect{ 0, 0, CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE };
 	win.showTexture(
 		pos_ * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT),
-		visuals_->texture_.get(), &rect);
+		texture_.get(), &rect);
 }
 
 void Chunk::tick(float dt) {
