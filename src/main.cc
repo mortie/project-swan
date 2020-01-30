@@ -247,9 +247,6 @@ int main(int argc, char **argv) {
 		ImGui::Render();
 		ImGuiSDL::Render(ImGui::GetDrawData());
 
-		// ImGuiSDL changes renderer draw color...
-		SDL_SetRenderDrawColor(renderer.get(), 0, 0, 0, 255);
-
 		RTClock present_clock;
 		SDL_RenderPresent(renderer.get());
 		pcounter.countRenderPresent(present_clock.duration());
