@@ -28,7 +28,12 @@ static Chunk::RelPos relPos(TilePos pos) {
 }
 
 Context WorldPlane::getContext() {
-	return { .game = *world_->game_, .world = *world_, .plane = *this, .resources = world_->resources_ };
+	return {
+		.game = *world_->game_,
+		.world = *world_,
+		.plane = *this,
+		.resources = world_->resources_
+	};
 }
 
 Entity *WorldPlane::spawnEntity(const std::string &name, const SRF &params) {
@@ -81,7 +86,11 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 	Chunk &chunk = getChunk(chunkPos(pos));
 	Chunk::RelPos rp = relPos(pos);
 
-	chunk.setTileID(rp, id, world_->getTileByID(id).image_.texture_.get());
+	Tile::ID old = chunk.getTileID(rp);
+	if (id != old) {
+		chunk.setTileID(rp, id, world_->getTileByID(id).image_.texture_.get());
+		chunk.markModified();
+	}
 
 	if (active_chunks_.find(&chunk) == active_chunks_.end()) {
 		active_chunks_.insert(&chunk);
@@ -210,10 +219,28 @@ void WorldPlane::tick(float dt) {
 	for (auto &ent: entities_)
 		ent->tick(getContext(), dt);
 
-	for (auto &chunk: active_chunks_)
-		chunk->tick(dt);
+	auto iter = active_chunks_.begin();
+	auto last = active_chunks_.end();
+	while (iter != last) {
+		auto &chunk = *iter;
+		auto action = chunk->tick(dt);
 
-	std::erase_if(active_chunks_, [](Chunk *chunk) { return !chunk->isActive(); });
+		switch (action) {
+		case Chunk::TickAction::DEACTIVATE:
+			info << "Compressing inactive modified chunk " << chunk->pos_;
+			chunk->compress();
+			iter = active_chunks_.erase(iter);
+			break;
+		case Chunk::TickAction::DELETE:
+			info << "Deleting inactive unmodified chunk " << chunk->pos_;
+			chunks_.erase(chunk->pos_);
+			iter = active_chunks_.erase(iter);
+			break;
+		case Chunk::TickAction::NOTHING:
+			++iter;
+			break;
+		}
+	}
 }
 
 void WorldPlane::debugBox(TilePos pos) {

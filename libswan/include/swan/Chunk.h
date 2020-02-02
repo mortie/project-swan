@@ -17,6 +17,13 @@ class Chunk {
 public:
 	using RelPos = TilePos;
 
+	// What does this chunk want the world gen to do after a tick?
+	enum class TickAction {
+		DEACTIVATE,
+		DELETE,
+		NOTHING,
+	};
+
 	Chunk(ChunkPos pos): pos_(pos) {
 		data_.reset(new uint8_t[CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)]);
 	}
@@ -30,10 +37,11 @@ public:
 	void compress();
 	void decompress();
 	void draw(const Context &ctx, Win &win);
-	void tick(float dt);
+	TickAction tick(float dt);
 
-	bool keepActive(); // Returns true if chunk was inactive
 	bool isActive() { return deactivate_timer_ > 0; }
+	bool keepActive(); // Returns true if chunk was inactive
+	void markModified() { is_modified_ = true; }
 
 	ChunkPos pos_;
 
@@ -51,6 +59,7 @@ private:
 	ssize_t compressed_size_ = -1; // -1 if not compressed, a positive number if compressed
 	bool need_render_ = false;
 	float deactivate_timer_ = DEACTIVATE_INTERVAL;
+	bool is_modified_ = false;
 
 	CPtr<SDL_Texture, SDL_DestroyTexture> texture_;
 };

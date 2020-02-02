@@ -2,6 +2,7 @@
 
 #include <zlib.h>
 #include <stdint.h>
+#include <assert.h>
 
 #include "log.h"
 #include "Clock.h"
@@ -57,11 +58,11 @@ void Chunk::compress() {
 		info
 			<< "Compressed chunk " << pos_ << " from "
 			<< CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID) << " bytes "
-			<< "to " << destlen << " bytes.";
+			<< "to " << destlen << " bytes";
 	} else if (ret == Z_BUF_ERROR) {
 		info
 			<< "Didn't compress chunk " << pos_ << " "
-			<< "because compressing it would've made it bigger.";
+			<< "because compressing it would've made it bigger";
 	} else {
 		warn << "Chunk compression error: " << ret << " (Out of memory?)";
 	}
@@ -153,14 +154,18 @@ void Chunk::draw(const Context &ctx, Win &win) {
 		texture_.get(), &rect);
 }
 
-void Chunk::tick(float dt) {
-	if (deactivate_timer_ <= 0)
-		return;
+Chunk::TickAction Chunk::tick(float dt) {
+	assert(isActive());
 
 	deactivate_timer_ -= dt;
 	if (deactivate_timer_ <= 0) {
-		compress();
+		if (is_modified_)
+			return TickAction::DEACTIVATE;
+		else
+			return TickAction::DELETE;
 	}
+
+	return TickAction::NOTHING;
 }
 
 bool Chunk::keepActive() {
