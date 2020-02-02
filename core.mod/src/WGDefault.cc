@@ -12,6 +12,10 @@ Swan::Tile::ID WGDefault::genTile(Swan::TilePos pos) {
 	int grass_level = grassLevel(perlin_, pos.x);
 	int stone_level = stoneLevel(perlin_, pos.x);
 
+	// Caves
+	if (pos.y > grass_level + 7 && perlin_.noise(pos.x / 43.37, pos.y / 16.37) > 0.2)
+		return tAir_;
+
 	if (pos.y > stone_level)
 		return tStone_;
 	else if (pos.y > grass_level)

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(swan)
 
 find_package(SDL2 REQUIRED)
+find_package(PNG)
 
 option(USE_CLANG_TIDY "Use clang-tidy for additional checks" ON)
 if(USE_CLANG_TIDY)
@@ -28,10 +29,6 @@ if(CMAKE_BUILD_TYPE STREQUAL Sanitize OR CMAKE_BUILD_TYPE STREQUAL "")
 elseif(CMAKE_BUILD_TYPE STREQUAL Debug)
 	message(STATUS "Build mode: Debug")
 	add_compile_options(-g -O0)
-elseif(CMAKE_BUILD_TYPE STREQUAL Profile)
-	message(STATUS "Build mode: Profile")
-	add_compile_options(-g -Og -pg)
-	add_link_options(-pg)
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
 	message(STATUS "Build mode: Release")
 	add_compile_options(-O3 -flto)
@@ -60,6 +57,10 @@ add_subdirectory(core.mod)
 add_executable(swan
 	src/main.cc)
 target_link_libraries(swan libswan ${libraries})
+
+add_executable(perlin-test
+	src/perlin-test.cc)
+target_link_libraries(perlin-test libswan PNG::PNG ${libraries})
 
 set(assets
 	assets/icon.png
