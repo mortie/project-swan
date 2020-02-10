@@ -30,20 +30,27 @@ void WGDefault::drawBackground(const Swan::Context &ctx, Swan::Win &win, Swan::V
 
 SDL_Color WGDefault::backgroundColor(Swan::Vec2 pos) {
 	float y = pos.y;
-	float deep = 20;
-	float deeper = deep + 100;
-	if (y < deep) {
+	float cave_start = 20;
+	float cave_end = cave_start + 100;
+	float deep_start = cave_end + 200;
+	float deep_end = deep_start + 300;
+	if (y < cave_start) {
 		return Swan::Draw::linearColor(
 			{ 128, 220, 250, 255 },
 			{ 107, 87, 5, 255 },
-			y / deep);
-	} else if (y < deeper) {
+			y / cave_start);
+	} else if (y < deep_start) {
 		return Swan::Draw::linearColor(
 			{ 107, 87, 5, 255 },
-			{ 15, 3, 3, 255 },
-			(y - deep) / (deeper - deep));
+			{ 15, 7, 7, 255 },
+			(y - cave_start) / (cave_end - cave_start));
+	} else if (y < deep_end) {
+		return Swan::Draw::linearColor(
+			{ 15, 7, 7, 255 },
+			{ 35, 0, 0, 255 },
+			(y - deep_start) / (deep_end - deep_start));
 	} else {
-		return { 15, 3, 3, 255 };
+		return { 35, 0, 0, 255 };
 	}
 }
 
