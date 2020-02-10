@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <random>
+#include <SDL.h>
 
 #include "common.h"
 #include "Item.h"
@@ -35,6 +36,7 @@ public:
 	Tile &getTile(const std::string &name);
 	Item &getItem(const std::string &name);
 
+	SDL_Color backgroundColor();
 	void draw(Win &win);
 	void update(float dt);
 	void tick(float dt);

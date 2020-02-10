@@ -3,6 +3,7 @@
 #include <bitset>
 #include <map>
 #include <string>
+#include <SDL.h>
 
 #include "common.h"
 #include "Resource.h"
@@ -61,6 +62,7 @@ public:
 
 	TilePos getMouseTile();
 
+	SDL_Color backgroundColor();
 	void draw();
 	void update(float dt);
 	void tick(float dt);

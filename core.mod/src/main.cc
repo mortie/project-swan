@@ -15,6 +15,8 @@ extern "C" void mod_init(Swan::Mod &mod) {
 	mod.registerImage({ "leaves", "tiles/leaves.png" });
 	mod.registerImage({ "player-running", "entities/player-running.png", 64 });
 	mod.registerImage({ "player-still", "entities/player-still.png", 64 });
+	mod.registerImage({ "background-cave", "misc/background-cave.png" });
+	mod.registerImage({ "background-cave-2", "misc/background-cave-2.png" });
 
 	mod.registerTile({
 		.name = "air",

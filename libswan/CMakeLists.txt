@@ -3,6 +3,7 @@ add_library(libswan SHARED
 	src/Animation.cc
 	src/Chunk.cc
 	src/Clock.cc
+	src/drawutil.cc
 	src/Game.cc
 	src/gfxutil.cc
 	src/Item.cc

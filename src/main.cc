@@ -91,6 +91,8 @@ int main(int argc, char **argv) {
 	CPtr<SDL_Renderer, SDL_DestroyRenderer> renderer(
 		SDL_CreateRenderer(window.get(), -1, renderflags));
 	sdlassert(renderer, "Could not create renderer");
+	SDL_SetRenderDrawBlendMode(renderer.get(), SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(renderer.get(), 0, 0, 0, 255);
 
 	Win win(window.get(), renderer.get(), gui_scale);
 
@@ -230,7 +232,11 @@ int main(int argc, char **argv) {
 			pcounter.countGameTick(tick_clock.duration());
 		}
 
-		SDL_RenderClear(renderer.get());
+		{
+			auto [r, g, b, a] = game.backgroundColor();
+			RenderDrawColor c(renderer.get(), r, g, b, a);
+			SDL_RenderClear(renderer.get());
+		}
 
 		// ImGUI
 		imgui_io.DeltaTime = dt;

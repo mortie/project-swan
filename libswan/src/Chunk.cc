@@ -99,6 +99,7 @@ void Chunk::render(const Context &ctx, SDL_Renderer *rnd) {
 		texture_.reset(SDL_CreateTexture(
 			ctx.game.win_.renderer_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET,
 			CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE));
+		SDL_SetTextureBlendMode(texture_.get(), SDL_BLENDMODE_BLEND);
 	}
 
 	// We wanna render directly to the texture
@@ -129,8 +130,16 @@ void Chunk::renderList(SDL_Renderer *rnd) {
 	// We still wanna render directly to the target texture
 	RenderTarget target(rnd, texture_.get());
 
+	// We must make sure the blend mode is NONE, because we want transparent
+	// pixels to actually overwrite non-transparent pixels
+	RenderBlendMode mode(rnd, SDL_BLENDMODE_NONE);
+
+	// When we FillRect, we must fill transparency.
+	RenderDrawColor color(rnd, 0, 0, 0, 0);
+
 	for (auto &[pos, tex]: draw_list_) {
 		SDL_Rect dest{pos.x * TILE_SIZE, pos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+		SDL_RenderFillRect(rnd, &dest);
 		SDL_RenderCopy(rnd, tex, nullptr, &dest);
 	}
 }

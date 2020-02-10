@@ -1,5 +1,7 @@
 #include "World.h"
 
+#include <algorithm>
+
 #include "log.h"
 #include "Game.h"
 #include "Win.h"
@@ -121,6 +123,10 @@ Tile &World::getTileByID(Tile::ID id) {
 Tile &World::getTile(const std::string &name) {
 	Tile::ID id = getTileID(name);
 	return getTileByID(id);
+}
+
+SDL_Color World::backgroundColor() {
+	return planes_[current_plane_].backgroundColor();
 }
 
 void World::draw(Win &win) {

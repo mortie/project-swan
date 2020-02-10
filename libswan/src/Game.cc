@@ -43,6 +43,10 @@ TilePos Game::getMouseTile() {
 		(int)floor(win_.cam_.y + mousePos.y / (Swan::TILE_SIZE * win_.zoom_)));
 }
 
+SDL_Color Game::backgroundColor() {
+	return world_->backgroundColor();
+}
+
 void Game::draw() {
 	world_->draw(win_);
 }

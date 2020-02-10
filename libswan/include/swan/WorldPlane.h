@@ -53,6 +53,7 @@ public:
 	BodyTrait::HasBody *spawnPlayer();
 	void breakBlock(TilePos pos);
 
+	SDL_Color backgroundColor();
 	void draw(Win &win);
 	void update(float dt);
 	void tick(float dt);

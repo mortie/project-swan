@@ -162,8 +162,15 @@ void WorldPlane::breakBlock(TilePos pos) {
 	}
 }
 
+SDL_Color WorldPlane::backgroundColor() {
+	return gen_->backgroundColor(world_->player_->getBody().getBounds().pos);
+}
+
 void WorldPlane::draw(Win &win) {
 	auto pbounds = world_->player_->getBody().getBounds();
+
+	gen_->drawBackground(getContext(), win, pbounds.pos);
+
 	ChunkPos pcpos = ChunkPos(
 		(int)floor(pbounds.pos.x / CHUNK_WIDTH),
 		(int)floor(pbounds.pos.y / CHUNK_HEIGHT));
