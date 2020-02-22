@@ -15,6 +15,13 @@ class World;
 class WorldPlane;
 class ImageResource;
 
+class WorldGenStructure {
+public:
+	virtual ~WorldGenStructure() = 0;
+
+	virtual bool isBase(TilePos pos);
+};
+
 class WorldGen {
 public:
 	class Factory {
@@ -31,13 +38,6 @@ public:
 
 	virtual void genChunk(WorldPlane &plane, Chunk &chunk) = 0;
 	virtual BodyTrait::HasBody *spawnPlayer(WorldPlane &plane) = 0;
-};
-
-class WorldGenStructure {
-public:
-	virtual ~WorldGenStructure() = 0;
-
-	virtual bool isBase(TilePos pos);
 };
 
 }

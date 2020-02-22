@@ -12,13 +12,36 @@ static Uint8 linearLine(float from, float to, float frac) {
 	return (Uint8)std::clamp(to * frac + from * (1 - frac), 0.0f, 255.0f);
 }
 
-SDL_Color linearColor(SDL_Color from, SDL_Color to, float frac) {
+static SDL_Color linearColor(SDL_Color from, SDL_Color to, float frac) {
 	return {
 		.r = linearLine(from.r, to.r, frac),
 		.g = linearLine(from.g, to.g, frac),
 		.b = linearLine(from.b, to.b, frac),
 		.a = linearLine(from.a, to.a, frac),
 	};
+}
+
+SDL_Color linearGradient(
+		float val,
+		std::initializer_list<std::pair<float, SDL_Color>> colors) {
+
+	const std::pair<float, SDL_Color> *arr = colors.begin();
+	size_t size = colors.size();
+
+	if (val < arr[0].first)
+		return arr[0].second;
+
+	for (size_t i = 1; i < size; ++i) {
+		if (arr[i].first < val)
+			continue;
+
+		auto [fromv, fromc] = arr[i - 1];
+		auto [tov, toc] = arr[i];
+		float frac = (val - fromv) / (tov - fromv);
+		return linearColor(fromc, toc, frac);
+	}
+
+	return arr[size - 1].second;
 }
 
 void parallaxBackground(
