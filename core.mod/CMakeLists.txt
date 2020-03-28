@@ -1,8 +1,8 @@
 add_library(core.mod SHARED
 	src/main.cc
 	src/DefaultWorldGen.cc
-	src/entities/EntPlayer.cc
-	src/entities/EntItemStack.cc)
+	src/entities/PlayerEntity.cc
+	src/entities/ItemStackEntity.cc)
 set_target_properties(core.mod PROPERTIES OUTPUT_NAME mod PREFIX "")
 target_link_libraries(core.mod libswan ${libraries})
 

@@ -1,8 +1,8 @@
 #include <swan/swan.h>
 
 #include "DefaultWorldGen.h"
-#include "entities/EntPlayer.h"
-#include "entities/EntItemStack.h"
+#include "entities/PlayerEntity.h"
+#include "entities/ItemStackEntity.h"
 
 extern "C" void mod_init(Swan::Mod &mod) {
 	mod.init("core");
@@ -67,6 +67,6 @@ extern "C" void mod_init(Swan::Mod &mod) {
 
 	mod.registerWorldGen("default", std::make_unique<DefaultWorldGen::Factory>());
 
-	mod.registerEntity("player", std::make_unique<EntPlayer::Factory>());
-	mod.registerEntity("item-stack", std::make_unique<EntItemStack::Factory>());
+	mod.registerEntity("player", std::make_unique<PlayerEntity::Factory>());
+	mod.registerEntity("item-stack", std::make_unique<ItemStackEntity::Factory>());
 }

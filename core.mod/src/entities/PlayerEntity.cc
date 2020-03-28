@@ -1,10 +1,10 @@
-#include "EntPlayer.h"
+#include "PlayerEntity.h"
 
 #include <cmath>
 
-#include "EntItemStack.h"
+#include "ItemStackEntity.h"
 
-EntPlayer::EntPlayer(const Swan::Context &ctx, const Swan::SRF &params):
+PlayerEntity::PlayerEntity(const Swan::Context &ctx, const Swan::SRF &params):
 		PhysicsEntity(SIZE, MASS), inventory_(INVENTORY_SIZE),
 		anims_{
 			Swan::Animation(ctx.resources.getImage("core::player-still"), 0.8),
@@ -14,12 +14,12 @@ EntPlayer::EntPlayer(const Swan::Context &ctx, const Swan::SRF &params):
 	readSRF(ctx, params);
 }
 
-void EntPlayer::draw(const Swan::Context &ctx, Swan::Win &win) {
+void PlayerEntity::draw(const Swan::Context &ctx, Swan::Win &win) {
 	body_.outline(win);
 	anims_[(int)state_].draw(body_.pos_ - Swan::Vec2(0.2, 0.1), win);
 }
 
-void EntPlayer::update(const Swan::Context &ctx, float dt) {
+void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	State oldState = state_;
 	state_ = State::IDLE;
 
@@ -64,8 +64,8 @@ void EntPlayer::update(const Swan::Context &ctx, float dt) {
 	PhysicsEntity::update(ctx, dt);
 }
 
-void EntPlayer::tick(const Swan::Context &ctx, float dt) {
-	for (EntItemStack *ent: ctx.plane.getEntsOfType<EntItemStack>()) {
+void PlayerEntity::tick(const Swan::Context &ctx, float dt) {
+	for (ItemStackEntity *ent: ctx.plane.getEntsOfType<ItemStackEntity>()) {
 		float squared_dist =
 			(getBody().getBounds().bottomMid() - ent->getBody().getBounds().center())
 			.squareLength();
@@ -76,11 +76,11 @@ void EntPlayer::tick(const Swan::Context &ctx, float dt) {
 	}
 }
 
-void EntPlayer::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
+void PlayerEntity::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
 	auto pos = dynamic_cast<const Swan::SRFFloatArray &>(srf);
 	body_.pos_.set(pos.val[0], pos.val[1]);
 }
 
-Swan::SRF *EntPlayer::writeSRF(const Swan::Context &ctx) {
+Swan::SRF *PlayerEntity::writeSRF(const Swan::Context &ctx) {
 	return new Swan::SRFFloatArray{ body_.pos_.x, body_.pos_.y };
 }

@@ -2,15 +2,15 @@
 
 #include <swan/swan.h>
 
-class EntItemStack: public Swan::PhysicsEntity {
+class ItemStackEntity: public Swan::PhysicsEntity {
 public:
 	class Factory: public Swan::Entity::Factory {
 		Swan::Entity *create(const Swan::Context &ctx, const Swan::SRF &params) override {
-			return new EntItemStack(ctx, params);
+			return new ItemStackEntity(ctx, params);
 		}
 	};
 
-	EntItemStack(const Swan::Context &ctx, const Swan::SRF &params);
+	ItemStackEntity(const Swan::Context &ctx, const Swan::SRF &params);
 
 	void draw(const Swan::Context &ctx, Swan::Win &win) override;
 	void tick(const Swan::Context &ctx, float dt) override;

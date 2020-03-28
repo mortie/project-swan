@@ -1,8 +1,8 @@
-#include "EntItemStack.h"
+#include "ItemStackEntity.h"
 
 #include <random>
 
-EntItemStack::EntItemStack(const Swan::Context &ctx, const Swan::SRF &params):
+ItemStackEntity::ItemStackEntity(const Swan::Context &ctx, const Swan::SRF &params):
 		PhysicsEntity(SIZE, MASS) {
 	PhysicsEntity::body_.bounciness_ = 0.6;
 
@@ -15,7 +15,7 @@ EntItemStack::EntItemStack(const Swan::Context &ctx, const Swan::SRF &params):
 	body_.vel_ += Swan::Vec2{ vx(ctx.world.random_), vy(ctx.world.random_) };
 }
 
-void EntItemStack::draw(const Swan::Context &ctx, Swan::Win &win) {
+void ItemStackEntity::draw(const Swan::Context &ctx, Swan::Win &win) {
 	SDL_Rect rect = item_->image_.frameRect();
 
 	SDL_Texture *tex = item_->image_.texture_.get();
@@ -25,13 +25,13 @@ void EntItemStack::draw(const Swan::Context &ctx, Swan::Win &win) {
 		{ .hscale = 0.5, .vscale = 0.5 });
 }
 
-void EntItemStack::tick(const Swan::Context &ctx, float dt) {
+void ItemStackEntity::tick(const Swan::Context &ctx, float dt) {
 	despawn_timer_ -= dt;
 	if (despawn_timer_ <= 0)
 		ctx.plane.despawnEntity(*this);
 }
 
-void EntItemStack::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
+void ItemStackEntity::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
 	auto &arr = dynamic_cast<const Swan::SRFArray &>(srf);
 	auto *pos = dynamic_cast<Swan::SRFFloatArray *>(arr.val[0].get());
 	auto *name = dynamic_cast<Swan::SRFString *>(arr.val[1].get());
@@ -40,7 +40,7 @@ void EntItemStack::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
 	item_ = &ctx.world.getItem(name->val);
 }
 
-Swan::SRF *EntItemStack::writeSRF(const Swan::Context &ctx) {
+Swan::SRF *ItemStackEntity::writeSRF(const Swan::Context &ctx) {
 	return new Swan::SRFArray{
 		new Swan::SRFFloatArray{ body_.pos_.x, body_.pos_.y },
 		new Swan::SRFString{ item_->name_ },

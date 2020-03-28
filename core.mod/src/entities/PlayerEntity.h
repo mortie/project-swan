@@ -3,16 +3,16 @@
 #include <swan/swan.h>
 #include <array>
 
-class EntPlayer: public Swan::PhysicsEntity, public Swan::InventoryTrait::HasInventory {
+class PlayerEntity: public Swan::PhysicsEntity, public Swan::InventoryTrait::HasInventory {
 public:
 	class Factory: public Swan::Entity::Factory {
 	public:
 		Swan::Entity *create(const Swan::Context &ctx, const Swan::SRF &params) override {
-			return new EntPlayer(ctx, params);
+			return new PlayerEntity(ctx, params);
 		}
 	};
 
-	EntPlayer(const Swan::Context &ctx, const Swan::SRF &params);
+	PlayerEntity(const Swan::Context &ctx, const Swan::SRF &params);
 
 	Swan::InventoryTrait::Inventory &getInventory() override { return inventory_; }
 
