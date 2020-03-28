@@ -1,4 +1,4 @@
-#include "WGDefault.h"
+#include "DefaultWorldGen.h"
 
 #include <algorithm>
 
@@ -10,7 +10,7 @@ static int stoneLevel(const siv::PerlinNoise &perlin, int x) {
 	return (int)(perlin.noise(x / 50.0, 10) * 10) + 10;
 }
 
-void WGDefault::drawBackground(const Swan::Context &ctx, Swan::Win &win, Swan::Vec2 pos) {
+void DefaultWorldGen::drawBackground(const Swan::Context &ctx, Swan::Win &win, Swan::Vec2 pos) {
 	int texmin = 10;
 	int texmax = 20;
 
@@ -28,7 +28,7 @@ void WGDefault::drawBackground(const Swan::Context &ctx, Swan::Win &win, Swan::V
 	}
 }
 
-SDL_Color WGDefault::backgroundColor(Swan::Vec2 pos) {
+SDL_Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos) {
 	float y = pos.y;
 	return Swan::Draw::linearGradient(y, {
 		{    0, { 128, 220, 250, 255 } },
@@ -40,7 +40,7 @@ SDL_Color WGDefault::backgroundColor(Swan::Vec2 pos) {
 		{ 1000, {  65,  10,  10, 255 } } });
 }
 
-Swan::Tile::ID WGDefault::genTile(Swan::TilePos pos) {
+Swan::Tile::ID DefaultWorldGen::genTile(Swan::TilePos pos) {
 	int grass_level = grassLevel(perlin_, pos.x);
 	int stone_level = stoneLevel(perlin_, pos.x);
 
@@ -58,7 +58,7 @@ Swan::Tile::ID WGDefault::genTile(Swan::TilePos pos) {
 		return tAir_;
 }
 
-void WGDefault::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
+void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 	for (int cx = 0; cx < Swan::CHUNK_WIDTH; ++cx) {
 		int tilex = chunk.pos_.x * Swan::CHUNK_WIDTH + cx;
 
@@ -72,7 +72,7 @@ void WGDefault::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 	}
 }
 
-Swan::BodyTrait::HasBody *WGDefault::spawnPlayer(Swan::WorldPlane &plane) {
+Swan::BodyTrait::HasBody *DefaultWorldGen::spawnPlayer(Swan::WorldPlane &plane) {
 	int x = 0;
 	return dynamic_cast<Swan::BodyTrait::HasBody *>(
 		plane.spawnEntity("core::player", Swan::SRFFloatArray{

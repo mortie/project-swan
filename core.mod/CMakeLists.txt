@@ -1,6 +1,6 @@
 add_library(core.mod SHARED
 	src/main.cc
-	src/WGDefault.cc
+	src/DefaultWorldGen.cc
 	src/entities/EntPlayer.cc
 	src/entities/EntItemStack.cc)
 set_target_properties(core.mod PROPERTIES OUTPUT_NAME mod PREFIX "")

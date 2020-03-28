@@ -4,14 +4,14 @@
 
 #include <PerlinNoise/PerlinNoise.hpp>
 
-class WGDefault: public Swan::WorldGen {
+class DefaultWorldGen: public Swan::WorldGen {
 public:
 	class Factory: public Swan::WorldGen::Factory {
 	public:
-		WorldGen *create(Swan::World &world) override { return new WGDefault(world); }
+		WorldGen *create(Swan::World &world) override { return new DefaultWorldGen(world); }
 	};
 
-	WGDefault(Swan::World &world):
+	DefaultWorldGen(Swan::World &world):
 		tGrass_(world.getTileID("core::grass")),
 		tDirt_(world.getTileID("core::dirt")),
 		tStone_(world.getTileID("core::stone")),

@@ -1,6 +1,6 @@
 #include <swan/swan.h>
 
-#include "WGDefault.h"
+#include "DefaultWorldGen.h"
 #include "entities/EntPlayer.h"
 #include "entities/EntItemStack.h"
 
@@ -65,7 +65,7 @@ extern "C" void mod_init(Swan::Mod &mod) {
 		.image = "core::tree-trunk",
 	});
 
-	mod.registerWorldGen("default", std::make_unique<WGDefault::Factory>());
+	mod.registerWorldGen("default", std::make_unique<DefaultWorldGen::Factory>());
 
 	mod.registerEntity("player", std::make_unique<EntPlayer::Factory>());
 	mod.registerEntity("item-stack", std::make_unique<EntItemStack::Factory>());

@@ -73,8 +73,8 @@ void parallaxBackground(
 	y = (y * win.zoom_) * -factor;
 	SDL_Rect rect{
 		0, 0,
-		(int)(srcrect->w * win.zoom_),
-		(int)(srcrect->h * win.zoom_),
+		(int)((float)srcrect->w * win.zoom_),
+		(int)((float)srcrect->h * win.zoom_),
 	};
 
 	rect.x = (int)std::floor((int)x % rect.w);
