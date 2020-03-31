@@ -11,4 +11,12 @@ target_include_directories(imgui PUBLIC
 	${PROJECT_SOURCE_DIR}/third_party/imgui-plot/include
 	${SDL2_INCLUDE_DIRS})
 
+add_library(cpptoml INTERFACE)
+target_include_directories(cpptoml PUBLIC
+	${PROJECT_SOURCE_DIR}/third_party/cpptoml/include)
+
+add_library(msgpack INTERFACE)
+target_include_directories(msgpack PUBLIC
+	${PROJECT_SOURCE_DIR}/third_party/msgpack/include)
+
 install(TARGETS imgui DESTINATION swan/third_party)
