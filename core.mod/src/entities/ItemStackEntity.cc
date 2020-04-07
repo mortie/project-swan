@@ -2,11 +2,11 @@
 
 #include <random>
 
-ItemStackEntity::ItemStackEntity(const Swan::Context &ctx, const Swan::SRF &params):
+ItemStackEntity::ItemStackEntity(const Swan::Context &ctx, const PackObject &obj):
 		PhysicsEntity(SIZE, MASS) {
 	PhysicsEntity::body_.bounciness_ = 0.6;
 
-	readSRF(ctx, params);
+	deserialize(ctx, obj);
 
 	static std::uniform_real_distribution vx(-2.3f, 2.3f);
 	static std::uniform_real_distribution vy(-2.3f, -1.2f);
@@ -31,18 +31,14 @@ void ItemStackEntity::tick(const Swan::Context &ctx, float dt) {
 		ctx.plane.despawnEntity(*this);
 }
 
-void ItemStackEntity::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
-	auto &arr = dynamic_cast<const Swan::SRFArray &>(srf);
-	auto *pos = dynamic_cast<Swan::SRFFloatArray *>(arr.val[0].get());
-	auto *name = dynamic_cast<Swan::SRFString *>(arr.val[1].get());
-
-	body_.pos_.set(pos->val[0], pos->val[1]);
-	item_ = &ctx.world.getItem(name->val);
+void ItemStackEntity::deserialize(const Swan::Context &ctx, const PackObject &obj) {
+	body_.pos_ = obj.at("pos").as<Swan::Vec2>();
+	item_ = &ctx.world.getItem(obj.at("item").as<std::string>());
 }
 
-Swan::SRF *ItemStackEntity::writeSRF(const Swan::Context &ctx) {
-	return new Swan::SRFArray{
-		new Swan::SRFFloatArray{ body_.pos_.x, body_.pos_.y },
-		new Swan::SRFString{ item_->name_ },
+Swan::Entity::PackObject ItemStackEntity::serialize(const Swan::Context &ctx, msgpack::zone &zone) {
+	return {
+		{ "pos", msgpack::object(body_.pos_, zone) },
+		{ "tile", msgpack::object(item_->name_, zone) },
 	};
 }

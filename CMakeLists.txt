@@ -39,7 +39,7 @@ endif()
 
 add_subdirectory(third_party)
 
-set(libraries imgui SDL2 SDL2_image dl z)
+set(libraries imgui fmt cpptoml msgpack SDL2 SDL2_image dl z)
 
 # We want to be able to use C++20 designated initializers,
 # but Clang doesn't support them yet.

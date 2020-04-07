@@ -12,7 +12,6 @@ add_library(libswan SHARED
 	src/OS.cc
 	src/PerfCounter.cc
 	src/Resource.cc
-	src/SRF.cc
 	src/Tile.cc
 	src/World.cc
 	src/WorldPlane.cc)

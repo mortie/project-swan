@@ -2,6 +2,10 @@
 
 #include <stdio.h>
 #include <SDL2/SDL_image.h>
+#include <regex>
+#include <cpptoml.h>
+#include <string.h>
+#include <errno.h>
 
 #include "log.h"
 #include "common.h"
@@ -10,7 +14,10 @@
 
 namespace Swan {
 
-ImageResource::ImageResource(SDL_Renderer *renderer, const Builder &builder) {
+ImageResource::ImageResource(
+		SDL_Renderer *renderer, const std::string &modpath, const std::string &id) {
+	static std::regex first_part_re("^.*?/");
+
 	SDL_RendererInfo rinfo;
 	if (SDL_GetRendererInfo(renderer, &rinfo) < 0) {
 		panic << "GetRendererInfo failed: " << SDL_GetError();
@@ -25,12 +32,15 @@ ImageResource::ImageResource(SDL_Renderer *renderer, const Builder &builder) {
 		abort();
 	}
 
-	surface_.reset(IMG_Load((builder.modpath + "/assets/" + builder.path).c_str()));
+	std::string assetpath = modpath + "/assets/" +
+		std::regex_replace(id, first_part_re, "");
+
+	surface_.reset(IMG_Load((assetpath + ".png").c_str()));
 
 	// If we have a surface, and it's the wrong pixel format, convert it
 	if (surface_ && surface_->format->format != format) {
 		info
-			<< "  " << builder.name << ": Converting from "
+			<< "  " << id << ": Converting from "
 			<< SDL_GetPixelFormatName(surface_->format->format) << " to "
 			<< SDL_GetPixelFormatName(format);
 		surface_.reset(SDL_ConvertSurfaceFormat(surface_.get(), format, 0));
@@ -39,7 +49,7 @@ ImageResource::ImageResource(SDL_Renderer *renderer, const Builder &builder) {
 	// If we don't have a surface yet (either loading or conversion failed),
 	// create a placeholder
 	if (!surface_) {
-		warn << "Loading image " << builder.name << " failed: " << SDL_GetError();
+		warn << "Loading image " << id << " failed: " << SDL_GetError();
 
 		surface_.reset(SDL_CreateRGBSurface(
 			0, TILE_SIZE, TILE_SIZE, bpp, rmask, gmask, bmask, amask));
@@ -47,9 +57,23 @@ ImageResource::ImageResource(SDL_Renderer *renderer, const Builder &builder) {
 			PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE));
 	}
 
-	frame_height_ = builder.frame_height;
-	if (frame_height_ < 0)
-		frame_height_ = surface_->h;
+	frame_height_ = 32;
+
+	// Load TOML if it exists
+	errno = ENOENT; // I don't know if ifstream is guaranteed to set errno
+	std::ifstream tomlfile(assetpath + ".toml");
+	if (tomlfile) {
+		cpptoml::parser parser(tomlfile);
+		try {
+			auto toml = parser.parse();
+			frame_height_ = toml->get_as<int>("height").value_or(frame_height_);
+		} catch (cpptoml::parse_exception &exc) {
+			warn << "Failed to parse toml file " << assetpath << ".toml: "
+				<< exc.what();
+		}
+	} else if (errno != ENOENT) {
+		warn << "Couldn't open " << assetpath << ".toml: " << strerror(errno);
+	}
 
 	texture_.reset(SDL_CreateTextureFromSurface(renderer, surface_.get()));
 	if (!texture_) {
@@ -58,7 +82,7 @@ ImageResource::ImageResource(SDL_Renderer *renderer, const Builder &builder) {
 	}
 
 	num_frames_ = surface_->h / frame_height_;
-	name_ = builder.name;
+	name_ = id;
 }
 
 ImageResource::ImageResource(

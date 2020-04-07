@@ -68,7 +68,11 @@ public:
 		}
 
 		void operator++() {
-			next_ = std::move(func_());
+			auto val(func_());
+			if (val)
+				next_.emplace(std::move(*val));
+			else
+				next_.reset();
 		}
 
 		Ret operator*() {

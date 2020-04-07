@@ -59,12 +59,18 @@ void World::addMod(std::unique_ptr<Mod> mod) {
 		items_[i->name_] = std::move(i);
 	}
 
-	for (auto *gen: mod->getWorldGens()) {
-		worldgens_[gen->name_] = gen;
+	for (auto gen: mod->getWorldGens()) {
+		worldgens_.emplace(
+			std::piecewise_construct,
+			std::forward_as_tuple(gen.name),
+			std::forward_as_tuple(gen));
 	}
 
-	for (auto *ent: mod->getEntities()) {
-		ents_[ent->name_] = ent;
+	for (auto ent: mod->getEntities()) {
+		ents_.emplace(
+			std::piecewise_construct,
+			std::forward_as_tuple(ent.name),
+			std::forward_as_tuple(ent));
 	}
 
 	mods_.push_back(std::move(mod));
@@ -90,9 +96,9 @@ WorldPlane &World::addPlane(const std::string &gen) {
 		abort();
 	}
 
-	WorldGen::Factory *factory = it->second;
-	WorldGen *g = factory->create(*this);
-	planes_.emplace_back(id, this, std::shared_ptr<WorldGen>(g));
+	WorldGen::Factory &factory = it->second;
+	std::unique_ptr<WorldGen> g = factory.create(*this);
+	planes_.emplace_back(id, this, std::move(g));
 	return planes_[id];
 }
 

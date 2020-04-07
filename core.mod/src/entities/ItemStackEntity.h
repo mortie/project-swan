@@ -4,18 +4,12 @@
 
 class ItemStackEntity: public Swan::PhysicsEntity {
 public:
-	class Factory: public Swan::Entity::Factory {
-		Swan::Entity *create(const Swan::Context &ctx, const Swan::SRF &params) override {
-			return new ItemStackEntity(ctx, params);
-		}
-	};
-
-	ItemStackEntity(const Swan::Context &ctx, const Swan::SRF &params);
+	ItemStackEntity(const Swan::Context &ctx, const PackObject &obj);
 
 	void draw(const Swan::Context &ctx, Swan::Win &win) override;
 	void tick(const Swan::Context &ctx, float dt) override;
-	void readSRF(const Swan::Context &ctx, const Swan::SRF &srf) override;
-	Swan::SRF *writeSRF(const Swan::Context &ctx) override;
+	void deserialize(const Swan::Context &ctx, const PackObject &obj) override;
+	PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) override;
 
 private:
 	static constexpr float MASS = 80;

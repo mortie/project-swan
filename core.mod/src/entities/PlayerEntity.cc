@@ -4,14 +4,24 @@
 
 #include "ItemStackEntity.h"
 
-PlayerEntity::PlayerEntity(const Swan::Context &ctx, const Swan::SRF &params):
+PlayerEntity::PlayerEntity(const Swan::Context &ctx, const PackObject &obj):
 		PhysicsEntity(SIZE, MASS), inventory_(INVENTORY_SIZE),
 		anims_{
-			Swan::Animation(ctx.resources.getImage("core::player-still"), 0.8),
-			Swan::Animation(ctx.resources.getImage("core::player-running"), 1, SDL_FLIP_HORIZONTAL),
-			Swan::Animation(ctx.resources.getImage("core::player-running"), 1) } {
+			Swan::Animation(ctx.resources.getImage("core/entity/player-still"), 0.8),
+			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1, SDL_FLIP_HORIZONTAL),
+			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1) } {
 
-	readSRF(ctx, params);
+	deserialize(ctx, obj);
+}
+
+PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
+		PhysicsEntity(SIZE, MASS), inventory_(INVENTORY_SIZE),
+		anims_{
+			Swan::Animation(ctx.resources.getImage("core/entity/player-still"), 0.8),
+			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1, SDL_FLIP_HORIZONTAL),
+			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1) } {
+
+	body_.pos_ = pos;
 }
 
 void PlayerEntity::draw(const Swan::Context &ctx, Swan::Win &win) {
@@ -76,11 +86,15 @@ void PlayerEntity::tick(const Swan::Context &ctx, float dt) {
 	}
 }
 
-void PlayerEntity::readSRF(const Swan::Context &ctx, const Swan::SRF &srf) {
-	auto pos = dynamic_cast<const Swan::SRFFloatArray &>(srf);
-	body_.pos_.set(pos.val[0], pos.val[1]);
+void PlayerEntity::deserialize(const Swan::Context &ctx, const PackObject &obj) {
+	//body_.deserialize(obj["body"]);
 }
 
-Swan::SRF *PlayerEntity::writeSRF(const Swan::Context &ctx) {
-	return new Swan::SRFFloatArray{ body_.pos_.x, body_.pos_.y };
+Swan::Entity::PackObject PlayerEntity::serialize(const Swan::Context &ctx, msgpack::zone &zone) {
+	return {};
+	/*
+	return Swan::MsgPackObject{
+		{ "body", body_.serialize(w) },
+	};
+	*/
 }

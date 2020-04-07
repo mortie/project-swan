@@ -36,23 +36,27 @@ Context WorldPlane::getContext() {
 	};
 }
 
-Entity *WorldPlane::spawnEntity(const std::string &name, const SRF &params) {
+Entity *WorldPlane::spawnEntity(const std::string &name, const Entity::PackObject &obj) {
 	if (world_->ents_.find(name) == world_->ents_.end()) {
 		panic << "Tried to spawn a non-existant entity " << name << "!";
 		abort();
 	}
 
-	Entity *ent = world_->ents_[name]->create(getContext(), params);
-	if (auto has_body = dynamic_cast<BodyTrait::HasBody *>(ent); has_body) {
+	return spawnEntity(world_->ents_[name].create(getContext(), obj));
+}
+
+Entity *WorldPlane::spawnEntity(std::unique_ptr<Entity> ent) {
+	Entity *ptr = ent.get();
+	if (auto has_body = dynamic_cast<BodyTrait::HasBody *>(ent.get()); has_body) {
 		BodyTrait::Body &body = has_body->getBody();
 		BodyTrait::Bounds bounds = body.getBounds();
 
 		body.move({ 0.5f - bounds.size.x / 2, 0 });
 	}
 
-	spawn_list_.push_back(std::unique_ptr<Entity>(ent));
-	info << "Spawned " << name << ". SRF: " << params;
-	return ent;
+	spawn_list_.push_back(std::move(ent));
+	info << "Spawned entity.";
+	return ptr;
 }
 
 void WorldPlane::despawnEntity(Entity &ent) {
@@ -138,7 +142,7 @@ Iter<Entity *> WorldPlane::getEntsInArea(Vec2 center, float radius) {
 }
 
 BodyTrait::HasBody *WorldPlane::spawnPlayer() {
-	return gen_->spawnPlayer(*this);
+	return gen_->spawnPlayer(getContext());
 }
 
 void WorldPlane::breakBlock(TilePos pos) {
@@ -154,10 +158,11 @@ void WorldPlane::breakBlock(TilePos pos) {
 
 	// Then spawn an item stack entity.
 	Tile &t = world_->getTileByID(id);
-	if (t.dropped_item_ != std::nullopt) {
-		spawnEntity("core::item-stack", SRFArray{
-			new SRFFloatArray{ (float)pos.x, (float)pos.y },
-			new SRFString{ *t.dropped_item_ },
+	if (t.dropped_item_) {
+		msgpack::zone zone;
+		spawnEntity("core::item-stack", Entity::PackObject{
+			{ "pos", msgpack::object(pos, zone) },
+			{ "item", msgpack::object(*t.dropped_item_, zone) },
 		});
 	}
 }

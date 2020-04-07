@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include "entities/PlayerEntity.h"
+
 static int grassLevel(const siv::PerlinNoise &perlin, int x) {
 	return (int)(perlin.noise(x / 50.0, 0) * 13);
 }
@@ -72,9 +74,9 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 	}
 }
 
-Swan::BodyTrait::HasBody *DefaultWorldGen::spawnPlayer(Swan::WorldPlane &plane) {
+Swan::BodyTrait::HasBody *DefaultWorldGen::spawnPlayer(const Swan::Context &ctx) {
 	int x = 0;
 	return dynamic_cast<Swan::BodyTrait::HasBody *>(
-		plane.spawnEntity("core::player", Swan::SRFFloatArray{
-			(float)x, (float)grassLevel(perlin_, x) - 4 }));
+		ctx.plane.spawnEntity(std::make_unique<PlayerEntity>(
+			ctx, Swan::Vec2{ (float)x, (float)grassLevel(perlin_, x) - 4 })));
 }

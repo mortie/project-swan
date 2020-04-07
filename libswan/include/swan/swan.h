@@ -13,7 +13,6 @@
 #include <swan/PerfCounter.h>
 #include <swan/OS.h>
 #include <swan/Resource.h>
-#include <swan/SRF.h>
 #include <swan/Tile.h>
 #include <swan/Vector2.h>
 #include <swan/Win.h>

@@ -3,6 +3,7 @@
 #include <utility>
 #include <ostream>
 #include <cmath>
+#include <msgpack.hpp>
 
 namespace Swan {
 
@@ -10,6 +11,8 @@ template<typename T>
 struct Vector2 {
 	T x;
 	T y;
+
+	MSGPACK_DEFINE(x, y)
 
 	constexpr Vector2(T x = 0, T y = 0): x(x), y(y) {}
 

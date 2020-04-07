@@ -24,10 +24,11 @@ class WorldPlane: NonCopyable {
 public:
 	using ID = uint16_t;
 
-	WorldPlane(ID id, World *world, std::shared_ptr<WorldGen> gen):
+	WorldPlane(ID id, World *world, std::unique_ptr<WorldGen> gen):
 			id_(id), world_(world), gen_(std::move(gen)) {}
 
-	Entity *spawnEntity(const std::string &name, const SRF &params);
+	Entity *spawnEntity(const std::string &name, const Entity::PackObject &params);
+	Entity *spawnEntity(std::unique_ptr<Entity> ent);
 	void despawnEntity(Entity &ent);
 
 	Context getContext();
@@ -62,7 +63,7 @@ public:
 
 	ID id_;
 	World *world_;
-	std::shared_ptr<WorldGen> gen_;
+	std::unique_ptr<WorldGen> gen_;
 
 private:
 	std::map<std::pair<int, int>, Chunk> chunks_;

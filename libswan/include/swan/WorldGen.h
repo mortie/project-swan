@@ -15,20 +15,11 @@ class World;
 class WorldPlane;
 class ImageResource;
 
-class WorldGenStructure {
-public:
-	virtual ~WorldGenStructure() = 0;
-
-	virtual bool isBase(TilePos pos);
-};
-
 class WorldGen {
 public:
-	class Factory {
-	public:
-		virtual ~Factory() = default;
-		virtual WorldGen *create(World &world) = 0;
-		std::string name_;
+	struct Factory {
+		const std::string name;
+		std::unique_ptr<WorldGen> (*create)(World &world);
 	};
 
 	virtual ~WorldGen() = default;
@@ -37,7 +28,7 @@ public:
 	virtual SDL_Color backgroundColor(Vec2 pos) = 0;
 
 	virtual void genChunk(WorldPlane &plane, Chunk &chunk) = 0;
-	virtual BodyTrait::HasBody *spawnPlayer(WorldPlane &plane) = 0;
+	virtual BodyTrait::HasBody *spawnPlayer(const Context &ctx) = 0;
 };
 
 }

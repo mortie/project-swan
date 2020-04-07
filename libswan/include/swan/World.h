@@ -50,8 +50,8 @@ public:
 
 	// The mods themselves retain ownership of world gens and entities,
 	// the world just has non-owning pointers to them
-	std::unordered_map<std::string, WorldGen::Factory *> worldgens_;
-	std::unordered_map<std::string, Entity::Factory *> ents_;
+	std::unordered_map<std::string, WorldGen::Factory> worldgens_;
+	std::unordered_map<std::string, Entity::Factory> ents_;
 
 	BodyTrait::HasBody *player_;
 	Game *game_;

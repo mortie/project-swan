@@ -5,22 +5,16 @@
 
 class PlayerEntity: public Swan::PhysicsEntity, public Swan::InventoryTrait::HasInventory {
 public:
-	class Factory: public Swan::Entity::Factory {
-	public:
-		Swan::Entity *create(const Swan::Context &ctx, const Swan::SRF &params) override {
-			return new PlayerEntity(ctx, params);
-		}
-	};
-
-	PlayerEntity(const Swan::Context &ctx, const Swan::SRF &params);
+	PlayerEntity(const Swan::Context &ctx, const PackObject &obj);
+	PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos);
 
 	Swan::InventoryTrait::Inventory &getInventory() override { return inventory_; }
 
 	void draw(const Swan::Context &ctx, Swan::Win &win) override;
 	void update(const Swan::Context &ctx, float dt) override;
 	void tick(const Swan::Context &ctx, float dt) override;
-	void readSRF(const Swan::Context &ctx, const Swan::SRF &srf) override;
-	Swan::SRF *writeSRF(const Swan::Context &ctx) override;
+	void deserialize(const Swan::Context &ctx, const PackObject &obj) override;
+	PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) override;
 
 private:
 	static constexpr int INVENTORY_SIZE = 18;

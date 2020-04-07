@@ -7,14 +7,16 @@ set_target_properties(core.mod PROPERTIES OUTPUT_NAME mod PREFIX "")
 target_link_libraries(core.mod libswan ${libraries})
 
 set(assets
-	assets/entities/player-still.png
-	assets/entities/player-running.png
-	assets/tiles/grass.png
-	assets/tiles/air.png
-	assets/tiles/stone.png
-	assets/tiles/dirt.png
-	assets/tiles/leaves.png
-	assets/tiles/tree-trunk.png
+	assets/entity/player-still.png
+	assets/entity/player-still.toml
+	assets/entity/player-running.png
+	assets/entity/player-running.toml
+	assets/tile/grass.png
+	assets/tile/air.png
+	assets/tile/stone.png
+	assets/tile/dirt.png
+	assets/tile/leaves.png
+	assets/tile/tree-trunk.png
 	assets/misc/background-cave.png)
 foreach(a ${assets})
 	configure_file("${a}" "${a}" COPYONLY)

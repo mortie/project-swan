@@ -2,11 +2,11 @@
 
 #include <memory>
 #include <optional>
+#include <msgpack.hpp>
 
 #include "common.h"
 #include "log.h"
 #include "traits/BodyTrait.h"
-#include "SRF.h"
 
 namespace Swan {
 
@@ -16,11 +16,11 @@ class Game;
 
 class Entity {
 public:
-	class Factory {
-	public:
-		virtual ~Factory() = default;
-		virtual Entity *create(const Context &ctx, const SRF &params) = 0;
-		std::string name_;
+	using PackObject = std::unordered_map<std::string_view, msgpack::object>;
+
+	struct Factory {
+		const std::string name;
+		std::unique_ptr<Entity> (*create)(const Context &ctx, const PackObject &obj);
 	};
 
 	virtual ~Entity() = default;
@@ -30,8 +30,8 @@ public:
 	virtual void tick(const Context &ctx, float dt) {}
 	virtual void despawn() {}
 
-	virtual void readSRF(const Swan::Context &ctx, const SRF &srf) {}
-	virtual SRF *writeSRF(const Swan::Context &ctx) { return new SRFNone(); }
+	virtual void deserialize(const Swan::Context &ctx, const PackObject &obj) {}
+	virtual PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) { return {}; }
 };
 
 class PhysicsEntity: public Entity, public BodyTrait::HasBody {

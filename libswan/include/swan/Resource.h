@@ -12,14 +12,8 @@ namespace Swan {
 
 class ImageResource {
 public:
-	struct Builder {
-		std::string name;
-		std::string path;
-		int frame_height = -1;
-		std::string modpath = "";
-	};
-
-	ImageResource(SDL_Renderer *renderer, const Builder &builder);
+	ImageResource(
+		SDL_Renderer *renderer, const std::string &modpath, const std::string &id);
 	ImageResource(
 		SDL_Renderer *renderer, const std::string &name,
 		int w, int h, uint8_t r, uint8_t g, uint8_t b);
