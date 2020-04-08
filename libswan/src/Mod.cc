@@ -8,21 +8,6 @@
 
 namespace Swan {
 
-Mod::~Mod() {
-	images_.clear();
-	tiles_.clear();
-	items_.clear();
-	worldgens_.clear();
-	entities_.clear();
-}
-
-void Mod::init(const std::string &name) {
-	name_ = name;
-	inited_ = true;
-
-	info << "Mod initing: " << name_;
-}
-
 void Mod::registerImage(const std::string &id) {
 	images_.push_back(name_ + "/" + id);
 	info << "  Adding image: " << images_.back();
@@ -40,32 +25,37 @@ void Mod::registerItem(Item::Builder item) {
 	info << "  Adding item: " << item.name;
 }
 
-Iter<std::unique_ptr<ImageResource>> Mod::buildImages(SDL_Renderer *renderer) {
-	return map(begin(images_), end(images_), [renderer, this](const std::string &id) {
+Iter<std::unique_ptr<ImageResource>> ModWrapper::buildImages(SDL_Renderer *renderer) {
+	return map(begin(mod_->images_), end(mod_->images_),
+			[renderer, this](const std::string &id) {
 		return std::make_unique<ImageResource>(renderer, path_, id);
 	});
 }
 
-Iter<std::unique_ptr<Tile>> Mod::buildTiles(const ResourceManager &resources) {
-	return map(begin(tiles_), end(tiles_), [&](const Tile::Builder &builder) {
+Iter<std::unique_ptr<Tile>> ModWrapper::buildTiles(const ResourceManager &resources) {
+	return map(begin(mod_->tiles_), end(mod_->tiles_),
+			[&](const Tile::Builder &builder) {
 		return std::make_unique<Tile>(resources, builder);
 	});
 }
 
-Iter<std::unique_ptr<Item>> Mod::buildItems(const ResourceManager &resources) {
-	return map(begin(items_), end(items_), [&](const Item::Builder &builder) {
+Iter<std::unique_ptr<Item>> ModWrapper::buildItems(const ResourceManager &resources) {
+	return map(begin(mod_->items_), end(mod_->items_),
+			[&](const Item::Builder &builder) {
 		return std::make_unique<Item>(resources, builder);
 	});
 }
 
-Iter<WorldGen::Factory> Mod::getWorldGens() {
-	return map(begin(worldgens_), end(worldgens_), [](WorldGen::Factory &fact) {
+Iter<WorldGen::Factory> ModWrapper::getWorldGens() {
+	return map(begin(mod_->worldgens_), end(mod_->worldgens_),
+			[](WorldGen::Factory &fact) {
 		return fact;
 	});
 }
 
-Iter<Entity::Factory> Mod::getEntities() {
-	return map(begin(entities_), end(entities_), [](Entity::Factory &fact){
+Iter<Entity::Factory> ModWrapper::getEntities() {
+	return map(begin(mod_->entities_), end(mod_->entities_),
+			[](Entity::Factory &fact){
 		return fact;
 	});
 }

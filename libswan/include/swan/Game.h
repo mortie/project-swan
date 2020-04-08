@@ -3,6 +3,7 @@
 #include <bitset>
 #include <map>
 #include <string>
+#include <optional>
 #include <SDL.h>
 
 #include "common.h"
@@ -18,7 +19,7 @@ public:
 		win_(win),
 		mouse_pos_(0, 0) {}
 
-	std::unique_ptr<Mod> loadMod(const std::string &path, World &world);
+	std::optional<ModWrapper> loadMod(std::string path, World &world);
 	void createWorld(const std::string &worldgen, std::vector<std::string> mods);
 
 	void onKeyDown(SDL_Keysym sym) {

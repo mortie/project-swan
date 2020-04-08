@@ -11,24 +11,26 @@
 
 namespace Swan {
 
-std::unique_ptr<Mod> Game::loadMod(const std::string &path, World &world) {
+std::optional<ModWrapper> Game::loadMod(std::string path, World &world) {
 	OS::Dynlib dl(path + "/mod");
-	auto init = dl.get<void (*)(Mod &, World &)>("mod_init");
-	if (init == NULL) {
-		warn << path << ": No 'mod_init' function!";
-		return nullptr;
+	auto create = dl.get<std::unique_ptr<Mod> (*)(World &)>("mod_create");
+	if (create == NULL) {
+		warn << path << ": No 'mod_create' function!";
+		return std::nullopt;
 	}
 
-	std::unique_ptr<Mod> mod = std::make_unique<Mod>(path, std::move(dl));
-	init(*mod, world);
-	return mod;
+	std::unique_ptr<Mod> mod = create(world);
+	return std::make_optional<ModWrapper>(
+		std::move(mod), std::move(path), std::move(dl));
 }
 
 void Game::createWorld(const std::string &worldgen, std::vector<std::string> modpaths) {
 	world_.reset(new World(this, time(NULL)));
 
 	for (auto &modpath: modpaths) {
-		world_->addMod(std::move(loadMod(modpath, *world_)));
+		auto mod = loadMod(modpath, *world_);
+		if (mod)
+			world_->addMod(std::move(*mod));
 	}
 
 	world_->setWorldGen(worldgen);

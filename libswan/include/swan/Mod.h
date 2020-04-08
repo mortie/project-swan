@@ -18,14 +18,8 @@ namespace Swan {
 
 class Mod {
 public:
-	Mod(const std::string &path, OS::Dynlib &&dynlib):
-		path_(path), dynlib_(std::move(dynlib)) {}
-
-	// We have to manually ensure anything created from the dynlib
-	// is destructed before the dynlib itself is destructed
-	~Mod();
-
-	void init(const std::string &name);
+	Mod(std::string name): name_(std::move(name)) {}
+	virtual ~Mod() = default;
 
 	void registerImage(const std::string &id);
 	void registerTile(Tile::Builder tile);
@@ -54,24 +48,36 @@ public:
 		});
 	}
 
+	const std::string name_;
+	std::vector<std::string> images_;
+	std::vector<Tile::Builder> tiles_;
+	std::vector<Item::Builder> items_;
+	std::vector<WorldGen::Factory> worldgens_;
+	std::vector<Entity::Factory> entities_;
+};
+
+class ModWrapper {
+public:
+	ModWrapper(std::unique_ptr<Mod> mod, std::string path, OS::Dynlib lib):
+		mod_(std::move(mod)), path_(std::move(path)), dynlib_(std::move(lib)) {}
+
+	ModWrapper(ModWrapper &&other) noexcept = default;
+
+	~ModWrapper() {
+		// Mod::~Mod will destroy stuff allocated by the dynlib,
+		// so we must run its destructor before deleting the dynlib
+		mod_.reset();
+	}
+
 	Iter<std::unique_ptr<ImageResource>> buildImages(SDL_Renderer *renderer);
 	Iter<std::unique_ptr<Tile>> buildTiles(const ResourceManager &resources);
 	Iter<std::unique_ptr<Item>> buildItems(const ResourceManager &resources);
 	Iter<WorldGen::Factory> getWorldGens();
 	Iter<Entity::Factory> getEntities();
 
-	std::string name_ = "@uninitialized";
-
-private:
-	std::vector<std::string> images_;
-	std::vector<Tile::Builder> tiles_;
-	std::vector<Item::Builder> items_;
-	std::vector<WorldGen::Factory> worldgens_;
-	std::vector<Entity::Factory> entities_;
-
+	std::unique_ptr<Mod> mod_;
 	std::string path_;
 	OS::Dynlib dynlib_;
-	bool inited_ = false;
 };
 
 }

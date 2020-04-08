@@ -24,7 +24,7 @@ class World {
 public:
 	World(Game *game, unsigned long rand_seed);
 
-	void addMod(std::unique_ptr<Mod> mod);
+	void addMod(ModWrapper &&mod);
 	void setWorldGen(std::string gen);
 	void spawnPlayer();
 
@@ -46,7 +46,8 @@ public:
 	EventEmitter<const Context &, TilePos, Tile &>
 	evt_tile_break_;
 
-	std::vector<std::unique_ptr<Mod>> mods_;
+	// World owns all mods
+	std::vector<ModWrapper> mods_;
 
 	// World owns tiles and items, the mod just has Builder objects
 	std::vector<std::unique_ptr<Tile>> tiles_;

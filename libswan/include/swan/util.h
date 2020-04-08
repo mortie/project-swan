@@ -12,12 +12,14 @@ namespace Swan {
 
 // Inherit from this class to make a class non-copyable
 class NonCopyable {
-protected:
-	NonCopyable() = default;
-	NonCopyable(NonCopyable &&) = default;
-
+public:
 	NonCopyable(const NonCopyable &) = delete;
 	NonCopyable &operator=(const NonCopyable &) = delete;
+	NonCopyable(NonCopyable &&) noexcept = default;
+
+protected:
+	NonCopyable() = default;
+	~NonCopyable() = default;
 };
 
 // Take a deleter function, turn it into a class with an operator() for unique_ptr

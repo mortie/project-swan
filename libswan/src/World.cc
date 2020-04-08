@@ -42,31 +42,31 @@ void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
 	}
 }
 
-void World::addMod(std::unique_ptr<Mod> mod) {
-	info << "World: adding mod " << mod->name_;
+void World::addMod(ModWrapper &&mod) {
+	info << "World: adding mod " << mod.mod_->name_;
 
-	for (auto i: mod->buildImages(game_->win_.renderer_)) {
+	for (auto i: mod.buildImages(game_->win_.renderer_)) {
 		resources_.addImage(std::move(i));
 	}
 
-	for (auto t: mod->buildTiles(resources_)) {
+	for (auto t: mod.buildTiles(resources_)) {
 		Tile::ID id = tiles_.size();
 		tiles_map_[t->name_] = id;
 		tiles_.push_back(std::move(t));
 	}
 
-	for (auto i: mod->buildItems(resources_)) {
+	for (auto i: mod.buildItems(resources_)) {
 		items_[i->name_] = std::move(i);
 	}
 
-	for (auto gen: mod->getWorldGens()) {
+	for (auto gen: mod.getWorldGens()) {
 		worldgens_.emplace(
 			std::piecewise_construct,
 			std::forward_as_tuple(gen.name),
 			std::forward_as_tuple(gen));
 	}
 
-	for (auto ent: mod->getEntities()) {
+	for (auto ent: mod.getEntities()) {
 		ents_.emplace(
 			std::piecewise_construct,
 			std::forward_as_tuple(ent.name),
