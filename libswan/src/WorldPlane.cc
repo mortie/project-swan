@@ -71,35 +71,18 @@ bool WorldPlane::hasChunk(ChunkPos pos) {
 
 // This function will be a bit weird because it's a really fucking hot function.
 Chunk &WorldPlane::getChunk(ChunkPos pos) {
-
-	// This branch should be really predictable, there should basically never
-	// be no active chunks
-	if (active_chunks_.size() != 0) {
-
-		// The last chunk should be the most actively used chunk
-		Chunk *chunk = active_chunks_.back();
-		if (chunk->pos_ == pos) {
-			chunk->keepActive();
+	// First, look through all chunks which have been in use this tick
+	for (auto [chpos, chunk]: tick_chunks_) {
+		if (chpos == pos)
 			return *chunk;
-		}
-
-		// Linear search through a small array is probably faster than tree lookup.
-		// Loop backwards because the hottest chunks should be at the end.
-		for (ssize_t i = active_chunks_.size() - 2; i >= 0; --i) {
-			chunk = active_chunks_[i];
-			if (chunk->pos_ == pos) {
-				chunk->keepActive();
-
-				// Ensure that the hot chunk is at the end by bubbling this one up
-				active_chunks_[i] = active_chunks_[i + 1];
-				active_chunks_[i + 1] = chunk;
-				return *chunk;
-			}
-		}
 	}
 
-	// Slow path: Find a chunk in our global chunk map,
-	// creating a new one if necessary
+	Chunk &chunk = slowGetChunk(pos);
+	tick_chunks_.push_back({ pos, &chunk });
+	return chunk;
+}
+
+Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
 	auto iter = chunks_.find(pos);
 
 	// Create chunk if that turns out to be necessary
@@ -111,8 +94,8 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 		active_chunks_.push_back(&chunk);
 		chunk_init_list_.push_back(&chunk);
 
-	// Otherwise, tell it that it should keep itself alive a bit longer
-	} else {
+	// Otherwise, it might not be active, so let's activate it
+	} else if (!iter->second.isActive()) {
 		iter->second.keepActive();
 		active_chunks_.push_back(&iter->second);
 		chunk_init_list_.push_back(&iter->second);
@@ -137,9 +120,7 @@ void WorldPlane::setTile(TilePos pos, const std::string &name) {
 }
 
 Tile::ID WorldPlane::getTileID(TilePos pos) {
-	Chunk &chunk = getChunk(chunkPos(pos));
-
-	return chunk.getTileID(relPos(pos));
+	return getChunk(chunkPos(pos)).getTileID(relPos(pos));
 }
 
 Tile &WorldPlane::getTile(TilePos pos) {
@@ -255,6 +236,11 @@ void WorldPlane::update(float dt) {
 }
 
 void WorldPlane::tick(float dt) {
+	// Any chunk which has been in use since last tick should be kept alive
+	for (std::pair<ChunkPos, Chunk *> &ch: tick_chunks_)
+		ch.second->keepActive();
+	tick_chunks_.clear();
+
 	for (auto &ent: entities_)
 		ent->tick(getContext(), dt);
 

@@ -35,8 +35,10 @@ public:
 
 	bool hasChunk(ChunkPos pos);
 	Chunk &getChunk(ChunkPos pos);
+	Chunk &slowGetChunk(ChunkPos pos);
 	void setTileID(TilePos pos, Tile::ID id);
 	void setTile(TilePos pos, const std::string &name);
+
 	Tile::ID getTileID(TilePos pos);
 	Tile &getTile(TilePos pos);
 
@@ -68,6 +70,7 @@ public:
 private:
 	std::map<std::pair<int, int>, Chunk> chunks_;
 	std::vector<Chunk *> active_chunks_;
+	std::vector<std::pair<ChunkPos, Chunk *>> tick_chunks_;
 	std::vector<std::unique_ptr<Entity>> entities_;
 
 	std::deque<Chunk *> chunk_init_list_;

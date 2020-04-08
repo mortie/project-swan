@@ -15,25 +15,6 @@ namespace Swan {
 
 uint8_t *Chunk::renderbuf = new uint8_t[CHUNK_WIDTH * TILE_SIZE * CHUNK_HEIGHT * TILE_SIZE * 4];
 
-Tile::ID *Chunk::getTileData() {
-	assert(isActive());
-	return (Tile::ID *)data_.get();
-}
-
-Tile::ID Chunk::getTileID(RelPos pos) {
-	return getTileData()[pos.y * CHUNK_WIDTH + pos.x];
-}
-
-void Chunk::setTileID(RelPos pos, Tile::ID id, SDL_Texture *tex) {
-	getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
-	draw_list_.push_back({ pos, tex });
-}
-
-void Chunk::setTileData(RelPos pos, Tile::ID id) {
-	getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
-	need_render_ = true;
-}
-
 void Chunk::compress() {
 	if (isCompressed())
 		return;

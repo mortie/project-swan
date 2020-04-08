@@ -11,7 +11,7 @@ namespace Swan {
 
 static void chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &dir) {
 	for (int i = 0; i < l; ++i) {
-		plane.getChunk(abspos);
+		plane.slowGetChunk(abspos).keepActive();
 		abspos += dir;
 	}
 }
@@ -120,10 +120,6 @@ Tile::ID World::getTileID(const std::string &name) {
 	}
 
 	return iter->second;
-}
-
-Tile &World::getTileByID(Tile::ID id) {
-	return *tiles_[id];
 }
 
 Tile &World::getTile(const std::string &name) {

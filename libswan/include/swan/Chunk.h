@@ -28,10 +28,25 @@ public:
 		data_.reset(new uint8_t[CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)]);
 	}
 
-	Tile::ID *getTileData();
-	Tile::ID getTileID(RelPos pos);
-	void setTileID(RelPos pos, Tile::ID id, SDL_Texture *tex);
-	void setTileData(RelPos pos, Tile::ID id);
+	Tile::ID *getTileData() {
+		assert(isActive());
+		return (Tile::ID *)data_.get();
+	}
+
+	Tile::ID getTileID(RelPos pos) {
+		return getTileData()[pos.y * CHUNK_WIDTH + pos.x];
+	}
+
+	void setTileID(RelPos pos, Tile::ID id, SDL_Texture *tex) {
+		getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
+		draw_list_.push_back({ pos, tex });
+	}
+
+	void setTileData(RelPos pos, Tile::ID id) {
+		getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
+		need_render_ = true;
+	}
+
 	void render(const Context &ctx, SDL_Renderer *rnd);
 
 	void compress();

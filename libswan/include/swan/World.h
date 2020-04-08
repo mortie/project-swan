@@ -31,7 +31,7 @@ public:
 	WorldPlane &addPlane(const std::string &gen);
 	WorldPlane &addPlane() { return addPlane(default_world_gen_); }
 
-	Tile &getTileByID(Tile::ID id);
+	Tile &getTileByID(Tile::ID id) { return *tiles_[id]; }
 	Tile::ID getTileID(const std::string &name);
 	Tile &getTile(const std::string &name);
 	Item &getItem(const std::string &name);
