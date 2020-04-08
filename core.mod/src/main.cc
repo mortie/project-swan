@@ -4,8 +4,6 @@
 #include "entities/PlayerEntity.h"
 #include "entities/ItemStackEntity.h"
 
-static Swan::EventListener break_listener;
-
 class CoreMod: public Swan::Mod {
 public:
 	CoreMod(Swan::World &world): Swan::Mod("core") {
