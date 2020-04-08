@@ -18,8 +18,8 @@ public:
 		win_(win),
 		mouse_pos_(0, 0) {}
 
-	std::unique_ptr<Mod> loadMod(const std::string &path);
-	void createWorld(const std::string &worldgen, std::vector<std::unique_ptr<Mod>> &&mods);
+	std::unique_ptr<Mod> loadMod(const std::string &path, World &world);
+	void createWorld(const std::string &worldgen, std::vector<std::string> mods);
 
 	void onKeyDown(SDL_Keysym sym) {
 		pressed_keys_[sym.scancode] = true;

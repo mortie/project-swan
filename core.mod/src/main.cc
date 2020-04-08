@@ -4,8 +4,19 @@
 #include "entities/PlayerEntity.h"
 #include "entities/ItemStackEntity.h"
 
-extern "C" void mod_init(Swan::Mod &mod) {
+static Swan::EventListener break_listener;
+
+extern "C" void mod_init(Swan::Mod &mod, Swan::World &world) {
 	mod.init("core");
+
+	break_listener = world.evt_tile_break_.subscribe([](
+			const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile &tile) {
+
+		if (tile.dropped_item_) {
+			ctx.plane.spawnEntity(std::make_unique<ItemStackEntity>(
+				ctx, pos, *tile.dropped_item_));
+		}
+	});
 
 	mod.registerImage("tile/air");
 	mod.registerImage("tile/stone");

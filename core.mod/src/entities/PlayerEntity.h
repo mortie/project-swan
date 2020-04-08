@@ -5,8 +5,8 @@
 
 class PlayerEntity: public Swan::PhysicsEntity, public Swan::InventoryTrait::HasInventory {
 public:
-	PlayerEntity(const Swan::Context &ctx, const PackObject &obj);
 	PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos);
+	PlayerEntity(const Swan::Context &ctx, const PackObject &obj);
 
 	Swan::InventoryTrait::Inventory &getInventory() override { return inventory_; }
 

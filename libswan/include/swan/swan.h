@@ -6,6 +6,7 @@
 #include <swan/Chunk.h>
 #include <swan/Clock.h>
 #include <swan/Entity.h>
+#include <swan/EventEmitter.h>
 #include <swan/Game.h>
 #include <swan/Item.h>
 #include <swan/ItemStack.h>
@@ -13,6 +14,7 @@
 #include <swan/PerfCounter.h>
 #include <swan/OS.h>
 #include <swan/Resource.h>
+#include <swan/SlotVector.h>
 #include <swan/Tile.h>
 #include <swan/Vector2.h>
 #include <swan/Win.h>

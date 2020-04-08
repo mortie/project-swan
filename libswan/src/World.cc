@@ -76,8 +76,8 @@ void World::addMod(std::unique_ptr<Mod> mod) {
 	mods_.push_back(std::move(mod));
 }
 
-void World::setWorldGen(const std::string &gen) {
-	default_world_gen_ = gen;
+void World::setWorldGen(std::string gen) {
+	default_world_gen_ = std::move(gen);
 }
 
 void World::spawnPlayer() {

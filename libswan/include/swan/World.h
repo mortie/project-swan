@@ -14,6 +14,7 @@
 #include "Entity.h"
 #include "Resource.h"
 #include "Mod.h"
+#include "EventEmitter.h"
 
 namespace Swan {
 
@@ -24,7 +25,7 @@ public:
 	World(Game *game, unsigned long rand_seed);
 
 	void addMod(std::unique_ptr<Mod> mod);
-	void setWorldGen(const std::string &gen);
+	void setWorldGen(std::string gen);
 	void spawnPlayer();
 
 	void setCurrentPlane(WorldPlane &plane);
@@ -40,6 +41,10 @@ public:
 	void draw(Win &win);
 	void update(float dt);
 	void tick(float dt);
+
+	// Event emitters
+	EventEmitter<const Context &, TilePos, Tile &>
+	evt_tile_break_;
 
 	std::vector<std::unique_ptr<Mod>> mods_;
 

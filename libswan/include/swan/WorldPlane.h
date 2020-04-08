@@ -54,7 +54,7 @@ public:
 	}
 
 	BodyTrait::HasBody *spawnPlayer();
-	void breakBlock(TilePos pos);
+	void breakTile(TilePos pos);
 
 	SDL_Color backgroundColor();
 	void draw(Win &win);

@@ -2,17 +2,24 @@
 
 #include <random>
 
+ItemStackEntity::ItemStackEntity(
+		const Swan::Context &ctx, Swan::Vec2 pos, const std::string &item):
+			PhysicsEntity(SIZE, MASS) {
+
+	static std::uniform_real_distribution vx(-2.3f, 2.3f);
+	static std::uniform_real_distribution vy(-2.3f, -1.2f);
+
+	item_ = &ctx.world.getItem(item);
+	body_.pos_ = pos;
+	body_.pos_.y += 0.5 - body_.size_.y / 2;
+	body_.vel_ += Swan::Vec2{ vx(ctx.world.random_), vy(ctx.world.random_) };
+}
+
 ItemStackEntity::ItemStackEntity(const Swan::Context &ctx, const PackObject &obj):
 		PhysicsEntity(SIZE, MASS) {
 	PhysicsEntity::body_.bounciness_ = 0.6;
 
 	deserialize(ctx, obj);
-
-	static std::uniform_real_distribution vx(-2.3f, 2.3f);
-	static std::uniform_real_distribution vy(-2.3f, -1.2f);
-
-	body_.pos_.y += 0.5 - body_.size_.y / 2;
-	body_.vel_ += Swan::Vec2{ vx(ctx.world.random_), vy(ctx.world.random_) };
 }
 
 void ItemStackEntity::draw(const Swan::Context &ctx, Swan::Win &win) {

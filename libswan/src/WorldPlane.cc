@@ -153,7 +153,7 @@ BodyTrait::HasBody *WorldPlane::spawnPlayer() {
 	return gen_->spawnPlayer(getContext());
 }
 
-void WorldPlane::breakBlock(TilePos pos) {
+void WorldPlane::breakTile(TilePos pos) {
 
 	// If the block is already air, do nothing
 	Tile::ID id = getTileID(pos);
@@ -161,9 +161,11 @@ void WorldPlane::breakBlock(TilePos pos) {
 	if (id == air)
 		return;
 
-	// Change the block to air...
+	// Change tile to air and emit event
 	setTileID(pos, air);
+	world_->evt_tile_break_.emit(getContext(), pos, world_->getTileByID(id));
 
+	/*
 	// Then spawn an item stack entity.
 	Tile &t = world_->getTileByID(id);
 	if (t.dropped_item_) {
@@ -173,6 +175,7 @@ void WorldPlane::breakBlock(TilePos pos) {
 			{ "item", msgpack::object(*t.dropped_item_, zone) },
 		});
 	}
+	*/
 }
 
 SDL_Color WorldPlane::backgroundColor() {

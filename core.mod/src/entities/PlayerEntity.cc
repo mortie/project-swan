@@ -4,16 +4,6 @@
 
 #include "ItemStackEntity.h"
 
-PlayerEntity::PlayerEntity(const Swan::Context &ctx, const PackObject &obj):
-		PhysicsEntity(SIZE, MASS), inventory_(INVENTORY_SIZE),
-		anims_{
-			Swan::Animation(ctx.resources.getImage("core/entity/player-still"), 0.8),
-			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1, SDL_FLIP_HORIZONTAL),
-			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1) } {
-
-	deserialize(ctx, obj);
-}
-
 PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
 		PhysicsEntity(SIZE, MASS), inventory_(INVENTORY_SIZE),
 		anims_{
@@ -22,6 +12,16 @@ PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
 			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1) } {
 
 	body_.pos_ = pos;
+}
+
+PlayerEntity::PlayerEntity(const Swan::Context &ctx, const PackObject &obj):
+		PhysicsEntity(SIZE, MASS), inventory_(INVENTORY_SIZE),
+		anims_{
+			Swan::Animation(ctx.resources.getImage("core/entity/player-still"), 0.8),
+			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1, SDL_FLIP_HORIZONTAL),
+			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1) } {
+
+	deserialize(ctx, obj);
 }
 
 void PlayerEntity::draw(const Swan::Context &ctx, Swan::Win &win) {
@@ -39,7 +39,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 
 	// Break block
 	if (ctx.game.isMousePressed(SDL_BUTTON_LEFT))
-		ctx.plane.breakBlock(mouse_tile_);
+		ctx.plane.breakTile(mouse_tile_);
 
 	// Move left
 	if (ctx.game.isKeyPressed(SDL_SCANCODE_A) || ctx.game.isKeyPressed(SDL_SCANCODE_LEFT)) {
