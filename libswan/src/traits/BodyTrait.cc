@@ -10,7 +10,7 @@
 namespace Swan {
 namespace BodyTrait {
 
-static float epsilon = 0.0001;
+static float epsilon = 0.001;
 
 void PhysicsBody::friction(Vec2 coef) {
 	force_ += -vel_ * coef;
