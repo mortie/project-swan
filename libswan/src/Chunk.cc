@@ -94,16 +94,23 @@ void Chunk::decompress() {
 }
 
 void Chunk::render(const Context &ctx, SDL_Renderer *rnd) {
+	std::optional<RenderTarget> target;
+
 	// The texture might not be created yet
 	if (!texture_) {
 		texture_.reset(SDL_CreateTexture(
 			ctx.game.win_.renderer_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET,
 			CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE));
 		SDL_SetTextureBlendMode(texture_.get(), SDL_BLENDMODE_BLEND);
-	}
+		target.emplace(rnd, texture_.get());
 
-	// We wanna render directly to the texture
-	RenderTarget target(rnd, texture_.get());
+		RenderBlendMode mode(rnd, SDL_BLENDMODE_NONE);
+		RenderDrawColor color(rnd, 0, 0, 0, 0);
+		SDL_Rect rect{ 0, 0, CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE };
+		SDL_RenderFillRect(rnd, &rect);
+	} else {
+		target.emplace(rnd, texture_.get());
+	}
 
 	// We're caching tiles so we don't have to world.getTileByID() every time
 	Tile::ID prevID = Tile::INVALID_ID;
