@@ -16,7 +16,7 @@ namespace Swan {
 uint8_t *Chunk::renderbuf = new uint8_t[CHUNK_WIDTH * TILE_SIZE * CHUNK_HEIGHT * TILE_SIZE * 4];
 
 Tile::ID *Chunk::getTileData() {
-	keepActive();
+	assert(isActive());
 	return (Tile::ID *)data_.get();
 }
 
@@ -184,15 +184,9 @@ Chunk::TickAction Chunk::tick(float dt) {
 	return TickAction::NOTHING;
 }
 
-bool Chunk::keepActive() {
-	bool wasActive = isActive();
+void Chunk::keepActive() {
 	deactivate_timer_ = DEACTIVATE_INTERVAL;
-
-	if (wasActive)
-		return false;
-
 	decompress();
-	return true;
 }
 
 }

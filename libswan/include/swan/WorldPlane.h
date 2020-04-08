@@ -67,7 +67,7 @@ public:
 
 private:
 	std::map<std::pair<int, int>, Chunk> chunks_;
-	std::set<Chunk *> active_chunks_;
+	std::vector<Chunk *> active_chunks_;
 	std::vector<std::unique_ptr<Entity>> entities_;
 
 	std::deque<Chunk *> chunk_init_list_;

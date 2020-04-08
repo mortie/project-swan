@@ -40,7 +40,7 @@ public:
 	TickAction tick(float dt);
 
 	bool isActive() { return deactivate_timer_ > 0; }
-	bool keepActive(); // Returns true if chunk was inactive
+	void keepActive();
 	void markModified() { is_modified_ = true; }
 
 	ChunkPos pos_;

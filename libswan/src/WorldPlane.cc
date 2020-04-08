@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <iostream>
+#include <algorithm>
 
 #include "log.h"
 #include "World.h"
@@ -68,18 +69,52 @@ bool WorldPlane::hasChunk(ChunkPos pos) {
 	return chunks_.find(pos) != chunks_.end();
 }
 
+// This function will be a bit weird because it's a really fucking hot function.
 Chunk &WorldPlane::getChunk(ChunkPos pos) {
+
+	// This branch should be really predictable, there should basically never
+	// be no active chunks
+	if (active_chunks_.size() != 0) {
+
+		// The last chunk should be the most actively used chunk
+		Chunk *chunk = active_chunks_.back();
+		if (chunk->pos_ == pos) {
+			chunk->keepActive();
+			return *chunk;
+		}
+
+		// Linear search through a small array is probably faster than tree lookup.
+		// Loop backwards because the hottest chunks should be at the end.
+		for (ssize_t i = active_chunks_.size() - 2; i >= 0; --i) {
+			chunk = active_chunks_[i];
+			if (chunk->pos_ == pos) {
+				chunk->keepActive();
+
+				// Ensure that the hot chunk is at the end by bubbling this one up
+				active_chunks_[i] = active_chunks_[i + 1];
+				active_chunks_[i + 1] = chunk;
+				return *chunk;
+			}
+		}
+	}
+
+	// Slow path: Find a chunk in our global chunk map,
+	// creating a new one if necessary
 	auto iter = chunks_.find(pos);
 
+	// Create chunk if that turns out to be necessary
 	if (iter == chunks_.end()) {
 		iter = chunks_.emplace(pos, Chunk(pos)).first;
 		Chunk &chunk = iter->second;
 
 		gen_->genChunk(*this, chunk);
-		active_chunks_.insert(&chunk);
+		active_chunks_.push_back(&chunk);
 		chunk_init_list_.push_back(&chunk);
-	} else if (iter->second.keepActive()) {
-		active_chunks_.insert(&iter->second);
+
+	// Otherwise, tell it that it should keep itself alive a bit longer
+	} else {
+		iter->second.keepActive();
+		active_chunks_.push_back(&iter->second);
 		chunk_init_list_.push_back(&iter->second);
 	}
 
@@ -95,11 +130,6 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 		chunk.setTileID(rp, id, world_->getTileByID(id).image_.texture_.get());
 		chunk.markModified();
 	}
-
-	if (active_chunks_.find(&chunk) == active_chunks_.end()) {
-		active_chunks_.insert(&chunk);
-		chunk_init_list_.push_back(&chunk);
-	}
 }
 
 void WorldPlane::setTile(TilePos pos, const std::string &name) {
@@ -108,9 +138,6 @@ void WorldPlane::setTile(TilePos pos, const std::string &name) {
 
 Tile::ID WorldPlane::getTileID(TilePos pos) {
 	Chunk &chunk = getChunk(chunkPos(pos));
-
-	if (active_chunks_.find(&chunk) == active_chunks_.end())
-		active_chunks_.insert(&chunk);
 
 	return chunk.getTileID(relPos(pos));
 }
@@ -242,11 +269,13 @@ void WorldPlane::tick(float dt) {
 			info << "Compressing inactive modified chunk " << chunk->pos_;
 			chunk->compress();
 			iter = active_chunks_.erase(iter);
+			last = active_chunks_.end();
 			break;
 		case Chunk::TickAction::DELETE:
 			info << "Deleting inactive unmodified chunk " << chunk->pos_;
 			chunks_.erase(chunk->pos_);
 			iter = active_chunks_.erase(iter);
+			last = active_chunks_.end();
 			break;
 		case Chunk::TickAction::NOTHING:
 			++iter;
