@@ -62,7 +62,6 @@ public:
 
 private:
 	static constexpr float DEACTIVATE_INTERVAL = 20;
-	static uint8_t *renderbuf;
 
 	void renderList(SDL_Renderer *rnd);
 

@@ -13,8 +13,6 @@
 
 namespace Swan {
 
-uint8_t *Chunk::renderbuf = new uint8_t[CHUNK_WIDTH * TILE_SIZE * CHUNK_HEIGHT * TILE_SIZE * 4];
-
 void Chunk::compress() {
 	if (isCompressed())
 		return;
