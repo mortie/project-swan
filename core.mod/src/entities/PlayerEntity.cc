@@ -5,22 +5,12 @@
 #include "ItemStackEntity.h"
 
 PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
-		PhysicsEntity(SIZE, MASS), inventory_(INVENTORY_SIZE),
-		anims_{
-			Swan::Animation(ctx.resources.getImage("core/entity/player-still"), 0.8),
-			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1, SDL_FLIP_HORIZONTAL),
-			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1) } {
-
+		PlayerEntity(ctx) {
 	body_.pos_ = pos;
 }
 
 PlayerEntity::PlayerEntity(const Swan::Context &ctx, const PackObject &obj):
-		PhysicsEntity(SIZE, MASS), inventory_(INVENTORY_SIZE),
-		anims_{
-			Swan::Animation(ctx.resources.getImage("core/entity/player-still"), 0.8),
-			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1, SDL_FLIP_HORIZONTAL),
-			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1) } {
-
+		PlayerEntity(ctx) {
 	deserialize(ctx, obj);
 }
 

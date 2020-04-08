@@ -4,7 +4,7 @@
 
 ItemStackEntity::ItemStackEntity(
 		const Swan::Context &ctx, Swan::Vec2 pos, const std::string &item):
-			PhysicsEntity(SIZE, MASS) {
+			ItemStackEntity() {
 
 	static std::uniform_real_distribution vx(-2.3f, 2.3f);
 	static std::uniform_real_distribution vy(-2.3f, -1.2f);
@@ -16,9 +16,7 @@ ItemStackEntity::ItemStackEntity(
 }
 
 ItemStackEntity::ItemStackEntity(const Swan::Context &ctx, const PackObject &obj):
-		PhysicsEntity(SIZE, MASS) {
-	PhysicsEntity::body_.bounciness_ = 0.6;
-
+		ItemStackEntity() {
 	deserialize(ctx, obj);
 }
 

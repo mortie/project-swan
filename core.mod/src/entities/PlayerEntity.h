@@ -24,6 +24,17 @@ private:
 	static constexpr float DOWN_FORCE = 20 * MASS;
 	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.6, 1.9);
 
+	PlayerEntity(const Swan::Context &ctx):
+		PhysicsEntity(SIZE, MASS), inventory_(INVENTORY_SIZE),
+		anims_{
+			Swan::Animation(ctx.resources.getImage("core/entity/player-still"), 0.8),
+			Swan::Animation(
+				ctx.resources.getImage("core/entity/player-running"),
+				1, SDL_FLIP_HORIZONTAL),
+			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1)
+		} {}
+
+
 	Swan::InventoryTrait::BasicInventory inventory_;
 
 	enum class State {
