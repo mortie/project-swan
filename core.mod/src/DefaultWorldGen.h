@@ -10,7 +10,7 @@ public:
 		tGrass_(world.getTileID("core::grass")),
 		tDirt_(world.getTileID("core::dirt")),
 		tStone_(world.getTileID("core::stone")),
-		tAir_(world.getTileID("core::air")),
+		tAir_(world.getTileID("@::air")),
 		tTreeTrunk_(world.getTileID("core::tree-trunk")),
 		tLeaves_(world.getTileID("core::leaves")),
 		bgCave_(world.resources_.getImage("core/misc/background-cave")) {}

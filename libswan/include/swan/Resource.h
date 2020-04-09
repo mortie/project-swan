@@ -16,7 +16,7 @@ public:
 		SDL_Renderer *renderer, const std::string &modpath, const std::string &id);
 	ImageResource(
 		SDL_Renderer *renderer, const std::string &name,
-		int w, int h, uint8_t r, uint8_t g, uint8_t b);
+		int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 
 	void tick(float dt);
 
@@ -24,8 +24,6 @@ public:
 		if (frame == -1) frame = frame_;
 		return SDL_Rect{ 0, frame_height_ * frame, surface_->w, frame_height_ };
 	}
-
-	static std::unique_ptr<ImageResource> createInvalid(Win &win);
 
 	std::unique_ptr<SDL_Surface, void (*)(SDL_Surface *)> surface_{nullptr, &SDL_FreeSurface};
 	std::unique_ptr<SDL_Texture, void (*)(SDL_Texture *)> texture_{nullptr, &SDL_DestroyTexture};

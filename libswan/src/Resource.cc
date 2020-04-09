@@ -37,15 +37,6 @@ ImageResource::ImageResource(
 
 	surface_.reset(IMG_Load((assetpath + ".png").c_str()));
 
-	// If we have a surface, and it's the wrong pixel format, convert it
-	if (surface_ && surface_->format->format != format) {
-		info
-			<< "  " << id << ": Converting from "
-			<< SDL_GetPixelFormatName(surface_->format->format) << " to "
-			<< SDL_GetPixelFormatName(format);
-		surface_.reset(SDL_ConvertSurfaceFormat(surface_.get(), format, 0));
-	}
-
 	// If we don't have a surface yet (either loading or conversion failed),
 	// create a placeholder
 	if (!surface_) {
@@ -87,11 +78,12 @@ ImageResource::ImageResource(
 
 ImageResource::ImageResource(
 		SDL_Renderer *renderer, const std::string &name,
-		int w, int h, uint8_t r, uint8_t g, uint8_t b) {
+		int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 
 	surface_.reset(SDL_CreateRGBSurface(
-		0, TILE_SIZE, TILE_SIZE, 32, 0, 0, 0, 0));
-	SDL_FillRect(surface_.get(), NULL, SDL_MapRGB(surface_->format, r, g, b));
+		0, TILE_SIZE, TILE_SIZE, 32,
+		0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff));
+	SDL_FillRect(surface_.get(), NULL, SDL_MapRGBA(surface_->format, r, g, b, a));
 
 	texture_.reset(SDL_CreateTextureFromSurface(renderer, surface_.get()));
 	if (!texture_) {
@@ -114,14 +106,13 @@ void ImageResource::tick(float dt) {
 	}
 }
 
-std::unique_ptr<ImageResource> ImageResource::createInvalid(Win &win) {
-	return std::make_unique<ImageResource>(
-		win.renderer_, "@internal::invalid", TILE_SIZE, TILE_SIZE,
-		PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE);
-}
-
 ResourceManager::ResourceManager(Win &win) {
-	addImage(ImageResource::createInvalid(win));
+	addImage(std::make_unique<ImageResource>(
+		win.renderer_, "@::invalid", TILE_SIZE, TILE_SIZE,
+		PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE));
+	addImage(std::make_unique<ImageResource>(
+		win.renderer_, "@::air", TILE_SIZE, TILE_SIZE,
+		0, 0, 0, 0));
 }
 
 void ResourceManager::tick(float dt) {
@@ -134,7 +125,7 @@ ImageResource &ResourceManager::getImage(const std::string &name) const {
 	auto it = images_.find(name);
 	if (it == end(images_)) {
 		warn << "Couldn't find image " << name << "!";
-		return getImage("@internal::invalid");
+		return getImage("@::invalid");
 	}
 	return *it->second;
 }

@@ -32,6 +32,7 @@ public:
 	const std::optional<std::string> dropped_item_;
 
 	static std::unique_ptr<Tile> createInvalid(const ResourceManager &ctx);
+	static std::unique_ptr<Tile> createAir(const ResourceManager &ctx);
 	static ID INVALID_ID;
 };
 

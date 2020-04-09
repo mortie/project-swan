@@ -10,7 +10,6 @@ public:
 		break_listener_ = world.evt_tile_break_.subscribe(
 			std::bind_front(&CoreMod::onTileBreak, this));
 
-		registerImage("tile/air");
 		registerImage("tile/stone");
 		registerImage("tile/dirt");
 		registerImage("tile/grass");
@@ -20,11 +19,6 @@ public:
 		registerImage("entity/player-still");
 		registerImage("misc/background-cave");
 
-		registerTile({
-			.name = "air",
-			.image = "core/tile/air",
-			.is_solid = false,
-		});
 		registerTile({
 			.name = "stone",
 			.image = "core/tile/stone",

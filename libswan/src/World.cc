@@ -26,6 +26,10 @@ World::World(Game *game, unsigned long rand_seed):
 	// ends up at location 0
 	tiles_.push_back(std::move(invalid_tile));
 
+	// We're also going to need an air tile at location 1
+	tiles_.push_back(Tile::createAir(resources_));
+	tiles_map_["@::air"] = 1;
+
 }
 
 void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {

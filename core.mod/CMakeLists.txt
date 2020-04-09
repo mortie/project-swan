@@ -12,7 +12,6 @@ set(assets
 	assets/entity/player-running.png
 	assets/entity/player-running.toml
 	assets/tile/grass.png
-	assets/tile/air.png
 	assets/tile/stone.png
 	assets/tile/dirt.png
 	assets/tile/leaves.png

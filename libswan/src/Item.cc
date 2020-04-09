@@ -8,8 +8,8 @@ namespace Swan {
 
 std::unique_ptr<Item> Item::createInvalid(Context &ctx) {
 	return std::make_unique<Item>(ctx.resources, Builder{
-		.name = "@internal::invalid",
-		.image = "@internal::invalid",
+		.name = "@::invalid",
+		.image = "@::invalid",
 	});
 }
 

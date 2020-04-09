@@ -157,25 +157,13 @@ void WorldPlane::breakTile(TilePos pos) {
 
 	// If the block is already air, do nothing
 	Tile::ID id = getTileID(pos);
-	Tile::ID air = world_->getTileID("core::air");
+	Tile::ID air = world_->getTileID("@::air");
 	if (id == air)
 		return;
 
 	// Change tile to air and emit event
 	setTileID(pos, air);
 	world_->evt_tile_break_.emit(getContext(), pos, world_->getTileByID(id));
-
-	/*
-	// Then spawn an item stack entity.
-	Tile &t = world_->getTileByID(id);
-	if (t.dropped_item_) {
-		msgpack::zone zone;
-		spawnEntity("core::item-stack", Entity::PackObject{
-			{ "pos", msgpack::object(pos, zone) },
-			{ "item", msgpack::object(*t.dropped_item_, zone) },
-		});
-	}
-	*/
 }
 
 SDL_Color WorldPlane::backgroundColor() {
