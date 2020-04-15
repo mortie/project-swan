@@ -4,12 +4,19 @@ project(swan)
 find_package(SDL2 REQUIRED)
 find_package(PNG)
 
-option(USE_CLANG_TIDY "Use clang-tidy for additional checks" ON)
+option(USE_CLANG_TIDY "Use clang-tidy for additional checks" OFF)
 if(USE_CLANG_TIDY)
 	set(CMAKE_CXX_CLANG_TIDY
 		clang-tidy
 		"--header-filter=(libswan|core.mod|src)/.*"
 		--checks=-*,bugprone-*,cert-*,performance-*,clang-analyzer-*,-cert-dcl16-c,-cert-err58-cpp,-clang-analyzer-optin.cplusplus.VirtualCall)
+endif()
+
+# Ninja runs commands with buffered stdio so the compiler won't show colors by default,
+# but Ninja will strip out color codes if Ninja's stdout isn't a tty so unconditionally
+# enabling color diagnostics is safe
+if(CMAKE_GENERATOR STREQUAL "Ninja")
+	add_compile_options(-fdiagnostics-color=always)
 endif()
 
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
@@ -61,7 +68,7 @@ add_executable(swan
 	src/main.cc)
 target_link_libraries(swan libswan ${libraries})
 
-add_executable(perlin-test
+add_executable(perlin-test EXCLUDE_FROM_ALL
 	src/perlin-test.cc)
 target_link_libraries(perlin-test libswan PNG::PNG ${libraries})
 
