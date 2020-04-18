@@ -37,32 +37,24 @@ Context WorldPlane::getContext() {
 	};
 }
 
-Entity *WorldPlane::spawnEntity(const std::string &name, const Entity::PackObject &obj) {
-	if (world_->ents_.find(name) == world_->ents_.end()) {
-		panic << "Tried to spawn a non-existant entity " << name << "!";
-		abort();
-	}
+WorldPlane::WorldPlane(
+		ID id, World *world, std::unique_ptr<WorldGen> gen,
+		std::vector<std::unique_ptr<EntityCollection>> &&colls):
+			id_(id), world_(world), gen_(std::move(gen)), ent_colls_(std::move(colls)) {
 
-	return spawnEntity(world_->ents_[name].create(getContext(), obj));
+	for (auto &coll: ent_colls_) {
+		ent_colls_by_type_[coll->type()] = coll.get();
+		ent_colls_by_name_[coll->name()] = coll.get();
+	}
 }
 
-Entity *WorldPlane::spawnEntity(std::unique_ptr<Entity> ent) {
-	Entity *ptr = ent.get();
-	if (auto has_body = dynamic_cast<BodyTrait::HasBody *>(ent.get()); has_body) {
-		BodyTrait::Body &body = has_body->getBody();
-		BodyTrait::Bounds bounds = body.getBounds();
-
-		body.move({ 0.5f - bounds.size.x / 2, 0 });
-	}
-
-	spawn_list_.push_back(std::move(ent));
-	info << "Spawned entity.";
-	return ptr;
+EntityRef WorldPlane::spawnEntity(const std::string &name, const Entity::PackObject &obj) {
+	return ent_colls_by_name_.at(name)->spawn(getContext(), obj);
 }
 
 void WorldPlane::despawnEntity(Entity &ent) {
+	// TODO: this
 	info << "Despawned entity.";
-	despawn_list_.push_back(&ent);
 }
 
 bool WorldPlane::hasChunk(ChunkPos pos) {
@@ -128,7 +120,9 @@ Tile &WorldPlane::getTile(TilePos pos) {
 }
 
 Iter<Entity *> WorldPlane::getEntsInArea(Vec2 center, float radius) {
-	// TODO: Optimize this using fancy data structures.
+	return Iter<Entity *>([] { return std::nullopt; });
+	// TODO: this
+	/*
 	return mapFilter(entities_.begin(), entities_.end(), [=](std::unique_ptr<Entity> &ent)
 			-> std::optional<Entity *> {
 
@@ -147,9 +141,10 @@ Iter<Entity *> WorldPlane::getEntsInArea(Vec2 center, float radius) {
 
 		return ent.get();
 	});
+	*/
 }
 
-BodyTrait::HasBody *WorldPlane::spawnPlayer() {
+EntityRef WorldPlane::spawnPlayer() {
 	return gen_->spawnPlayer(getContext());
 }
 
@@ -171,9 +166,10 @@ SDL_Color WorldPlane::backgroundColor() {
 }
 
 void WorldPlane::draw(Win &win) {
+	auto ctx = getContext();
 	auto pbounds = world_->player_->getBody().getBounds();
 
-	gen_->drawBackground(getContext(), win, pbounds.pos);
+	gen_->drawBackground(ctx, win, pbounds.pos);
 
 	ChunkPos pcpos = ChunkPos(
 		(int)floor(pbounds.pos.x / CHUNK_WIDTH),
@@ -184,19 +180,19 @@ void WorldPlane::draw(Win &win) {
 		Chunk *chunk = chunk_init_list_.front();
 		info << "render chunk " << chunk->pos_;
 		chunk_init_list_.pop_front();
-		chunk->render(getContext(), win.renderer_);
+		chunk->render(ctx, win.renderer_);
 	}
 
 	for (int x = -1; x <= 1; ++x) {
 		for (int y = -1; y <= 1; ++y) {
 			auto iter = chunks_.find(pcpos + ChunkPos(x, y));
 			if (iter != chunks_.end())
-				iter->second.draw(getContext(), win);
+				iter->second.draw(ctx, win);
 		}
 	}
 
-	for (auto &ent: entities_)
-		ent->draw(getContext(), win);
+	for (auto &coll: ent_colls_)
+		coll->draw(ctx, win);
 
 	if (debug_boxes_.size() > 0) {
 		for (auto &pos: debug_boxes_) {
@@ -206,35 +202,25 @@ void WorldPlane::draw(Win &win) {
 }
 
 void WorldPlane::update(float dt) {
+	auto ctx = getContext();
 	debug_boxes_.clear();
 
-	for (auto &ent: entities_)
-		ent->update(getContext(), dt);
-
-	for (auto &ent: spawn_list_)
-		entities_.push_back(std::move(ent));
-	spawn_list_.clear();
-
-	for (auto entptr: despawn_list_) {
-		for (auto it = entities_.begin(); it != entities_.end(); ++it) {
-			if (it->get() == entptr) {
-				entities_.erase(it);
-				break;
-			}
-		}
-	}
-	despawn_list_.clear();
+	for (auto &coll: ent_colls_)
+		coll->update(ctx, dt);
 }
 
 void WorldPlane::tick(float dt) {
+	auto ctx = getContext();
+
 	// Any chunk which has been in use since last tick should be kept alive
 	for (std::pair<ChunkPos, Chunk *> &ch: tick_chunks_)
 		ch.second->keepActive();
 	tick_chunks_.clear();
 
-	for (auto &ent: entities_)
-		ent->tick(getContext(), dt);
+	for (auto &coll: ent_colls_)
+		coll->tick(ctx, dt);
 
+	// Tick all chunks, figure out if any of them should be deleted or compressed
 	auto iter = active_chunks_.begin();
 	auto last = active_chunks_.end();
 	while (iter != last) {

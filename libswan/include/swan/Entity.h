@@ -14,7 +14,7 @@ class World;
 class WorldPlane;
 class Game;
 
-class Entity {
+class Entity: NonCopyable {
 public:
 	using PackObject = std::unordered_map<std::string_view, msgpack::object>;
 
@@ -22,6 +22,9 @@ public:
 		const std::string name;
 		std::unique_ptr<Entity> (*create)(const Context &ctx, const PackObject &obj);
 	};
+
+	Entity() = default;
+	Entity(Entity &&) = default;
 
 	virtual ~Entity() = default;
 

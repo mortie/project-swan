@@ -6,6 +6,7 @@
 #include "common.h"
 #include "Chunk.h"
 #include "Entity.h"
+#include "Collection.h"
 #include "traits/BodyTrait.h"
 #include "Vector2.h"
 
@@ -19,7 +20,7 @@ class WorldGen {
 public:
 	struct Factory {
 		const std::string name;
-		std::unique_ptr<WorldGen> (*create)(World &world);
+		std::unique_ptr<WorldGen> (*const create)(World &world);
 	};
 
 	virtual ~WorldGen() = default;
@@ -28,7 +29,7 @@ public:
 	virtual SDL_Color backgroundColor(Vec2 pos) = 0;
 
 	virtual void genChunk(WorldPlane &plane, Chunk &chunk) = 0;
-	virtual BodyTrait::HasBody *spawnPlayer(const Context &ctx) = 0;
+	virtual EntityRef spawnPlayer(const Context &ctx) = 0;
 };
 
 }

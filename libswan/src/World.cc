@@ -63,18 +63,15 @@ void World::addMod(ModWrapper &&mod) {
 		items_[i->name_] = std::move(i);
 	}
 
-	for (auto gen: mod.getWorldGens()) {
-		worldgens_.emplace(
+	for (auto fact: mod.getWorldGens()) {
+		worldgen_factories_.emplace(
 			std::piecewise_construct,
-			std::forward_as_tuple(gen.name),
-			std::forward_as_tuple(gen));
+			std::forward_as_tuple(fact.name),
+			std::forward_as_tuple(fact));
 	}
 
-	for (auto ent: mod.getEntities()) {
-		ents_.emplace(
-			std::piecewise_construct,
-			std::forward_as_tuple(ent.name),
-			std::forward_as_tuple(ent));
+	for (auto fact: mod.getEntities()) {
+		ent_coll_factories_.push_back(fact);
 	}
 
 	mods_.push_back(std::move(mod));
@@ -85,7 +82,8 @@ void World::setWorldGen(std::string gen) {
 }
 
 void World::spawnPlayer() {
-	player_ = planes_[current_plane_].spawnPlayer();
+	player_ = dynamic_cast<BodyTrait::HasBody *>(
+		planes_[current_plane_].spawnPlayer().get());
 }
 
 void World::setCurrentPlane(WorldPlane &plane) {
@@ -94,15 +92,21 @@ void World::setCurrentPlane(WorldPlane &plane) {
 
 WorldPlane &World::addPlane(const std::string &gen) {
 	WorldPlane::ID id = planes_.size();
-	auto it = worldgens_.find(gen);
-	if (it == end(worldgens_)) {
+	auto it = worldgen_factories_.find(gen);
+	if (it == worldgen_factories_.end()) {
 		panic << "Tried to add plane with non-existant world gen " << gen << "!";
 		abort();
 	}
 
+	std::vector<std::unique_ptr<EntityCollection>> colls;
+	colls.reserve(ent_coll_factories_.size());
+	for (auto &fact: ent_coll_factories_) {
+		colls.emplace_back(fact.create(fact.name));
+	}
+
 	WorldGen::Factory &factory = it->second;
 	std::unique_ptr<WorldGen> g = factory.create(*this);
-	planes_.emplace_back(id, this, std::move(g));
+	planes_.emplace_back(id, this, std::move(g), std::move(colls));
 	return planes_[id];
 }
 

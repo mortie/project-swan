@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
 	// Create a world
 	Game game(win);
 	std::vector<std::string> mods{ "core.mod" };
-	game.createWorld("core::default", std::move(mods));
+	game.createWorld("core::default", mods);
 
 	PerfCounter pcounter;
 

@@ -9,7 +9,6 @@
 
 #include "log.h"
 #include "common.h"
-#include "Game.h"
 #include "Win.h"
 
 namespace Swan {

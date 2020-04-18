@@ -53,9 +53,9 @@ Iter<WorldGen::Factory> ModWrapper::getWorldGens() {
 	});
 }
 
-Iter<Entity::Factory> ModWrapper::getEntities() {
+Iter<EntityCollection::Factory> ModWrapper::getEntities() {
 	return map(begin(mod_->entities_), end(mod_->entities_),
-			[](Entity::Factory &fact){
+			[](EntityCollection::Factory &fact){
 		return fact;
 	});
 }

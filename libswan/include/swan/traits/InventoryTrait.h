@@ -13,7 +13,6 @@ namespace InventoryTrait {
 class Inventory;
 class HasInventory {
 public:
-	virtual ~HasInventory() = default;
 	virtual Inventory &getInventory() = 0;
 };
 

@@ -12,6 +12,7 @@
 #include "WorldPlane.h"
 #include "WorldGen.h"
 #include "Entity.h"
+#include "Collection.h"
 #include "Resource.h"
 #include "Mod.h"
 #include "EventEmitter.h"
@@ -54,10 +55,9 @@ public:
 	std::unordered_map<std::string, Tile::ID> tiles_map_;
 	std::unordered_map<std::string, std::unique_ptr<Item>> items_;
 
-	// The mods themselves retain ownership of world gens and entities,
-	// the world just has non-owning pointers to them
-	std::unordered_map<std::string, WorldGen::Factory> worldgens_;
-	std::unordered_map<std::string, Entity::Factory> ents_;
+	// Mods give us factories to create new world gens and new entity collections
+	std::unordered_map<std::string, WorldGen::Factory> worldgen_factories_;
+	std::vector<EntityCollection::Factory> ent_coll_factories_;
 
 	BodyTrait::HasBody *player_;
 	Game *game_;

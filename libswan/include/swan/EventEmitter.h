@@ -20,12 +20,12 @@ public:
 	EventListener(EventEmitterInterface *emitter, size_t id):
 		emitter_(emitter), id_(id) {}
 
-	EventListener(EventListener &&other):
+	EventListener(EventListener &&other) noexcept:
 			emitter_(other.emitter_), id_(other.id_) {
 		other.emitter_ = nullptr;
 	}
 
-	EventListener &operator=(EventListener &&other) {
+	EventListener &operator=(EventListener &&other) noexcept {
 		emitter_ = other.emitter_;
 		id_ = other.id_;
 		other.emitter_ = nullptr;
@@ -69,7 +69,7 @@ public:
 	}
 
 private:
-	SlotVector<Callback, SlotVectorDefaultSentinel<nullptr_t>> callbacks_;
+	SlotVector<Callback, SlotVectorDefaultSentinel<std::nullptr_t>> callbacks_;
 };
 
 }

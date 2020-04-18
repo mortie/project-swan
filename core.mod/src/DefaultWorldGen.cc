@@ -74,9 +74,8 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 	}
 }
 
-Swan::BodyTrait::HasBody *DefaultWorldGen::spawnPlayer(const Swan::Context &ctx) {
+Swan::EntityRef DefaultWorldGen::spawnPlayer(const Swan::Context &ctx) {
 	int x = 0;
-	return dynamic_cast<Swan::BodyTrait::HasBody *>(
-		ctx.plane.spawnEntity(std::make_unique<PlayerEntity>(
-			ctx, Swan::Vec2{ (float)x, (float)grassLevel(perlin_, x) - 4 })));
+	return ctx.plane.spawnEntity<PlayerEntity>(
+		ctx, Swan::Vec2{ (float)x, (float)grassLevel(perlin_, x) - 4 });
 }

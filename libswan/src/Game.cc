@@ -13,18 +13,18 @@ namespace Swan {
 
 std::optional<ModWrapper> Game::loadMod(std::string path, World &world) {
 	OS::Dynlib dl(path + "/mod");
-	auto create = dl.get<std::unique_ptr<Mod> (*)(World &)>("mod_create");
+	auto create = dl.get<Mod *(*)(World &)>("mod_create");
 	if (create == NULL) {
 		warn << path << ": No 'mod_create' function!";
 		return std::nullopt;
 	}
 
-	std::unique_ptr<Mod> mod = create(world);
+	std::unique_ptr<Mod> mod(create(world));
 	return std::make_optional<ModWrapper>(
 		std::move(mod), std::move(path), std::move(dl));
 }
 
-void Game::createWorld(const std::string &worldgen, std::vector<std::string> modpaths) {
+void Game::createWorld(const std::string &worldgen, const std::vector<std::string> &modpaths) {
 	world_.reset(new World(this, time(NULL)));
 
 	for (auto &modpath: modpaths) {

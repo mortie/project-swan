@@ -13,7 +13,6 @@ namespace BodyTrait {
 class Body;
 class HasBody {
 public:
-	virtual ~HasBody() = default;
 	virtual Body &getBody() = 0;
 };
 

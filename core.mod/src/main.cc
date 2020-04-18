@@ -69,14 +69,14 @@ public:
 
 	void onTileBreak(const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile &tile) {
 		if (tile.dropped_item_) {
-			ctx.plane.spawnEntity(std::make_unique<ItemStackEntity>(
-				ctx, pos, *tile.dropped_item_));
+			ctx.plane.spawnEntity<ItemStackEntity>(
+				ctx, pos, *tile.dropped_item_);
 		}
 	}
 
 	Swan::EventListener break_listener_;
 };
 
-extern "C" std::unique_ptr<Swan::Mod> mod_create(Swan::World &world) {
-	return std::make_unique<CoreMod>(world);
+extern "C" Swan::Mod *mod_create(Swan::World &world) {
+	return new CoreMod(world);
 }

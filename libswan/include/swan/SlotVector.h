@@ -47,10 +47,6 @@ public:
 		size_t operator-(const Iterator &other) const {
 			return idx_ - other.idx_;
 		}
-		void operator=(const Iterator &other) {
-			idx_ = other.idx_;
-			vec_ = other.vec_;
-		}
 
 	private:
 		SlotVector<T, Sentinel> *vec_;
@@ -59,6 +55,7 @@ public:
 
 	T &operator[](size_t idx) { return vec_[idx]; }
 	T &at(size_t idx) { return vec_.at(idx); }
+	size_t size() { return vec_.size(); }
 	bool empty() { return vec_.size() == free_.size(); }
 
 	Iterator begin() { Iterator it(this, 0); it.seek(); return it; }

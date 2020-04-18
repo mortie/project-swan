@@ -20,7 +20,7 @@ public:
 		mouse_pos_(0, 0) {}
 
 	std::optional<ModWrapper> loadMod(std::string path, World &world);
-	void createWorld(const std::string &worldgen, std::vector<std::string> mods);
+	void createWorld(const std::string &worldgen, const std::vector<std::string> &mods);
 
 	void onKeyDown(SDL_Keysym sym) {
 		pressed_keys_[sym.scancode] = true;

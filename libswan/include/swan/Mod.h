@@ -4,12 +4,14 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <type_traits>
 #include <SDL2/SDL.h>
 
 #include "Tile.h"
 #include "Item.h"
 #include "WorldGen.h"
 #include "Entity.h"
+#include "Collection.h"
 #include "Resource.h"
 #include "OS.h"
 #include "util.h"
@@ -30,20 +32,21 @@ public:
 	void registerWorldGen(const std::string &name) {
 		worldgens_.push_back(WorldGen::Factory{
 			.name = name_ + "::" + name,
-			.create = [](World &world) {
-				return static_cast<std::unique_ptr<WorldGen>>(
-					std::make_unique<WG>(world));
+			.create = [](World &world) -> std::unique_ptr<WorldGen> {
+				return std::make_unique<WG>(world);
 			}
 		});
 	}
 
 	template<typename Ent>
 	void registerEntity(const std::string &name) {
-		entities_.push_back(Entity::Factory{
+		static_assert(
+			std::is_move_constructible_v<Ent>,
+			"Entities must be movable");
+		entities_.push_back(EntityCollection::Factory{
 			.name = name_ + "::" + name,
-			.create = [](const Context &ctx, const Entity::PackObject &obj) {
-				return static_cast<std::unique_ptr<Entity>>(
-					std::make_unique<Ent>(ctx, obj));
+			.create = [](std::string name) -> std::unique_ptr<EntityCollection> {
+				return std::make_unique<EntityCollectionImpl<Ent>>(std::move(name));
 			}
 		});
 	}
@@ -53,7 +56,7 @@ public:
 	std::vector<Tile::Builder> tiles_;
 	std::vector<Item::Builder> items_;
 	std::vector<WorldGen::Factory> worldgens_;
-	std::vector<Entity::Factory> entities_;
+	std::vector<EntityCollection::Factory> entities_;
 };
 
 class ModWrapper {
@@ -73,7 +76,7 @@ public:
 	Iter<std::unique_ptr<Tile>> buildTiles(const ResourceManager &resources);
 	Iter<std::unique_ptr<Item>> buildItems(const ResourceManager &resources);
 	Iter<WorldGen::Factory> getWorldGens();
-	Iter<Entity::Factory> getEntities();
+	Iter<EntityCollection::Factory> getEntities();
 
 	std::unique_ptr<Mod> mod_;
 	std::string path_;

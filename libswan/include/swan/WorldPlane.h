@@ -6,6 +6,7 @@
 #include <memory>
 #include <map>
 #include <set>
+#include <typeindex>
 
 #include "common.h"
 #include "traits/BodyTrait.h"
@@ -14,6 +15,7 @@
 #include "Tile.h"
 #include "WorldGen.h"
 #include "Entity.h"
+#include "Collection.h"
 
 namespace Swan {
 
@@ -24,11 +26,13 @@ class WorldPlane: NonCopyable {
 public:
 	using ID = uint16_t;
 
-	WorldPlane(ID id, World *world, std::unique_ptr<WorldGen> gen):
-			id_(id), world_(world), gen_(std::move(gen)) {}
+	WorldPlane(
+			ID id, World *world, std::unique_ptr<WorldGen> gen,
+			std::vector<std::unique_ptr<EntityCollection>> &&colls);
 
-	Entity *spawnEntity(const std::string &name, const Entity::PackObject &params);
-	Entity *spawnEntity(std::unique_ptr<Entity> ent);
+	EntityRef spawnEntity(const std::string &name, const Entity::PackObject &params);
+	template<typename Ent, typename... Args>
+	EntityRef spawnEntity(Args&&... args);
 	void despawnEntity(Entity &ent);
 
 	Context getContext();
@@ -46,14 +50,17 @@ public:
 
 	template<typename T>
 	Iter<T *>getEntsOfType() {
+		return Iter<T *>([] { return std::nullopt; });
+		/* TODO
 		return mapFilter(entities_.begin(), entities_.end(), [](std::unique_ptr<Entity> &ent) -> std::optional<T *> {
 			if (T *e = dynamic_cast<T *>(ent.get()); e != nullptr)
 				return e;
 			return std::nullopt;
 		});
+		*/
 	}
 
-	BodyTrait::HasBody *spawnPlayer();
+	EntityRef spawnPlayer();
 	void breakTile(TilePos pos);
 
 	SDL_Color backgroundColor();
@@ -71,12 +78,21 @@ private:
 	std::map<std::pair<int, int>, Chunk> chunks_;
 	std::vector<Chunk *> active_chunks_;
 	std::vector<std::pair<ChunkPos, Chunk *>> tick_chunks_;
-	std::vector<std::unique_ptr<Entity>> entities_;
+	std::vector<std::unique_ptr<EntityCollection>> ent_colls_;
+	std::unordered_map<std::type_index, EntityCollection *> ent_colls_by_type_;
+	std::unordered_map<std::string, EntityCollection *> ent_colls_by_name_;
 
 	std::deque<Chunk *> chunk_init_list_;
-	std::vector<std::unique_ptr<Entity>> spawn_list_;
-	std::vector<Entity *> despawn_list_;
 	std::vector<TilePos> debug_boxes_;
 };
+
+/*
+ * WorldPlane
+ */
+
+template<typename Ent, typename... Args>
+inline EntityRef WorldPlane::spawnEntity(Args&&... args) {
+	return ent_colls_by_type_.at(typeid(Ent))->spawn<Ent, Args...>(std::forward<Args>(args)...);
+}
 
 }

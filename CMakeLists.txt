@@ -19,15 +19,6 @@ if(CMAKE_GENERATOR STREQUAL "Ninja")
 	add_compile_options(-fdiagnostics-color=always)
 endif()
 
-if(CMAKE_EXPORT_COMPILE_COMMANDS)
-	add_custom_target(compile_commands ALL
-		BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		COMMAND
-			compdb -p ${CMAKE_CURRENT_BINARY_DIR} list
-			> ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json)
-endif()
-
 add_compile_options(-std=c++2a -Wall -Wextra -Wpedantic -Wno-unused-parameter)
 if(CMAKE_BUILD_TYPE STREQUAL Sanitize OR CMAKE_BUILD_TYPE STREQUAL "")
 	message(STATUS "Build mode: Sanitize")
