@@ -1,5 +1,8 @@
 #pragma once
 
+// We want every file to be able to easily add Tracy zones
+#include <tracy/Tracy.hpp>
+
 #include "Vector2.h"
 
 namespace Swan {

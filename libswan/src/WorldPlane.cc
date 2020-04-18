@@ -63,6 +63,8 @@ bool WorldPlane::hasChunk(ChunkPos pos) {
 
 // This function will be a bit weird because it's a really fucking hot function.
 Chunk &WorldPlane::getChunk(ChunkPos pos) {
+	ZoneScopedN("WorldPlane getChunk");
+
 	// First, look through all chunks which have been in use this tick
 	for (auto [chpos, chunk]: tick_chunks_) {
 		if (chpos == pos)
@@ -75,6 +77,7 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 }
 
 Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
+	ZoneScopedN("WorldPlane slowGetChunk");
 	auto iter = chunks_.find(pos);
 
 	// Create chunk if that turns out to be necessary
@@ -112,6 +115,7 @@ void WorldPlane::setTile(TilePos pos, const std::string &name) {
 }
 
 Tile::ID WorldPlane::getTileID(TilePos pos) {
+	ZoneScopedN("WorldPlane getTileID");
 	return getChunk(chunkPos(pos)).getTileID(relPos(pos));
 }
 
@@ -166,6 +170,7 @@ SDL_Color WorldPlane::backgroundColor() {
 }
 
 void WorldPlane::draw(Win &win) {
+	ZoneScopedN("WorldPlane draw");
 	auto ctx = getContext();
 	auto pbounds = world_->player_->getBody().getBounds();
 
@@ -202,6 +207,7 @@ void WorldPlane::draw(Win &win) {
 }
 
 void WorldPlane::update(float dt) {
+	ZoneScopedN("WorldPlane update");
 	auto ctx = getContext();
 	debug_boxes_.clear();
 
@@ -210,6 +216,7 @@ void WorldPlane::update(float dt) {
 }
 
 void WorldPlane::tick(float dt) {
+	ZoneScopedN("WorldPlane tick");
 	auto ctx = getContext();
 
 	// Any chunk which has been in use since last tick should be kept alive

@@ -174,20 +174,29 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, const Enti
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::update(const Context &ctx, float dt) {
-	for (auto &ent: entities_)
+	ZoneScopedN(typeid(Ent).name());
+	for (auto &ent: entities_) {
+		ZoneScopedN("update");
 		ent->ent.update(ctx, dt);
+	}
 }
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt) {
-	for (auto &ent: entities_)
+	ZoneScopedN(typeid(Ent).name());
+	for (auto &ent: entities_) {
+		ZoneScopedN("tick");
 		ent->ent.tick(ctx, dt);
+	}
 }
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Win &win) {
-	for (auto &ent: entities_)
+	ZoneScopedN(typeid(Ent).name());
+	for (auto &ent: entities_) {
+		ZoneScopedN("draw");
 		ent->ent.draw(ctx, win);
+	}
 }
 
 }

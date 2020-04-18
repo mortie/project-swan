@@ -1,21 +1,24 @@
-[submodule "third_party/cpptoml"]
-	path = third_party/cpptoml
+[submodule "third-party/cpptoml"]
+	path = third-party/cpptoml
 	url = https://github.com/skystrife/cpptoml.git
-[submodule "third_party/msgpack-c"]
-	path = third_party/msgpack-c
+[submodule "third-party/msgpack-c"]
+	path = third-party/msgpack-c
 	url = https://github.com/msgpack/msgpack-c.git
-[submodule "third_party/imgui"]
-	path = third_party/imgui
+[submodule "third-party/imgui"]
+	path = third-party/imgui
 	url = https://github.com/ocornut/imgui.git
-[submodule "third_party/PerlinNoise"]
-	path = third_party/PerlinNoise
+[submodule "third-party/PerlinNoise"]
+	path = third-party/PerlinNoise
 	url = https://github.com/Reputeless/PerlinNoise.git
-[submodule "third_party/imgui_sdl"]
-	path = third_party/imgui_sdl
+[submodule "third-party/imgui_sdl"]
+	path = third-party/imgui_sdl
 	url = https://github.com/mortie/imgui_sdl
-[submodule "third_party/imgui-plot"]
-	path = third_party/imgui-plot
+[submodule "third-party/imgui-plot"]
+	path = third-party/imgui-plot
 	url = https://github.com/soulthreads/imgui-plot.git
-[submodule "third_party/fmt"]
-	path = third_party/fmt
+[submodule "third-party/fmt"]
+	path = third-party/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "third-party/tracy"]
+	path = third-party/fmt
+	url = https://github.com/wolfpld/tracy.git

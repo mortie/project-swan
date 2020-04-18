@@ -254,6 +254,7 @@ int main(int argc, char **argv) {
 
 		RTClock present_clock;
 		SDL_RenderPresent(renderer.get());
+		FrameMark
 		pcounter.countRenderPresent(present_clock.duration());
 
 		pcounter.countTotalTime(total_time_clock.duration());

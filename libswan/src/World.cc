@@ -33,6 +33,7 @@ World::World(Game *game, unsigned long rand_seed):
 }
 
 void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
+	ZoneScopedN("World::ChunkRenderer tick");
 	int l = 0;
 
 	RTClock clock;
@@ -140,17 +141,20 @@ SDL_Color World::backgroundColor() {
 }
 
 void World::draw(Win &win) {
+	ZoneScopedN("World draw");
 	auto bounds = player_->getBody().getBounds();
 	win.cam_ = bounds.pos - (win.getSize() / 2) + (bounds.size / 2);
 	planes_[current_plane_].draw(win);
 }
 
 void World::update(float dt) {
+	ZoneScopedN("World update");
 	for (auto &plane: planes_)
 		plane.update(dt);
 }
 
 void World::tick(float dt) {
+	ZoneScopedN("World tick");
 	for (auto &plane: planes_)
 		plane.tick(dt);
 
