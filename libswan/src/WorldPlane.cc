@@ -13,19 +13,24 @@
 namespace Swan {
 
 static ChunkPos chunkPos(TilePos pos) {
-	int chx = pos.x / CHUNK_WIDTH;
-	if (pos.x < 0 && pos.x % CHUNK_WIDTH != 0) chx -= 1;
-	int chy = pos.y / CHUNK_HEIGHT;
-	if (pos.y < 0 && pos.y % CHUNK_HEIGHT != 0) chy -= 1;
-	return ChunkPos(chx, chy);
+	// This might look weird, but it reduces an otherwise complex series of operations
+	// including conditional branches into like four x64 instructions.
+	// Basically, the problem is that we want 'floor(pos.x / CHUNK_WIDTH)', but
+	// integer division rounds towards zero, it doesn't round down.
+	// Solution: Move the position far to the right in the number line, do the math there
+	// with integer division which always rounds down (because the numbers are always >0),
+	// then move the result back to something hovering around 0 again.
+	return ChunkPos(
+		((long long)pos.x + (LLONG_MAX / 2) + 1) / CHUNK_WIDTH - ((LLONG_MAX / 2) / CHUNK_WIDTH) - 1,
+		((long long)pos.y + (LLONG_MAX / 2) + 1) / CHUNK_HEIGHT - ((LLONG_MAX / 2) / CHUNK_HEIGHT) - 1);
 }
 
 static Chunk::RelPos relPos(TilePos pos) {
-	int rx = pos.x % CHUNK_WIDTH;
-	if (rx < 0) rx += CHUNK_WIDTH;
-	int ry = pos.y % CHUNK_HEIGHT;
-	if (ry < 0) ry += CHUNK_HEIGHT;
-	return Chunk::RelPos(rx, ry);
+	// This uses a similar trick to chunkPos to turn a mess of conditional moves
+	// and math instructions into literally one movabs and one 'and'
+	return Chunk::RelPos(
+		(pos.x + (long long)CHUNK_WIDTH * ((LLONG_MAX / 2) / CHUNK_WIDTH)) % CHUNK_WIDTH,
+		(pos.y + (long long)CHUNK_HEIGHT * ((LLONG_MAX / 2) / CHUNK_HEIGHT)) % CHUNK_HEIGHT);
 }
 
 Context WorldPlane::getContext() {
@@ -63,8 +68,6 @@ bool WorldPlane::hasChunk(ChunkPos pos) {
 
 // This function will be a bit weird because it's a really fucking hot function.
 Chunk &WorldPlane::getChunk(ChunkPos pos) {
-	ZoneScopedN("WorldPlane getChunk");
-
 	// First, look through all chunks which have been in use this tick
 	for (auto [chpos, chunk]: tick_chunks_) {
 		if (chpos == pos)
@@ -115,7 +118,6 @@ void WorldPlane::setTile(TilePos pos, const std::string &name) {
 }
 
 Tile::ID WorldPlane::getTileID(TilePos pos) {
-	ZoneScopedN("WorldPlane getTileID");
 	return getChunk(chunkPos(pos)).getTileID(relPos(pos));
 }
 
