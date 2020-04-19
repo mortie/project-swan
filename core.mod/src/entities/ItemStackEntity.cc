@@ -33,7 +33,7 @@ void ItemStackEntity::draw(const Swan::Context &ctx, Swan::Win &win) {
 void ItemStackEntity::tick(const Swan::Context &ctx, float dt) {
 	despawn_timer_ -= dt;
 	if (despawn_timer_ <= 0)
-		ctx.plane.despawnEntity(*this);
+		despawn(ctx);
 }
 
 void ItemStackEntity::deserialize(const Swan::Context &ctx, const PackObject &obj) {

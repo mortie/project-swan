@@ -26,15 +26,22 @@ public:
 	Entity() = default;
 	Entity(Entity &&) = default;
 
+	Entity &operator=(Entity &&) = default;
+
+	void despawn(const Swan::Context &ctx);
+
 	virtual ~Entity() = default;
 
 	virtual void draw(const Context &ctx, Win &win) {}
 	virtual void update(const Context &ctx, float dt) {}
 	virtual void tick(const Context &ctx, float dt) {}
-	virtual void despawn() {}
+	virtual void onDespawn(const Context &ctx) {}
 
 	virtual void deserialize(const Swan::Context &ctx, const PackObject &obj) {}
 	virtual PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) { return {}; }
+
+	size_t index_;
+	size_t generation_;
 };
 
 class PhysicsEntity: public Entity, public BodyTrait::HasBody {

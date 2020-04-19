@@ -4,6 +4,7 @@ add_library(libswan SHARED
 	src/Chunk.cc
 	src/Clock.cc
 	src/drawutil.cc
+	src/Entity.cc
 	src/Game.cc
 	src/gfxutil.cc
 	src/Item.cc

@@ -57,11 +57,6 @@ EntityRef WorldPlane::spawnEntity(const std::string &name, const Entity::PackObj
 	return ent_colls_by_name_.at(name)->spawn(getContext(), obj);
 }
 
-void WorldPlane::despawnEntity(Entity &ent) {
-	// TODO: this
-	info << "Despawned entity.";
-}
-
 bool WorldPlane::hasChunk(ChunkPos pos) {
 	return chunks_.find(pos) != chunks_.end();
 }

@@ -33,7 +33,6 @@ public:
 	EntityRef spawnEntity(const std::string &name, const Entity::PackObject &params);
 	template<typename Ent, typename... Args>
 	EntityRef spawnEntity(Args&&... args);
-	void despawnEntity(Entity &ent);
 
 	Context getContext();
 
@@ -42,6 +41,11 @@ public:
 	Chunk &slowGetChunk(ChunkPos pos);
 	void setTileID(TilePos pos, Tile::ID id);
 	void setTile(TilePos pos, const std::string &name);
+
+	template<typename Ent>
+	EntityCollection &getCollectionOf();
+	EntityCollection &getCollectionOf(std::string name);
+	EntityCollection &getCollectionOf(std::type_index type);
 
 	Tile::ID getTileID(TilePos pos);
 	Tile &getTile(TilePos pos);
@@ -92,7 +96,20 @@ private:
 
 template<typename Ent, typename... Args>
 inline EntityRef WorldPlane::spawnEntity(Args&&... args) {
-	return ent_colls_by_type_.at(typeid(Ent))->spawn<Ent, Args...>(std::forward<Args>(args)...);
+	return getCollectionOf(typeid(Ent)).spawn<Ent, Args...>(std::forward<Args>(args)...);
+}
+
+template<typename Ent>
+inline EntityCollection &WorldPlane::getCollectionOf() {
+	return *ent_colls_by_type_.at(typeid(Ent));
+}
+
+inline EntityCollection &WorldPlane::getCollectionOf(std::string name) {
+	return *ent_colls_by_name_.at(name);
+}
+
+inline EntityCollection &WorldPlane::getCollectionOf(std::type_index type) {
+	return *ent_colls_by_type_.at(type);
 }
 
 }

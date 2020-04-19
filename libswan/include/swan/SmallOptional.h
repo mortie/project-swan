@@ -40,6 +40,8 @@ struct SmallOptionalValuePolicy {
 	}
 };
 
+struct SmallNullOpt {};
+
 // This is probably UB but I don't care, it avoids wasting 8 bytes per entity
 template<typename T, typename Policy = SmallOptionalInitialBytesPolicy<T>>
 class SmallOptional {
@@ -47,6 +49,7 @@ public:
 	SmallOptional() {
 		Policy::setEmpty(data_);
 	}
+	SmallOptional(SmallNullOpt): SmallOptional() {}
 	SmallOptional(const T &other) {
 		new (data_) T(other);
 	}
@@ -101,6 +104,10 @@ public:
 		return !Policy::isEmpty(data_);
 	}
 
+	SmallOptional<T, Policy> &operator=(SmallNullOpt) {
+		reset();
+		return *this;
+	}
 	SmallOptional<T, Policy> &operator=(const T &other) {
 		if (hasValue()) {
 			*get() = other;
@@ -142,6 +149,9 @@ public:
 		return *this;
 	}
 
+	bool operator==(const SmallNullOpt &other) const {
+		return !hasValue();
+	}
 	bool operator==(const SmallOptional<T, Policy> &other) const {
 		bool a = hasValue(), b = other.hasValue();
 		if (!a && !b) return true;

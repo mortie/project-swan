@@ -5,6 +5,7 @@
 #include <typeindex>
 
 #include "common.h"
+#include "log.h"
 #include "Entity.h"
 #include "SlotVector.h"
 #include "SmallOptional.h"
@@ -39,26 +40,10 @@ public:
 	};
 
 	template<typename Ent>
-	struct EntWrapper {
-		size_t generation;
-		Ent ent;
-		bool operator==(const EntWrapper &other) const {
-			return generation == other.generation;
-		}
-	};
-
+	using OptEnt = SmallOptional<
+		Ent, SmallOptionalInitialBytesPolicy<Ent, sizeof(void *)>>;
 	template<typename Ent>
-	struct OptionalPolicy {
-		static void setEmpty(unsigned char *ptr) {
-			((EntWrapper<Ent> *)ptr)->generation = ~0ull;
-		}
-		static bool isEmpty(const unsigned char *ptr) {
-			return ((EntWrapper<Ent> *)ptr)->generation == ~0ull;
-		}
-	};
-
-	template<typename Ent>
-	using OptEnt = SmallOptional<EntWrapper<Ent>, OptionalPolicy<Ent>>;
+	using SlotPolicy = SlotVectorDefaultSentinel<SmallNullOpt>;
 
 	virtual ~EntityCollection() = default;
 
@@ -70,12 +55,13 @@ public:
 
 	virtual size_t size() = 0;
 	virtual Entity *get(size_t idx) = 0;
-	virtual Entity *get(size_t idx, size_t version) = 0;
+	virtual Entity *get(size_t idx, size_t generation) = 0;
 
 	virtual EntityRef spawn(const Context &ctx, const Entity::PackObject &obj) = 0;
 	virtual void update(const Context &ctx, float dt) = 0;
 	virtual void tick(const Context &ctx, float dt) = 0;
 	virtual void draw(const Context &ctx, Win &win) = 0;
+	virtual void erase(size_t idx, size_t generation) = 0;
 
 private:
 	virtual void *getEntityVector() = 0;
@@ -88,7 +74,7 @@ public:
 	EntityCollectionImpl(std::string name): name_(std::move(name)) {}
 
 	size_t size() override { return entities_.size(); }
-	Entity *get(size_t idx) override { return &entities_[idx]->ent; }
+	Entity *get(size_t idx) override { return entities_[idx].get(); }
 	Entity *get(size_t idx, size_t generation) override;
 
 	const std::string &name() override { return name_; }
@@ -98,13 +84,14 @@ public:
 	void update(const Context &ctx, float dt) override;
 	void tick(const Context &ctx, float dt) override;
 	void draw(const Context &ctx, Win &win) override;
+	void erase(size_t idx, size_t generation) override;
 
 private:
 	void *getEntityVector() override { return (void *)&entities_; }
 	size_t nextGeneration() override { return generation_++; }
 
 	const std::string name_;
-	SlotVector<EntityCollection::OptEnt<Ent>> entities_;
+	SlotVector<OptEnt<Ent>, SlotPolicy<Ent>> entities_;
 	size_t generation_ = 0;
 };
 
@@ -135,11 +122,14 @@ inline bool EntityRef::hasValue() {
 
 template<typename Ent, typename... Args>
 inline EntityRef EntityCollection::spawn(Args&&... args) {
-	auto entities = (SlotVector<OptEnt<Ent>> *)getEntityVector();
+	auto entities = (SlotVector<OptEnt<Ent>, SlotPolicy<Ent>> *)getEntityVector();
 
 	size_t generation = nextGeneration();
-	size_t idx = entities->emplace(EntWrapper<Ent>{
-		generation, std::move(Ent(std::forward<Args>(args)...)) });
+	size_t idx = entities->emplace();
+	OptEnt<Ent> &ent = (*entities)[idx];
+	ent.emplace(std::forward<Args>(args)...);
+	ent->index_ = idx;
+	ent->generation_ = generation;
 
 	return { this, idx, generation };
 }
@@ -157,17 +147,20 @@ inline Entity *EntityCollectionImpl<Ent>::get(size_t idx, size_t generation) {
 	// We don't even need to check if e.hasValue(), because if it doesn't,
 	// its generation will be 0xffff... and the check will fail
 
-	if (e->generation != generation)
+	if (e->generation_ != generation)
 		return nullptr;
 
-	return &e->ent;
+	return e.get();
 }
 
 template<typename Ent>
 inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, const Entity::PackObject &obj) {
 	size_t generation = nextGeneration();
-	size_t idx = entities_.emplace(EntWrapper<Ent>{
-		generation, std::move(Ent(ctx, obj)) });
+	size_t idx = entities_.emplace();
+	OptEnt<Ent> &ent = entities_[idx];
+	ent.emplace(ctx, obj);
+	ent->index_ = idx;
+	ent->generation_ = generation;
 
 	return { this, idx, generation };
 }
@@ -177,7 +170,7 @@ inline void EntityCollectionImpl<Ent>::update(const Context &ctx, float dt) {
 	ZoneScopedN(typeid(Ent).name());
 	for (auto &ent: entities_) {
 		ZoneScopedN("update");
-		ent->ent.update(ctx, dt);
+		ent->update(ctx, dt);
 	}
 }
 
@@ -186,7 +179,7 @@ inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt) {
 	ZoneScopedN(typeid(Ent).name());
 	for (auto &ent: entities_) {
 		ZoneScopedN("tick");
-		ent->ent.tick(ctx, dt);
+		ent->tick(ctx, dt);
 	}
 }
 
@@ -195,8 +188,20 @@ inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Win &win) {
 	ZoneScopedN(typeid(Ent).name());
 	for (auto &ent: entities_) {
 		ZoneScopedN("draw");
-		ent->ent.draw(ctx, win);
+		ent->draw(ctx, win);
 	}
+}
+
+template<typename Ent>
+inline void EntityCollectionImpl<Ent>::erase(size_t idx, size_t generation) {
+	ZoneScopedN(typeid(Ent).name());
+	OptEnt<Ent> &ent = entities_[idx];
+	if (!ent.hasValue() || ent->generation_ != generation) {
+		warn << "Erasing wrong entity " << typeid(Ent).name() << '[' << idx << "]!";
+		return;
+	}
+
+	entities_.erase(idx);
 }
 
 }
