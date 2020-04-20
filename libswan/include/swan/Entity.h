@@ -7,6 +7,7 @@
 #include "common.h"
 #include "log.h"
 #include "traits/BodyTrait.h"
+#include "traits/PhysicsTrait.h"
 
 namespace Swan {
 
@@ -44,20 +45,24 @@ public:
 	size_t generation_;
 };
 
-class PhysicsEntity: public Entity, public BodyTrait::HasBody {
+class PhysicsEntity: public Entity, public BodyTrait, public PhysicsTrait {
 public:
-	PhysicsEntity(Vec2 size, float mass):
-		body_(size, mass) {}
+	PhysicsEntity(Vec2 size): body_({ .size = size }) {}
 
-	virtual BodyTrait::Body &getBody() override { return body_; }
+	BodyTrait::Body &get(BodyTrait::Tag) override { return body_; }
+	PhysicsTrait::Physics &get(PhysicsTrait::Tag) override { return physics_; }
 
-	virtual void update(const Context &ctx, float dt) override {
-		body_.standardForces();
-		body_.update(ctx, dt);
+	void physics(
+			const Context &ctx, float dt,
+			const PhysicsTrait::PhysicsProps &props) {
+
+		physics_.standardForces(props.mass);
+		physics_.update(ctx, dt, body_, props);
 	}
 
 protected:
-	BodyTrait::PhysicsBody body_;
+	BodyTrait::Body body_;
+	PhysicsTrait::Physics physics_;
 };
 
 }

@@ -25,7 +25,7 @@ private:
 	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.6, 1.9);
 
 	PlayerEntity(const Swan::Context &ctx):
-		PhysicsEntity(SIZE, MASS), inventory_(INVENTORY_SIZE),
+		PhysicsEntity(SIZE), inventory_(INVENTORY_SIZE),
 		anims_{
 			Swan::Animation(ctx.resources.getImage("core/entity/player-still"), 0.8),
 			Swan::Animation(

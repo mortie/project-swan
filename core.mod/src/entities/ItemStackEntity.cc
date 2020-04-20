@@ -10,9 +10,9 @@ ItemStackEntity::ItemStackEntity(
 	static std::uniform_real_distribution vy(-2.3f, -1.2f);
 
 	item_ = &ctx.world.getItem(item);
-	body_.pos_ = pos;
-	body_.pos_.y += 0.5 - body_.size_.y / 2;
-	body_.vel_ += Swan::Vec2{ vx(ctx.world.random_), vy(ctx.world.random_) };
+	body_.pos = pos;
+	body_.pos.y += 0.5 - body_.size.y / 2;
+	physics_.vel += Swan::Vec2{ vx(ctx.world.random_), vy(ctx.world.random_) };
 }
 
 ItemStackEntity::ItemStackEntity(const Swan::Context &ctx, const PackObject &obj):
@@ -26,8 +26,12 @@ void ItemStackEntity::draw(const Swan::Context &ctx, Swan::Win &win) {
 	SDL_Texture *tex = item_->image_.texture_.get();
 	Swan::TexColorMod darken(tex, 220, 220, 220);
 
-	win.showTexture(body_.pos_, tex, &rect,
+	win.showTexture(body_.pos, tex, &rect,
 		{ .hscale = 0.5, .vscale = 0.5 });
+}
+
+void ItemStackEntity::update(const Swan::Context &ctx, float dt) {
+	physics(ctx, dt, { .mass = MASS, .bounciness = 0.6 });
 }
 
 void ItemStackEntity::tick(const Swan::Context &ctx, float dt) {
@@ -37,13 +41,13 @@ void ItemStackEntity::tick(const Swan::Context &ctx, float dt) {
 }
 
 void ItemStackEntity::deserialize(const Swan::Context &ctx, const PackObject &obj) {
-	body_.pos_ = obj.at("pos").as<Swan::Vec2>();
+	body_.pos = obj.at("pos").as<Swan::Vec2>();
 	item_ = &ctx.world.getItem(obj.at("item").as<std::string>());
 }
 
 Swan::Entity::PackObject ItemStackEntity::serialize(const Swan::Context &ctx, msgpack::zone &zone) {
 	return {
-		{ "pos", msgpack::object(body_.pos_, zone) },
+		{ "pos", msgpack::object(body_.pos, zone) },
 		{ "tile", msgpack::object(item_->name_, zone) },
 	};
 }

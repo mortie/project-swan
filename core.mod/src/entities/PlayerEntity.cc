@@ -6,7 +6,7 @@
 
 PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
 		PlayerEntity(ctx) {
-	body_.pos_ = pos;
+	body_.pos = pos;
 }
 
 PlayerEntity::PlayerEntity(const Swan::Context &ctx, const PackObject &obj):
@@ -16,7 +16,7 @@ PlayerEntity::PlayerEntity(const Swan::Context &ctx, const PackObject &obj):
 
 void PlayerEntity::draw(const Swan::Context &ctx, Swan::Win &win) {
 	body_.outline(win);
-	anims_[(int)state_].draw(body_.pos_ - Swan::Vec2(0.2, 0.1), win);
+	anims_[(int)state_].draw(body_.pos - Swan::Vec2(0.2, 0.1), win);
 }
 
 void PlayerEntity::update(const Swan::Context &ctx, float dt) {
@@ -33,13 +33,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 
 	// Move left
 	if (ctx.game.isKeyPressed(SDL_SCANCODE_A) || ctx.game.isKeyPressed(SDL_SCANCODE_LEFT)) {
-		body_.force_ += Swan::Vec2(-MOVE_FORCE, 0);
+		physics_.force += Swan::Vec2(-MOVE_FORCE, 0);
 		state_ = State::RUNNING_L;
 	}
 
 	// Move right
 	if (ctx.game.isKeyPressed(SDL_SCANCODE_D) || ctx.game.isKeyPressed(SDL_SCANCODE_RIGHT)) {
-		body_.force_ += Swan::Vec2(MOVE_FORCE, 0);
+		physics_.force += Swan::Vec2(MOVE_FORCE, 0);
 		if (state_ == State::RUNNING_L)
 			state_ = State::IDLE;
 		else
@@ -49,25 +49,25 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	bool jump_pressed = ctx.game.isKeyPressed(SDL_SCANCODE_SPACE);
 
 	// Jump
-	if (body_.on_ground_ && jump_pressed && jump_timer_.periodic(0.5)) {
-		body_.vel_.y = -JUMP_VEL;
+	if (physics_.on_ground && jump_pressed && jump_timer_.periodic(0.5)) {
+		physics_.vel.y = -JUMP_VEL;
 	}
 
 	// Fall down faster than we went up
-	if (!body_.on_ground_ && (!jump_pressed || body_.vel_.y > 0))
-		body_.force_ += Swan::Vec2(0, DOWN_FORCE);
+	if (!physics_.on_ground && (!jump_pressed || physics_.vel.y > 0))
+		physics_.force += Swan::Vec2(0, DOWN_FORCE);
 
 	if (state_ != oldState)
 		anims_[(int)state_].reset();
 	anims_[(int)state_].tick(dt);
 
-	PhysicsEntity::update(ctx, dt);
+	physics(ctx, dt, { .mass = MASS });
 }
 
 void PlayerEntity::tick(const Swan::Context &ctx, float dt) {
 	for (ItemStackEntity *ent: ctx.plane.getEntsOfType<ItemStackEntity>()) {
 		float squared_dist =
-			(getBody().getBounds().bottomMid() - ent->getBody().getBounds().center())
+			(body_.bottomMid() - ent->get(Swan::BodyTrait::Tag{}).center())
 			.squareLength();
 
 		if (squared_dist < 0.5 * 0.5) {

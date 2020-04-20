@@ -83,8 +83,8 @@ void World::setWorldGen(std::string gen) {
 }
 
 void World::spawnPlayer() {
-	player_ = dynamic_cast<BodyTrait::HasBody *>(
-		planes_[current_plane_].spawnPlayer().get());
+	player_ = &((dynamic_cast<BodyTrait *>(
+		planes_[current_plane_].spawnPlayer().get()))->get(BodyTrait::Tag{}));
 }
 
 void World::setCurrentPlane(WorldPlane &plane) {
@@ -142,8 +142,7 @@ SDL_Color World::backgroundColor() {
 
 void World::draw(Win &win) {
 	ZoneScopedN("World draw");
-	auto bounds = player_->getBody().getBounds();
-	win.cam_ = bounds.pos - (win.getSize() / 2) + (bounds.size / 2);
+	win.cam_ = player_->pos - (win.getSize() / 2) + (player_->size / 2);
 	planes_[current_plane_].draw(win);
 }
 
@@ -158,10 +157,9 @@ void World::tick(float dt) {
 	for (auto &plane: planes_)
 		plane.tick(dt);
 
-	auto bounds = player_->getBody().getBounds();
 	chunk_renderer_.tick(
 		planes_[current_plane_],
-		ChunkPos((int)bounds.pos.x / CHUNK_WIDTH, (int)bounds.pos.y / CHUNK_HEIGHT));
+		ChunkPos((int)player_->pos.x / CHUNK_WIDTH, (int)player_->pos.y / CHUNK_HEIGHT));
 }
 
 }

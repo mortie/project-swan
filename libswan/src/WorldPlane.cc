@@ -163,19 +163,19 @@ void WorldPlane::breakTile(TilePos pos) {
 }
 
 SDL_Color WorldPlane::backgroundColor() {
-	return gen_->backgroundColor(world_->player_->getBody().getBounds().pos);
+	return gen_->backgroundColor(world_->player_->pos);
 }
 
 void WorldPlane::draw(Win &win) {
 	ZoneScopedN("WorldPlane draw");
 	auto ctx = getContext();
-	auto pbounds = world_->player_->getBody().getBounds();
+	auto &pbody = *(world_->player_);
 
-	gen_->drawBackground(ctx, win, pbounds.pos);
+	gen_->drawBackground(ctx, win, pbody.pos);
 
 	ChunkPos pcpos = ChunkPos(
-		(int)floor(pbounds.pos.x / CHUNK_WIDTH),
-		(int)floor(pbounds.pos.y / CHUNK_HEIGHT));
+		(int)floor(pbody.pos.x / CHUNK_WIDTH),
+		(int)floor(pbody.pos.y / CHUNK_HEIGHT));
 
 	// Just init one chunk per frame
 	if (chunk_init_list_.size() > 0) {

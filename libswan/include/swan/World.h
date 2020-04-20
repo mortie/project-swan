@@ -59,7 +59,7 @@ public:
 	std::unordered_map<std::string, WorldGen::Factory> worldgen_factories_;
 	std::vector<EntityCollection::Factory> ent_coll_factories_;
 
-	BodyTrait::HasBody *player_;
+	BodyTrait::Body *player_;
 	Game *game_;
 
 	std::mt19937 random_;
