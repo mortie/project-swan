@@ -18,6 +18,7 @@ const char *fragmentSource = R"(
 
 int main() {
 	SDL_Init(SDL_INIT_VIDEO);
+	Cygnet::Deferred<SDL_Quit> sdl;
 	Cygnet::Window win("Hello Triangle", 640, 480);
 
 	Cygnet::GlShader vertex(vertexSource, Cygnet::GlShader::Type::VERTEX);
@@ -53,5 +54,5 @@ int main() {
 	}
 
 exit:
-	SDL_Quit();
+	return EXIT_SUCCESS;
 }

@@ -34,4 +34,13 @@ public:
 template<typename T, void (*Func)(T *)>
 using CPtr = std::unique_ptr<T, CPtrDeleter<T, Func>>;
 
+// Take a function, run it when the object goes out of scope
+template<void (*Func)()>
+class Deferred: NonCopyable {
+public:
+	Deferred() = default;
+	~Deferred() { Func(); }
+};
+
+
 }
