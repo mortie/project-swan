@@ -52,7 +52,6 @@ else()
 	message(FATAL_ERROR "CMAKE_BUILD_TYPE must be Debug or Release.")
 endif()
 
-
 # We want to be able to use C++20 designated initializers,
 # but Clang doesn't support them yet.
 # Remove once Clang 9.1 or something comes out.
@@ -63,6 +62,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/lib
 
 add_subdirectory(third-party)
 add_subdirectory(tracy-tools)
+add_subdirectory(libcygnet)
 add_subdirectory(libswan)
 add_subdirectory(core.mod)
 
