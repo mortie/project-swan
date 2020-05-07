@@ -41,13 +41,8 @@ GlShader::~GlShader() {
 	}
 }
 
-GlProgram::GlProgram(std::initializer_list<std::reference_wrapper<GlShader>> shaders) {
-	id_ = glCreateProgram();
-
-	for (GlShader &shader: shaders) {
-		glAttachShader(id_, shader.id());
-	}
-
+void GlProgram::link() {
+	std::cout << "link\n";
 	glLinkProgram(id_);
 
 	char log[4096];

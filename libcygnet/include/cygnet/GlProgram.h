@@ -19,7 +19,7 @@ public:
 	GlShader(const char *source, Type type);
 	~GlShader();
 
-	GLuint id() { return id_; }
+	GLuint id() const { return id_; }
 
 private:
 	GLuint id_;
@@ -28,8 +28,13 @@ private:
 
 class GlProgram: NonCopyable {
 public:
-	GlProgram(std::initializer_list<std::reference_wrapper<GlShader>> shaders);
+	template <typename... T, typename = std::enable_if_t<std::conjunction_v<std::is_same<T, GlShader>...>>>
+	GlProgram(const T &... shaders): GlProgram() { (addShader(shaders), ...); link(); }
+	GlProgram() { id_ = glCreateProgram(); }
 	~GlProgram();
+
+	void addShader(const GlShader &shader) { glAttachShader(id_, shader.id()); }
+	void link();
 
 	void use() { glUseProgram(id_); }
 	GLuint id() { return id_; }

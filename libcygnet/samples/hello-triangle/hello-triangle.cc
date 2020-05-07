@@ -23,7 +23,7 @@ int main() {
 
 	Cygnet::GlShader vertex(vertexSource, Cygnet::GlShader::Type::VERTEX);
 	Cygnet::GlShader fragment(fragmentSource, Cygnet::GlShader::Type::FRAGMENT);
-	Cygnet::GlProgram program({ vertex, fragment });
+	Cygnet::GlProgram program(vertex, fragment);
 	GLuint positionAttrib = program.getLocation("position");
 	program.use();
 
