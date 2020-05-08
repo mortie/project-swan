@@ -1,5 +1,5 @@
 #include <cygnet/Window.h>
-#include <cygnet/GlProgram.h>
+#include <cygnet/GlWrappers.h>
 #include <iostream>
 
 const char *vertexSource = R"(
@@ -21,10 +21,10 @@ int main() {
 	Cygnet::Deferred<SDL_Quit> sdl;
 	Cygnet::Window win("Hello Triangle", 640, 480);
 
-	Cygnet::GlShader vertex(vertexSource, Cygnet::GlShader::Type::VERTEX);
-	Cygnet::GlShader fragment(fragmentSource, Cygnet::GlShader::Type::FRAGMENT);
+	Cygnet::GlShader vertex(Cygnet::GlShader::Type::VERTEX, vertexSource);
+	Cygnet::GlShader fragment(Cygnet::GlShader::Type::FRAGMENT, fragmentSource);
 	Cygnet::GlProgram program(vertex, fragment);
-	GLuint positionAttrib = program.getLocation("position");
+	GLuint positionAttrib = program.attribLocation("position");
 	program.use();
 
 	GLfloat vertixes[] = {

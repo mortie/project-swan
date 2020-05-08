@@ -16,14 +16,13 @@ public:
 		FRAGMENT,
 	};
 
-	GlShader(const char *source, Type type);
+	GlShader(Type type, const char *source);
 	~GlShader();
 
 	GLuint id() const { return id_; }
 
 private:
 	GLuint id_;
-	bool valid_ = false;
 };
 
 class GlProgram: NonCopyable {
@@ -38,11 +37,11 @@ public:
 
 	void use() { glUseProgram(id_); }
 	GLuint id() { return id_; }
-	GLuint getLocation(const char *name) { return glGetAttribLocation(id_, name); }
+	GLint attribLocation(const char *name) { return glGetAttribLocation(id_, name); }
+	GLint uniformLocation(const char *name) { return glGetAttribLocation(id_, name); }
 
 private:
 	GLuint id_;
-	bool valid_ = false;
 };
 
 }

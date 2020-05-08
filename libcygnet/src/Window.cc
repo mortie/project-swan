@@ -1,7 +1,8 @@
 #include "Window.h"
 
 #include <SDL_opengles2.h>
-#include <assert.h>
+
+#include "glutil.h"
 
 namespace Cygnet {
 
@@ -16,10 +17,11 @@ Window::Window(const char *name, int width, int height) {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	glCheck();
 
-	assert(glctx_ = SDL_GL_CreateContext(win_.get()));
+	sdlAssert(glctx_ = SDL_GL_CreateContext(win_.get()));
 	makeCurrent();
-	assert(SDL_GL_SetSwapInterval(1) == 0);
+	glCheck();
 }
 
 Window::~Window() {
