@@ -7,20 +7,20 @@
 int main() {
 	SDL_Init(SDL_INIT_VIDEO);
 	Cygnet::Deferred<SDL_Quit> sdl;
-	Cygnet::Window win("Hello Triangle", 640, 480);
+	Cygnet::Window win("Hello Texture", 640, 480);
 
 	Cygnet::BuiltinShaders shaders;
 	Cygnet::GlProgram program(shaders.textureVertex, shaders.textureFragment);
 	program.use();
 
 	GLfloat vertexes[] = {
-		-0.5f, -0.5f,  0.0f, // pos 0: top left
+		-0.5f,  0.5f,  0.0f, // pos 0: top left
 		 0.0f,  0.0f,        // tex 0: top left
-		-0.5f,  0.5f,  0.0f, // pos 1: bottom left
+		-0.5f, -0.5f,  0.0f, // pos 1: bottom left
 		 0.0f,  1.0f,        // tex 1: bottom left
-		 0.5f,  0.5f,  0.0f, // pos 2: bottom right
+		 0.5f, -0.5f,  0.0f, // pos 2: bottom right
 		 1.0f,  1.0f,        // tex 2: bottom right
-		 0.5f, -0.5f,  0.0f, // pos 3: top right
+		 0.5f,  0.5f,  0.0f, // pos 3: top right
 		 1.0f,  0.0f,        // tex 3: top right
 	};
 
