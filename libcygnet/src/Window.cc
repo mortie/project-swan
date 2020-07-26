@@ -22,6 +22,10 @@ Window::Window(const char *name, int width, int height) {
 	sdlAssert(glctx_ = SDL_GL_CreateContext(win_.get()));
 	makeCurrent();
 	glCheck();
+
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glCheck();
 }
 
 Window::~Window() {
@@ -33,13 +37,12 @@ void Window::makeCurrent() {
 }
 
 void Window::clear() {
-	glClearColor(0, 0, 0, 1);
+	//glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void Window::flip() {
 	SDL_GL_SwapWindow(win_.get());
-
 }
 
 }

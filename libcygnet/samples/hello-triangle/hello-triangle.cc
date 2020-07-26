@@ -24,7 +24,7 @@ int main() {
 	Cygnet::GlShader vertex(Cygnet::GlShader::Type::VERTEX, vertexSource);
 	Cygnet::GlShader fragment(Cygnet::GlShader::Type::FRAGMENT, fragmentSource);
 	Cygnet::GlProgram program(vertex, fragment);
-	GLuint positionAttrib = program.attribLocation("position");
+	GLuint positionAttrib = program.attribLoc("position");
 	program.use();
 
 	GLfloat vertixes[] = {

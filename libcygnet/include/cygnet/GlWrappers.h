@@ -37,11 +37,38 @@ public:
 
 	void use() { glUseProgram(id_); }
 	GLuint id() { return id_; }
-	GLint attribLocation(const char *name) { return glGetAttribLocation(id_, name); }
-	GLint uniformLocation(const char *name) { return glGetAttribLocation(id_, name); }
+	GLint attribLoc(const char *name);
+	GLint attribLoc(const char *name, GLuint index);
+	GLint uniformLoc(const char *name);
 
 private:
 	GLuint id_;
 };
+
+class GlTexture: NonCopyable {
+public:
+	GlTexture();
+
+	void bind();
+	void upload(GLsizei width, GLsizei height, void *data,
+			GLenum format, GLenum type = GL_UNSIGNED_BYTE);
+	GLuint id() { return id_; }
+
+private:
+	GLuint id_;
+};
+
+inline GLint GlProgram::attribLoc(const char *name) {
+	return glGetAttribLocation(id_, name);
+}
+
+inline GLint GlProgram::attribLoc(const char *name, GLuint index) {
+	glBindAttribLocation(id_, index, name);
+	return index;
+}
+
+inline GLint GlProgram::uniformLoc(const char *name) {
+	return glGetUniformLocation(id_, name);
+}
 
 }

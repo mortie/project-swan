@@ -1,6 +1,6 @@
 #include <cygnet/Window.h>
 #include <cygnet/GlWrappers.h>
-#include <cygnet/BuiltinShaders.h>
+#include <cygnet/builtins.h>
 #include <cygnet/glutil.h>
 #include <iostream>
 
@@ -9,8 +9,7 @@ int main() {
 	Cygnet::Deferred<SDL_Quit> sdl;
 	Cygnet::Window win("Hello Texture", 640, 480);
 
-	Cygnet::BuiltinShaders shaders;
-	Cygnet::GlProgram program(shaders.textureVertex, shaders.textureFragment);
+	Cygnet::GlProgram program(Cygnet::builtinTextureVertex(), Cygnet::builtinTextureFragment());
 	program.use();
 
 	GLfloat vertexes[] = {
@@ -35,21 +34,14 @@ int main() {
 		0xa0, 0x55, 0x77,  0x00, 0xf0, 0x0f,  0xff, 0x00, 0xff,  0, 0, 0,
 	};
 
-	GLuint texId;
-	glGenTextures(1, &texId);
-	glBindTexture(GL_TEXTURE_2D, texId);
-	Cygnet::glCheck();
+	Cygnet::GlTexture tex;
+	tex.upload(3, 3, image, GL_RGB);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 3, 3, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	Cygnet::glCheck();
+	GLint positionLoc = program.attribLoc("position", 0);
+	GLint texCoordLoc = program.attribLoc("texCoord", 1);
+	GLint texLoc = program.uniformLoc("tex");
 
-	GLint positionLoc = program.attribLocation("position");
-	GLint texCoordLoc = program.attribLocation("texCoord");
-	GLint texLoc = program.uniformLocation("tex");
+	glUniform1i(texLoc, 0);
 
 	// Draw loop
 	while (true) {
@@ -72,16 +64,7 @@ int main() {
 		glEnableVertexAttribArray(texCoordLoc);
 		Cygnet::glCheck();
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texId);
-		glUniform1i(texLoc, 0);
-		Cygnet::glCheck();
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texId);
-		glUniform1i(texLoc, 0);
-		Cygnet::glCheck();
-
+		tex.bind();
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indexes);
 		Cygnet::glCheck();
 
