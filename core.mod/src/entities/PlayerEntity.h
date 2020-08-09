@@ -8,8 +8,8 @@ public:
 	PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos);
 	PlayerEntity(const Swan::Context &ctx, const PackObject &obj);
 
+	using PhysicsEntity::get;
 	Inventory &get(InventoryTrait::Tag) override { return inventory_; }
-	Body &get(BodyTrait::Tag) override { return body_; }
 
 	void draw(const Swan::Context &ctx, Swan::Win &win) override;
 	void update(const Swan::Context &ctx, float dt) override;
