@@ -9,9 +9,8 @@ ItemStackEntity::ItemStackEntity(
 	static std::uniform_real_distribution vx(-2.3f, 2.3f);
 	static std::uniform_real_distribution vy(-2.3f, -1.2f);
 
-	item_ = &ctx.world.getItem(item);
 	body_.pos = pos;
-	body_.pos.y += 0.5 - body_.size.y / 2;
+	item_ = &ctx.world.getItem(item);
 	physics_.vel += Swan::Vec2{ vx(ctx.world.random_), vy(ctx.world.random_) };
 }
 

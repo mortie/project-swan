@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <typeindex>
+#include <type_traits>
 
 #include "common.h"
 #include "log.h"
@@ -130,6 +131,11 @@ inline EntityRef EntityCollection::spawn(Args&&... args) {
 	ent.emplace(std::forward<Args>(args)...);
 	ent->index_ = idx;
 	ent->generation_ = generation;
+
+	if constexpr (std::is_base_of_v<BodyTrait, Ent>) {
+		BodyTrait::Body &body = ent->get(BodyTrait::Tag{});
+		body.pos -= body.size / 2;
+	}
 
 	return { this, idx, generation };
 }
