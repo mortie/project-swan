@@ -11,7 +11,6 @@
 #include <swan/Item.h>
 #include <swan/ItemStack.h>
 #include <swan/Mod.h>
-#include <swan/PerfCounter.h>
 #include <swan/OS.h>
 #include <swan/Resource.h>
 #include <swan/SlotVector.h>

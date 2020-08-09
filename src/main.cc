@@ -113,8 +113,6 @@ int main(int argc, char **argv) {
 	std::vector<std::string> mods{ "core.mod" };
 	game.createWorld("core::default", mods);
 
-	PerfCounter pcounter;
-
 	auto prev_time = std::chrono::steady_clock::now();
 
 	float fps_acc = 0;
@@ -210,13 +208,11 @@ int main(int argc, char **argv) {
 		RTClock update_clock;
 		if (dt <= 1 / 25.0) {
 			ZoneScopedN("game update");
-			pcounter.countGameUpdatesPerFrame(1);
 			game.update(dt);
 
 		// Complex case: run multiple steps this iteration
 		} else {
 			int count = (int)ceil(dt / (1/30.0));
-			pcounter.countGameUpdatesPerFrame(count);
 			float delta = dt / (float)count;
 			info << "Delta time " << dt << "s. Running " << count
 				<< " updates in one frame, with a delta as if we had "
@@ -226,7 +222,6 @@ int main(int argc, char **argv) {
 				game.update(delta);
 			}
 		}
-		pcounter.countGameUpdate(update_clock.duration());
 
 		// Tick at a consistent TICK_RATE
 		tick_acc += dt;
@@ -235,7 +230,6 @@ int main(int argc, char **argv) {
 			tick_acc -= 1.0 / TICK_RATE;
 			RTClock tick_clock;
 			game.tick(1.0 / TICK_RATE);
-			pcounter.countGameTick(tick_clock.duration());
 		}
 
 		{
@@ -252,11 +246,7 @@ int main(int argc, char **argv) {
 			ZoneScopedN("game draw");
 			RTClock draw_clock;
 			game.draw();
-			pcounter.countGameDraw(draw_clock.duration());
 		}
-
-		pcounter.countFrameTime(total_time_clock.duration());
-		pcounter.render();
 
 		// Render ImGUI
 		{
@@ -271,9 +261,6 @@ int main(int argc, char **argv) {
 			SDL_RenderPresent(renderer.get());
 		}
 		FrameMark
-		pcounter.countRenderPresent(present_clock.duration());
-
-		pcounter.countTotalTime(total_time_clock.duration());
 	}
 
 exit:
