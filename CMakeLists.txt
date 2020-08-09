@@ -49,7 +49,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL Release)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
 
 else()
-	message(FATAL_ERROR "CMAKE_BUILD_TYPE must be Debug or Release.")
+	message(FATAL_ERROR "CMAKE_BUILD_TYPE must be Sanitize, Debug, DebugRelease, Tracy or Release.")
 endif()
 
 # We want to be able to use C++20 designated initializers,

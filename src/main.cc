@@ -123,6 +123,7 @@ int main(int argc, char **argv) {
 	int fcount = 0;
 	int slow_frames = 0;
 	while (1) {
+		ZoneScopedN("game loop");
 		RTClock total_time_clock;
 
 		SDL_Event evt;
@@ -208,6 +209,7 @@ int main(int argc, char **argv) {
 		// Simple case: we can keep up, only need one physics update
 		RTClock update_clock;
 		if (dt <= 1 / 25.0) {
+			ZoneScopedN("game update");
 			pcounter.countGameUpdatesPerFrame(1);
 			game.update(dt);
 
@@ -216,15 +218,20 @@ int main(int argc, char **argv) {
 			int count = (int)ceil(dt / (1/30.0));
 			pcounter.countGameUpdatesPerFrame(count);
 			float delta = dt / (float)count;
-			info << "Delta time " << dt << "s. Running " << count << " updates in one frame, with a delta as if we had " << 1.0 / delta << " FPS.";
-			for (int i = 0; i < count; ++i)
+			info << "Delta time " << dt << "s. Running " << count
+				<< " updates in one frame, with a delta as if we had "
+				<< 1.0 / delta << " FPS.";
+			for (int i = 0; i < count; ++i) {
+				ZoneScopedN("game update");
 				game.update(delta);
+			}
 		}
 		pcounter.countGameUpdate(update_clock.duration());
 
 		// Tick at a consistent TICK_RATE
 		tick_acc += dt;
 		while (tick_acc >= 1.0 / TICK_RATE) {
+			ZoneScopedN("game tick");
 			tick_acc -= 1.0 / TICK_RATE;
 			RTClock tick_clock;
 			game.tick(1.0 / TICK_RATE);
@@ -241,19 +248,28 @@ int main(int argc, char **argv) {
 		imgui_io.DeltaTime = dt;
 		ImGui::NewFrame();
 
-		RTClock draw_clock;
-		game.draw();
-		pcounter.countGameDraw(draw_clock.duration());
+		{
+			ZoneScopedN("game draw");
+			RTClock draw_clock;
+			game.draw();
+			pcounter.countGameDraw(draw_clock.duration());
+		}
 
 		pcounter.countFrameTime(total_time_clock.duration());
 		pcounter.render();
 
 		// Render ImGUI
-		ImGui::Render();
-		ImGuiSDL::Render(ImGui::GetDrawData());
+		{
+			ZoneScopedN("imgui render");
+			ImGui::Render();
+			ImGuiSDL::Render(ImGui::GetDrawData());
+		}
 
 		RTClock present_clock;
-		SDL_RenderPresent(renderer.get());
+		{
+			ZoneScopedN("render present");
+			SDL_RenderPresent(renderer.get());
+		}
 		FrameMark
 		pcounter.countRenderPresent(present_clock.duration());
 

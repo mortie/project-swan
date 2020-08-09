@@ -2,8 +2,6 @@ find_package(Freetype)
 find_package(glfw3)
 find_package(GTK2 REQUIRED COMPONENTS gtk)
 
-#add_library(tracy-stuff OBJECT
-
 add_library(tracy-libs-unix OBJECT EXCLUDE_FROM_ALL
 	${PROJECT_SOURCE_DIR}/third-party/tracy/nfd/nfd_gtk.c
 	${PROJECT_SOURCE_DIR}/third-party/tracy/libbacktrace/posix.cpp)
@@ -81,11 +79,7 @@ target_include_directories(tracy-libs PUBLIC
 target_link_libraries(tracy-libs tracy-libs-unix
 	pthread dl Freetype::Freetype glfw GL)
 target_compile_options(tracy-libs PUBLIC
-	-UTRACY_ENABLE
-	-Wno-class-memaccess -Wno-unused-variable -Wno-pedantic -Wno-ignored-qualifiers
-	-Wno-missing-field-initializers -Wno-unused-result -Wno-sign-compare
-	-Wno-reorder -Wno-sequence-point -Wno-enum-compare -Wno-unused-function
-	-Wno-deprecated-decleration
+	-w -UTRACY_ENABLE
 	-DTRACY_FILESELECTOR -DTRACY_EXTENDED_FONT -DTRACY_ROOT_WINDOW
 	-DIMGUI_IMPL_OPENGL_LOADER_GL3W)
 
