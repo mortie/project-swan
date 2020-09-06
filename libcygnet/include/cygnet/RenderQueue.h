@@ -30,17 +30,12 @@ public:
 		queue_.push_back({ x, y, w * pixScale_, h * pixScale_, tex });
 	}
 
-	float pixScale() { return pixScale_; }
-	void pixScale(float scale) { pixScale_ = scale; }
-
-	float scaleX() { return mat_[0]; }
-	void scaleX(float sx) { mat_[0] = sx; }
-	float scaleY() { return -mat_[4]; }
-	void scaleY(float sy) { mat_[4] = -sy; }
-	float translateX() { return mat_[2]; }
-	void translateX(float tx) { mat_[2] = tx; }
-	float translateY() { return mat_[5]; }
-	void translateY(float ty) { mat_[5] = ty; }
+	float getScaleX() { return mat_[0]; }
+	float getScaleY() { return -mat_[4]; }
+	float getTranslateX() { return mat_[3]; }
+	float getTranslateY() { return mat_[5]; }
+	void setScale(float sx, float sy) { mat_[0] = sx; mat_[4] = -sy; }
+	void setTranslate(float tx, float ty) { mat_[2] = tx; mat_[5] = ty; }
 
 	void draw();
 

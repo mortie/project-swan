@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <memory>
 #include <vector>
+#include <iostream>
 
 const char *vertexShader = R"(
 	uniform mat3 transform;
@@ -108,8 +109,7 @@ int main() {
 		Cygnet::GlShader(Cygnet::GlShader::Type::FRAGMENT, fragmentShader));
 	program.use();
 
-	Cygnet::RenderQueue q(program, 1/32.0);
-	q.scaleX(1 / (640.0 / 480.0));
+	Cygnet::RenderQueue q(program, 1/100.0);
 
 	State state{
 		.keys{},
@@ -131,9 +131,7 @@ int main() {
 
 			case SDL_WINDOWEVENT:
 				if (evt.window.event == SDL_WINDOWEVENT_RESIZED) {
-					glViewport(0, 0, evt.window.data1, evt.window.data2);
-					float ratio = (float)evt.window.data1 / (float)evt.window.data2;
-					q.scaleX(1 / ratio);
+					win.onResize(evt.window.data1, evt.window.data2);
 				}
 				break;
 
@@ -167,6 +165,7 @@ int main() {
 			ent->draw(state);
 		}
 
+		q.setScale(win.xScale(), win.yScale());
 		q.draw();
 		win.flip();
 	}

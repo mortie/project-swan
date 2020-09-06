@@ -27,6 +27,8 @@ Window::Window(const char *name, int width, int height) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 	glCheck();
+
+	onResize(width, height);
 }
 
 Window::~Window() {
@@ -44,6 +46,15 @@ void Window::clear() {
 
 void Window::flip() {
 	SDL_GL_SwapWindow(win_.get());
+}
+
+void Window::onResize(int w, int h) {
+	w_ = w;
+	h_ = h;
+	float ratio = (float)h / (float)w;
+	yScale_ = 1 / ratio;
+	xScale_ = 1;
+	glViewport(0, 0, w, h);
 }
 
 }
