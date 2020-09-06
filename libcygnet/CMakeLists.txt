@@ -3,6 +3,7 @@ add_library(cygnet SHARED
 	src/glutil.cc
 	src/GlWrappers.cc
 	src/Image.cc
+	src/RenderQueue.cc
 	src/Window.cc)
 target_link_libraries(cygnet PUBLIC SDL2 SDL2_image GLESv2)
 target_include_directories(cygnet

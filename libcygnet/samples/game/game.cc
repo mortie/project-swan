@@ -3,9 +3,31 @@
 #include <cygnet/builtins.h>
 #include <cygnet/glutil.h>
 #include <cygnet/Image.h>
+#include <cygnet/RenderQueue.h>
 #include <stdio.h>
 #include <memory>
 #include <vector>
+
+const char *vertexShader = R"(
+	uniform mat3 transform;
+	attribute vec2 position;
+	attribute vec2 texCoord;
+	varying vec2 v_texCoord;
+	void main() {
+		vec3 pos = transform * vec3(position, 0);
+		gl_Position = vec4(pos.x, pos.y, 0, 1);
+		v_texCoord = texCoord;
+	}
+)";
+
+const char *fragmentShader = R"(
+	precision mediump float;
+	varying vec2 v_texCoord;
+	uniform sampler2D tex;
+	void main() {
+		gl_FragColor = texture2D(tex, v_texCoord);
+	}
+)";
 
 enum class Key {
 	UP, DOWN, LEFT, RIGHT, NONE,
@@ -15,10 +37,12 @@ struct State {
 	bool keys[(int)Key::NONE]{};
 	Cygnet::Window &win;
 	Cygnet::GlProgram &program;
+	Cygnet::RenderQueue &q;
 };
 
 class Entity {
 public:
+	virtual ~Entity() = default;
 	virtual void update(State &state, float dt) = 0;
 	virtual void draw(State &state) = 0;
 };
@@ -34,6 +58,13 @@ public:
 			fx -= 1;
 		if (state.keys[(int)Key::RIGHT])
 			fx += 1;
+		if (state.keys[(int)Key::UP])
+			fy -= 1;
+		if (state.keys[(int)Key::DOWN])
+			fy += 1;
+
+		fy += vy_ * -0.9;
+		fx += vx_ * -0.9;
 
 		vx_ += fx * dt;
 		vy_ += fy * dt;
@@ -42,42 +73,7 @@ public:
 	}
 
 	void draw(State &state) override {
-		printf("\ram at (%f,%f)", x_, y_);
-		fflush(stdout);
-
-		const GLfloat vertexes[] = {
-			x_ - 0.5f, y_ + 0.5f, 0.0f, // pos 0: top left
-			0.0f,      0.0f,            // tex 0: top left
-			x_ - 0.5f, y_ - 0.5f, 0.0f, // pos 1: bottom left
-			0.0f,      1.0f,            // tex 1: bottom left
-			x_ + 0.5f, y_ - 0.5f, 0.0f, // pos 2: bottom right
-			1.0f,      1.0f,            // tex 2: bottom right
-			x_ + 0.5f, y_ + 0.5f, 0.0f, // pos 3: top right
-			1.0f,      0.0f,            // tex 3: top right
-		};
-
-		static const GLushort indexes[] = {
-			0, 1, 2, // top left -> bottom left -> bottom right
-			2, 3, 0, // bottom right -> top right -> top left
-		};
-
-		GLint positionLoc = state.program.attribLoc("position", 0);
-		GLint texCoordLoc = state.program.attribLoc("texCoord", 1);
-		GLint texLoc = state.program.uniformLoc("tex");
-
-		glUniform1i(texLoc, 0);
-
-		glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), vertexes);
-		glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), &vertexes[3]);
-		Cygnet::glCheck();
-
-		glEnableVertexAttribArray(positionLoc);
-		glEnableVertexAttribArray(texCoordLoc);
-		Cygnet::glCheck();
-
-		image_.texture().bind();
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indexes);
-		Cygnet::glCheck();
+		state.q.show(x_, y_, image_.texture());
 	}
 
 private:
@@ -107,13 +103,19 @@ int main() {
 	Cygnet::Deferred<SDL_Quit> sdl;
 	Cygnet::Window win("Game", 640, 480);
 
-	Cygnet::GlProgram program(Cygnet::builtinTextureVertex(), Cygnet::builtinTextureFragment());
+	Cygnet::GlProgram program(
+		Cygnet::GlShader(Cygnet::GlShader::Type::VERTEX, vertexShader),
+		Cygnet::GlShader(Cygnet::GlShader::Type::FRAGMENT, fragmentShader));
 	program.use();
+
+	Cygnet::RenderQueue q(program, 1/32.0);
+	q.scaleX(1 / (640.0 / 480.0));
 
 	State state{
 		.keys{},
 		.win = win,
 		.program = program,
+		.q = q,
 	};
 
 	std::vector<std::unique_ptr<Entity>> entities;
@@ -125,6 +127,14 @@ int main() {
 			switch (evt.type) {
 			case SDL_QUIT:
 				goto exit;
+				break;
+
+			case SDL_WINDOWEVENT:
+				if (evt.window.event == SDL_WINDOWEVENT_RESIZED) {
+					glViewport(0, 0, evt.window.data1, evt.window.data2);
+					float ratio = (float)evt.window.data1 / (float)evt.window.data2;
+					q.scaleX(1 / ratio);
+				}
 				break;
 
 			case SDL_KEYDOWN:
@@ -157,6 +167,7 @@ int main() {
 			ent->draw(state);
 		}
 
+		q.draw();
 		win.flip();
 	}
 

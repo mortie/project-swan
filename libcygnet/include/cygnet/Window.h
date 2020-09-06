@@ -2,13 +2,12 @@
 
 #include <SDL.h>
 #include <stdint.h>
-#include <glm/mat4x4.hpp>
 
 #include "util.h"
 
 namespace Cygnet {
 
-struct GlTexture;
+class GlTexture;
 
 class Window {
 public:

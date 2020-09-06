@@ -28,8 +28,8 @@ Image::Image(std::string path) {
 	w_ = surface->w;
 	h_ = surface->h;
 	pitch_ = surface->pitch;
-	bytes_.reset(surface->pixels);
-	surface->pixels = nullptr;
+	bytes_.reset(new unsigned char[(size_t)pitch_ * h_]);
+	memcpy(bytes_.get(), surface->pixels, (size_t)pitch_ * h_);
 }
 
 GlTexture &Image::texture() {

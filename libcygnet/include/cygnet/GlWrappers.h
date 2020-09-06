@@ -53,9 +53,13 @@ public:
 	void upload(GLsizei width, GLsizei height, void *data,
 			GLenum format, GLenum type = GL_UNSIGNED_BYTE);
 	GLuint id() { return id_; }
+	int width() { return w_; }
+	int height() { return h_; }
 
 private:
 	GLuint id_;
+	int w_;
+	int h_;
 };
 
 inline GLint GlProgram::attribLoc(const char *name) {

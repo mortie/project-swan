@@ -84,6 +84,8 @@ void GlTexture::bind() {
 
 void GlTexture::upload(GLsizei width, GLsizei height, void *data,
 		GLenum format, GLenum type) {
+	w_ = width;
+	h_ = height;
 	bind();
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, type, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
