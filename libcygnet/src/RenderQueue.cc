@@ -28,10 +28,10 @@ void RenderQueue::draw() {
 	glActiveTexture(GL_TEXTURE0);
 
 	for (auto &entry: queue_) {
-		float w = entry.w * entry.sx;
-		float h = entry.h * entry.sy;
 		float x = entry.x;
 		float y = entry.y;
+		float w = entry.w;
+		float h = entry.h;
 		GLfloat vertexes[] = {
 			x,     y,     // top left
 			x,     y + h, // bottom left

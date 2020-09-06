@@ -26,16 +26,16 @@ public:
 		}, scale) {}
 
 	void show(GlTexture &tex, float x, float y) {
-		show(tex.id(), x, y, 1, 1, tex.width(), tex.height());
+		show(tex.id(), x, y, tex.width(), tex.height());
 	}
 	void show(GlTexture &tex, float x, float y, float sx, float sy) {
-		show(tex.id(), x, y, sx, sy, tex.width(), tex.height());
+		show(tex.id(), x, y, tex.width() * sx, tex.height() * sy);
 	}
 	void show(GlTexture &tex, float x, float y, float sx, float sy, float w, float h) {
-		show(tex.id(), x, y, sx, sy, w, h);
+		show(tex.id(), x, y, w * sx, h * sy);
 	}
-	void show(GLuint tex, float x, float y, float sx, float sy, float w, float h) {
-		queue_.push_back({ tex, x, y, sx, sy, w * pixScale_, h * pixScale_ });
+	void show(GLuint tex, float x, float y, float w, float h) {
+		queue_.push_back({ tex, x, y, w * pixScale_, h * pixScale_ });
 	}
 
 	float getScaleX() { return mat_[0]; }
@@ -51,7 +51,6 @@ private:
 	struct Entry {
 		GLuint tex;
 		float x, y;
-		float sx, sy;
 		float w, h;
 	};
 
