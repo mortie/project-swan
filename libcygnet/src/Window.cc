@@ -51,9 +51,8 @@ void Window::flip() {
 void Window::onResize(int w, int h) {
 	w_ = w;
 	h_ = h;
-	float ratio = (float)h / (float)w;
-	yScale_ = 1 / ratio;
-	xScale_ = 1;
+	yScale_ = 1 / sqrt((float)h / (float)w);
+	xScale_ = 1 / sqrt((float)w / (float)h);
 	glViewport(0, 0, w, h);
 }
 
