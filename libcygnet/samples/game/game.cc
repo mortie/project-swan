@@ -74,7 +74,7 @@ public:
 	}
 
 	void draw(State &state) override {
-		state.q.show(x_, y_, image_.texture());
+		state.q.show(image_.texture(), x_, y_);
 	}
 
 private:
@@ -109,7 +109,7 @@ int main() {
 		Cygnet::GlShader(Cygnet::GlShader::Type::FRAGMENT, fragmentShader));
 	program.use();
 
-	Cygnet::RenderQueue q(program, 1/100.0);
+	Cygnet::RenderQueue q(program, 1/32.0);
 
 	State state{
 		.keys{},
@@ -165,7 +165,7 @@ int main() {
 			ent->draw(state);
 		}
 
-		q.setScale(win.xScale(), win.yScale());
+		q.setScale(win.xScale() * 0.5, win.yScale() * 0.5);
 		q.draw();
 		win.flip();
 	}
