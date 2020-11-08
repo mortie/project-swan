@@ -62,7 +62,6 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/lib
 
 add_subdirectory(third-party)
 add_subdirectory(tracy-tools)
-add_subdirectory(libcygnet)
 add_subdirectory(libswan)
 add_subdirectory(core.mod)
 
