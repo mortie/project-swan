@@ -63,6 +63,8 @@ int main(int argc, char **argv) {
 			renderflags |= SDL_RENDERER_SOFTWARE;
 		} else if (strcmp(argv[i], "--2x") == 0) {
 			gui_scale = 2;
+		} else if (strcmp(argv[i], "--gles") == 0) {
+			SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
 		} else {
 			warn << "Unknown argument: " << argv[i];
 		}
