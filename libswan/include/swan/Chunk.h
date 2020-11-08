@@ -30,7 +30,7 @@ public:
 
 	Chunk(ChunkPos pos): pos_(pos) {
 		data_.reset(new uint8_t[DATA_SIZE]);
-		memset(getLightData(), 255, CHUNK_WIDTH * CHUNK_HEIGHT);
+		memset(getLightData(), 0, CHUNK_WIDTH * CHUNK_HEIGHT);
 	}
 
 	Tile::ID *getTileData() {
@@ -65,10 +65,11 @@ public:
 
 	void setLightData(RelPos pos, uint8_t level) {
 		getLightData()[pos.y * CHUNK_WIDTH + pos.x] = level;
-		need_render_ = true;
+		need_light_render_ = true;
 	}
 
 	void render(const Context &ctx, SDL_Renderer *rnd);
+	void renderLight(const Context &ctx, SDL_Renderer *rnd);
 
 	void compress();
 	void decompress();
@@ -93,6 +94,7 @@ private:
 
 	ssize_t compressed_size_ = -1; // -1 if not compressed, a positive number if compressed
 	bool need_render_ = false;
+	bool need_light_render_ = false;
 	float deactivate_timer_ = DEACTIVATE_INTERVAL;
 	bool is_modified_ = false;
 

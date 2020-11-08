@@ -15,6 +15,7 @@ public:
 		registerImage("tile/grass");
 		registerImage("tile/tree-trunk");
 		registerImage("tile/leaves");
+		registerImage("tile/torch");
 		registerImage("entity/player-running");
 		registerImage("entity/player-still");
 		registerImage("misc/background-cave");
@@ -42,6 +43,12 @@ public:
 		registerTile({
 			.name = "leaves",
 			.image = "core/tile/leaves",
+		});
+		registerTile({
+			.name = "torch",
+			.image = "core/tile/torch",
+			.is_solid = false,
+			.light_level = 20,
 		});
 
 		registerItem({

@@ -103,8 +103,18 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 
 	Tile::ID old = chunk.getTileID(rp);
 	if (id != old) {
-		chunk.setTileID(rp, id, world_->getTileByID(id).image_.texture_.get());
+		Tile &newTile = world_->getTileByID(id);
+		Tile &oldTile = world_->getTileByID(old);
+		chunk.setTileID(rp, id, newTile.image_.texture_.get());
 		chunk.markModified();
+
+		if (oldTile.light_level_ > 0) {
+			removeLight(pos, oldTile.light_level_);
+		}
+
+		if (newTile.light_level_ > 0) {
+			addLight(pos, newTile.light_level_);
+		}
 	}
 }
 
@@ -253,6 +263,66 @@ void WorldPlane::tick(float dt) {
 
 void WorldPlane::debugBox(TilePos pos) {
 	debug_boxes_.push_back(pos);
+}
+
+void WorldPlane::addLight(TilePos pos, uint8_t level) {
+	int sqrLevel = level * level;
+
+	for (int y = -level; y <= level; ++y) {
+		for (int x = -level; x <= level; ++x) {
+			int sqrDist = x * x + y * y;
+			if (sqrDist > sqrLevel) {
+				continue;
+			}
+
+			int lightDiff = level - (int)sqrt(sqrDist);
+			if (lightDiff <= 0) {
+				continue;
+			}
+
+			TilePos tp = pos + Vec2i(x, y);
+			ChunkPos cp = chunkPos(tp);
+			Chunk::RelPos rp = relPos(tp);
+
+			Chunk &ch = getChunk(cp);
+			int light = (int)ch.getLightLevel(rp) + lightDiff;
+			if (light > 255) {
+				light = 255;
+			}
+
+			ch.setLightData(rp, light);
+		}
+	}
+}
+
+void WorldPlane::removeLight(TilePos pos, uint8_t level) {
+	int sqrLevel = level * level;
+
+	for (int y = -level; y <= level; ++y) {
+		for (int x = -level; x <= level; ++x) {
+			int sqrDist = x * x + y * y;
+			if (sqrDist > sqrLevel) {
+				continue;
+			}
+
+			int lightDiff = level - (int)sqrt(sqrDist);
+			if (lightDiff <= 0) {
+				continue;
+			}
+
+			TilePos tp = pos + Vec2i(x, y);
+			ChunkPos cp = chunkPos(tp);
+			Chunk::RelPos rp = relPos(tp);
+
+			Chunk &ch = getChunk(cp);
+			int light = (int)ch.getLightLevel(rp) - lightDiff;
+			if (light < 0) {
+				light = 0;
+			}
+
+			ch.setLightData(rp, light);
+		}
+	}
 }
 
 }

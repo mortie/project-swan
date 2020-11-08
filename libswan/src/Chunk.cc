@@ -72,6 +72,40 @@ void Chunk::decompress() {
 	compressed_size_ = -1;
 }
 
+void Chunk::renderLight(const Context &ctx, SDL_Renderer *rnd) {
+	std::optional<RenderTarget> target;
+
+	// The texture might not be created yet
+	if (!light_texture_) {
+		light_texture_.reset(SDL_CreateTexture(
+			ctx.game.win_.renderer_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET,
+			CHUNK_WIDTH, CHUNK_HEIGHT));
+		SDL_SetTextureBlendMode(light_texture_.get(), SDL_BLENDMODE_BLEND);
+
+		target.emplace(rnd, texture_.get());
+	} else {
+		target.emplace(rnd, texture_.get());
+	}
+
+	// Fill light texture
+	target.emplace(rnd, light_texture_.get());
+	RenderBlendMode mode(rnd, SDL_BLENDMODE_NONE);
+	RenderDrawColor color(rnd, 0, 0, 0, 0);
+	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
+		for (int x = 0; x < CHUNK_WIDTH; ++x) {
+			int level = getLightLevel({ x, y });
+			if (level >= 8)
+				color.change(0, 0, 0, 0);
+			else
+				color.change(0, 0, 0, 255 - level * 32);
+			SDL_Rect rect{ x, y, 1, 1 };
+			SDL_RenderFillRect(rnd, &rect);
+		}
+	}
+
+	need_light_render_ = false;
+}
+
 void Chunk::render(const Context &ctx, SDL_Renderer *rnd) {
 	std::optional<RenderTarget> target;
 
@@ -89,14 +123,6 @@ void Chunk::render(const Context &ctx, SDL_Renderer *rnd) {
 		SDL_RenderFillRect(rnd, &rect);
 	} else {
 		target.emplace(rnd, texture_.get());
-	}
-
-	// Same with light texture
-	if (!light_texture_) {
-		light_texture_.reset(SDL_CreateTexture(
-			ctx.game.win_.renderer_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET,
-			CHUNK_WIDTH, CHUNK_HEIGHT));
-		SDL_SetTextureBlendMode(light_texture_.get(), SDL_BLENDMODE_BLEND);
 	}
 
 	// We're caching tiles so we don't have to world.getTileByID() every time
@@ -117,19 +143,9 @@ void Chunk::render(const Context &ctx, SDL_Renderer *rnd) {
 		}
 	}
 
-	// Fill light texture
-	target.emplace(rnd, light_texture_.get());
-	RenderBlendMode mode(rnd, SDL_BLENDMODE_NONE);
-	RenderDrawColor color(rnd, 0, 0, 0, 0);
-	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
-		for (int x = 0; x < CHUNK_WIDTH; ++x) {
-			color.change(0, 0, 0, 255 - getLightLevel({ x, y }));
-			SDL_Rect rect{ x, y, 1, 1 };
-			SDL_RenderFillRect(rnd, &rect);
-		}
-	}
-
 	need_render_ = false;
+
+	renderLight(ctx, rnd);
 }
 
 void Chunk::renderList(SDL_Renderer *rnd) {
@@ -159,11 +175,14 @@ void Chunk::draw(const Context &ctx, Win &win) {
 	if (need_render_)
 		return;
 
+	// We're responsible for the light level rendering though
+	if (need_light_render_)
+		renderLight(ctx, win.renderer_);
+
 	if (draw_list_.size() > 0) {
 		renderList(win.renderer_);
 		draw_list_.clear();
 	}
-
 
 	auto chunkpos = pos_ * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT);
 	SDL_Rect rect{ 0, 0, CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE };

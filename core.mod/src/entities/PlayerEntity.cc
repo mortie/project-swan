@@ -31,6 +31,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	if (ctx.game.isMousePressed(SDL_BUTTON_LEFT))
 		ctx.plane.breakTile(mouse_tile_);
 
+	// Place block
+	if (ctx.game.isMousePressed(SDL_BUTTON_RIGHT)) {
+		if (ctx.plane.getTileID(mouse_tile_) == ctx.world.getTileID("@::air")) {
+			ctx.plane.setTile(mouse_tile_, "core::torch");
+		}
+	}
+
 	// Move left
 	if (ctx.game.isKeyPressed(SDL_SCANCODE_A) || ctx.game.isKeyPressed(SDL_SCANCODE_LEFT)) {
 		physics_.force += Swan::Vec2(-MOVE_FORCE, 0);

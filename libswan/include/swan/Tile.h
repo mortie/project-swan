@@ -19,16 +19,19 @@ public:
 		std::string name;
 		std::string image;
 		bool is_solid = true;
+		uint8_t light_level = 0;
 		std::optional<std::string> dropped_item = std::nullopt;
 	};
 
 	Tile(const ResourceManager &resources, const Builder &builder):
 		name_(builder.name), image_(resources.getImage(builder.image)),
-		is_solid_(builder.is_solid), dropped_item_(builder.dropped_item) {}
+		is_solid_(builder.is_solid), light_level_(builder.light_level),
+		dropped_item_(builder.dropped_item) {}
 
 	const std::string name_;
 	const ImageResource &image_;
 	const bool is_solid_;
+	const uint8_t light_level_;
 	const std::optional<std::string> dropped_item_;
 
 	static std::unique_ptr<Tile> createInvalid(const ResourceManager &ctx);

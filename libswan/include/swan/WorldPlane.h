@@ -79,6 +79,9 @@ public:
 	std::unique_ptr<WorldGen> gen_;
 
 private:
+	void addLight(TilePos pos, uint8_t level);
+	void removeLight(TilePos pos, uint8_t level);
+
 	std::map<std::pair<int, int>, Chunk> chunks_;
 	std::vector<Chunk *> active_chunks_;
 	std::vector<std::pair<ChunkPos, Chunk *>> tick_chunks_;
