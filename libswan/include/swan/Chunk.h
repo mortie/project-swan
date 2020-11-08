@@ -17,6 +17,10 @@ class Chunk {
 public:
 	using RelPos = TilePos;
 
+	static constexpr size_t DATA_SIZE =
+		CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID) + // Tiles
+		CHUNK_WIDTH * CHUNK_HEIGHT; // Light levels
+
 	// What does this chunk want the world gen to do after a tick?
 	enum class TickAction {
 		DEACTIVATE,
@@ -25,12 +29,18 @@ public:
 	};
 
 	Chunk(ChunkPos pos): pos_(pos) {
-		data_.reset(new uint8_t[CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)]);
+		data_.reset(new uint8_t[DATA_SIZE]);
+		memset(getLightData(), 255, CHUNK_WIDTH * CHUNK_HEIGHT);
 	}
 
 	Tile::ID *getTileData() {
 		assert(isActive());
 		return (Tile::ID *)data_.get();
+	}
+
+	uint8_t *getLightData() {
+		assert(isActive());
+		return data_.get() + CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID);
 	}
 
 	Tile::ID getTileID(RelPos pos) {
@@ -44,6 +54,17 @@ public:
 
 	void setTileData(RelPos pos, Tile::ID id) {
 		getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
+		need_render_ = true;
+	}
+
+	uint8_t getLightLevel(RelPos pos) {
+		return getLightData()[pos.y * CHUNK_WIDTH + pos.x];
+	}
+
+	void setLightLevel(RelPos pos, uint8_t level, SDL_Renderer *rnd);
+
+	void setLightData(RelPos pos, uint8_t level) {
+		getLightData()[pos.y * CHUNK_WIDTH + pos.x] = level;
 		need_render_ = true;
 	}
 
@@ -76,6 +97,7 @@ private:
 	bool is_modified_ = false;
 
 	CPtr<SDL_Texture, SDL_DestroyTexture> texture_;
+	CPtr<SDL_Texture, SDL_DestroyTexture> light_texture_;
 };
 
 }

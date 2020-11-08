@@ -37,6 +37,10 @@ public:
 		SDL_SetRenderDrawColor(rnd_, r, g, b, a);
 	}
 
+	void change(Uint8 r, Uint8 g, Uint8 b, Uint8 a = 255) {
+		SDL_SetRenderDrawColor(rnd_, r, g, b, a);
+	}
+
 	~RenderDrawColor() {
 		SDL_SetRenderDrawColor(rnd_, r_, g_, b_, a_);
 	}

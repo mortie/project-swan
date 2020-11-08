@@ -24,7 +24,7 @@ void Chunk::compress() {
 	uLongf destlen = sizeof(dest);
 	int ret = compress2(
 		(Bytef *)dest, &destlen,
-		(Bytef *)data_.get(), CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID),
+		(Bytef *)data_.get(), DATA_SIZE,
 		Z_BEST_COMPRESSION);
 
 	if (ret == Z_OK) {
@@ -36,7 +36,7 @@ void Chunk::compress() {
 
 		info
 			<< "Compressed chunk " << pos_ << " from "
-			<< CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID) << " bytes "
+			<< DATA_SIZE << " bytes "
 			<< "to " << destlen << " bytes";
 	} else if (ret == Z_BUF_ERROR) {
 		info
@@ -51,8 +51,8 @@ void Chunk::decompress() {
 	if (!isCompressed())
 		return;
 
-	auto dest = std::make_unique<uint8_t[]>(CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID));
-	uLongf destlen = CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID);
+	auto dest = std::make_unique<uint8_t[]>(DATA_SIZE);
+	uLongf destlen = DATA_SIZE;
 	int ret = uncompress(
 		dest.get(), &destlen,
 		(Bytef *)data_.get(), compressed_size_);
@@ -68,7 +68,7 @@ void Chunk::decompress() {
 	info
 		<< "Decompressed chunk " << pos_ << " from "
 		<< compressed_size_ << " bytes to "
-		<< CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID) << " bytes.";
+		<< DATA_SIZE << " bytes.";
 	compressed_size_ = -1;
 }
 
@@ -91,10 +91,19 @@ void Chunk::render(const Context &ctx, SDL_Renderer *rnd) {
 		target.emplace(rnd, texture_.get());
 	}
 
+	// Same with light texture
+	if (!light_texture_) {
+		light_texture_.reset(SDL_CreateTexture(
+			ctx.game.win_.renderer_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET,
+			CHUNK_WIDTH, CHUNK_HEIGHT));
+		SDL_SetTextureBlendMode(light_texture_.get(), SDL_BLENDMODE_BLEND);
+	}
+
 	// We're caching tiles so we don't have to world.getTileByID() every time
 	Tile::ID prevID = Tile::INVALID_ID;
 	Tile *tile = ctx.game.invalid_tile_.get();
 
+	// Fill tile texture
 	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 		for (int x = 0; x < CHUNK_WIDTH; ++x) {
 			Tile::ID id = getTileID(RelPos(x, y));
@@ -105,6 +114,18 @@ void Chunk::render(const Context &ctx, SDL_Renderer *rnd) {
 
 			SDL_Rect dest{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
 			SDL_RenderCopy(rnd, tile->image_.texture_.get(), nullptr, &dest);
+		}
+	}
+
+	// Fill light texture
+	target.emplace(rnd, light_texture_.get());
+	RenderBlendMode mode(rnd, SDL_BLENDMODE_NONE);
+	RenderDrawColor color(rnd, 0, 0, 0, 0);
+	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
+		for (int x = 0; x < CHUNK_WIDTH; ++x) {
+			color.change(0, 0, 0, 255 - getLightLevel({ x, y }));
+			SDL_Rect rect{ x, y, 1, 1 };
+			SDL_RenderFillRect(rnd, &rect);
 		}
 	}
 
@@ -143,10 +164,13 @@ void Chunk::draw(const Context &ctx, Win &win) {
 		draw_list_.clear();
 	}
 
+
+	auto chunkpos = pos_ * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT);
 	SDL_Rect rect{ 0, 0, CHUNK_WIDTH * TILE_SIZE, CHUNK_HEIGHT * TILE_SIZE };
-	win.showTexture(
-		pos_ * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT),
-		texture_.get(), &rect);
+	win.showTexture(chunkpos, texture_.get(), &rect);
+
+	SDL_Rect texrect{ 0, 0, CHUNK_WIDTH, CHUNK_HEIGHT };
+	win.showTexture(chunkpos, light_texture_.get(), &texrect, &rect);
 }
 
 Chunk::TickAction Chunk::tick(float dt) {

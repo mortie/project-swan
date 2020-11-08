@@ -68,10 +68,26 @@ public:
 			warn << "RenderCopyEx failed: " << SDL_GetError();
 	}
 
+	void showTexture(const Vec2 &pos, SDL_Texture *tex, SDL_Rect *srcrect,
+			SDL_Rect *dest, ShowTextureArgs args) {
+		SDL_Point *center = args.center ? &*args.center : nullptr;
+		SDL_Rect destrect = createDestRect(pos, Vec2(dest->w * args.hscale, dest->h * args.hscale));
+		if (SDL_RenderCopyEx(renderer_, tex, srcrect, &destrect, args.angle, center, args.flip) < 0)
+			warn << "RenderCopyEx failed: " << SDL_GetError();
+	}
+
 	// We want an overload which uses RenderCopy instead of RenderCopyEx,
 	// because RenderCopy might be faster
 	void showTexture(const Vec2 &pos, SDL_Texture *tex, SDL_Rect *srcrect) {
 		SDL_Rect destrect = createDestRect(pos, Vec2(srcrect->w, srcrect->h));
+		if (SDL_RenderCopy(renderer_, tex, srcrect, &destrect) < 0)
+			warn << "RenderCopy failed: " << SDL_GetError();
+	}
+
+	// Another overload without RenderCopyEx
+	void showTexture(const Vec2 &pos, SDL_Texture *tex, SDL_Rect *srcrect,
+			SDL_Rect *dest) {
+		SDL_Rect destrect = createDestRect(pos, Vec2(dest->w, dest->h));
 		if (SDL_RenderCopy(renderer_, tex, srcrect, &destrect) < 0)
 			warn << "RenderCopy failed: " << SDL_GetError();
 	}
