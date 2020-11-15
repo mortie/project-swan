@@ -45,6 +45,11 @@ int main() {
 
 	std::unique_lock<std::mutex> lock(cb.mut_);
 	cb.cond_.wait(lock, [&] { return cb.done_; });
+	cb.done_ = false;
+
+	lt.onSolidBlockAdded({ 10, 10 });
+	cb.cond_.wait(lock, [&] { return cb.done_; });
+	cb.done_ = false;
 
 	png::image<png::rgb_pixel> image(Swan::CHUNK_WIDTH, Swan::CHUNK_HEIGHT);
 	for (int y = 0; y < Swan::CHUNK_HEIGHT; ++y) {

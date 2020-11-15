@@ -4,7 +4,7 @@
 
 namespace Swan {
 
-static Vec2i lightChunkPos(TilePos pos) {
+static ChunkPos lightChunkPos(TilePos pos) {
 	// Same logic as in WorldPlane.cc
 	return Vec2i(
 		((size_t)pos.x + (LLONG_MAX / 2) + 1) / CHUNK_WIDTH -
@@ -32,7 +32,7 @@ LightingThread::~LightingThread() {
 }
 
 bool LightingThread::tileIsSolid(TilePos pos) {
-	Vec2i cpos = lightChunkPos(pos);
+	ChunkPos cpos = lightChunkPos(pos);
 	LightChunk *chunk = getChunk(cpos);
 	if (chunk == nullptr) {
 		return true;
@@ -42,7 +42,7 @@ bool LightingThread::tileIsSolid(TilePos pos) {
 	return chunk->blocks[rpos.y * CHUNK_WIDTH + rpos.x];
 }
 
-LightChunk *LightingThread::getChunk(Vec2i cpos) {
+LightChunk *LightingThread::getChunk(ChunkPos cpos) {
 	if (cached_chunk_ && cached_chunk_pos_ == cpos) {
 		return cached_chunk_;
 	}
@@ -60,27 +60,33 @@ LightChunk *LightingThread::getChunk(Vec2i cpos) {
 void LightingThread::processEvent(const Event &evt, std::vector<NewLightChunk> &newChunks) {
 	info << "event " << (int)evt.tag;
 
+	// TODO: Only mark chunks within some sphere
+	auto markChunksModified = [&](ChunkPos cpos) {
+		for (int y = -1; y <= 1; ++y) {
+			for (int x = -1; x <= 1; ++x) {
+				updated_chunks_.insert(cpos + Vec2i(x, y));
+			}
+		}
+	};
+
 	if (evt.tag == Event::Tag::CHUNK_ADDED) {
 		chunks_.emplace(std::piecewise_construct,
 				std::forward_as_tuple(evt.pos),
 				std::forward_as_tuple(std::move(newChunks[evt.num])));
-		LightChunk &ch = chunks_[evt.pos]; // Create and default initialize
-		ch.was_updated = true;
-		updated_chunks_.insert(evt.pos);
+		markChunksModified(evt.pos);
 		return;
 	} else if (evt.tag == Event::Tag::CHUNK_REMOVED) {
 		chunks_.erase(evt.pos);
+		markChunksModified(evt.pos);
 		return;
 	}
 
-	Vec2i cpos = lightChunkPos(evt.pos);
+	ChunkPos cpos = lightChunkPos(evt.pos);
 	LightChunk *ch = getChunk(cpos);
 	if (!ch) return;
-	ch->was_updated = true;
+	markChunksModified(cpos);
 	updated_chunks_.insert(cpos);
 	Vec2i rpos = lightRelPos(evt.pos);
-
-	// TODO: Mark neighbouring chunks as updated
 
 	switch (evt.tag) {
 	case Event::Tag::BLOCK_ADDED:
@@ -108,22 +114,10 @@ void LightingThread::processEvent(const Event &evt, std::vector<NewLightChunk> &
 	}
 }
 
-int LightingThread::recalcTile(LightChunk &chunk, Vec2i cpos, Vec2i rpos, TilePos base) {
-	std::vector<std::pair<Vec2i, uint8_t>> lights;
+int LightingThread::recalcTile(
+		LightChunk &chunk, ChunkPos cpos, Vec2i rpos, TilePos base,
+		std::vector<std::pair<TilePos, uint8_t>> &lights) {
 	TilePos pos = rpos + base;
-
-	// TODO: Gather light sources from other chunks oo
-	for (auto &[lightrel, level]: chunk.light_sources) {
-		TilePos lightpos = base + Vec2i(lightrel.first, lightrel.second);
-		Vec2i diff = lightpos - pos;
-		if (diff.x * diff.x + diff.y * diff.y > level * level) {
-			continue;
-		}
-
-		lights.push_back({ lightpos, level });
-	}
-
-	chunk.light_levels[rpos.y * CHUNK_WIDTH + rpos.x] = 0;
 
 	constexpr int accuracy = 4;
 	auto raycast = [&](Vec2 from, Vec2 to) {
@@ -131,10 +125,10 @@ int LightingThread::recalcTile(LightChunk &chunk, Vec2i cpos, Vec2i rpos, TilePo
 		float dist = ((Vec2)diff).length();
 		Vec2 step = (Vec2)diff / (dist * accuracy);
 		Vec2 currpos = from;
-		Vec2i currtile = Vec2i(floor(currpos.x), floor(currpos.y));
+		TilePos currtile = TilePos(floor(currpos.x), floor(currpos.y));
 		auto proceed = [&]() {
-			Vec2i t;
-			while ((t = Vec2i(floor(currpos.x), floor(currpos.y))) == currtile) {
+			TilePos t;
+			while ((t = TilePos(floor(currpos.x), floor(currpos.y))) == currtile) {
 				currpos += step;
 			}
 			currtile = t;
@@ -159,6 +153,10 @@ int LightingThread::recalcTile(LightChunk &chunk, Vec2i cpos, Vec2i rpos, TilePo
 	for (auto &[lightpos, level]: lights) {
 		if (lightpos == pos) {
 			acc += level;
+			continue;
+		}
+
+		if ((lightpos - pos).squareLength() > level * level) {
 			continue;
 		}
 
@@ -188,14 +186,37 @@ int LightingThread::recalcTile(LightChunk &chunk, Vec2i cpos, Vec2i rpos, TilePo
 	return acc;
 }
 
-void LightingThread::processUpdatedChunk(LightChunk &chunk, Vec2i cpos) {
+void LightingThread::processUpdatedChunk(LightChunk &chunk, ChunkPos cpos) {
 	auto start = std::chrono::steady_clock::now();
+	TilePos base = cpos * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT);
+	std::vector<std::pair<TilePos, uint8_t>> lights;
 
-	TilePos base = cpos * Vec2i(CHUNK_WIDTH * CHUNK_HEIGHT);
+	for (auto &[pos, level]: chunk.light_sources) {
+		lights.emplace_back(Vec2i(pos) + base, level);
+	}
+
+	auto addLightFromChunk = [&](LightChunk *chunk, int dx, int dy) {
+		if (chunk == nullptr) {
+			return;
+		}
+
+		TilePos b = base + Vec2i(dx * CHUNK_WIDTH, dy * CHUNK_HEIGHT);
+		for (auto &[pos, level]: chunk->light_sources) {
+			lights.emplace_back(TilePos(pos) + b, level);
+		}
+	};
+
+	for (int y = -1; y <= 1; ++y) {
+		for (int x = -1; x <= 1; ++x) {
+			if (y == 0 && x == 0) continue;
+			addLightFromChunk(getChunk(cpos + Vec2i(x, y)), x, y);
+		}
+	}
+
 	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 		for (int x = 0; x < CHUNK_WIDTH; ++x) {
 			chunk.light_levels[y * CHUNK_WIDTH + x] =
-				recalcTile(chunk, cpos, Vec2i(x, y), base);
+				recalcTile(chunk, cpos, Vec2i(x, y), base, lights);
 		}
 	}
 
@@ -228,7 +249,7 @@ void LightingThread::run() {
 		for (auto &pos: updated_chunks_) {
 			auto ch = chunks_.find(pos);
 			if (ch != chunks_.end()) {
-				processUpdatedChunk(ch->second, Vec2i(pos.first, pos.second));
+				processUpdatedChunk(ch->second, ChunkPos(pos.first, pos.second));
 			}
 		}
 

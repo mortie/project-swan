@@ -15,6 +15,7 @@ struct Vector2 {
 	MSGPACK_DEFINE(x, y)
 
 	constexpr Vector2(T x = 0, T y = 0): x(x), y(y) {}
+	constexpr Vector2(std::pair<T, T> p): x(p.first), y(p.second) {}
 
 	constexpr Vector2<T> &set(T x, T y) {
 		this->x = x;

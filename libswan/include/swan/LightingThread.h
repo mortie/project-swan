@@ -32,7 +32,7 @@ struct LightChunk {
 
 class LightingCallback {
 public:
-	virtual void onLightChunkUpdated(const LightChunk &chunk, Vec2i pos) = 0;
+	virtual void onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos) = 0;
 };
 
 class LightingThread {
@@ -44,8 +44,8 @@ public:
 	void onSolidBlockRemoved(TilePos pos);
 	void onLightAdded(TilePos pos, uint8_t level);
 	void onLightRemoved(TilePos pos, uint8_t level);
-	void onChunkAdded(Vec2i pos, NewLightChunk &&chunk);
-	void onChunkRemoved(Vec2i pos);
+	void onChunkAdded(ChunkPos pos, NewLightChunk &&chunk);
+	void onChunkRemoved(ChunkPos pos);
 
 private:
 	struct Event {
@@ -61,10 +61,12 @@ private:
 	};
 
 	bool tileIsSolid(TilePos pos);
-	LightChunk *getChunk(Vec2i cpos);
+	LightChunk *getChunk(ChunkPos cpos);
 
-	int recalcTile(LightChunk &chunk, Vec2i cpos, Vec2i rpos, TilePos base);
-	void processUpdatedChunk(LightChunk &chunk, Vec2i cpos);
+	int recalcTile(
+			LightChunk &chunk, ChunkPos cpos, Vec2i rpos, TilePos base,
+			std::vector<std::pair<TilePos, uint8_t>> &lights);
+	void processUpdatedChunk(LightChunk &chunk, ChunkPos cpos);
 	void processEvent(const Event &event, std::vector<NewLightChunk> &newChunks);
 	void run();
 
