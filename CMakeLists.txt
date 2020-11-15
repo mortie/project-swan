@@ -33,10 +33,6 @@ elseif(CMAKE_BUILD_TYPE STREQUAL Debug)
 	message(STATUS "Build mode: Debug")
 	add_compile_options(-g -Og)
 
-elseif(CMAKE_BUILD_TYPE STREQUAL DebugRelease)
-	message(STATUS "Build mode: DebugRelease")
-	add_compile_options(-O3 -flto -DNDEBUG -g)
-
 elseif(CMAKE_BUILD_TYPE STREQUAL Tracy)
 	message(STATUS "Build mode: Tracy")
 	add_compile_options(-O3 -flto -DNDEBUG -g -DTRACY_ENABLE -DTRACY_ON_DEMAND)
@@ -45,7 +41,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL Tracy)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
 	message(STATUS "Build mode: Release")
-	add_compile_options(-O3 -flto -DNDEBUG)
+	add_compile_options(-O3 -flto -DNDEBUG -g)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
 
 else()
