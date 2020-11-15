@@ -58,8 +58,7 @@ LightChunk *LightServer::getChunk(ChunkPos cpos) {
 }
 
 void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &newChunks) {
-	// TODO: Only mark chunks within some sphere
-	auto markChunksModified = [&](ChunkPos cpos) {
+	auto markAdjacentChunksModified = [&](ChunkPos cpos) {
 		for (int y = -1; y <= 1; ++y) {
 			for (int x = -1; x <= 1; ++x) {
 				updated_chunks_.insert(cpos + Vec2i(x, y));
@@ -67,42 +66,62 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 		}
 	};
 
+	auto markChunksModified = [&](ChunkPos cpos, Vec2i rpos, int range) {
+		bool l = rpos.x - range <= 0;
+		bool r = rpos.x + range >= CHUNK_WIDTH - 1;
+		bool t = rpos.y - range <= 0;
+		bool b = rpos.y + range >= CHUNK_HEIGHT - 1;
+
+		updated_chunks_.insert(cpos);
+		if (l) updated_chunks_.insert(cpos + Vec2i(-1, 0));
+		if (r) updated_chunks_.insert(cpos + Vec2i(1, 0));
+		if (t) updated_chunks_.insert(cpos + Vec2i(0, -1));
+		if (b) updated_chunks_.insert(cpos + Vec2i(0, 1));
+		if (l && t) updated_chunks_.insert(cpos + Vec2i(-1, -1));
+		if (r && t) updated_chunks_.insert(cpos + Vec2i(1, -1));
+		if (l && b) updated_chunks_.insert(cpos + Vec2i(-1, 1));
+		if (r && b) updated_chunks_.insert(cpos + Vec2i(1, 1));
+	};
+
 	if (evt.tag == Event::Tag::CHUNK_ADDED) {
 		chunks_.emplace(std::piecewise_construct,
 				std::forward_as_tuple(evt.pos),
 				std::forward_as_tuple(std::move(newChunks[evt.num])));
-		markChunksModified(evt.pos);
+		markAdjacentChunksModified(evt.pos);
 		return;
 	} else if (evt.tag == Event::Tag::CHUNK_REMOVED) {
 		chunks_.erase(evt.pos);
-		markChunksModified(evt.pos);
+		markAdjacentChunksModified(evt.pos);
 		return;
 	}
 
 	ChunkPos cpos = lightChunkPos(evt.pos);
 	LightChunk *ch = getChunk(cpos);
 	if (!ch) return;
-	markChunksModified(cpos);
 	Vec2i rpos = lightRelPos(evt.pos);
 
 	switch (evt.tag) {
 	case Event::Tag::BLOCK_ADDED:
 		ch->blocks.set(rpos.y * CHUNK_WIDTH + rpos.x, true);
 		ch->blocks_line[rpos.x] += 1;
+		markChunksModified(cpos, rpos, LIGHT_CUTOFF);
 		break;
 
 	case Event::Tag::BLOCK_REMOVED:
 		ch->blocks.set(rpos.y * CHUNK_WIDTH + rpos.x, false);
 		ch->blocks_line[rpos.x] -= 1;
+		markChunksModified(cpos, rpos, LIGHT_CUTOFF);
 		break;
 
 	case Event::Tag::LIGHT_ADDED:
 		info << cpos << ": Add " << evt.num << " light to " << rpos;
 		ch->light_sources[rpos] += evt.num;
+		markChunksModified(cpos, rpos, ch->light_sources[rpos]);
 		break;
 
 	case Event::Tag::LIGHT_REMOVED:
 		info << cpos << ": Remove " << evt.num << " light to " << rpos;
+		markChunksModified(cpos, rpos, ch->light_sources[rpos]);
 		ch->light_sources[rpos] -= evt.num;
 		if (ch->light_sources[rpos] == 0) {
 			ch->light_sources.erase(rpos);
@@ -271,8 +290,6 @@ void LightServer::run() {
 				cb_.onLightChunkUpdated(ch->second, pos);
 			}
 		}
-
-		updated_chunks_.clear();
 	}
 }
 

@@ -48,6 +48,8 @@ public:
 	void onChunkRemoved(ChunkPos pos);
 
 private:
+	static constexpr int LIGHT_CUTOFF = 64;
+
 	struct Event {
 		enum class Tag {
 			BLOCK_ADDED, BLOCK_REMOVED, LIGHT_ADDED, LIGHT_REMOVED,
