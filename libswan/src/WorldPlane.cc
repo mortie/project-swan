@@ -218,7 +218,6 @@ void WorldPlane::draw(Win &win) {
 	// Just init one chunk per frame
 	if (chunk_init_list_.size() > 0) {
 		Chunk *chunk = chunk_init_list_.front();
-		info << "render chunk " << chunk->pos_;
 		chunk_init_list_.pop_front();
 		chunk->render(ctx, win.renderer_);
 	}
@@ -295,18 +294,20 @@ void WorldPlane::debugBox(TilePos pos) {
 	debug_boxes_.push_back(pos);
 }
 
-void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos) {
-	std::lock_guard<std::mutex> lock(mut_);
-	Chunk &realChunk = getChunk(pos);
-	realChunk.setLightData(chunk.light_levels);
-}
-
 void WorldPlane::addLight(TilePos pos, uint8_t level) {
+	getChunk(chunkPos(pos));
 	lighting_->onLightAdded(pos, level);
 }
 
 void WorldPlane::removeLight(TilePos pos, uint8_t level) {
+	getChunk(chunkPos(pos));
 	lighting_->onLightRemoved(pos, level);
+}
+
+void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos) {
+	std::lock_guard<std::mutex> lock(mut_);
+	Chunk &realChunk = getChunk(pos);
+	realChunk.setLightData(chunk.light_levels);
 }
 
 }

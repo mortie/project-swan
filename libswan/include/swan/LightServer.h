@@ -14,7 +14,7 @@ namespace Swan {
 
 struct NewLightChunk {
 	std::bitset<CHUNK_WIDTH * CHUNK_HEIGHT> blocks;
-	std::map<std::pair<int, int>, uint8_t> light_sources;
+	std::map<std::pair<int, int>, int> light_sources;
 };
 
 struct LightChunk {
@@ -25,7 +25,7 @@ struct LightChunk {
 	std::bitset<CHUNK_WIDTH * CHUNK_HEIGHT> blocks;
 	uint8_t light_levels[CHUNK_WIDTH * CHUNK_HEIGHT] = { 0 };
 	uint8_t blocks_line[CHUNK_WIDTH] = { 0 };
-	std::map<std::pair<int, int>, uint8_t> light_sources;
+	std::map<std::pair<int, int>, int> light_sources;
 
 	bool was_updated = false;
 };
@@ -42,8 +42,8 @@ public:
 
 	void onSolidBlockAdded(TilePos pos);
 	void onSolidBlockRemoved(TilePos pos);
-	void onLightAdded(TilePos pos, uint8_t level);
-	void onLightRemoved(TilePos pos, uint8_t level);
+	void onLightAdded(TilePos pos, int level);
+	void onLightRemoved(TilePos pos, int level);
 	void onChunkAdded(ChunkPos pos, NewLightChunk &&chunk);
 	void onChunkRemoved(ChunkPos pos);
 
@@ -56,7 +56,7 @@ private:
 
 		TilePos pos;
 		union {
-			size_t num;
+			int num;
 		};
 	};
 
@@ -65,7 +65,7 @@ private:
 
 	int recalcTile(
 			LightChunk &chunk, ChunkPos cpos, Vec2i rpos, TilePos base,
-			std::vector<std::pair<TilePos, uint8_t>> &lights);
+			std::vector<std::pair<TilePos, int>> &lights);
 	void processUpdatedChunk(LightChunk &chunk, ChunkPos cpos);
 	void processEvent(const Event &event, std::vector<NewLightChunk> &newChunks);
 	void run();
@@ -97,13 +97,13 @@ inline void LightServer::onSolidBlockRemoved(TilePos pos) {
 	cond_.notify_one();
 }
 
-inline void LightServer::onLightAdded(TilePos pos, uint8_t level) {
+inline void LightServer::onLightAdded(TilePos pos, int level) {
 	std::lock_guard<std::mutex> lock(mut_);
 	buffers_[buffer_].push_back({ Event::Tag::LIGHT_ADDED, pos, { .num = level } });
 	cond_.notify_one();
 }
 
-inline void LightServer::onLightRemoved(TilePos pos, uint8_t level) {
+inline void LightServer::onLightRemoved(TilePos pos, int level) {
 	std::lock_guard<std::mutex> lock(mut_);
 	buffers_[buffer_].push_back({ Event::Tag::LIGHT_REMOVED, pos, { .num = level  } });
 	cond_.notify_one();
@@ -112,7 +112,7 @@ inline void LightServer::onLightRemoved(TilePos pos, uint8_t level) {
 inline void LightServer::onChunkAdded(Vec2i pos, NewLightChunk &&chunk) {
 	std::lock_guard<std::mutex> lock(mut_);
 	buffers_[buffer_].push_back({ Event::Tag::CHUNK_ADDED, pos,
-			{ .num = new_chunk_buffers_[buffer_].size() } });
+			{ .num = (int)new_chunk_buffers_[buffer_].size() } });
 	new_chunk_buffers_[buffer_].push_back(std::move(chunk));
 	cond_.notify_one();
 }

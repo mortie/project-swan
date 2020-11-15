@@ -104,6 +104,9 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 	case Event::Tag::LIGHT_REMOVED:
 		info << cpos << ": Remove " << evt.num << " light to " << rpos;
 		ch->light_sources[rpos] -= evt.num;
+		if (ch->light_sources[rpos] == 0) {
+			ch->light_sources.erase(rpos);
+		}
 		break;
 
 	// These were handled earlier
@@ -115,7 +118,7 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 
 int LightServer::recalcTile(
 		LightChunk &chunk, ChunkPos cpos, Vec2i rpos, TilePos base,
-		std::vector<std::pair<TilePos, uint8_t>> &lights) {
+		std::vector<std::pair<TilePos, int>> &lights) {
 	TilePos pos = rpos + base;
 
 	constexpr int accuracy = 4;
@@ -132,8 +135,6 @@ int LightServer::recalcTile(
 			}
 			currtile = t;
 		};
-
-		proceed();
 
 		bool hit = false;
 		while ((currpos - from).squareLength() <= diff.squareLength()) {
@@ -162,21 +163,35 @@ int LightServer::recalcTile(
 		float dist = ((Vec2)(lightpos - pos)).length();
 		int light = level - (int)dist;
 
-		int hit =
-			raycast(
-				Vec2(pos.x + 0.3, pos.y + 0.3),
-				Vec2(lightpos.x + 0.3, lightpos.y + 0.3)) +
-			raycast(
-				Vec2(pos.x + 0.7, pos.y + 0.3),
-				Vec2(lightpos.x + 0.7, lightpos.y + 0.3)) +
-			raycast(
-				Vec2(pos.x + 0.3, pos.y + 0.7),
-				Vec2(lightpos.x + 0.3, lightpos.y + 0.7)) +
-			raycast(
-				Vec2(pos.x + 0.7, pos.y + 0.7),
-				Vec2(lightpos.x + 0.7, lightpos.y + 0.7));
+		if (!tileIsSolid(pos)) {
+			bool hit = raycast(
+					Vec2(pos.x + 0.5, pos.y + 0.5),
+					Vec2(lightpos.x + 0.5, lightpos.y + 0.5));
+			if (!hit) {
+				acc += light;
+			}
 
-		acc += (light * (4 - hit)) / 4;
+			continue;
+		}
+
+		bool blocked =
+			raycast(
+				Vec2(pos.x + 0.5, pos.y - 0.1),
+				Vec2(lightpos.x + 0.5, lightpos.y + 0.5)) &&
+			raycast(
+				Vec2(pos.x + 0.5, pos.y + 1.1),
+				Vec2(lightpos.x + 0.5, lightpos.y + 0.5)) &&
+			raycast(
+				Vec2(pos.x - 0.1, pos.y + 0.5),
+				Vec2(lightpos.x + 0.5, lightpos.y + 0.5)) &&
+			raycast(
+				Vec2(pos.x + 1.1, pos.y + 0.5),
+				Vec2(lightpos.x + 0.5, lightpos.y + 0.5));
+
+		if (!blocked) {
+			acc += light;
+		}
+
 		if (acc >= 255) {
 			return 255;
 		}
@@ -188,7 +203,7 @@ int LightServer::recalcTile(
 void LightServer::processUpdatedChunk(LightChunk &chunk, ChunkPos cpos) {
 	auto start = std::chrono::steady_clock::now();
 	TilePos base = cpos * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT);
-	std::vector<std::pair<TilePos, uint8_t>> lights;
+	std::vector<std::pair<TilePos, int>> lights;
 
 	for (auto &[pos, level]: chunk.light_sources) {
 		lights.emplace_back(Vec2i(pos) + base, level);

@@ -76,6 +76,9 @@ public:
 
 	void debugBox(TilePos pos);
 
+	void addLight(TilePos pos, uint8_t level);
+	void removeLight(TilePos pos, uint8_t level);
+
 	// LightingCallback implementation
 	void onLightChunkUpdated(const LightChunk &chunk, Vec2i pos) final;
 
@@ -85,9 +88,6 @@ public:
 	std::mutex mut_;
 
 private:
-	void addLight(TilePos pos, uint8_t level);
-	void removeLight(TilePos pos, uint8_t level);
-
 	std::unique_ptr<LightServer> lighting_;
 
 	std::map<std::pair<int, int>, Chunk> chunks_;
