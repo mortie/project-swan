@@ -26,16 +26,29 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	mouse_tile_ = ctx.game.getMouseTile();
 	ctx.plane.debugBox(mouse_tile_);
 	jump_timer_.tick(dt);
+	place_timer_.tick(dt);
 
 	// Break block
 	if (ctx.game.isMousePressed(SDL_BUTTON_LEFT))
 		ctx.plane.breakTile(mouse_tile_);
 
 	// Place block
-	if (ctx.game.isMousePressed(SDL_BUTTON_RIGHT)) {
+	if (ctx.game.isMousePressed(SDL_BUTTON_RIGHT) && place_timer_.periodic(0.50)) {
 		if (ctx.plane.getTileID(mouse_tile_) == ctx.world.getTileID("@::air")) {
 			ctx.plane.setTile(mouse_tile_, "core::torch");
 		}
+	}
+
+	Swan::Vec2 headPos = body_.topMid() + Swan::Vec2(0, 0.5);
+	Swan::TilePos tilePos = Swan::Vec2i(floor(headPos.x), floor(headPos.y));
+	if (!placed_light_) {
+		ctx.plane.addLight(tilePos, LIGHT_LEVEL);
+		placed_light_ = true;
+		light_tile_ = tilePos;
+	} else if (tilePos != light_tile_) {
+		ctx.plane.removeLight(light_tile_, LIGHT_LEVEL);
+		ctx.plane.addLight(tilePos, LIGHT_LEVEL);
+		light_tile_ = tilePos;
 	}
 
 	// Move left
