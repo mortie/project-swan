@@ -30,15 +30,15 @@ struct LightChunk {
 	bool was_updated = false;
 };
 
-class LightingCallback {
+class LightCallback {
 public:
 	virtual void onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos) = 0;
 };
 
-class LightingThread {
+class LightServer {
 public:
-	LightingThread(LightingCallback &cb);
-	~LightingThread();
+	LightServer(LightCallback &cb);
+	~LightServer();
 
 	void onSolidBlockAdded(TilePos pos);
 	void onSolidBlockRemoved(TilePos pos);
@@ -70,7 +70,7 @@ private:
 	void processEvent(const Event &event, std::vector<NewLightChunk> &newChunks);
 	void run();
 
-	LightingCallback &cb_;
+	LightCallback &cb_;
 	bool running_ = true;
 	std::map<std::pair<int, int>, LightChunk> chunks_;
 	std::set<std::pair<int, int>> updated_chunks_;
@@ -85,31 +85,31 @@ private:
 	std::mutex mut_;
 };
 
-inline void LightingThread::onSolidBlockAdded(TilePos pos) {
+inline void LightServer::onSolidBlockAdded(TilePos pos) {
 	std::lock_guard<std::mutex> lock(mut_);
 	buffers_[buffer_].push_back({ Event::Tag::BLOCK_ADDED, pos, { 0 } });
 	cond_.notify_one();
 }
 
-inline void LightingThread::onSolidBlockRemoved(TilePos pos) {
+inline void LightServer::onSolidBlockRemoved(TilePos pos) {
 	std::lock_guard<std::mutex> lock(mut_);
 	buffers_[buffer_].push_back({ Event::Tag::BLOCK_REMOVED, pos, { 0 } });
 	cond_.notify_one();
 }
 
-inline void LightingThread::onLightAdded(TilePos pos, uint8_t level) {
+inline void LightServer::onLightAdded(TilePos pos, uint8_t level) {
 	std::lock_guard<std::mutex> lock(mut_);
 	buffers_[buffer_].push_back({ Event::Tag::LIGHT_ADDED, pos, { .num = level } });
 	cond_.notify_one();
 }
 
-inline void LightingThread::onLightRemoved(TilePos pos, uint8_t level) {
+inline void LightServer::onLightRemoved(TilePos pos, uint8_t level) {
 	std::lock_guard<std::mutex> lock(mut_);
 	buffers_[buffer_].push_back({ Event::Tag::LIGHT_REMOVED, pos, { .num = level  } });
 	cond_.notify_one();
 }
 
-inline void LightingThread::onChunkAdded(Vec2i pos, NewLightChunk &&chunk) {
+inline void LightServer::onChunkAdded(Vec2i pos, NewLightChunk &&chunk) {
 	std::lock_guard<std::mutex> lock(mut_);
 	buffers_[buffer_].push_back({ Event::Tag::CHUNK_ADDED, pos,
 			{ .num = new_chunk_buffers_[buffer_].size() } });
@@ -117,7 +117,7 @@ inline void LightingThread::onChunkAdded(Vec2i pos, NewLightChunk &&chunk) {
 	cond_.notify_one();
 }
 
-inline void LightingThread::onChunkRemoved(Vec2i pos) {
+inline void LightServer::onChunkRemoved(Vec2i pos) {
 	std::lock_guard<std::mutex> lock(mut_);
 	buffers_[buffer_].push_back({ Event::Tag::CHUNK_ADDED, pos, { 0 } });
 	cond_.notify_one();

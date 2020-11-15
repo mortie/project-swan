@@ -1,9 +1,9 @@
-#include <swan/LightingThread.h>
+#include <swan/LightServer.h>
 #include <swan/log.h>
 #include <png++/png.hpp>
 #include <chrono>
 
-class CB final: public Swan::LightingCallback {
+class CB final: public Swan::LightCallback {
 public:
 	void onLightChunkUpdated(const Swan::LightChunk &chunk, Swan::Vec2i pos) final {
 		Swan::info << "light chunk at " << pos;
@@ -20,7 +20,7 @@ public:
 
 int main() {
 	CB cb;
-	Swan::LightingThread lt(cb);
+	Swan::LightServer lt(cb);
 
 	Swan::NewLightChunk nc;
 	auto set = [&](int x, int y) { nc.blocks[y * Swan::CHUNK_WIDTH + x] = true; };

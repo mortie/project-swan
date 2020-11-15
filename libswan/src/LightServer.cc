@@ -1,4 +1,4 @@
-#include "LightingThread.h"
+#include "LightServer.h"
 
 #include "log.h"
 
@@ -22,16 +22,16 @@ static Vec2i lightRelPos(TilePos pos) {
 			CHUNK_HEIGHT)) % CHUNK_HEIGHT);
 }
 
-LightingThread::LightingThread(LightingCallback &cb):
-	cb_(cb), thread_(&LightingThread::run, this) {}
+LightServer::LightServer(LightCallback &cb):
+	cb_(cb), thread_(&LightServer::run, this) {}
 
-LightingThread::~LightingThread() {
+LightServer::~LightServer() {
 	running_ = false;
 	cond_.notify_one();
 	thread_.join();
 }
 
-bool LightingThread::tileIsSolid(TilePos pos) {
+bool LightServer::tileIsSolid(TilePos pos) {
 	ChunkPos cpos = lightChunkPos(pos);
 	LightChunk *chunk = getChunk(cpos);
 	if (chunk == nullptr) {
@@ -42,7 +42,7 @@ bool LightingThread::tileIsSolid(TilePos pos) {
 	return chunk->blocks[rpos.y * CHUNK_WIDTH + rpos.x];
 }
 
-LightChunk *LightingThread::getChunk(ChunkPos cpos) {
+LightChunk *LightServer::getChunk(ChunkPos cpos) {
 	if (cached_chunk_ && cached_chunk_pos_ == cpos) {
 		return cached_chunk_;
 	}
@@ -57,7 +57,7 @@ LightChunk *LightingThread::getChunk(ChunkPos cpos) {
 	return nullptr;
 }
 
-void LightingThread::processEvent(const Event &evt, std::vector<NewLightChunk> &newChunks) {
+void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &newChunks) {
 	info << "event " << (int)evt.tag;
 
 	// TODO: Only mark chunks within some sphere
@@ -114,7 +114,7 @@ void LightingThread::processEvent(const Event &evt, std::vector<NewLightChunk> &
 	}
 }
 
-int LightingThread::recalcTile(
+int LightServer::recalcTile(
 		LightChunk &chunk, ChunkPos cpos, Vec2i rpos, TilePos base,
 		std::vector<std::pair<TilePos, uint8_t>> &lights) {
 	TilePos pos = rpos + base;
@@ -186,7 +186,7 @@ int LightingThread::recalcTile(
 	return acc;
 }
 
-void LightingThread::processUpdatedChunk(LightChunk &chunk, ChunkPos cpos) {
+void LightServer::processUpdatedChunk(LightChunk &chunk, ChunkPos cpos) {
 	auto start = std::chrono::steady_clock::now();
 	TilePos base = cpos * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT);
 	std::vector<std::pair<TilePos, uint8_t>> lights;
@@ -227,7 +227,7 @@ void LightingThread::processUpdatedChunk(LightChunk &chunk, ChunkPos cpos) {
 	cb_.onLightChunkUpdated(chunk, cpos);
 }
 
-void LightingThread::run() {
+void LightServer::run() {
 	std::unique_lock<std::mutex> lock(mut_, std::defer_lock);
 	while (running_) {
 		lock.lock();

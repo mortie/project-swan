@@ -46,7 +46,7 @@ WorldPlane::WorldPlane(
 		ID id, World *world, std::unique_ptr<WorldGen> gen,
 		std::vector<std::unique_ptr<EntityCollection>> &&colls):
 			id_(id), world_(world), gen_(std::move(gen)),
-			lighting_(std::make_unique<LightingThread>(*this)),
+			lighting_(std::make_unique<LightServer>(*this)),
 			ent_colls_(std::move(colls)) {
 
 	for (auto &coll: ent_colls_) {
