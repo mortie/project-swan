@@ -11,6 +11,7 @@ add_library(libswan SHARED
 	src/gfxutil.cc
 	src/Item.cc
 	src/ItemStack.cc
+	src/LightingThread.cc
 	src/Mod.cc
 	src/OS.cc
 	src/Resource.cc

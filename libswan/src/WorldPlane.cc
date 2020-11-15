@@ -45,7 +45,9 @@ Context WorldPlane::getContext() {
 WorldPlane::WorldPlane(
 		ID id, World *world, std::unique_ptr<WorldGen> gen,
 		std::vector<std::unique_ptr<EntityCollection>> &&colls):
-			id_(id), world_(world), gen_(std::move(gen)), ent_colls_(std::move(colls)) {
+			id_(id), world_(world), gen_(std::move(gen)),
+			lighting_(std::make_unique<LightingThread>(*this)),
+			ent_colls_(std::move(colls)) {
 
 	for (auto &coll: ent_colls_) {
 		ent_colls_by_type_[coll->type()] = coll.get();
@@ -108,12 +110,22 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 		chunk.setTileID(rp, id, newTile.image_.texture_.get());
 		chunk.markModified();
 
-		if (oldTile.light_level_ > 0) {
-			removeLight(pos, oldTile.light_level_);
+		if (!oldTile.is_solid_ && newTile.is_solid_) {
+			lighting_->onSolidBlockAdded(pos);
+		} else if (oldTile.is_solid_ && !newTile.is_solid_) {
+			lighting_->onSolidBlockRemoved(pos);
 		}
 
-		if (newTile.light_level_ > 0) {
-			addLight(pos, newTile.light_level_);
+		if (newTile.light_level_ != oldTile.light_level_) {
+			if (oldTile.light_level_ > 0) {
+				lighting_->onLightRemoved(pos, oldTile.light_level_);
+				removeLight(pos, oldTile.light_level_);
+			}
+
+			if (newTile.light_level_ > 0) {
+				lighting_->onLightAdded(pos, newTile.light_level_);
+				addLight(pos, newTile.light_level_);
+			}
 		}
 	}
 }

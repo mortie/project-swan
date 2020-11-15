@@ -16,13 +16,14 @@
 #include "WorldGen.h"
 #include "Entity.h"
 #include "Collection.h"
+#include "LightingThread.h"
 
 namespace Swan {
 
 class World;
 class Game;
 
-class WorldPlane: NonCopyable {
+class WorldPlane final: NonCopyable, public LightingCallback {
 public:
 	using ID = uint16_t;
 
@@ -74,6 +75,9 @@ public:
 
 	void debugBox(TilePos pos);
 
+	// LightingCallback implementation
+	void onLightChunkUpdated(const LightChunk &chunk, Vec2i pos) final { /* TODO */ };
+
 	ID id_;
 	World *world_;
 	std::unique_ptr<WorldGen> gen_;
@@ -81,6 +85,8 @@ public:
 private:
 	void addLight(TilePos pos, uint8_t level);
 	void removeLight(TilePos pos, uint8_t level);
+
+	std::unique_ptr<LightingThread> lighting_;
 
 	std::map<std::pair<int, int>, Chunk> chunks_;
 	std::vector<Chunk *> active_chunks_;

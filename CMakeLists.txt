@@ -73,6 +73,10 @@ add_executable(perlin-test EXCLUDE_FROM_ALL
 	src/perlin-test.cc)
 target_link_libraries(perlin-test libswan PNG::PNG ${libraries})
 
+add_executable(lighting-test EXCLUDE_FROM_ALL
+	src/lighting-test.cc)
+target_link_libraries(lighting-test libswan PNG::PNG ${libraries})
+
 set(assets
 	assets/icon.png
 	assets/music/happy-1.wav)
