@@ -84,7 +84,7 @@ void World::setWorldGen(std::string gen) {
 
 void World::spawnPlayer() {
 	player_ = &((dynamic_cast<BodyTrait *>(
-		planes_[current_plane_].spawnPlayer().get()))->get(BodyTrait::Tag{}));
+		planes_[current_plane_]->spawnPlayer().get()))->get(BodyTrait::Tag{}));
 }
 
 void World::setCurrentPlane(WorldPlane &plane) {
@@ -107,8 +107,9 @@ WorldPlane &World::addPlane(const std::string &gen) {
 
 	WorldGen::Factory &factory = it->second;
 	std::unique_ptr<WorldGen> g = factory.create(*this);
-	planes_.emplace_back(id, this, std::move(g), std::move(colls));
-	return planes_[id];
+	planes_.push_back(std::make_unique<WorldPlane>(
+			id, this, std::move(g), std::move(colls)));
+	return *planes_[id];
 }
 
 Item &World::getItem(const std::string &name) {
@@ -137,28 +138,28 @@ Tile &World::getTile(const std::string &name) {
 }
 
 SDL_Color World::backgroundColor() {
-	return planes_[current_plane_].backgroundColor();
+	return planes_[current_plane_]->backgroundColor();
 }
 
 void World::draw(Win &win) {
 	ZoneScopedN("World draw");
 	win.cam_ = player_->pos - (win.getSize() / 2) + (player_->size / 2);
-	planes_[current_plane_].draw(win);
+	planes_[current_plane_]->draw(win);
 }
 
 void World::update(float dt) {
 	ZoneScopedN("World update");
 	for (auto &plane: planes_)
-		plane.update(dt);
+		plane->update(dt);
 }
 
 void World::tick(float dt) {
 	ZoneScopedN("World tick");
 	for (auto &plane: planes_)
-		plane.tick(dt);
+		plane->tick(dt);
 
 	chunk_renderer_.tick(
-		planes_[current_plane_],
+		*planes_[current_plane_],
 		ChunkPos((int)player_->pos.x / CHUNK_WIDTH, (int)player_->pos.y / CHUNK_HEIGHT));
 }
 

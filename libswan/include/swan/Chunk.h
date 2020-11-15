@@ -61,10 +61,8 @@ public:
 		return getLightData()[pos.y * CHUNK_WIDTH + pos.x];
 	}
 
-	void setLightLevel(RelPos pos, uint8_t level, SDL_Renderer *rnd);
-
-	void setLightData(RelPos pos, uint8_t level) {
-		getLightData()[pos.y * CHUNK_WIDTH + pos.x] = level;
+	void setLightData(const uint8_t *data) {
+		memcpy(getLightData(), data, CHUNK_WIDTH * CHUNK_HEIGHT);
 		need_light_render_ = true;
 	}
 

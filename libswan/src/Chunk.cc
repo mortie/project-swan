@@ -93,11 +93,15 @@ void Chunk::renderLight(const Context &ctx, SDL_Renderer *rnd) {
 	RenderDrawColor color(rnd, 0, 0, 0, 0);
 	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 		for (int x = 0; x < CHUNK_WIDTH; ++x) {
-			int level = getLightLevel({ x, y });
-			if (level >= 8)
+			float level = (float)getLightLevel({ x, y }) / 255;
+			float l = 1.055 * pow(level, 1/2.4) - 0.055;
+			if (l >= 0.5) {
 				color.change(0, 0, 0, 0);
-			else
-				color.change(0, 0, 0, 255 - level * 32);
+			} else if (l > 0) {
+				color.change(0, 0, 0, 255 - l * (255 * 2));
+			} else {
+				color.change(0, 0, 0, 255);
+			}
 			SDL_Rect rect{ x, y, 1, 1 };
 			SDL_RenderFillRect(rnd, &rect);
 		}

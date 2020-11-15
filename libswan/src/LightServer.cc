@@ -58,8 +58,6 @@ LightChunk *LightServer::getChunk(ChunkPos cpos) {
 }
 
 void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &newChunks) {
-	info << "event " << (int)evt.tag;
-
 	// TODO: Only mark chunks within some sphere
 	auto markChunksModified = [&](ChunkPos cpos) {
 		for (int y = -1; y <= 1; ++y) {
@@ -85,7 +83,6 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 	LightChunk *ch = getChunk(cpos);
 	if (!ch) return;
 	markChunksModified(cpos);
-	updated_chunks_.insert(cpos);
 	Vec2i rpos = lightRelPos(evt.pos);
 
 	switch (evt.tag) {
@@ -100,10 +97,12 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 		break;
 
 	case Event::Tag::LIGHT_ADDED:
+		info << cpos << ": Add " << evt.num << " light to " << rpos;
 		ch->light_sources[rpos] += evt.num;
 		break;
 
 	case Event::Tag::LIGHT_REMOVED:
+		info << cpos << ": Remove " << evt.num << " light to " << rpos;
 		ch->light_sources[rpos] -= evt.num;
 		break;
 

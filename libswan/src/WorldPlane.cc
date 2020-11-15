@@ -89,6 +89,23 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
 		active_chunks_.push_back(&chunk);
 		chunk_init_list_.push_back(&chunk);
 
+		// Need to tell the light engine too
+		NewLightChunk lc;
+		for (int y = 0; y < CHUNK_HEIGHT; ++y) {
+			for (int x = 0; x < CHUNK_WIDTH; ++x) {
+				Tile::ID id = chunk.getTileID({ x, y });
+				Tile &tile = world_->getTileByID(id);
+				if (tile.is_solid_) {
+					lc.blocks[y * CHUNK_HEIGHT + x] = true;
+				}
+				if (tile.light_level_ > 0) {
+					lc.light_sources[{ x, y }] = tile.light_level_;
+				}
+			}
+		}
+
+		lighting_->onChunkAdded(pos, std::move(lc));
+
 	// Otherwise, it might not be active, so let's activate it
 	} else if (!iter->second.isActive()) {
 		iter->second.keepActive();
@@ -118,12 +135,10 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 
 		if (newTile.light_level_ != oldTile.light_level_) {
 			if (oldTile.light_level_ > 0) {
-				lighting_->onLightRemoved(pos, oldTile.light_level_);
 				removeLight(pos, oldTile.light_level_);
 			}
 
 			if (newTile.light_level_ > 0) {
-				lighting_->onLightAdded(pos, newTile.light_level_);
 				addLight(pos, newTile.light_level_);
 			}
 		}
@@ -190,6 +205,7 @@ SDL_Color WorldPlane::backgroundColor() {
 
 void WorldPlane::draw(Win &win) {
 	ZoneScopedN("WorldPlane draw");
+	std::lock_guard<std::mutex> lock(mut_);
 	auto ctx = getContext();
 	auto &pbody = *(world_->player_);
 
@@ -227,6 +243,7 @@ void WorldPlane::draw(Win &win) {
 
 void WorldPlane::update(float dt) {
 	ZoneScopedN("WorldPlane update");
+	std::lock_guard<std::mutex> lock(mut_);
 	auto ctx = getContext();
 	debug_boxes_.clear();
 
@@ -236,6 +253,7 @@ void WorldPlane::update(float dt) {
 
 void WorldPlane::tick(float dt) {
 	ZoneScopedN("WorldPlane tick");
+	std::lock_guard<std::mutex> lock(mut_);
 	auto ctx = getContext();
 
 	// Any chunk which has been in use since last tick should be kept alive
@@ -277,64 +295,18 @@ void WorldPlane::debugBox(TilePos pos) {
 	debug_boxes_.push_back(pos);
 }
 
+void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos) {
+	std::lock_guard<std::mutex> lock(mut_);
+	Chunk &realChunk = getChunk(pos);
+	realChunk.setLightData(chunk.light_levels);
+}
+
 void WorldPlane::addLight(TilePos pos, uint8_t level) {
-	int sqrLevel = level * level;
-
-	for (int y = -level; y <= level; ++y) {
-		for (int x = -level; x <= level; ++x) {
-			int sqrDist = x * x + y * y;
-			if (sqrDist > sqrLevel) {
-				continue;
-			}
-
-			int lightDiff = level - (int)sqrt(sqrDist);
-			if (lightDiff <= 0) {
-				continue;
-			}
-
-			TilePos tp = pos + Vec2i(x, y);
-			ChunkPos cp = chunkPos(tp);
-			Chunk::RelPos rp = relPos(tp);
-
-			Chunk &ch = getChunk(cp);
-			int light = (int)ch.getLightLevel(rp) + lightDiff;
-			if (light > 255) {
-				light = 255;
-			}
-
-			ch.setLightData(rp, light);
-		}
-	}
+	lighting_->onLightAdded(pos, level);
 }
 
 void WorldPlane::removeLight(TilePos pos, uint8_t level) {
-	int sqrLevel = level * level;
-
-	for (int y = -level; y <= level; ++y) {
-		for (int x = -level; x <= level; ++x) {
-			int sqrDist = x * x + y * y;
-			if (sqrDist > sqrLevel) {
-				continue;
-			}
-
-			int lightDiff = level - (int)sqrt(sqrDist);
-			if (lightDiff <= 0) {
-				continue;
-			}
-
-			TilePos tp = pos + Vec2i(x, y);
-			ChunkPos cp = chunkPos(tp);
-			Chunk::RelPos rp = relPos(tp);
-
-			Chunk &ch = getChunk(cp);
-			int light = (int)ch.getLightLevel(rp) - lightDiff;
-			if (light < 0) {
-				light = 0;
-			}
-
-			ch.setLightData(rp, light);
-		}
-	}
+	lighting_->onLightRemoved(pos, level);
 }
 
 }

@@ -73,7 +73,7 @@ private:
 
 	ChunkRenderer chunk_renderer_;
 	WorldPlane::ID current_plane_;
-	std::vector<WorldPlane> planes_;
+	std::vector<std::unique_ptr<WorldPlane>> planes_;
 	std::string default_world_gen_;
 };
 

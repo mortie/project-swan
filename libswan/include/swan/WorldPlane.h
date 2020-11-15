@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 #include <typeindex>
+#include <mutex>
 
 #include "common.h"
 #include "traits/BodyTrait.h"
@@ -76,11 +77,12 @@ public:
 	void debugBox(TilePos pos);
 
 	// LightingCallback implementation
-	void onLightChunkUpdated(const LightChunk &chunk, Vec2i pos) final { /* TODO */ };
+	void onLightChunkUpdated(const LightChunk &chunk, Vec2i pos) final;
 
 	ID id_;
 	World *world_;
 	std::unique_ptr<WorldGen> gen_;
+	std::mutex mut_;
 
 private:
 	void addLight(TilePos pos, uint8_t level);
