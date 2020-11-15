@@ -237,8 +237,6 @@ void LightServer::processUpdatedChunk(LightChunk &chunk, ChunkPos cpos) {
 	auto end = std::chrono::steady_clock::now();
 	auto dur = std::chrono::duration<double, std::milli>(end - start);
 	info << "Generating light for " << cpos << " took " << dur.count() << "ms";
-
-	cb_.onLightChunkUpdated(chunk, cpos);
 }
 
 void LightServer::run() {
@@ -264,6 +262,13 @@ void LightServer::run() {
 			auto ch = chunks_.find(pos);
 			if (ch != chunks_.end()) {
 				processUpdatedChunk(ch->second, ChunkPos(pos.first, pos.second));
+			}
+		}
+
+		for (auto &pos: updated_chunks_) {
+			auto ch = chunks_.find(pos);
+			if (ch != chunks_.end()) {
+				cb_.onLightChunkUpdated(ch->second, pos);
 			}
 		}
 
