@@ -135,9 +135,9 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 	}
 }
 
-int LightServer::recalcTile(
+float LightServer::recalcTile(
 		LightChunk &chunk, ChunkPos cpos, Vec2i rpos, TilePos base,
-		std::vector<std::pair<TilePos, int>> &lights) {
+		std::vector<std::pair<TilePos, float>> &lights) {
 	TilePos pos = rpos + base;
 
 	constexpr int accuracy = 4;
@@ -156,7 +156,8 @@ int LightServer::recalcTile(
 		};
 
 		bool hit = false;
-		while ((currpos - from).squareLength() <= diff.squareLength()) {
+		Vec2i target = TilePos(floor(to.x), floor(to.y));
+		while (currtile != target && (currpos - from).squareLength() <= diff.squareLength()) {
 			if (tileIsSolid(currtile)) {
 				hit = true;
 				break;
@@ -168,7 +169,18 @@ int LightServer::recalcTile(
 		return hit;
 	};
 
-	int acc = 0;
+	auto diffusedRaycast = [&](Vec2 from, Vec2 to, Vec2 norm) {
+		if (raycast(from, to)) {
+			return 0.0f;
+		}
+
+		float dot = (to - from).norm().dot(norm);
+		if (dot > 1) dot = 1;
+		else if (dot < 0) dot = 0;
+		return dot;
+	};
+
+	float acc = 0;
 	for (auto &[lightpos, level]: lights) {
 		if (lightpos == pos) {
 			acc += level;
@@ -180,7 +192,7 @@ int LightServer::recalcTile(
 		}
 
 		float dist = ((Vec2)(lightpos - pos)).length();
-		int light = level - (int)dist;
+		float light = level - dist;
 
 		if (!tileIsSolid(pos)) {
 			bool hit = raycast(
@@ -193,36 +205,33 @@ int LightServer::recalcTile(
 			continue;
 		}
 
-		bool blocked =
-			raycast(
+		float frac =
+			diffusedRaycast(
 				Vec2(pos.x + 0.5, pos.y - 0.1),
-				Vec2(lightpos.x + 0.5, lightpos.y + 0.5)) &&
-			raycast(
+				Vec2(lightpos.x + 0.5, lightpos.y + 0.5),
+				Vec2(0, -1)) +
+			diffusedRaycast(
 				Vec2(pos.x + 0.5, pos.y + 1.1),
-				Vec2(lightpos.x + 0.5, lightpos.y + 0.5)) &&
-			raycast(
+				Vec2(lightpos.x + 0.5, lightpos.y + 0.5),
+				Vec2(0, 1)) +
+			diffusedRaycast(
 				Vec2(pos.x - 0.1, pos.y + 0.5),
-				Vec2(lightpos.x + 0.5, lightpos.y + 0.5)) &&
-			raycast(
+				Vec2(lightpos.x + 0.5, lightpos.y + 0.5),
+				Vec2(-1, 0)) +
+			diffusedRaycast(
 				Vec2(pos.x + 1.1, pos.y + 0.5),
-				Vec2(lightpos.x + 0.5, lightpos.y + 0.5));
+				Vec2(lightpos.x + 0.5, lightpos.y + 0.5),
+				Vec2(1, 0));
 
-		if (!blocked) {
-			acc += light;
-		}
-
-		if (acc >= 255) {
-			return 255;
-		}
+		acc += light * frac;
 	}
 
 	return acc;
 }
 
-void LightServer::processUpdatedChunk(LightChunk &chunk, ChunkPos cpos) {
-	auto start = std::chrono::steady_clock::now();
+void LightServer::processChunkLights(LightChunk &chunk, ChunkPos cpos) {
 	TilePos base = cpos * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT);
-	std::vector<std::pair<TilePos, int>> lights;
+	std::vector<std::pair<TilePos, float>> lights;
 
 	for (auto &[pos, level]: chunk.light_sources) {
 		lights.emplace_back(Vec2i(pos) + base, level);
@@ -246,16 +255,58 @@ void LightServer::processUpdatedChunk(LightChunk &chunk, ChunkPos cpos) {
 		}
 	}
 
+	chunk.bounces.clear();
 	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 		for (int x = 0; x < CHUNK_WIDTH; ++x) {
-			chunk.light_levels[y * CHUNK_WIDTH + x] =
-				recalcTile(chunk, cpos, Vec2i(x, y), base, lights);
+			float light = recalcTile(chunk, cpos, Vec2i(x, y), base, lights);
+			chunk.light_levels[y * CHUNK_WIDTH + x] = std::min((int)light, 255);
+
+			if (light > 0 && chunk.blocks[y * CHUNK_WIDTH + x]) {
+				chunk.bounces.emplace_back(base + Vec2i(x, y), light);
+			}
+		}
+	}
+}
+
+void LightServer::processChunkBounces(LightChunk &chunk, ChunkPos cpos) {
+	TilePos base = cpos * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT);
+	std::vector<std::pair<TilePos, float>> lights;
+
+	for (auto &light: chunk.bounces) {
+		lights.emplace_back(light);
+	}
+
+	auto addLightFromChunk = [&](LightChunk *chunk) {
+		if (chunk == nullptr) {
+			return;
+		}
+
+		for (auto &light: chunk->bounces) {
+			lights.emplace_back(light);
+		}
+	};
+
+	for (int y = -1; y <= 1; ++y) {
+		for (int x = -1; x <= 1; ++x) {
+			if (y == 0 && x == 0) continue;
+			addLightFromChunk(getChunk(cpos + Vec2i(x, y)));
 		}
 	}
 
-	auto end = std::chrono::steady_clock::now();
-	auto dur = std::chrono::duration<double, std::milli>(end - start);
-	info << "Generating light for " << cpos << " took " << dur.count() << "ms";
+	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
+		for (int x = 0; x < CHUNK_WIDTH; ++x) {
+			float light = recalcTile(chunk, cpos, Vec2i(x, y), base, lights) * 0.1;
+			float sum = chunk.light_levels[y * CHUNK_WIDTH + x] + light;
+			chunk.light_levels[y * CHUNK_WIDTH + x] = std::min((int)sum, 255);
+		}
+	}
+}
+
+void LightServer::processChunkSmoothing(LightChunk &chunk, ChunkPos cpos) {
+	for (int y = 1; y < CHUNK_HEIGHT - 1; ++y) {
+		for (int x = 1; x < CHUNK_WIDTH - 1; ++x) {
+		}
+	}
 }
 
 void LightServer::run() {
@@ -277,12 +328,26 @@ void LightServer::run() {
 		buf.clear();
 		newChunks.clear();
 
+		auto start = std::chrono::steady_clock::now();
+
 		for (auto &pos: updated_chunks_) {
 			auto ch = chunks_.find(pos);
 			if (ch != chunks_.end()) {
-				processUpdatedChunk(ch->second, ChunkPos(pos.first, pos.second));
+				processChunkLights(ch->second, ChunkPos(pos.first, pos.second));
 			}
 		}
+
+		for (auto &pos: updated_chunks_) {
+			auto ch = chunks_.find(pos);
+			if (ch != chunks_.end()) {
+				processChunkBounces(ch->second, ChunkPos(pos.first, pos.second));
+			}
+		}
+
+		auto end = std::chrono::steady_clock::now();
+		auto dur = std::chrono::duration<double, std::milli>(end - start);
+		info << "Generating light for " << updated_chunks_.size()
+			<< " chunks took " << dur.count() << "ms";
 
 		for (auto &pos: updated_chunks_) {
 			auto ch = chunks_.find(pos);

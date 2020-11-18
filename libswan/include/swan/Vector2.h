@@ -43,6 +43,14 @@ struct Vector2 {
 		return scale(s, s);
 	}
 
+	constexpr Vector2<T> norm() {
+		return *this / length();
+	}
+
+	constexpr T dot(const Vector2<T> &vec) const {
+		return x * vec.x + y * vec.y;
+	}
+
 	constexpr operator std::pair<T, T>() const {
 		return std::pair<T, T>(x, y);
 	}

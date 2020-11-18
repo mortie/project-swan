@@ -14,7 +14,7 @@ namespace Swan {
 
 struct NewLightChunk {
 	std::bitset<CHUNK_WIDTH * CHUNK_HEIGHT> blocks;
-	std::map<std::pair<int, int>, int> light_sources;
+	std::map<std::pair<int, int>, float> light_sources;
 };
 
 struct LightChunk {
@@ -25,7 +25,8 @@ struct LightChunk {
 	std::bitset<CHUNK_WIDTH * CHUNK_HEIGHT> blocks;
 	uint8_t light_levels[CHUNK_WIDTH * CHUNK_HEIGHT] = { 0 };
 	uint8_t blocks_line[CHUNK_WIDTH] = { 0 };
-	std::map<std::pair<int, int>, int> light_sources;
+	std::map<std::pair<int, int>, float> light_sources;
+	std::vector<std::pair<TilePos, float>> bounces;
 
 	bool was_updated = false;
 };
@@ -65,10 +66,12 @@ private:
 	bool tileIsSolid(TilePos pos);
 	LightChunk *getChunk(ChunkPos cpos);
 
-	int recalcTile(
+	float recalcTile(
 			LightChunk &chunk, ChunkPos cpos, Vec2i rpos, TilePos base,
-			std::vector<std::pair<TilePos, int>> &lights);
-	void processUpdatedChunk(LightChunk &chunk, ChunkPos cpos);
+			std::vector<std::pair<TilePos, float>> &lights);
+	void processChunkLights(LightChunk &chunk, ChunkPos cpos);
+	void processChunkBounces(LightChunk &chunk, ChunkPos cpos);
+	void processChunkSmoothing(LightChunk &chunk, ChunkPos cpos);
 	void processEvent(const Event &event, std::vector<NewLightChunk> &newChunks);
 	void run();
 
