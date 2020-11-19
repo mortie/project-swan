@@ -3,7 +3,7 @@
 #include "log.h"
 #include "common.h"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <optional>
 
 namespace Swan {
