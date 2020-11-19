@@ -242,23 +242,32 @@ float LightServer::recalcTile(
 			continue;
 		}
 
-		float frac =
-			diffusedRaycast(
+		float frac = 0;
+		float f;
+		if ((f = diffusedRaycast(
 				Vec2(pos.x + 0.5, pos.y - 0.1),
 				Vec2(lightpos.x + 0.5, lightpos.y + 0.5),
-				Vec2(0, -1)) +
-			diffusedRaycast(
+				Vec2(0, -1))) > frac) {
+			frac = f;
+		}
+		if ((f = diffusedRaycast(
 				Vec2(pos.x + 0.5, pos.y + 1.1),
 				Vec2(lightpos.x + 0.5, lightpos.y + 0.5),
-				Vec2(0, 1)) +
-			diffusedRaycast(
+				Vec2(0, 1))) > frac) {
+			frac = f;
+		}
+		if ((f = diffusedRaycast(
 				Vec2(pos.x - 0.1, pos.y + 0.5),
 				Vec2(lightpos.x + 0.5, lightpos.y + 0.5),
-				Vec2(-1, 0)) +
-			diffusedRaycast(
+				Vec2(-1, 0))) > frac) {
+			frac = f;
+		}
+		if ((f = diffusedRaycast(
 				Vec2(pos.x + 1.1, pos.y + 0.5),
 				Vec2(lightpos.x + 0.5, lightpos.y + 0.5),
-				Vec2(1, 0));
+				Vec2(1, 0))) > frac) {
+			frac = f;
+		}
 
 		acc += light * frac;
 	}
@@ -333,7 +342,7 @@ void LightServer::processChunkBounces(LightChunk &chunk, ChunkPos cpos) {
 
 	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 		for (int x = 0; x < CHUNK_WIDTH; ++x) {
-			float light = recalcTile(chunk, cpos, Vec2i(x, y), base, lights) * 0.1;
+			float light = recalcTile(chunk, cpos, Vec2i(x, y), base, lights);
 			float sum = chunk.light_levels[y * CHUNK_WIDTH + x] + light;
 			chunk.light_levels[y * CHUNK_WIDTH + x] =
 				std::min((int)round(sum), 255);
