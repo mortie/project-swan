@@ -3,6 +3,7 @@
 #include <zlib.h>
 #include <stdint.h>
 #include <assert.h>
+#include <algorithm>
 
 #include "log.h"
 #include "Clock.h"
@@ -95,13 +96,8 @@ void Chunk::renderLight(const Context &ctx, SDL_Renderer *rnd) {
 		for (int x = 0; x < CHUNK_WIDTH; ++x) {
 			float level = (float)getLightLevel({ x, y }) / 255;
 			float l = 1.055 * pow(level, 1/2.4) - 0.055;
-			if (l >= 0.5) {
-				color.change(0, 0, 0, 0);
-			} else if (l > 0) {
-				color.change(0, 0, 0, 255 - l * (255 * 2));
-			} else {
-				color.change(0, 0, 0, 255);
-			}
+			int b = std::clamp((int)(l * 1.5 * 255), 0, 255);
+			color.change(0, 0, 0, 255 - b);
 			SDL_Rect rect{ x, y, 1, 1 };
 			SDL_RenderFillRect(rnd, &rect);
 		}

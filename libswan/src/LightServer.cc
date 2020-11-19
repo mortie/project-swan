@@ -1,5 +1,7 @@
 #include "LightServer.h"
 
+#include <algorithm>
+
 #include "log.h"
 
 namespace Swan {
@@ -20,6 +22,15 @@ static Vec2i lightRelPos(TilePos pos) {
 			CHUNK_WIDTH)) % CHUNK_WIDTH,
 		(pos.y + (size_t)CHUNK_HEIGHT * ((LLONG_MAX / 2) /
 			CHUNK_HEIGHT)) % CHUNK_HEIGHT);
+}
+
+static float attenuate(float dist) {
+	float a = 1 / (1 + dist);
+	return a > 1 ? 1 : a;
+}
+
+static float attenuateSquared(float squareDist) {
+	return attenuate(sqrt(squareDist));
 }
 
 LightServer::LightServer(LightCallback &cb):
@@ -66,12 +77,7 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 		}
 	};
 
-	auto markChunksModified = [&](ChunkPos cpos, Vec2i rpos, int range) {
-		bool l = rpos.x - range <= 0;
-		bool r = rpos.x + range >= CHUNK_WIDTH - 1;
-		bool t = rpos.y - range <= 0;
-		bool b = rpos.y + range >= CHUNK_HEIGHT - 1;
-
+	auto markChunks = [&](ChunkPos cpos, Vec2i rpos, bool l, bool r, bool t, bool b) {
 		updated_chunks_.insert(cpos);
 		if (l) updated_chunks_.insert(cpos + Vec2i(-1, 0));
 		if (r) updated_chunks_.insert(cpos + Vec2i(1, 0));
@@ -83,10 +89,26 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 		if (r && b) updated_chunks_.insert(cpos + Vec2i(1, 1));
 	};
 
+	auto markChunksModified = [&](ChunkPos cpos, Vec2i rpos, float light) {
+		markChunks(cpos, rpos,
+				light * attenuate(rpos.x) > LIGHT_CUTOFF,
+				light * attenuate(CHUNK_WIDTH - rpos.x) > LIGHT_CUTOFF,
+				light * attenuate(rpos.y) > LIGHT_CUTOFF,
+				light * attenuate(CHUNK_HEIGHT - rpos.y) > LIGHT_CUTOFF);
+	};
+
+	auto markChunksModifiedRange = [&](ChunkPos cpos, Vec2i rpos, int range) {
+		markChunks(cpos, rpos,
+				rpos.x <= range,
+				CHUNK_WIDTH - rpos.x <= range,
+				rpos.y <= range,
+				CHUNK_WIDTH - rpos.y <= range);
+	};
+
 	if (evt.tag == Event::Tag::CHUNK_ADDED) {
 		chunks_.emplace(std::piecewise_construct,
 				std::forward_as_tuple(evt.pos),
-				std::forward_as_tuple(std::move(newChunks[evt.num])));
+				std::forward_as_tuple(std::move(newChunks[evt.i])));
 		markAdjacentChunksModified(evt.pos);
 		return;
 	} else if (evt.tag == Event::Tag::CHUNK_REMOVED) {
@@ -104,26 +126,26 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 	case Event::Tag::BLOCK_ADDED:
 		ch->blocks.set(rpos.y * CHUNK_WIDTH + rpos.x, true);
 		ch->blocks_line[rpos.x] += 1;
-		markChunksModified(cpos, rpos, LIGHT_CUTOFF);
+		markChunksModifiedRange(cpos, rpos, LIGHT_CUTOFF_DIST);
 		break;
 
 	case Event::Tag::BLOCK_REMOVED:
 		ch->blocks.set(rpos.y * CHUNK_WIDTH + rpos.x, false);
 		ch->blocks_line[rpos.x] -= 1;
-		markChunksModified(cpos, rpos, LIGHT_CUTOFF);
+		markChunksModifiedRange(cpos, rpos, LIGHT_CUTOFF_DIST);
 		break;
 
 	case Event::Tag::LIGHT_ADDED:
-		info << cpos << ": Add " << evt.num << " light to " << rpos;
-		ch->light_sources[rpos] += evt.num;
+		info << cpos << ": Add " << evt.f << " light to " << rpos;
+		ch->light_sources[rpos] += evt.f;
 		markChunksModified(cpos, rpos, ch->light_sources[rpos]);
 		break;
 
 	case Event::Tag::LIGHT_REMOVED:
-		info << cpos << ": Remove " << evt.num << " light to " << rpos;
+		info << cpos << ": Remove " << evt.f << " light to " << rpos;
 		markChunksModified(cpos, rpos, ch->light_sources[rpos]);
-		ch->light_sources[rpos] -= evt.num;
-		if (ch->light_sources[rpos] == 0) {
+		ch->light_sources[rpos] -= evt.f;
+		if (ch->light_sources[rpos] < LIGHT_CUTOFF) {
 			ch->light_sources.erase(rpos);
 		}
 		break;
@@ -180,6 +202,14 @@ float LightServer::recalcTile(
 		return dot;
 	};
 
+	bool isSolid = tileIsSolid(pos);
+
+	bool culled =
+		tileIsSolid(pos + Vec2i(-1, 0)) &&
+		tileIsSolid(pos + Vec2i(1, 0)) &&
+		tileIsSolid(pos + Vec2i(0, -1)) &&
+		tileIsSolid(pos + Vec2i(0, 1));
+
 	float acc = 0;
 	for (auto &[lightpos, level]: lights) {
 		if (lightpos == pos) {
@@ -187,14 +217,21 @@ float LightServer::recalcTile(
 			continue;
 		}
 
-		if ((lightpos - pos).squareLength() > level * level) {
+		if (culled) {
 			continue;
 		}
 
-		float dist = ((Vec2)(lightpos - pos)).length();
-		float light = level - dist;
+		int squareDist = (lightpos - pos).squareLength();
+		if (squareDist > LIGHT_CUTOFF_DIST * LIGHT_CUTOFF_DIST) {
+			continue;
+		}
 
-		if (!tileIsSolid(pos)) {
+		float light = level * attenuateSquared(squareDist);
+		if (light < LIGHT_CUTOFF) {
+			continue;
+		}
+
+		if (!isSolid) {
 			bool hit = raycast(
 					Vec2(pos.x + 0.5, pos.y + 0.5),
 					Vec2(lightpos.x + 0.5, lightpos.y + 0.5));
@@ -259,7 +296,8 @@ void LightServer::processChunkLights(LightChunk &chunk, ChunkPos cpos) {
 	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 		for (int x = 0; x < CHUNK_WIDTH; ++x) {
 			float light = recalcTile(chunk, cpos, Vec2i(x, y), base, lights);
-			chunk.light_levels[y * CHUNK_WIDTH + x] = std::min((int)light, 255);
+			chunk.light_levels[y * CHUNK_WIDTH + x] =
+				std::min((int)round(light), 255);
 
 			if (light > 0 && chunk.blocks[y * CHUNK_WIDTH + x]) {
 				chunk.bounces.emplace_back(base + Vec2i(x, y), light);
@@ -297,7 +335,8 @@ void LightServer::processChunkBounces(LightChunk &chunk, ChunkPos cpos) {
 		for (int x = 0; x < CHUNK_WIDTH; ++x) {
 			float light = recalcTile(chunk, cpos, Vec2i(x, y), base, lights) * 0.1;
 			float sum = chunk.light_levels[y * CHUNK_WIDTH + x] + light;
-			chunk.light_levels[y * CHUNK_WIDTH + x] = std::min((int)sum, 255);
+			chunk.light_levels[y * CHUNK_WIDTH + x] =
+				std::min((int)round(sum), 255);
 		}
 	}
 }

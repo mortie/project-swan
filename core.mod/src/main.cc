@@ -48,7 +48,7 @@ public:
 			.name = "torch",
 			.image = "core/tile/torch",
 			.is_solid = false,
-			.light_level = 20,
+			.light_level = 40,
 		});
 
 		registerItem({
