@@ -309,7 +309,7 @@ void LightServer::processChunkLights(LightChunk &chunk, ChunkPos cpos) {
 				std::min((int)round(light), 255);
 
 			if (light > 0 && chunk.blocks[y * CHUNK_WIDTH + x]) {
-				chunk.bounces.emplace_back(base + Vec2i(x, y), light);
+				chunk.bounces.emplace_back(base + Vec2i(x, y), light * 0.1);
 			}
 		}
 	}

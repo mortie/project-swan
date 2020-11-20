@@ -39,18 +39,6 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 		}
 	}
 
-	Swan::Vec2 headPos = body_.topMid() + Swan::Vec2(0, 0.5);
-	Swan::TilePos tilePos = Swan::Vec2i(floor(headPos.x), floor(headPos.y));
-	if (!placed_light_) {
-		ctx.plane.addLight(tilePos, LIGHT_LEVEL);
-		placed_light_ = true;
-		light_tile_ = tilePos;
-	} else if (tilePos != light_tile_) {
-		ctx.plane.removeLight(light_tile_, LIGHT_LEVEL);
-		ctx.plane.addLight(tilePos, LIGHT_LEVEL);
-		light_tile_ = tilePos;
-	}
-
 	// Move left
 	if (ctx.game.isKeyPressed(SDL_SCANCODE_A) || ctx.game.isKeyPressed(SDL_SCANCODE_LEFT)) {
 		physics_.force += Swan::Vec2(-MOVE_FORCE, 0);
@@ -82,6 +70,19 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	anims_[(int)state_].tick(dt);
 
 	physics(ctx, dt, { .mass = MASS });
+
+	// Do this after moving so that it's not behind
+	Swan::Vec2 headPos = body_.topMid() + Swan::Vec2(0, 0.5);
+	Swan::TilePos tilePos = Swan::Vec2i(floor(headPos.x), floor(headPos.y));
+	if (!placed_light_) {
+		ctx.plane.addLight(tilePos, LIGHT_LEVEL);
+		placed_light_ = true;
+		light_tile_ = tilePos;
+	} else if (tilePos != light_tile_) {
+		ctx.plane.removeLight(light_tile_, LIGHT_LEVEL);
+		ctx.plane.addLight(tilePos, LIGHT_LEVEL);
+		light_tile_ = tilePos;
+	}
 }
 
 void PlayerEntity::tick(const Swan::Context &ctx, float dt) {
