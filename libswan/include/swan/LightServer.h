@@ -24,6 +24,7 @@ struct LightChunk {
 
 	std::bitset<CHUNK_WIDTH * CHUNK_HEIGHT> blocks;
 	uint8_t light_levels[CHUNK_WIDTH * CHUNK_HEIGHT] = { 0 };
+	float light_buffer[CHUNK_WIDTH * CHUNK_HEIGHT] = { 0 };
 	uint8_t blocks_line[CHUNK_WIDTH] = { 0 };
 	std::map<std::pair<int, int>, float> light_sources;
 	std::vector<std::pair<TilePos, float>> bounces;
