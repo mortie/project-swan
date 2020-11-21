@@ -33,6 +33,10 @@ elseif(CMAKE_BUILD_TYPE STREQUAL Debug)
 	message(STATUS "Build mode: Debug")
 	add_compile_options(-g -Og)
 
+elseif(CMAKE_BUILD_TYPE STREQUAL Optimize)
+	message(STATUS "Build mode: Optimize")
+	add_compile_options(-O3 -DNDEBUG -g)
+
 elseif(CMAKE_BUILD_TYPE STREQUAL Tracy)
 	message(STATUS "Build mode: Tracy")
 	add_compile_options(-O3 -flto -DNDEBUG -g -DTRACY_ENABLE -DTRACY_ON_DEMAND)
