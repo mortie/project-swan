@@ -76,8 +76,8 @@ public:
 
 	void debugBox(TilePos pos);
 
-	void addLight(TilePos pos, uint8_t level);
-	void removeLight(TilePos pos, uint8_t level);
+	void addLight(TilePos pos, float level);
+	void removeLight(TilePos pos, float level);
 
 	// LightingCallback implementation
 	void onLightChunkUpdated(const LightChunk &chunk, Vec2i pos) final;

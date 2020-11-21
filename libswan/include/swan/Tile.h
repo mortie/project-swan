@@ -19,7 +19,7 @@ public:
 		std::string name;
 		std::string image;
 		bool is_solid = true;
-		uint8_t light_level = 0;
+		float light_level = 0;
 		std::optional<std::string> dropped_item = std::nullopt;
 	};
 
@@ -31,7 +31,7 @@ public:
 	const std::string name_;
 	const ImageResource &image_;
 	const bool is_solid_;
-	const uint8_t light_level_;
+	const float light_level_;
 	const std::optional<std::string> dropped_item_;
 
 	static std::unique_ptr<Tile> createInvalid(const ResourceManager &ctx);

@@ -51,7 +51,7 @@ public:
 
 private:
 	static constexpr int LIGHT_CUTOFF_DIST = 64;
-	static constexpr float LIGHT_CUTOFF = 1;
+	static constexpr float LIGHT_CUTOFF = 0.25/255.0;
 
 	struct Event {
 		enum class Tag {

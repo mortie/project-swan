@@ -24,7 +24,7 @@ private:
 	static constexpr float JUMP_VEL = 11;
 	static constexpr float DOWN_FORCE = 20 * MASS;
 	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.6, 1.9);
-	static constexpr int LIGHT_LEVEL = 30;
+	static constexpr float LIGHT_LEVEL = 30/255.0;
 
 	enum class State {
 		IDLE,

@@ -294,12 +294,12 @@ void WorldPlane::debugBox(TilePos pos) {
 	debug_boxes_.push_back(pos);
 }
 
-void WorldPlane::addLight(TilePos pos, uint8_t level) {
+void WorldPlane::addLight(TilePos pos, float level) {
 	getChunk(chunkPos(pos));
 	lighting_->onLightAdded(pos, level);
 }
 
-void WorldPlane::removeLight(TilePos pos, uint8_t level) {
+void WorldPlane::removeLight(TilePos pos, float level) {
 	getChunk(chunkPos(pos));
 	lighting_->onLightRemoved(pos, level);
 }

@@ -24,8 +24,19 @@ static Vec2i lightRelPos(TilePos pos) {
 			CHUNK_HEIGHT)) % CHUNK_HEIGHT);
 }
 
+static uint8_t linToSRGB(float lin) {
+	float s;
+	if (lin <= 0.0031308) {
+		s = lin / 12.92;
+	} else {
+		s = 1.055 * std::pow(lin, 1/2.4) - 0.055;
+	}
+
+	return std::clamp((int)(s * 255), 0, 255);
+}
+
 static float attenuate(float dist, float squareDist) {
-	float a = 1 / (1 + 1.0 * dist + 0.5 * squareDist);
+	float a = 1 / (1 + 1.0 * dist + 0.1 * squareDist);
 	return a > 1 ? 1 : a;
 }
 
@@ -375,8 +386,8 @@ void LightServer::processChunkSmoothing(LightChunk &chunk, ChunkPos cpos) {
 				if (b > light) { light += b; count += 1; }
 				if (l > light) { light += l; count += 1; }
 				if (r > light) { light += r; count += 1; }
-				light = std::min(light / count, 255.0f);
-				chunk.light_levels[y * CHUNK_WIDTH + x] = light;
+				light /= count;
+				chunk.light_levels[y * CHUNK_WIDTH + x] = linToSRGB(light);
 			}
 		}
 	};
