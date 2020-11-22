@@ -22,7 +22,7 @@ endif()
 add_compile_options(-std=c++2a -Wall -Wextra -Wpedantic -Wno-unused-parameter)
 set(libraries
 	third-party imgui fmt cpptoml msgpack
-	SDL2 SDL2_image dl z)
+	SDL2::SDL2 SDL2_image dl z)
 
 if(CMAKE_BUILD_TYPE STREQUAL Sanitize OR CMAKE_BUILD_TYPE STREQUAL "")
 	message(STATUS "Build mode: Sanitize")
@@ -57,7 +57,6 @@ endif()
 # Remove once Clang 9.1 or something comes out.
 add_compile_options(-Wno-c99-extensions)
 
-include_directories(${SDL2_INCLUDE_DIRS})
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/lib64;${CMAKE_INSTALL_PREFIX}/swan/libswan;${CMAKE_INSTALL_PREFIX}/swan/third-party")
 
 add_subdirectory(third-party)

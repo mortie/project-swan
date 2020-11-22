@@ -23,8 +23,8 @@ add_library(imgui SHARED
 	${CMAKE_CURRENT_SOURCE_DIR}/imgui-plot/src/imgui_plot.cpp)
 target_include_directories(imgui SYSTEM PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/imgui
-	${CMAKE_CURRENT_SOURCE_DIR}/imgui-plot/include
-	${SDL2_INCLUDE_DIRS})
+	${CMAKE_CURRENT_SOURCE_DIR}/imgui-plot/include)
+target_link_libraries(imgui SDL2::SDL2)
 set_target_properties(imgui PROPERTIES CXX_CLANG_TIDY "")
 target_compile_options(imgui PRIVATE -Wno-sign-compare)
 install(TARGETS imgui DESTINATION swan/third-party)
