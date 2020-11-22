@@ -19,15 +19,17 @@ struct NewLightChunk {
 
 struct LightChunk {
 	LightChunk() = default;
-	LightChunk(NewLightChunk &&ch):
-		blocks(std::move(ch.blocks)), light_sources(std::move(ch.light_sources)) {}
+	LightChunk(NewLightChunk &&ch);
 
 	std::bitset<CHUNK_WIDTH * CHUNK_HEIGHT> blocks;
 	uint8_t light_levels[CHUNK_WIDTH * CHUNK_HEIGHT] = { 0 };
-	float light_buffer[CHUNK_WIDTH * CHUNK_HEIGHT] = { 0 };
+	float light_buffers[CHUNK_WIDTH * CHUNK_HEIGHT * 2] = { 0 };
+	int buffer = 0;
 	uint8_t blocks_line[CHUNK_WIDTH] = { 0 };
 	std::map<std::pair<int, int>, float> light_sources;
 	std::vector<std::pair<TilePos, float>> bounces;
+
+	float *light_buffer() { return light_buffers + CHUNK_WIDTH * CHUNK_HEIGHT * buffer; }
 
 	bool was_updated = false;
 };
@@ -72,9 +74,11 @@ private:
 	float recalcTile(
 			LightChunk &chunk, ChunkPos cpos, Vec2i rpos, TilePos base,
 			std::vector<std::pair<TilePos, float>> &lights);
+	void processChunkSun(LightChunk &chunk, ChunkPos cpos);
 	void processChunkLights(LightChunk &chunk, ChunkPos cpos);
 	void processChunkBounces(LightChunk &chunk, ChunkPos cpos);
 	void processChunkSmoothing(LightChunk &chunk, ChunkPos cpos);
+	void finalizeChunk(LightChunk &chunk);
 	void processEvent(const Event &event, std::vector<NewLightChunk> &newChunks);
 	void run();
 
