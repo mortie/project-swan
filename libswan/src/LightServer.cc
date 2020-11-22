@@ -32,12 +32,11 @@ static uint8_t linToSRGB(float lin) {
 		s = 1.055 * std::pow(lin, 1/2.4) - 0.055;
 	}
 
-	return std::clamp((int)(s * 255), 0, 255);
+	return std::clamp((int)round(s * 255), 0, 255);
 }
 
 static float attenuate(float dist, float squareDist) {
-	float a = 1 / (1 + 1.0 * dist + 0.1 * squareDist);
-	return a > 1 ? 1 : a;
+	return 1 / (1 + 1 * dist + 0.02 * squareDist);
 }
 
 static float attenuate(float dist) {
