@@ -116,10 +116,10 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 
 	auto markChunksModified = [&](ChunkPos cpos, Vec2i rpos, float light) {
 		markChunks(cpos, rpos,
-				light * attenuate(rpos.x) > LIGHT_CUTOFF,
-				light * attenuate(CHUNK_WIDTH - rpos.x) > LIGHT_CUTOFF,
-				light * attenuate(rpos.y) > LIGHT_CUTOFF,
-				light * attenuate(CHUNK_HEIGHT - rpos.y) > LIGHT_CUTOFF);
+				light * attenuate(std::max(rpos.x - 5, 0)) >= LIGHT_CUTOFF,
+				light * attenuate(std::max(CHUNK_WIDTH - rpos.x - 5, 0)) >= LIGHT_CUTOFF,
+				light * attenuate(std::max(rpos.y - 5, 0)) >= LIGHT_CUTOFF,
+				light * attenuate(std::max(CHUNK_HEIGHT - rpos.y - 5, 0)) >= LIGHT_CUTOFF);
 	};
 
 	auto markChunksModifiedRange = [&](ChunkPos cpos, Vec2i rpos, int range) {
