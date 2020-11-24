@@ -8,7 +8,7 @@ option(USE_CLANG_TIDY "Use clang-tidy for additional checks" OFF)
 if(USE_CLANG_TIDY)
 	set(CMAKE_CXX_CLANG_TIDY
 		clang-tidy
-		"--header-filter=(libswan|core.mod|src)/.*"
+		"--header-filter=(libswan|libcygnet|core.mod|src)/.*"
 		--checks=-*,bugprone-*,cert-*,performance-*,clang-analyzer-*,-cert-dcl16-c,-cert-err58-cpp,-clang-analyzer-optin.cplusplus.VirtualCall)
 endif()
 
@@ -57,16 +57,17 @@ endif()
 # Remove once Clang 9.1 or something comes out.
 add_compile_options(-Wno-c99-extensions)
 
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/lib64;${CMAKE_INSTALL_PREFIX}/swan/libswan;${CMAKE_INSTALL_PREFIX}/swan/third-party")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/lib64;${CMAKE_INSTALL_PREFIX}/swan/libswan;${CMAKE_INSTALL_PREFIX}/swan/libcygnet;${CMAKE_INSTALL_PREFIX}/swan/third-party")
 
 add_subdirectory(third-party)
 add_subdirectory(tracy-tools)
 add_subdirectory(libswan)
+add_subdirectory(libcygnet)
 add_subdirectory(core.mod)
 
 add_executable(swan
 	src/main.cc)
-target_link_libraries(swan libswan ${libraries})
+target_link_libraries(swan libswan libcygnet ${libraries})
 
 add_executable(perlin-test EXCLUDE_FROM_ALL
 	src/perlin-test.cc)
@@ -75,6 +76,10 @@ target_link_libraries(perlin-test libswan PNG::PNG ${libraries})
 add_executable(lighting-test EXCLUDE_FROM_ALL
 	src/lighting-test.cc)
 target_link_libraries(lighting-test libswan PNG::PNG ${libraries})
+
+add_executable(cygnet-test EXCLUDE_FROM_ALL
+	src/cygnet-test.cc)
+target_link_libraries(cygnet-test libcygnet ${libraries})
 
 set(assets
 	assets/icon.png
