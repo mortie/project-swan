@@ -2,10 +2,10 @@
 
 namespace Cygnet::Shaders {
 
-extern const char *texturedQuadVx;
-extern const char *texturedFr;
+extern const char *basicVx;
+extern const char *texturedVx;
 
-extern const char *coloredQuadVx;
-extern const char *coloredFr;
+extern const char *solidColorFr;
+extern const char *texturedFr;
 
 }

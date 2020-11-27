@@ -6,7 +6,7 @@
 
 namespace Cygnet {
 
-struct TexturedQuad: public GlProgram {
+struct TexturedProg: public GlProgram {
 	using GlProgram::GlProgram;
 
 	GlLoc position = attribLoc("position");
@@ -14,7 +14,7 @@ struct TexturedQuad: public GlProgram {
 	GlLoc tex = uniformLoc("tex");
 };
 
-struct ColoredQuad: public GlProgram {
+struct SolidColorProg: public GlProgram {
 	using GlProgram::GlProgram;
 
 	GlLoc position = attribLoc("position");
@@ -22,13 +22,13 @@ struct ColoredQuad: public GlProgram {
 };
 
 struct RendererState {
-	GlVxShader texturedQuadVx{Shaders::texturedQuadVx};
+	GlVxShader basicVx{Shaders::basicVx};
+	GlVxShader texturedVx{Shaders::texturedVx};
+	GlFrShader solidColorFr{Shaders::solidColorFr};
 	GlFrShader texturedFr{Shaders::texturedFr};
-	GlVxShader coloredQuadVx{Shaders::texturedQuadVx};
-	GlFrShader coloredFr{Shaders::texturedFr};
 
-	TexturedQuad texturedQuad{texturedQuadVx, texturedFr};
-	ColoredQuad coloredQuad{coloredQuadVx, coloredFr};
+	TexturedProg texturedProg{texturedVx, texturedFr};
+	SolidColorProg solidColorProg{basicVx, solidColorFr};
 };
 
 Renderer::Renderer(): state_(std::make_unique<RendererState>()) {}
