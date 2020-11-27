@@ -6,22 +6,19 @@
 
 namespace Cygnet {
 
+using GlID = uint32_t;
+using GlLoc = int32_t;
+
 struct SDLError: public std::exception {
 	SDLError(std::string msg): message(std::move(msg)) {}
+	const char *what() const noexcept override { return message.c_str(); }
 	std::string message;
-
-	const char *what() const noexcept override {
-		return message.c_str();
-	}
 };
 
 struct GLError: public std::exception {
 	GLError(std::string msg): message(std::move(msg)) {}
+	const char *what() const noexcept override { return message.c_str(); }
 	std::string message;
-
-	const char *what() const noexcept override {
-		return message.c_str();
-	}
 };
 
 inline const char *glErrorString(int err) {

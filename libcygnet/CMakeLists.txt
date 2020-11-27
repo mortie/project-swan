@@ -1,5 +1,8 @@
 add_library(libcygnet SHARED
+	src/shaders/basic.cc
 	src/Context.cc
+	src/Program.cc
+	src/Renderer.cc
 	src/Window.cc)
 target_include_directories(libcygnet
 	PUBLIC "include"
