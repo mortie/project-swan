@@ -2,6 +2,7 @@
 
 #include "shaders.h"
 #include "Program.h"
+#include "TileAtlas.h"
 #include "util.h"
 
 namespace Cygnet {
@@ -29,6 +30,8 @@ struct RendererState {
 
 	TexturedProg texturedProg{texturedVx, texturedFr};
 	SolidColorProg solidColorProg{basicVx, solidColorFr};
+
+	TileAtlas atlas;
 };
 
 Renderer::Renderer(): state_(std::make_unique<RendererState>()) {}

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../traits/BodyTrait.h"
-#include "../Vector2.h"
 #include "../common.h"
 
 namespace Swan {

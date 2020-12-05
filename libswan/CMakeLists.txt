@@ -22,7 +22,7 @@ target_include_directories(libswan
 	PUBLIC "include"
 	PRIVATE "include/swan")
 set_target_properties(libswan PROPERTIES OUTPUT_NAME swan)
-target_link_libraries(libswan ${libraries})
+target_link_libraries(libswan swan-common ${libraries})
 
 install(TARGETS libswan DESTINATION swan/libswan)
 

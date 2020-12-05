@@ -5,7 +5,7 @@
 #include <cmath>
 #include <msgpack.hpp>
 
-namespace Swan {
+namespace SwanCommon {
 
 template<typename T>
 struct Vector2 {

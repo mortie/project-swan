@@ -8,7 +8,6 @@
 #include "Entity.h"
 #include "Collection.h"
 #include "traits/BodyTrait.h"
-#include "Vector2.h"
 
 namespace Swan {
 

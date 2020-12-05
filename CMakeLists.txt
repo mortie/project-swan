@@ -59,6 +59,10 @@ add_compile_options(-Wno-c99-extensions)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/lib64;${CMAKE_INSTALL_PREFIX}/swan/libswan;${CMAKE_INSTALL_PREFIX}/swan/libcygnet;${CMAKE_INSTALL_PREFIX}/swan/third-party")
 
+add_library(swan-common INTERFACE)
+target_include_directories(swan-common
+	INTERFACE "include")
+
 add_subdirectory(third-party)
 add_subdirectory(tracy-tools)
 add_subdirectory(libswan)

@@ -3,7 +3,7 @@
 #include <vector>
 #include <stdlib.h>
 
-#include "../Vector2.h"
+#include "../common.h"
 #include "../ItemStack.h"
 
 namespace Swan {

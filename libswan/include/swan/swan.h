@@ -15,7 +15,6 @@
 #include <swan/Resource.h>
 #include <swan/SlotVector.h>
 #include <swan/Tile.h>
-#include <swan/Vector2.h>
 #include <swan/Win.h>
 #include <swan/World.h>
 #include <swan/WorldGen.h>

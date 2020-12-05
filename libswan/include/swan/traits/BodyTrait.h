@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Vector2.h"
+#include "../common.h"
 
 namespace Swan {
 
