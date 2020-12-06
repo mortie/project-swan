@@ -56,4 +56,10 @@ void TileAtlas::addTile(size_t tileId, const void *data, size_t len) {
 	}
 }
 
+const unsigned char *TileAtlas::getImage(size_t *w, size_t *h) {
+	*w = state_->width * SwanCommon::TILE_SIZE;
+	*h = state_->height * SwanCommon::TILE_SIZE;
+	return state_->data.data();
+}
+
 }

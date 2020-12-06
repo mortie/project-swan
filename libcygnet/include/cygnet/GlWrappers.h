@@ -23,10 +23,10 @@ public:
 	GlShader(Type type, const char *source);
 	~GlShader();
 
-	GlID id() const { return id_; }
+	GLuint id() const { return id_; }
 
 private:
-	GlID id_;
+	GLuint id_;
 };
 
 class GlVxShader: public GlShader {
@@ -47,18 +47,35 @@ public:
 	~GlProgram();
 
 	void use();
-	GlID id() const { return id_; }
+	GLuint id() const { return id_; }
 
 protected:
 
-	GlLoc attribLoc(const char *name);
-	GlLoc uniformLoc(const char *name);
+	GLint attribLoc(const char *name);
+	GLint uniformLoc(const char *name);
 
 private:
 	void addShader(const GlShader &shader);
 	void link();
 
-	GlID id_;
+	GLuint id_;
+};
+
+class GlTexture {
+public:
+	GlTexture();
+
+	void bind();
+	void upload(GLsizei width, GLsizei height, void *data,
+			GLenum format, GLenum type);
+	GLuint id() { return id_; }
+	int width() { return w_; }
+	int height() { return h_; }
+
+private:
+	GLuint id_;
+	int w_;
+	int h_;
 };
 
 }

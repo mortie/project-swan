@@ -1,4 +1,4 @@
-#include "Program.h"
+#include "GlWrappers.h"
 
 #include <SDL_opengles2.h>
 #include <iostream>
@@ -68,11 +68,11 @@ void GlProgram::addShader(const GlShader &shader) {
 	glCheck();
 }
 
-GlLoc GlProgram::attribLoc(const char *name) {
+GLint GlProgram::attribLoc(const char *name) {
 	return glGetAttribLocation(id_, name);
 }
 
-GlLoc GlProgram::uniformLoc(const char *name) {
+GLint GlProgram::uniformLoc(const char *name) {
 	return glGetUniformLocation(id_, name);
 }
 
@@ -95,6 +95,29 @@ void GlProgram::link() {
 	if (status == GL_FALSE) {
 		throw GlCompileError("GL program link failed.");
 	}
+}
+
+GlTexture::GlTexture() {
+	glGenTextures(1, &id_);
+	glCheck();
+}
+
+void GlTexture::bind() {
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, id_);
+}
+
+void GlTexture::upload(GLsizei width, GLsizei height, void *data,
+		GLenum format, GLenum type) {
+	w_ = width;
+	h_ = height;
+	bind();
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, type, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glCheck();
 }
 
 }

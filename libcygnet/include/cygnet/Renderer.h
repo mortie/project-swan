@@ -11,8 +11,10 @@ public:
 	Renderer();
 	~Renderer();
 
-	void clear();
 	void draw();
+
+	void registerTileTexture(size_t tileId, const void *data, size_t len);
+	void uploadTileTexture();
 
 private:
 	std::unique_ptr<RendererState> state_;

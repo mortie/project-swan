@@ -1,9 +1,10 @@
 add_library(libcygnet SHARED
 	src/Context.cc
-	src/Program.cc
+	src/GlWrappers.cc
 	src/Renderer.cc
 	src/shaders.cc
 	src/TileAtlas.cc
+	src/util.cc
 	src/Window.cc)
 target_include_directories(libcygnet
 	PUBLIC "include"
