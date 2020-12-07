@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <SDL_opengles2.h>
 #include <stdio.h>
 #include <string.h>
@@ -20,7 +21,7 @@ struct AtlasState {
 TileAtlas::TileAtlas(): state_(std::make_unique<AtlasState>()) {
 	GLint size;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size);
-	state_->tilesPerLine = size / SwanCommon::TILE_SIZE;
+	state_->tilesPerLine = std::min(size / SwanCommon::TILE_SIZE, 1024);
 }
 
 TileAtlas::~TileAtlas() = default;
@@ -30,6 +31,7 @@ void TileAtlas::addTile(size_t tileId, const void *data, size_t len) {
 	const unsigned char *bytes = (const unsigned char *)data;
 	size_t x = tileId % state_->tilesPerLine;
 	size_t y = tileId / state_->tilesPerLine;
+	std::cerr << "Adding tile " << x << ", " << y << '\n';
 	if (y >= state_->tilesPerLine) {
 		std::cerr << "Cygnet: Warning: Tile ID " << tileId << " too big for texture atlas\n";
 		return;
@@ -43,21 +45,21 @@ void TileAtlas::addTile(size_t tileId, const void *data, size_t len) {
 		state_->height = y + 1;
 	}
 
-	size_t tileImgSize = SwanCommon::TILE_SIZE * SwanCommon::TILE_SIZE * 4;
-	size_t requiredSize = (x + 1) * (y + 1) * tileImgSize;
-	state_->data.resize(requiredSize);
+	size_t requiredSize = state_->tilesPerLine * SwanCommon::TILE_SIZE *
+		state_->height * SwanCommon::TILE_SIZE * 4;
+	state_->data.reserve(requiredSize);
 
 	for (size_t ty = 0; ty < rows; ++ty) {
-		unsigned char *dest = state_->data.data() +
-			((y + ty) * state_->width * SwanCommon::TILE_SIZE * 4) +
-			(x * SwanCommon::TILE_SIZE * 4);
 		const unsigned char *src = bytes + ty * SwanCommon::TILE_SIZE * 4;
+		unsigned char *dest = state_->data.data() +
+			(y * SwanCommon::TILE_SIZE + ty) * state_->tilesPerLine * SwanCommon::TILE_SIZE * 4 +
+			(x * SwanCommon::TILE_SIZE * 4);
 		memcpy(dest, src, SwanCommon::TILE_SIZE * 4);
 	}
 }
 
 const unsigned char *TileAtlas::getImage(size_t *w, size_t *h) {
-	*w = state_->width * SwanCommon::TILE_SIZE;
+	*w = state_->tilesPerLine * SwanCommon::TILE_SIZE;
 	*h = state_->height * SwanCommon::TILE_SIZE;
 	return state_->data.data();
 }

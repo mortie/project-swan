@@ -1,5 +1,6 @@
 #include "util.h"
 
+#include <SDL.h>
 #include <SDL_opengles2.h>
 
 namespace Cygnet {

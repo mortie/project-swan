@@ -4,18 +4,31 @@
 #include <swan-common/constants.h>
 
 #include <stdint.h>
+#include <SDL_image.h>
 #include <SDL.h>
+
+void addTile(Cygnet::Renderer &rnd, const char *path) {
+	static size_t id = 0;
+	SDL_Surface *surf = IMG_Load(path);
+	rnd.registerTileTexture(id++, surf->pixels, surf->pitch * surf->h * 4);
+	SDL_FreeSurface(surf);
+}
 
 int main() {
 	Cygnet::Context ctx;
-	Cygnet::Window win("Cygnet Test", 640, 480);
+	IMG_Init(IMG_INIT_PNG);
+	//Cygnet::Window win("Cygnet Test", 640, 480);
+	Cygnet::Window win("Cygnet Test", 1280, 256);
 	Cygnet::Renderer rnd;
 
-	uint32_t img[SwanCommon::TILE_SIZE * SwanCommon::TILE_SIZE];
-	for (size_t i = 0; i < sizeof(img) / sizeof(*img); ++i) {
-		img[i] = 0xff00aaff;
-	}
-	rnd.registerTileTexture(0, img, sizeof(img));
+	for (auto path: {
+		"core.mod/assets/tile/dirt.png",
+		"core.mod/assets/tile/grass.png",
+		"core.mod/assets/tile/leaves.png",
+		"core.mod/assets/tile/stone.png",
+		"core.mod/assets/tile/torch.png",
+		"core.mod/assets/tile/tree-trunk.png",
+	}) addTile(rnd, path);
 	rnd.uploadTileTexture();
 
 	while (true) {
@@ -33,5 +46,5 @@ int main() {
 	}
 
 exit:
-	;
+	IMG_Quit();
 }
