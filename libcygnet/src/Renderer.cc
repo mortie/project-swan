@@ -58,8 +58,6 @@ void Renderer::draw() {
 		2, 3, 0, // bottom right -> top right -> top left
 	};
 
-	state_->camera.translate(0.01, 0);
-
 	glUniformMatrix3fv(state_->texturedProg.transform, 1, GL_TRUE, Mat3gf::IDENTITY.data());
 	glUniformMatrix3fv(state_->texturedProg.camera, 1, GL_TRUE, state_->camera.data());
 	glVertexAttribPointer(state_->texturedProg.vertex, 2, GL_FLOAT, GL_FALSE,
