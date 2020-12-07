@@ -15,8 +15,9 @@ namespace Cygnet {
 struct TexturedProg: public GlProgram {
 	using GlProgram::GlProgram;
 
-	GLint transform = uniformLoc("camera");
-	GLint position = attribLoc("position");
+	GLint camera = uniformLoc("camera");
+	GLint transform = uniformLoc("transform");
+	GLint vertex = attribLoc("vertex");
 	GLint texCoord = attribLoc("texCoord");
 	GLint tex = uniformLoc("tex");
 };
@@ -58,14 +59,16 @@ void Renderer::draw() {
 	};
 
 	state_->camera.translate(0.01, 0);
-	glUniformMatrix3fv(state_->texturedProg.transform, 1, GL_TRUE, state_->camera.data());
-	glVertexAttribPointer(state_->texturedProg.position, 2, GL_FLOAT, GL_FALSE,
+
+	glUniformMatrix3fv(state_->texturedProg.transform, 1, GL_TRUE, Mat3gf::IDENTITY.data());
+	glUniformMatrix3fv(state_->texturedProg.camera, 1, GL_TRUE, state_->camera.data());
+	glVertexAttribPointer(state_->texturedProg.vertex, 2, GL_FLOAT, GL_FALSE,
 			4 * sizeof(GLfloat), vertexes);
 	glVertexAttribPointer(state_->texturedProg.texCoord, 2, GL_FLOAT, GL_FALSE,
 			4 * sizeof(GLfloat), &vertexes[2]);
 	glCheck();
 
-	glEnableVertexAttribArray(state_->texturedProg.position);
+	glEnableVertexAttribArray(state_->texturedProg.vertex);
 	glEnableVertexAttribArray(state_->texturedProg.texCoord);
 	glCheck();
 

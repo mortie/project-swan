@@ -10,7 +10,7 @@
 void addTile(Cygnet::Renderer &rnd, const char *path) {
 	static size_t id = 0;
 	SDL_Surface *surf = IMG_Load(path);
-	rnd.registerTileTexture(id++, surf->pixels, surf->pitch * surf->h * 4);
+	rnd.registerTileTexture(id++, surf->pixels, surf->pitch * surf->h);
 	SDL_FreeSurface(surf);
 }
 

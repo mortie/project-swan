@@ -61,9 +61,14 @@ struct Matrix3 {
 		return *this;
 	}
 
+	static const Matrix3<T> IDENTITY;
+
 	template<typename U>
 	friend std::ostream &operator<<(std::ostream &os, const Matrix3<U> &mat);
 };
+
+template<typename T>
+const Matrix3<T> Matrix3<T>::IDENTITY = Matrix3<T>();
 
 template<typename T>
 std::ostream &operator<<(std::ostream &os, const Matrix3<T> &mat) {
