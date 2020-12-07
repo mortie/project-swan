@@ -28,11 +28,9 @@ TileAtlas::~TileAtlas() = default;
 
 void TileAtlas::addTile(size_t tileId, const void *data, size_t len) {
 	size_t rows = len / (SwanCommon::TILE_SIZE * 4);
-	std::cerr << "rows: " << rows << " (" << len << ")\n";
 	const unsigned char *bytes = (const unsigned char *)data;
 	size_t x = tileId % state_->tilesPerLine;
 	size_t y = tileId / state_->tilesPerLine;
-	std::cerr << "Adding tile " << x << ", " << y << '\n';
 	if (y >= state_->tilesPerLine) {
 		std::cerr << "Cygnet: Warning: Tile ID " << tileId << " too big for texture atlas\n";
 		return;
