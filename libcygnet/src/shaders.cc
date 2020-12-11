@@ -11,7 +11,7 @@ const char *spriteVx = R"glsl(
 
 	void main() {
 		vec3 pos = camera * transform * vec3(vertex, 1);
-		gl_Position = vec4(pos.x, pos.y, 0, 1);
+		gl_Position = vec4(pos.xy, 0, 1);
 		v_texCoord = texCoord;
 	}
 )glsl";
@@ -34,7 +34,7 @@ const char *chunkVx = R"glsl(
 
 	void main() {
 		vec3 pos = camera * vec3(pos + vertex, 1);
-		gl_Position = vec4(pos.x, pos.y, 0, 1);
+		gl_Position = vec4(pos.xy, 0, 1);
 		v_tileCoord = vertex;
 	}
 )glsl";
@@ -57,7 +57,7 @@ const char *chunkFr = R"glsl(
 
 		vec2 atlasPos = vec2(
 			tileID + v_tileCoord.x - tilePos.x,
-			floor(tileID / tileTexSize.x) + (-v_tileCoord.y - tilePos.y));
+			floor(tileID / tileTexSize.x) - v_tileCoord.y - tilePos.y);
 
 		gl_FragColor = texture2D(tileTex, fract(atlasPos / tileTexSize));
 	}
