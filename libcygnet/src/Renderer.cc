@@ -80,8 +80,7 @@ struct ChunkProg: public GlProgram {
 	GLint pos = uniformLoc("pos");
 	GLint vertex = attribLoc("vertex");
 	GLint tileTex = uniformLoc("tileTex");
-	GLint tileTexWidth = uniformLoc("tileTexWidth");
-	GLint tileTexHeight = uniformLoc("tileTexHeight");
+	GLint tileTexSize = uniformLoc("tileTexSize");
 	GLint tiles = uniformLoc("tiles");
 
 	GLuint vbo;
@@ -157,9 +156,8 @@ void Renderer::draw() {
 	glUniform1iv(state_->chunkProg.tiles, sizeof(tiles) / sizeof(*tiles), tiles);
 	glCheck();
 
-	glUniform1f(state_->chunkProg.tileTexWidth,
-			(float)(int)(state_->atlasTex.width() / SwanCommon::TILE_SIZE));
-	glUniform1f(state_->chunkProg.tileTexHeight,
+	glUniform2f(state_->chunkProg.tileTexSize,
+			(float)(int)(state_->atlasTex.width() / SwanCommon::TILE_SIZE),
 			(float)(int)(state_->atlasTex.height() / SwanCommon::TILE_SIZE));
 	glCheck();
 

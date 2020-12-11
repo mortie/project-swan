@@ -21,7 +21,7 @@ struct AtlasState {
 TileAtlas::TileAtlas(): state_(std::make_unique<AtlasState>()) {
 	GLint size;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size);
-	state_->tilesPerLine = std::min(size / SwanCommon::TILE_SIZE, 8);
+	state_->tilesPerLine = std::min(size / SwanCommon::TILE_SIZE, 1024);
 }
 
 TileAtlas::~TileAtlas() = default;
@@ -31,10 +31,7 @@ void TileAtlas::addTile(size_t tileId, const void *data, size_t len) {
 	const unsigned char *bytes = (const unsigned char *)data;
 	size_t x = tileId % state_->tilesPerLine;
 	size_t y = tileId / state_->tilesPerLine;
-	if (y >= state_->tilesPerLine) {
-		std::cerr << "Cygnet: Warning: Tile ID " << tileId << " too big for texture atlas\n";
-		return;
-	}
+	std::cerr << "Tile " << tileId << " to " << x << ", " << y << '\n';
 
 	if (state_->width <= x) {
 		state_->width = x + 1;
@@ -46,7 +43,7 @@ void TileAtlas::addTile(size_t tileId, const void *data, size_t len) {
 
 	size_t requiredSize = state_->tilesPerLine * SwanCommon::TILE_SIZE *
 		state_->height * SwanCommon::TILE_SIZE * 4;
-	state_->data.reserve(requiredSize);
+	state_->data.resize(requiredSize);
 
 	for (size_t ty = 0; ty < rows; ++ty) {
 		const unsigned char *src = bytes + ty * SwanCommon::TILE_SIZE * 4;
