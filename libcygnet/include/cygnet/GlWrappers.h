@@ -44,13 +44,11 @@ public:
 	template <typename... T>
 	GlProgram(const T &... shaders): GlProgram() { (addShader(shaders), ...); link(); }
 	GlProgram();
-	~GlProgram();
+	virtual ~GlProgram();
 
-	void use();
 	GLuint id() const { return id_; }
 
 protected:
-
 	GLint attribLoc(const char *name);
 	GLint uniformLoc(const char *name);
 
@@ -65,7 +63,6 @@ class GlTexture {
 public:
 	GlTexture();
 
-	void bind();
 	void upload(GLsizei width, GLsizei height, void *data,
 			GLenum format, GLenum type);
 	GLuint id() { return id_; }

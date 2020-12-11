@@ -58,11 +58,6 @@ GlProgram::~GlProgram() {
 	glCheck();
 }
 
-void GlProgram::use() {
-	glUseProgram(id_);
-	glCheck();
-}
-
 void GlProgram::addShader(const GlShader &shader) {
 	glAttachShader(id_, shader.id());
 	glCheck();
@@ -102,16 +97,11 @@ GlTexture::GlTexture() {
 	glCheck();
 }
 
-void GlTexture::bind() {
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, id_);
-}
-
 void GlTexture::upload(GLsizei width, GLsizei height, void *data,
 		GLenum format, GLenum type) {
 	w_ = width;
 	h_ = height;
-	bind();
+	glBindTexture(GL_TEXTURE_2D, id_);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, type, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

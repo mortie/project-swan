@@ -18,7 +18,7 @@ int main() {
 	Cygnet::Context ctx;
 	IMG_Init(IMG_INIT_PNG);
 	//Cygnet::Window win("Cygnet Test", 640, 480);
-	Cygnet::Window win("Cygnet Test", 1280, 256);
+	Cygnet::Window win("Cygnet Test", 680, 680);
 	Cygnet::Renderer rnd;
 
 	for (auto path: {

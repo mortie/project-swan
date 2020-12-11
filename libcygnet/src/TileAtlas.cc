@@ -21,7 +21,7 @@ struct AtlasState {
 TileAtlas::TileAtlas(): state_(std::make_unique<AtlasState>()) {
 	GLint size;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size);
-	state_->tilesPerLine = std::min(size / SwanCommon::TILE_SIZE, 1024);
+	state_->tilesPerLine = std::min(size / SwanCommon::TILE_SIZE, 8);
 }
 
 TileAtlas::~TileAtlas() = default;
