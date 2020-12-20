@@ -26,12 +26,12 @@ set(libraries
 
 if(CMAKE_BUILD_TYPE STREQUAL Sanitize OR CMAKE_BUILD_TYPE STREQUAL "")
 	message(STATUS "Build mode: Sanitize")
-	add_compile_options(-g -Og -fsanitize=address -fsanitize=undefined)
+	add_compile_options(-g -fsanitize=address -fsanitize=undefined)
 	add_link_options(-fsanitize=address -fsanitize=undefined)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Debug)
 	message(STATUS "Build mode: Debug")
-	add_compile_options(-g -Og)
+	add_compile_options(-g)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Optimize)
 	message(STATUS "Build mode: Optimize")
