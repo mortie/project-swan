@@ -46,20 +46,20 @@ const char *chunkFr = R"glsl(
 	#define CHUNK_HEIGHT 64
 
 	varying vec2 v_tileCoord;
-	uniform sampler2D tileTex;
-	uniform vec2 tileTexSize;
-	uniform int tiles[CHUNK_WIDTH * CHUNK_HEIGHT];
+	uniform sampler2D tileAtlas;
+	uniform vec2 tileAtlasSize;
+	uniform sampler2D tiles;
 
 	void main() {
 		vec2 tilePos = floor(vec2(v_tileCoord.x, -v_tileCoord.y));
-		int tileIndex = int(tilePos.y * float(CHUNK_WIDTH) + tilePos.x);
-		float tileID = float(tiles[tileIndex]);
+		vec4 tileColor = texture2D(tiles, tilePos / vec2(CHUNK_WIDTH, CHUNK_HEIGHT));
+		float tileID = floor((tileColor.r * 256.0 + tileColor.g) * 256.0);
 
 		vec2 atlasPos = vec2(
 			tileID + v_tileCoord.x - tilePos.x,
-			floor(tileID / tileTexSize.x) - v_tileCoord.y - tilePos.y);
+			floor(tileID / tileAtlasSize.x) - v_tileCoord.y - tilePos.y);
 
-		gl_FragColor = texture2D(tileTex, fract(atlasPos / tileTexSize));
+		gl_FragColor = texture2D(tileAtlas, fract(atlasPos / tileAtlasSize));
 	}
 )glsl";
 

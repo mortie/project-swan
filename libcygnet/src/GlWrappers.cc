@@ -39,6 +39,7 @@ GlShader::GlShader(Type type, const char *source) {
 	glGetShaderiv(id_, GL_COMPILE_STATUS, &status);
 	glCheck();
 	if (status == GL_FALSE) {
+		std::cerr << "Cygnet: Here's the broken shader:\n" << source << '\n';
 		throw GlCompileError("GL shader compilation failed.");
 	}
 }

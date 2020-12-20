@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <SDL_opengles2.h>
 #include <swan-common/constants.h>
+#include <string.h>
 
 #include "shaders.h"
 #include "GlWrappers.h"
@@ -79,10 +80,11 @@ struct ChunkProg: public GlProgram {
 	GLint camera = uniformLoc("camera");
 	GLint pos = uniformLoc("pos");
 	GLint vertex = attribLoc("vertex");
-	GLint tileTex = uniformLoc("tileTex");
-	GLint tileTexSize = uniformLoc("tileTexSize");
+	GLint tileAtlas = uniformLoc("tileAtlas");
+	GLint tileAtlasSize = uniformLoc("tileAtlasSize");
 	GLint tiles = uniformLoc("tiles");
 
+	GLuint tilesTex;
 	GLuint vbo;
 
 	static constexpr float ch = (float)SwanCommon::CHUNK_HEIGHT;
@@ -113,6 +115,16 @@ struct ChunkProg: public GlProgram {
 		glGenBuffers(1, &vbo);
 		glCheck();
 
+		glGenTextures(1, &tilesTex);
+		glCheck();
+
+		glBindTexture(GL_TEXTURE_2D, tilesTex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glCheck();
+
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
 		glCheck();
@@ -120,6 +132,7 @@ struct ChunkProg: public GlProgram {
 
 	void deinit() {
 		glDeleteBuffers(1, &vbo);
+		glDeleteTextures(1, &tilesTex);
 		glCheck();
 	}
 };
@@ -146,24 +159,29 @@ Renderer::~Renderer() = default;
 void Renderer::draw() {
 	state_->chunkProg.enable();
 
-	state_->camera.reset().translate(-0.5, 0.5).scale(0.25, 0.25);
-	glUniformMatrix3fv(state_->chunkProg.camera, 1, GL_TRUE, state_->camera.data());
-	glCheck();
-
-	GLint tiles[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT] = {0};
-	tiles[0] = 3;
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, state_->chunkProg.tilesTex); // Necessary?
+	glUniform1i(state_->chunkProg.tiles, 1);
+	uint8_t tiles[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT * 3];
+	memset(tiles, 0x00, sizeof(tiles));
 	tiles[1] = 1;
-	glUniform1iv(state_->chunkProg.tiles, sizeof(tiles) / sizeof(*tiles), tiles);
+	tiles[4] = 2;
+	tiles[7] = 3;
+	glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_RGB, SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
+			0, GL_RGB, GL_UNSIGNED_BYTE, tiles);
 	glCheck();
 
-	glUniform2f(state_->chunkProg.tileTexSize,
+	glUniform2f(state_->chunkProg.tileAtlasSize,
 			(float)(int)(state_->atlasTex.width() / SwanCommon::TILE_SIZE),
 			(float)(int)(state_->atlasTex.height() / SwanCommon::TILE_SIZE));
-	glCheck();
+
+	state_->camera.reset().translate(-0.9, 0.9).scale(0.25, 0.25);
+	glUniformMatrix3fv(state_->chunkProg.camera, 1, GL_TRUE, state_->camera.data());
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D,state_->atlasTex.id()); // Necessary?
-	glUniform1i(state_->chunkProg.tileTex, 0);
+	glBindTexture(GL_TEXTURE_2D, state_->atlasTex.id());
+	glUniform1i(state_->chunkProg.tileAtlas, 0);
 	glCheck();
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
