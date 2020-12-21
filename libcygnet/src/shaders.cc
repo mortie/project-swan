@@ -53,7 +53,7 @@ const char *chunkFr = R"glsl(
 	void main() {
 		vec2 tilePos = floor(vec2(v_tileCoord.x, -v_tileCoord.y));
 		vec4 tileColor = texture2D(tiles, tilePos / vec2(CHUNK_WIDTH, CHUNK_HEIGHT));
-		float tileID = floor((tileColor.r * 256.0 + tileColor.g) * 256.0);
+		float tileID = floor((tileColor.r * 256.0 + tileColor.a) * 256.0);
 
 		vec2 atlasPos = vec2(
 			tileID + v_tileCoord.x - tilePos.x,

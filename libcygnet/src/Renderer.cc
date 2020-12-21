@@ -162,21 +162,21 @@ void Renderer::draw() {
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, state_->chunkProg.tilesTex); // Necessary?
 	glUniform1i(state_->chunkProg.tiles, 1);
-	uint8_t tiles[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT * 3];
+	uint8_t tiles[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT * 2];
 	memset(tiles, 0x00, sizeof(tiles));
 	tiles[1] = 1;
-	tiles[4] = 2;
-	tiles[7] = 3;
+	tiles[3] = 2;
+	tiles[5] = 3;
 	glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_RGB, SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
-			0, GL_RGB, GL_UNSIGNED_BYTE, tiles);
+			GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
+			0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, tiles);
 	glCheck();
 
 	glUniform2f(state_->chunkProg.tileAtlasSize,
 			(float)(int)(state_->atlasTex.width() / SwanCommon::TILE_SIZE),
 			(float)(int)(state_->atlasTex.height() / SwanCommon::TILE_SIZE));
 
-	state_->camera.reset().translate(-0.9, 0.9).scale(0.25, 0.25);
+	state_->camera.reset().translate(-0.9, 0.9).scale(0.025, 0.025);
 	glUniformMatrix3fv(state_->chunkProg.camera, 1, GL_TRUE, state_->camera.data());
 
 	glActiveTexture(GL_TEXTURE0);
