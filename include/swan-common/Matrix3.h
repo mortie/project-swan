@@ -4,10 +4,14 @@
 #include <cmath>
 #include <array>
 
+#include "Vector2.h"
+
 namespace SwanCommon {
 
 template<typename T>
 struct Matrix3 {
+	using Vec = Vector2<T>;
+
 	static constexpr std::array<T, 9> identity = {1, 0, 0, 0, 1, 0, 0, 0, 1};
 	std::array<T, 9> vals;
 
@@ -39,15 +43,15 @@ struct Matrix3 {
 		return *this;
 	}
 
-	constexpr Matrix3<T> &translate(T x, T y) {
-		at(2, 0) += x;
-		at(2, 1) += y;
+	constexpr Matrix3<T> &translate(Vec vec) {
+		at(2, 0) += vec.x;
+		at(2, 1) += vec.y;
 		return *this;
 	}
 
-	constexpr Matrix3<T> &scale(T x, T y) {
-		at(0, 0) *= x;
-		at(1, 1) *= y;
+	constexpr Matrix3<T> &scale(Vec vec) {
+		at(0, 0) *= vec.x;
+		at(1, 1) *= vec.y;
 		return *this;
 	}
 

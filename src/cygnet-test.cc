@@ -41,6 +41,11 @@ int main() {
 		chunk = rnd.createChunk(tiles);
 	}
 
+	Cygnet::RenderCamera cam = {
+		.pos = { 0.9, 0.9 },
+		.zoom = 0.125,
+	};
+
 	while (true) {
 		SDL_Event evt;
 		while (SDL_PollEvent(&evt)) {
@@ -53,7 +58,7 @@ int main() {
 		rnd.drawChunk({0, 0}, chunk);
 
 		win.clear();
-		rnd.draw();
+		rnd.draw(cam);
 		win.flip();
 	}
 

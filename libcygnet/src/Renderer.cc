@@ -143,24 +143,24 @@ struct RendererState {
 
 	TileAtlas atlas;
 	GlTexture atlasTex;
-
-	Mat3gf camera;
 };
 
 Renderer::Renderer(): state_(std::make_unique<RendererState>()) {}
 
 Renderer::~Renderer() = default;
 
-void Renderer::draw() {
+void Renderer::draw(const RenderCamera &cam) {
+	Mat3gf camMat;
+	camMat.translate({ -cam.pos.x, cam.pos.y }); // TODO: Change something to make this -cam.pos
+	camMat.scale({ cam.zoom, cam.zoom });
 	auto &chunkProg = state_->chunkProg;
-	state_->camera.reset().translate(-0.9, 0.9).scale(0.125, 0.125);
 
 	chunkProg.enable();
 
 	glUniform2f(chunkProg.tileAtlasSize,
 			(float)(int)(state_->atlasTex.width() / SwanCommon::TILE_SIZE),
 			(float)(int)(state_->atlasTex.height() / SwanCommon::TILE_SIZE));
-	glUniformMatrix3fv(chunkProg.camera, 1, GL_TRUE, state_->camera.data());
+	glUniformMatrix3fv(chunkProg.camera, 1, GL_TRUE, camMat.data());
 	glCheck();
 
 	glActiveTexture(GL_TEXTURE0);
@@ -168,7 +168,6 @@ void Renderer::draw() {
 	glCheck();
 
 	glActiveTexture(GL_TEXTURE1);
-
 	for (auto [pos, chunk]: draw_chunks_) {
 		glUniform2f(chunkProg.pos, pos.x, pos.y);
 		glBindTexture(GL_TEXTURE_2D, chunk.tex);

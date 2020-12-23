@@ -17,6 +17,11 @@ struct RenderChunk {
 	GLuint tex;
 };
 
+struct RenderCamera {
+	SwanCommon::Vec2 pos;
+	float zoom;
+};
+
 class Renderer {
 public:
 	using TileID = uint16_t;
@@ -26,7 +31,7 @@ public:
 
 	void drawChunk(SwanCommon::Vec2 pos, RenderChunk chunk);
 
-	void draw();
+	void draw(const RenderCamera &cam);
 
 	void registerTileTexture(TileID tileId, const void *data, size_t len);
 	void uploadTileTexture();
