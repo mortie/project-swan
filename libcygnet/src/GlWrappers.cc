@@ -1,8 +1,8 @@
 #include "GlWrappers.h"
 
-#include <SDL_opengles2.h>
 #include <iostream>
 
+#include "gl.h"
 #include "util.h"
 
 namespace Cygnet {

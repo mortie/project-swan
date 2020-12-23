@@ -3,10 +3,11 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <SDL_opengles2.h>
 #include <stdio.h>
 #include <string.h>
 #include <swan-common/constants.h>
+
+#include "gl.h"
 
 namespace Cygnet {
 

@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <stdio.h>
-#include <SDL_opengles2.h>
 #include <swan-common/constants.h>
 #include <string.h>
 
@@ -10,6 +9,7 @@
 #include <type_traits>
 #include <bit>
 
+#include "gl.h"
 #include "shaders.h"
 #include "GlWrappers.h"
 #include "TileAtlas.h"
