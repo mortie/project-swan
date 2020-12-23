@@ -3,9 +3,17 @@
 #include <cygnet/Renderer.h>
 #include <swan-common/constants.h>
 
+#include <time.h>
 #include <stdint.h>
+#include <iostream>
 #include <SDL_image.h>
 #include <SDL.h>
+
+double getTime() {
+	struct timespec tv;
+	clock_gettime(CLOCK_MONOTONIC, &tv);
+	return tv.tv_sec + tv.tv_nsec / 1000000000.0;
+}
 
 void addTile(Cygnet::Renderer &rnd, const char *path) {
 	static size_t id = 0;
@@ -17,7 +25,6 @@ void addTile(Cygnet::Renderer &rnd, const char *path) {
 int main() {
 	Cygnet::Context ctx;
 	IMG_Init(IMG_INIT_PNG);
-	//Cygnet::Window win("Cygnet Test", 640, 480);
 	Cygnet::Window win("Cygnet Test", 680, 680);
 	Cygnet::Renderer rnd;
 
@@ -42,25 +49,76 @@ int main() {
 	}
 
 	Cygnet::RenderCamera cam = {
-		.pos = { 0.9, 0.9 },
-		.zoom = 0.125,
+		.pos = { 0, 0 },
+		.zoom = 1,
 	};
 
-	unsigned int lol = 0;
+	float lol = 0;
+
+	bool keys[512] = { 0 };
+
+	double acc = 0;
+	double prevTime = getTime() - 1/60.0;
+	int frames = 0;
 
 	while (true) {
+		double currTime = getTime();
+		double dt = currTime - prevTime;
+		prevTime = currTime;
+		acc += dt;
+
+		frames += 1;
+		if (acc >= 2) {
+			std::cerr << "FPS: " << (frames / 2.0) << '\n';
+			acc -= 2;
+			frames = 0;
+		}
+
 		SDL_Event evt;
 		while (SDL_PollEvent(&evt)) {
 			switch (evt.type) {
 			case SDL_QUIT:
 				goto exit;
+
+			case SDL_WINDOWEVENT:
+				switch (evt.window.event) {
+				case SDL_WINDOWEVENT_SIZE_CHANGED:
+					win.onResize(evt.window.data1, evt.window.data2);
+					break;
+				}
+				break;
+
+			case SDL_MOUSEWHEEL:
+				cam.zoom += evt.wheel.y * 0.1 * cam.zoom;
+				break;
+
+			case SDL_KEYDOWN:
+				keys[evt.key.keysym.scancode] = true;
+				break;
+
+			case SDL_KEYUP:
+				keys[evt.key.keysym.scancode] = false;
+				break;
 			}
 		}
 
-		lol += 1;
-		rnd.modifyChunk(chunk, {0, 0}, (lol / 20) % 6);
-		rnd.modifyChunk(chunk, {4, 4}, ((lol / 20) + 3) % 6);
-		rnd.modifyChunk(chunk, {3, 2}, ((lol / 25) + 7) % 6);
+		if (keys[SDL_SCANCODE_A]) {
+			cam.pos.x -= 1 * dt;
+		}
+		if (keys[SDL_SCANCODE_D]) {
+			cam.pos.x += 1 * dt;
+		}
+		if (keys[SDL_SCANCODE_W]) {
+			cam.pos.y -= 1 * dt;
+		}
+		if (keys[SDL_SCANCODE_S]) {
+			cam.pos.y += 1 * dt;
+		}
+
+		lol += 1 * dt;
+		rnd.modifyChunk(chunk, {0, 0}, (int)lol % 6);
+		rnd.modifyChunk(chunk, {4, 4}, ((int)(lol / 2) + 3) % 6);
+		rnd.modifyChunk(chunk, {3, 2}, ((int)(lol * 1.5) + 7) % 6);
 
 		rnd.drawChunk({0, 0}, chunk);
 

@@ -151,7 +151,7 @@ Renderer::~Renderer() = default;
 
 void Renderer::draw(const RenderCamera &cam) {
 	Mat3gf camMat;
-	camMat.translate({ -cam.pos.x, cam.pos.y }); // TODO: Change something to make this -cam.pos
+	camMat.translate(cam.pos.scale(-1, 1) * cam.zoom); // TODO: Change something to make this -cam.pos
 	camMat.scale({ cam.zoom, cam.zoom });
 	auto &chunkProg = state_->chunkProg;
 

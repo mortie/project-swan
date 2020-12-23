@@ -28,6 +28,7 @@ Window::Window(const char *name, int w, int h):
 	glEnable(GL_BLEND);
 	glCheck();
 
+	SDL_GetWindowSize(state_->window, &w, &h);
 	onResize(w, h);
 }
 

@@ -23,27 +23,27 @@ struct Vector2 {
 		return *this;
 	}
 
-	constexpr T length() {
+	constexpr T length() const {
 		return (T)std::sqrt((double)squareLength());
 	}
 
-	constexpr T squareLength() {
+	constexpr T squareLength() const {
 		return this->x * this->x + this->y * this->y;
 	}
 
-	constexpr Vector2<T> sign() {
+	constexpr Vector2<T> sign() const {
 		return Vector2<T>(x > 0 ? 1 : -1, y > 0 ? 1 : -1);
 	}
 
-	constexpr Vector2<T> scale(T sx, T sy) {
+	constexpr Vector2<T> scale(T sx, T sy) const {
 		return Vector2<T>(x * sx, y * sy);
 	}
 
-	constexpr Vector2<T> scale(T s) {
+	constexpr Vector2<T> scale(T s) const {
 		return scale(s, s);
 	}
 
-	constexpr Vector2<T> norm() {
+	constexpr Vector2<T> norm() const {
 		return *this / length();
 	}
 
