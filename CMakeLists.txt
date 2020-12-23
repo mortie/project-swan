@@ -96,3 +96,7 @@ install(TARGETS swan DESTINATION swan)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/assets DESTINATION swan)
 
 add_custom_target(check DEPENDS check_libswan)
+
+add_custom_target(cloc
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	COMMAND cloc core.mod src libcygnet libswan)
