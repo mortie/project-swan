@@ -1,5 +1,6 @@
 #pragma once
 
+#include <swan-common/Vector2.h>
 #include <memory>
 
 namespace Cygnet {
@@ -15,6 +16,7 @@ public:
 	void clear();
 	void flip();
 	void onResize(int w, int h);
+	SwanCommon::Vec2i size() { return { w_, h_ }; }
 
 private:
 	std::unique_ptr<WindowState> state_;

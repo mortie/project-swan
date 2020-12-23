@@ -50,6 +50,7 @@ int main() {
 
 	Cygnet::RenderCamera cam = {
 		.pos = { 0, 0 },
+		.size = win.size(),
 		.zoom = 1,
 	};
 
@@ -84,6 +85,7 @@ int main() {
 				switch (evt.window.event) {
 				case SDL_WINDOWEVENT_SIZE_CHANGED:
 					win.onResize(evt.window.data1, evt.window.data2);
+					cam.size = win.size();
 					break;
 				}
 				break;
