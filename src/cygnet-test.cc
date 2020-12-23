@@ -31,6 +31,16 @@ int main() {
 	}) addTile(rnd, path);
 	rnd.uploadTileTexture();
 
+	Cygnet::RenderChunk chunk;
+	{
+		uint16_t tiles[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT];
+		memset(tiles, 0, sizeof(tiles));
+		tiles[0] = 1;
+		tiles[1] = 2;
+		tiles[2] = 3;
+		chunk = rnd.createChunk(tiles);
+	}
+
 	while (true) {
 		SDL_Event evt;
 		while (SDL_PollEvent(&evt)) {
@@ -39,6 +49,8 @@ int main() {
 				goto exit;
 			}
 		}
+
+		rnd.drawChunk({0, 0}, chunk);
 
 		win.clear();
 		rnd.draw();

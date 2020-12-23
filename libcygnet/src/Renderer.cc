@@ -6,6 +6,10 @@
 #include <swan-common/constants.h>
 #include <string.h>
 
+// std::endian was originally in type_traits, was moved to bit
+#include <type_traits>
+#include <bit>
+
 #include "shaders.h"
 #include "GlWrappers.h"
 #include "TileAtlas.h"
@@ -84,7 +88,6 @@ struct ChunkProg: public GlProgram {
 	GLint tileAtlasSize = uniformLoc("tileAtlasSize");
 	GLint tiles = uniformLoc("tiles");
 
-	GLuint tilesTex;
 	GLuint vbo;
 
 	static constexpr float ch = (float)SwanCommon::CHUNK_HEIGHT;
@@ -104,6 +107,9 @@ struct ChunkProg: public GlProgram {
 		glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
 		glEnableVertexAttribArray(vertex);
 		glCheck();
+
+		glUniform1i(tileAtlas, 0);
+		glUniform1i(tiles, 1);
 	}
 
 	void disable() {
@@ -115,16 +121,6 @@ struct ChunkProg: public GlProgram {
 		glGenBuffers(1, &vbo);
 		glCheck();
 
-		glGenTextures(1, &tilesTex);
-		glCheck();
-
-		glBindTexture(GL_TEXTURE_2D, tilesTex);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glCheck();
-
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
 		glCheck();
@@ -132,7 +128,6 @@ struct ChunkProg: public GlProgram {
 
 	void deinit() {
 		glDeleteBuffers(1, &vbo);
-		glDeleteTextures(1, &tilesTex);
 		glCheck();
 	}
 };
@@ -157,37 +152,32 @@ Renderer::Renderer(): state_(std::make_unique<RendererState>()) {}
 Renderer::~Renderer() = default;
 
 void Renderer::draw() {
-	state_->chunkProg.enable();
+	auto &chunkProg = state_->chunkProg;
+	state_->camera.reset().translate(-0.9, 0.9).scale(0.125, 0.125);
 
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, state_->chunkProg.tilesTex); // Necessary?
-	glUniform1i(state_->chunkProg.tiles, 1);
-	uint8_t tiles[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT * 2];
-	memset(tiles, 0x00, sizeof(tiles));
-	tiles[1] = 1;
-	tiles[3] = 2;
-	tiles[5] = 3;
-	glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
-			0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, tiles);
-	glCheck();
+	chunkProg.enable();
 
-	glUniform2f(state_->chunkProg.tileAtlasSize,
+	glUniform2f(chunkProg.tileAtlasSize,
 			(float)(int)(state_->atlasTex.width() / SwanCommon::TILE_SIZE),
 			(float)(int)(state_->atlasTex.height() / SwanCommon::TILE_SIZE));
-
-	state_->camera.reset().translate(-0.9, 0.9).scale(0.025, 0.025);
-	glUniformMatrix3fv(state_->chunkProg.camera, 1, GL_TRUE, state_->camera.data());
+	glUniformMatrix3fv(chunkProg.camera, 1, GL_TRUE, state_->camera.data());
+	glCheck();
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, state_->atlasTex.id());
-	glUniform1i(state_->chunkProg.tileAtlas, 0);
+	glBindTexture(GL_TEXTURE_2D, state_->atlasTex.id()); // Necessary?
 	glCheck();
 
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glCheck();
+	glActiveTexture(GL_TEXTURE1);
 
-	state_->chunkProg.disable();
+	for (auto [pos, chunk]: draw_chunks_) {
+		glUniform2f(chunkProg.pos, pos.x, pos.y);
+		glBindTexture(GL_TEXTURE_2D, chunk.tex);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glCheck();
+	}
+
+	draw_chunks_.clear();
+	chunkProg.disable();
 
 	/*
 	state_->spriteProg.enable();
@@ -209,7 +199,7 @@ void Renderer::draw() {
 	*/
 }
 
-void Renderer::registerTileTexture(size_t tileId, const void *data, size_t len) {
+void Renderer::registerTileTexture(TileID tileId, const void *data, size_t len) {
 	state_->atlas.addTile(tileId, data, len);
 }
 
@@ -218,6 +208,55 @@ void Renderer::uploadTileTexture() {
 	const unsigned char *data = state_->atlas.getImage(&w, &h);
 	state_->atlasTex.upload(w, h, (void *)data, GL_RGBA, GL_UNSIGNED_BYTE);
 	std::cerr << "Uploaded image of size " << w << 'x' << h << '\n';
+}
+
+RenderChunk Renderer::createChunk(
+		TileID tiles[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]) {
+	// TODO: Maybe don't do this here? Maybe instead store the buffer and
+	// upload the texture in the draw method?
+	// The current approach needs createChunk to be called on the graphics thread.
+
+	RenderChunk chunk;
+	glGenTextures(1, &chunk.tex);
+	glCheck();
+	glBindTexture(GL_TEXTURE_2D, chunk.tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	static_assert(
+			std::endian::native == std::endian::big ||
+			std::endian::native == std::endian::little,
+			"Expected either big or little endian");
+
+	if constexpr (std::endian::native == std::endian::little) {
+		glTexImage2D(
+				GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA,
+				SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
+				0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, tiles);
+	} else if constexpr (std::endian::native == std::endian::big) {
+		uint8_t buf[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT * 2];
+		for (size_t y = 0; y < SwanCommon::CHUNK_HEIGHT; ++y) {
+			for (size_t x = 0; x < SwanCommon::CHUNK_WIDTH; ++x) {
+				size_t dst = y * SwanCommon::CHUNK_WIDTH * 2 + x * 2;
+				size_t src = y * SwanCommon::CHUNK_WIDTH + x;
+				buf[dst + 0] = tiles[src] & 0xff;
+				buf[dst + 1] = (tiles[src] & 0xff00) >> 8;
+			}
+		}
+
+		glTexImage2D(
+				GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA,
+				SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
+				0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, buf);
+	}
+
+	return chunk;
+}
+
+void Renderer::destroyChunk(RenderChunk chunk) {
+	glDeleteTextures(1, &chunk.tex);
 }
 
 }
