@@ -46,6 +46,8 @@ int main() {
 		.zoom = 0.125,
 	};
 
+	unsigned int lol = 0;
+
 	while (true) {
 		SDL_Event evt;
 		while (SDL_PollEvent(&evt)) {
@@ -54,6 +56,11 @@ int main() {
 				goto exit;
 			}
 		}
+
+		lol += 1;
+		rnd.modifyChunk(chunk, {0, 0}, (lol / 20) % 6);
+		rnd.modifyChunk(chunk, {4, 4}, ((lol / 20) + 3) % 6);
+		rnd.modifyChunk(chunk, {3, 2}, ((lol / 25) + 7) % 6);
 
 		rnd.drawChunk({0, 0}, chunk);
 

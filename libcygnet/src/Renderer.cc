@@ -218,11 +218,13 @@ RenderChunk Renderer::createChunk(
 	RenderChunk chunk;
 	glGenTextures(1, &chunk.tex);
 	glCheck();
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, chunk.tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glCheck();
 
 	static_assert(
 			std::endian::native == std::endian::big ||
@@ -252,6 +254,28 @@ RenderChunk Renderer::createChunk(
 	}
 
 	return chunk;
+}
+
+void Renderer::modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id) {
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, chunk.tex);
+	glCheck();
+
+	static_assert(
+			std::endian::native == std::endian::big ||
+			std::endian::native == std::endian::little,
+			"Expected either big or little endian");
+
+	if constexpr (std::endian::native == std::endian::little) {
+		glTexSubImage2D(
+				GL_TEXTURE_2D, 0, pos.x, pos.y, 1, 1,
+				GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, &id);
+	} else if constexpr (std::endian::native == std::endian::big) {
+		uint8_t buf[] = { (uint8_t)(id & 0xff), (uint8_t)((id & 0xff00) >> 8) };
+		glTexSubImage2D(
+				GL_TEXTURE_2D, 0, pos.x, pos.y, 1, 1,
+				GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, buf);
+	}
 }
 
 void Renderer::destroyChunk(RenderChunk chunk) {

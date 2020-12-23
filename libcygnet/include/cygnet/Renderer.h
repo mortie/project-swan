@@ -38,6 +38,7 @@ public:
 
 	RenderChunk createChunk(
 			TileID tiles[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]);
+	void modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id);
 	void destroyChunk(RenderChunk chunk);
 
 private:
