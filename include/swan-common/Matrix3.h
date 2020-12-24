@@ -16,6 +16,9 @@ struct Matrix3 {
 	std::array<T, 9> vals;
 
 	constexpr Matrix3(): vals(identity) {}
+	constexpr Matrix3(const Matrix3 &mat): vals(mat.vals) {}
+
+	constexpr Matrix3 &operator=(const Matrix3 &mat) { vals = mat.vals; }
 
 	constexpr T *data() {
 		return vals.data();

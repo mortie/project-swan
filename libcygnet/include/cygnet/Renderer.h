@@ -13,6 +13,10 @@ namespace Cygnet {
 
 struct RendererState;
 
+struct RenderSprite {
+	GLuint tex;
+};
+
 struct RenderChunk {
 	GLuint tex;
 };
@@ -30,7 +34,10 @@ public:
 	Renderer();
 	~Renderer();
 
-	void drawChunk(SwanCommon::Vec2 pos, RenderChunk chunk);
+	void drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos);
+	void drawSprite(RenderSprite sprite, Mat3gf mat);
+	void drawSprite(RenderSprite sprite, SwanCommon::Vec2 pos);
+	void drawSpriteFlipped(RenderSprite chunk, SwanCommon::Vec2 pos);
 
 	void draw(const RenderCamera &cam);
 
@@ -42,14 +49,30 @@ public:
 	void modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id);
 	void destroyChunk(RenderChunk chunk);
 
+	RenderSprite createSprite(uint8_t *rgb, int width, int height);
+	void destroySprite(RenderSprite sprite);
+
 private:
 	std::unique_ptr<RendererState> state_;
 
 	std::vector<std::pair<SwanCommon::Vec2, RenderChunk>> draw_chunks_;
+	std::vector<std::pair<Mat3gf, RenderSprite>> draw_sprites_;
 };
 
-inline void Renderer::drawChunk(SwanCommon::Vec2 pos, RenderChunk chunk) {
+inline void Renderer::drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos) {
 	draw_chunks_.emplace_back(pos, chunk);
+}
+
+inline void Renderer::drawSprite(RenderSprite sprite, Mat3gf mat) {
+	draw_sprites_.emplace_back(mat, sprite);
+}
+
+inline void Renderer::drawSprite(RenderSprite sprite, SwanCommon::Vec2 pos) {
+	draw_sprites_.emplace_back(Mat3gf{}.translate(pos), sprite);
+}
+
+inline void Renderer::drawSpriteFlipped(RenderSprite sprite, SwanCommon::Vec2 pos) {
+	draw_sprites_.emplace_back(Mat3gf{}.translate(pos).scale({ -1, 1 }), sprite);
 }
 
 }

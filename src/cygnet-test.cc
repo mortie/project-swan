@@ -118,11 +118,11 @@ int main() {
 		}
 
 		lol += 1 * dt;
-		rnd.modifyChunk(chunk, {0, 0}, (int)lol % 6);
-		rnd.modifyChunk(chunk, {4, 4}, ((int)(lol / 2) + 3) % 6);
-		rnd.modifyChunk(chunk, {3, 2}, ((int)(lol * 1.5) + 7) % 6);
+		rnd.modifyChunk(chunk, { 0, 0 }, (int)lol % 6);
+		rnd.modifyChunk(chunk, { 4, 4 }, ((int)(lol / 2) + 3) % 6);
+		rnd.modifyChunk(chunk, { 3, 2 }, ((int)(lol * 1.5) + 7) % 6);
 
-		rnd.drawChunk({0, 0}, chunk);
+		rnd.drawChunk(chunk, { 0, 0 });
 
 		win.clear();
 		rnd.draw(cam);

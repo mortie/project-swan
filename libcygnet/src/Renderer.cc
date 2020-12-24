@@ -151,8 +151,9 @@ Renderer::~Renderer() = default;
 
 void Renderer::draw(const RenderCamera &cam) {
 	Mat3gf camMat;
-	camMat.translate(cam.pos.scale(-1, 1) * cam.zoom); // TODO: Change something to make this -cam.pos
-	camMat.scale({ cam.zoom * ((float)cam.size.y / (float)cam.size.x), cam.zoom });
+	float ratio = (float)cam.size.y / (float)cam.size.x;
+	camMat.translate(cam.pos.scale(-ratio, 1) * cam.zoom); // TODO: Change something to make this -cam.pos
+	camMat.scale({ cam.zoom * ratio, cam.zoom });
 	auto &chunkProg = state_->chunkProg;
 
 	chunkProg.enable();
@@ -218,6 +219,7 @@ RenderChunk Renderer::createChunk(
 	RenderChunk chunk;
 	glGenTextures(1, &chunk.tex);
 	glCheck();
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, chunk.tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -280,6 +282,31 @@ void Renderer::modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id) 
 
 void Renderer::destroyChunk(RenderChunk chunk) {
 	glDeleteTextures(1, &chunk.tex);
+}
+
+RenderSprite createSprite(uint8_t *rgb, int width, int height) {
+	RenderSprite sprite;
+	glGenTextures(1, &sprite.tex);
+	glCheck();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, sprite.tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glCheck();
+
+	glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA,
+			width, height,
+			0, GL_RGBA, GL_UNSIGNED_BYTE, rgb);
+
+	return sprite;
+}
+
+void Renderer::destroySprite(RenderSprite sprite) {
+	glDeleteTextures(1, &sprite.tex);
 }
 
 }
