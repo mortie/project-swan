@@ -11,7 +11,7 @@ const char *spriteVx = R"glsl(
 	void main() {
 		vec3 pos = camera * transform * vec3(vertex, 1);
 		gl_Position = vec4(pos.xy, 0, 1);
-		v_texCoord = vec2(vertex.x, -vertex.y);
+		v_texCoord = vec2(vertex.x, vertex.y);
 	}
 )glsl";
 
@@ -34,7 +34,7 @@ const char *chunkVx = R"glsl(
 	void main() {
 		vec3 pos = camera * vec3(pos + vertex, 1);
 		gl_Position = vec4(pos.xy, 0, 1);
-		v_tileCoord = vec2(vertex.x, -vertex.y);
+		v_tileCoord = vec2(vertex.x, vertex.y);
 	}
 )glsl";
 

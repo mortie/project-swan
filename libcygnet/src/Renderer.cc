@@ -35,9 +35,9 @@ struct ChunkProg: public GlProgram {
 	static constexpr float cw = (float)SwanCommon::CHUNK_WIDTH;
 	static constexpr GLfloat vertexes[] = {
 		0.0f,  0.0f, // pos 0: top left
-		0.0f, -ch ,  // pos 1: bottom left
-		cw,   -ch,   // pos 2: bottom right
-		cw,   -ch,   // pos 2: bottom right
+		0.0f,  ch ,  // pos 1: bottom left
+		cw,    ch,   // pos 2: bottom right
+		cw,    ch,   // pos 2: bottom right
 		cw,    0.0f, // pos 3: top right
 		0.0f,  0.0f, // pos 0: top left
 	};
@@ -87,9 +87,9 @@ struct SpriteProg: public GlProgram {
 
 	static constexpr GLfloat vertexes[] = {
 		0.0f,  0.0f, // pos 0: top left
-		0.0f, -1.0f, // pos 1: bottom left
-		1.0f, -1.0f, // pos 2: bottom right
-		1.0f, -1.0f, // pos 2: bottom right
+		0.0f,  1.0f, // pos 1: bottom left
+		1.0f,  1.0f, // pos 2: bottom right
+		1.0f,  1.0f, // pos 2: bottom right
 		1.0f,  0.0f, // pos 3: top right
 		0.0f,  0.0f, // pos 0: top left
 	};
@@ -143,9 +143,13 @@ Renderer::~Renderer() = default;
 
 void Renderer::draw(const RenderCamera &cam) {
 	Mat3gf camMat;
+
+	// Make the matrix translate to { -camX, -camY }, fix up the aspect ratio,
+	// flip the Y axis so that positive Y direction is down, and scale according to zoom.
 	float ratio = (float)cam.size.y / (float)cam.size.x;
-	camMat.translate(cam.pos.scale(-ratio, 1) * cam.zoom); // TODO: Change something to make this -cam.pos
-	camMat.scale({ cam.zoom * ratio, cam.zoom });
+	camMat.translate(cam.pos.scale(-ratio, 1) * cam.zoom);
+	camMat.scale({ cam.zoom * ratio, -cam.zoom });
+
 	auto &chunkProg = state_->chunkProg;
 	auto &spriteProg = state_->spriteProg;
 
