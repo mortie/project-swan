@@ -13,12 +13,13 @@ namespace Cygnet {
 
 struct RendererState;
 
-struct RenderSprite {
+struct RenderChunk {
 	GLuint tex;
 };
 
-struct RenderChunk {
+struct RenderSprite {
 	GLuint tex;
+	SwanCommon::Vec2 scale;
 };
 
 struct RenderCamera {
@@ -35,9 +36,9 @@ public:
 	~Renderer();
 
 	void drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos);
-	void drawSprite(RenderSprite sprite, Mat3gf mat);
-	void drawSprite(RenderSprite sprite, SwanCommon::Vec2 pos);
-	void drawSpriteFlipped(RenderSprite chunk, SwanCommon::Vec2 pos);
+	void drawSprite(RenderSprite sprite, Mat3gf mat, int y = 0);
+	void drawSprite(RenderSprite sprite, SwanCommon::Vec2 pos, int y = 0);
+	void drawSpriteFlipped(RenderSprite chunk, SwanCommon::Vec2 pos, int y = 0);
 
 	void draw(const RenderCamera &cam);
 
@@ -49,30 +50,41 @@ public:
 	void modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id);
 	void destroyChunk(RenderChunk chunk);
 
-	RenderSprite createSprite(uint8_t *rgb, int width, int height);
+	RenderSprite createSprite(void *data, int width, int height);
 	void destroySprite(RenderSprite sprite);
 
 private:
+	struct DrawChunk {
+		SwanCommon::Vec2 pos;
+		RenderChunk chunk;
+	};
+
+	struct DrawSprite {
+		Mat3gf transform;
+		int y;
+		RenderSprite sprite;
+	};
+
 	std::unique_ptr<RendererState> state_;
 
-	std::vector<std::pair<SwanCommon::Vec2, RenderChunk>> draw_chunks_;
-	std::vector<std::pair<Mat3gf, RenderSprite>> draw_sprites_;
+	std::vector<DrawChunk> draw_chunks_;
+	std::vector<DrawSprite> draw_sprites_;
 };
 
 inline void Renderer::drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos) {
 	draw_chunks_.emplace_back(pos, chunk);
 }
 
-inline void Renderer::drawSprite(RenderSprite sprite, Mat3gf mat) {
-	draw_sprites_.emplace_back(mat, sprite);
+inline void Renderer::drawSprite(RenderSprite sprite, Mat3gf mat, int y) {
+	draw_sprites_.emplace_back(mat, y, sprite);
 }
 
-inline void Renderer::drawSprite(RenderSprite sprite, SwanCommon::Vec2 pos) {
-	draw_sprites_.emplace_back(Mat3gf{}.translate(pos), sprite);
+inline void Renderer::drawSprite(RenderSprite sprite, SwanCommon::Vec2 pos, int y) {
+	draw_sprites_.emplace_back(Mat3gf{}.translate(pos), y, sprite);
 }
 
-inline void Renderer::drawSpriteFlipped(RenderSprite sprite, SwanCommon::Vec2 pos) {
-	draw_sprites_.emplace_back(Mat3gf{}.translate(pos).scale({ -1, 1 }), sprite);
+inline void Renderer::drawSpriteFlipped(RenderSprite sprite, SwanCommon::Vec2 pos, int y) {
+	draw_sprites_.emplace_back(Mat3gf{}.translate(pos).scale({ -1, 1 }), y, sprite);
 }
 
 }

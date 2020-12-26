@@ -6,13 +6,12 @@ const char *spriteVx = R"glsl(
 	uniform mat3 camera;
 	uniform mat3 transform;
 	attribute vec2 vertex;
-	attribute vec2 texCoord;
 	varying vec2 v_texCoord;
 
 	void main() {
 		vec3 pos = camera * transform * vec3(vertex, 1);
 		gl_Position = vec4(pos.xy, 0, 1);
-		v_texCoord = texCoord;
+		v_texCoord = vec2(vertex.x, -vertex.y);
 	}
 )glsl";
 
@@ -35,7 +34,7 @@ const char *chunkVx = R"glsl(
 	void main() {
 		vec3 pos = camera * vec3(pos + vertex, 1);
 		gl_Position = vec4(pos.xy, 0, 1);
-		v_tileCoord = vertex;
+		v_tileCoord = vec2(vertex.x, -vertex.y);
 	}
 )glsl";
 
@@ -51,13 +50,13 @@ const char *chunkFr = R"glsl(
 	uniform sampler2D tiles;
 
 	void main() {
-		vec2 tilePos = floor(vec2(v_tileCoord.x, -v_tileCoord.y));
+		vec2 tilePos = floor(vec2(v_tileCoord.x, v_tileCoord.y));
 		vec4 tileColor = texture2D(tiles, tilePos / vec2(CHUNK_WIDTH, CHUNK_HEIGHT));
 		float tileID = floor((tileColor.r * 256.0 + tileColor.a) * 256.0);
 
 		vec2 atlasPos = vec2(
 			tileID + v_tileCoord.x - tilePos.x,
-			floor(tileID / tileAtlasSize.x) - v_tileCoord.y - tilePos.y);
+			floor(tileID / tileAtlasSize.x) + v_tileCoord.y - tilePos.y);
 
 		gl_FragColor = texture2D(tileAtlas, fract(atlasPos / tileAtlasSize));
 	}

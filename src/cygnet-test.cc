@@ -22,6 +22,13 @@ void addTile(Cygnet::Renderer &rnd, const char *path) {
 	SDL_FreeSurface(surf);
 }
 
+Cygnet::RenderSprite loadSprite(Cygnet::Renderer &rnd, const char *path) {
+	SDL_Surface *surf = IMG_Load(path);
+	auto sprite = rnd.createSprite(surf->pixels, surf->w, surf->h);
+	SDL_FreeSurface(surf);
+	return sprite;
+}
+
 int main() {
 	Cygnet::Context ctx;
 	IMG_Init(IMG_INIT_PNG);
@@ -37,6 +44,8 @@ int main() {
 		"core.mod/assets/tile/tree-trunk.png",
 	}) addTile(rnd, path);
 	rnd.uploadTileTexture();
+
+	Cygnet::RenderSprite playerSprite = loadSprite(rnd, "core.mod/assets/entity/player-running.png");
 
 	Cygnet::RenderChunk chunk;
 	{
@@ -61,6 +70,7 @@ int main() {
 	double acc = 0;
 	double prevTime = getTime() - 1/60.0;
 	int frames = 0;
+	float x = 0;
 
 	while (true) {
 		double currTime = getTime();
@@ -123,6 +133,9 @@ int main() {
 		rnd.modifyChunk(chunk, { 3, 2 }, ((int)(lol * 1.5) + 7) % 6);
 
 		rnd.drawChunk(chunk, { 0, 0 });
+
+		x += dt;
+		rnd.drawSprite(playerSprite, { x, 0 });
 
 		win.clear();
 		rnd.draw(cam);

@@ -17,65 +17,6 @@
 
 namespace Cygnet {
 
-struct SpriteProg: public GlProgram {
-	template<typename... T>
-	SpriteProg(const T &... shaders): GlProgram(shaders...) { init(); }
-	~SpriteProg() { deinit(); }
-
-	GLint camera = uniformLoc("camera");
-	GLint transform = uniformLoc("transform");
-	GLint vertex = attribLoc("vertex");
-	GLint texCoord = attribLoc("texCoord");
-	GLint tex = uniformLoc("tex");
-
-	GLuint vbo;
-
-	static constexpr GLfloat vertexes[] = {
-		-0.5f,  0.5f, // pos 0: top left
-		 0.0f,  0.0f, // tex 0: top left
-		-0.5f, -0.5f, // pos 1: bottom left
-		 0.0f,  1.0f, // tex 1: bottom left
-		 0.5f, -0.5f, // pos 2: bottom right
-		 1.0f,  1.0f, // tex 2: bottom right
-		 0.5f, -0.5f, // pos 2: bottom right
-		 1.0f,  1.0f, // tex 2: bottom right
-		 0.5f,  0.5f, // pos 3: top right
-		 1.0f,  0.0f, // tex 3: top right
-		-0.5f,  0.5f, // pos 0: top left
-		 0.0f,  0.0f, // tex 0: top left
-	};
-
-	void enable() {
-		glUseProgram(id());
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)0);
-		glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
-		glEnableVertexAttribArray(vertex);
-		glEnableVertexAttribArray(texCoord);
-		glCheck();
-	}
-
-	void disable() {
-		glDisableVertexAttribArray(vertex);
-		glDisableVertexAttribArray(texCoord);
-		glCheck();
-	}
-
-	void init() {
-		glGenBuffers(1, &vbo);
-		glCheck();
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
-		glCheck();
-	}
-
-	void deinit()  {
-		glDeleteBuffers(1, &vbo);
-		glCheck();
-	}
-};
-
 struct ChunkProg: public GlProgram {
 	template<typename... T>
 	ChunkProg(const T &... shaders): GlProgram(shaders...) { init(); }
@@ -132,6 +73,57 @@ struct ChunkProg: public GlProgram {
 	}
 };
 
+struct SpriteProg: public GlProgram {
+	template<typename... T>
+	SpriteProg(const T &... shaders): GlProgram(shaders...) { init(); }
+	~SpriteProg() { deinit(); }
+
+	GLint camera = uniformLoc("camera");
+	GLint transform = uniformLoc("transform");
+	GLint vertex = attribLoc("vertex");
+	GLint tex = uniformLoc("tex");
+
+	GLuint vbo;
+
+	static constexpr GLfloat vertexes[] = {
+		0.0f,  0.0f, // pos 0: top left
+		0.0f, -1.0f, // pos 1: bottom left
+		1.0f, -1.0f, // pos 2: bottom right
+		1.0f, -1.0f, // pos 2: bottom right
+		1.0f,  0.0f, // pos 3: top right
+		0.0f,  0.0f, // pos 0: top left
+	};
+
+	void enable() {
+		glUseProgram(id());
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+		glEnableVertexAttribArray(vertex);
+		glCheck();
+
+		glUniform1i(tex, 0);
+	}
+
+	void disable() {
+		glDisableVertexAttribArray(vertex);
+		glCheck();
+	}
+
+	void init() {
+		glGenBuffers(1, &vbo);
+		glCheck();
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
+		glCheck();
+	}
+
+	void deinit()  {
+		glDeleteBuffers(1, &vbo);
+		glCheck();
+	}
+};
+
 struct RendererState {
 	GlVxShader spriteVx{Shaders::spriteVx};
 	GlFrShader spriteFr{Shaders::spriteFr};
@@ -155,48 +147,51 @@ void Renderer::draw(const RenderCamera &cam) {
 	camMat.translate(cam.pos.scale(-ratio, 1) * cam.zoom); // TODO: Change something to make this -cam.pos
 	camMat.scale({ cam.zoom * ratio, cam.zoom });
 	auto &chunkProg = state_->chunkProg;
+	auto &spriteProg = state_->spriteProg;
 
-	chunkProg.enable();
-
-	glUniform2f(chunkProg.tileAtlasSize,
-			(float)(int)(state_->atlasTex.width() / SwanCommon::TILE_SIZE),
-			(float)(int)(state_->atlasTex.height() / SwanCommon::TILE_SIZE));
-	glUniformMatrix3fv(chunkProg.camera, 1, GL_TRUE, camMat.data());
-	glCheck();
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, state_->atlasTex.id()); // Necessary?
-	glCheck();
-
-	glActiveTexture(GL_TEXTURE1);
-	for (auto [pos, chunk]: draw_chunks_) {
-		glUniform2f(chunkProg.pos, pos.x, pos.y);
-		glBindTexture(GL_TEXTURE_2D, chunk.tex);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+	{
+		chunkProg.enable();
+		glUniformMatrix3fv(chunkProg.camera, 1, GL_TRUE, camMat.data());
 		glCheck();
+
+		glUniform2f(chunkProg.tileAtlasSize,
+				(float)(int)(state_->atlasTex.width() / SwanCommon::TILE_SIZE),
+				(float)(int)(state_->atlasTex.height() / SwanCommon::TILE_SIZE));
+		glCheck();
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, state_->atlasTex.id());
+		glCheck();
+
+		glActiveTexture(GL_TEXTURE1);
+		for (auto [pos, chunk]: draw_chunks_) {
+			glUniform2f(chunkProg.pos, pos.x, pos.y);
+			glBindTexture(GL_TEXTURE_2D, chunk.tex);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glCheck();
+		}
+
+		draw_chunks_.clear();
+		chunkProg.disable();
 	}
 
-	draw_chunks_.clear();
-	chunkProg.disable();
+	{
+		spriteProg.enable();
+		glUniformMatrix3fv(spriteProg.camera, 1, GL_TRUE, camMat.data());
+		glCheck();
 
-	/*
-	state_->spriteProg.enable();
+		glActiveTexture(GL_TEXTURE0);
+		for (auto [mat, y, sprite]: draw_sprites_) {
+			mat.scale(sprite.scale);
+			glUniformMatrix3fv(spriteProg.transform, 1, GL_TRUE, mat.data());
+			glBindTexture(GL_TEXTURE_2D, sprite.tex);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glCheck();
+		}
 
-	state_->camera.translate(-0.00001, 0);
-	glUniformMatrix3fv(state_->spriteProg.transform, 1, GL_TRUE, Mat3gf::IDENTITY.data());
-	glUniformMatrix3fv(state_->spriteProg.camera, 1, GL_TRUE, state_->camera.data());
-	glCheck();
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D,state_->atlasTex.id()); // Necessary?
-	glUniform1i(state_->spriteProg.tex, 0);
-	glCheck();
-
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glCheck();
-
-	state_->spriteProg.disable();
-	*/
+		draw_sprites_.clear();
+		spriteProg.disable();
+	}
 }
 
 void Renderer::registerTileTexture(TileID tileId, const void *data, size_t len) {
@@ -255,6 +250,7 @@ RenderChunk Renderer::createChunk(
 				0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, buf);
 	}
 
+	glCheck();
 	return chunk;
 }
 
@@ -278,14 +274,20 @@ void Renderer::modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id) 
 				GL_TEXTURE_2D, 0, pos.x, pos.y, 1, 1,
 				GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, buf);
 	}
+
+	glCheck();
 }
 
 void Renderer::destroyChunk(RenderChunk chunk) {
 	glDeleteTextures(1, &chunk.tex);
+	glCheck();
 }
 
-RenderSprite createSprite(uint8_t *rgb, int width, int height) {
+RenderSprite Renderer::createSprite(void *data, int width, int height) {
 	RenderSprite sprite;
+	sprite.scale = {
+		(float)width / SwanCommon::TILE_SIZE,
+		(float)height / SwanCommon::TILE_SIZE };
 	glGenTextures(1, &sprite.tex);
 	glCheck();
 
@@ -298,9 +300,9 @@ RenderSprite createSprite(uint8_t *rgb, int width, int height) {
 	glCheck();
 
 	glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA,
-			width, height,
-			0, GL_RGBA, GL_UNSIGNED_BYTE, rgb);
+			GL_TEXTURE_2D, 0, GL_RGBA, width, height,
+			0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glCheck();
 
 	return sprite;
 }
