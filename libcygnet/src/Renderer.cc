@@ -182,6 +182,8 @@ void Renderer::draw(const RenderCamera &cam) {
 
 		glActiveTexture(GL_TEXTURE0);
 		for (auto [mat, y, sprite]: draw_sprites_) {
+			// TODO: Handle 'y' here
+
 			mat.scale(sprite.scale);
 			glUniformMatrix3fv(spriteProg.transform, 1, GL_TRUE, mat.data());
 			glBindTexture(GL_TEXTURE_2D, sprite.tex);
@@ -283,11 +285,11 @@ void Renderer::destroyChunk(RenderChunk chunk) {
 	glCheck();
 }
 
-RenderSprite Renderer::createSprite(void *data, int width, int height) {
+RenderSprite Renderer::createSprite(void *data, int width, int height, int fh) {
 	RenderSprite sprite;
 	sprite.scale = {
 		(float)width / SwanCommon::TILE_SIZE,
-		(float)height / SwanCommon::TILE_SIZE };
+		(float)fh / SwanCommon::TILE_SIZE };
 	glGenTextures(1, &sprite.tex);
 	glCheck();
 
@@ -305,6 +307,10 @@ RenderSprite Renderer::createSprite(void *data, int width, int height) {
 	glCheck();
 
 	return sprite;
+}
+
+RenderSprite Renderer::createSprite(void *data, int width, int height) {
+	return createSprite(data, width, height, height);
 }
 
 void Renderer::destroySprite(RenderSprite sprite) {

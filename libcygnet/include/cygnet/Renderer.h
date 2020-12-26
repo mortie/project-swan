@@ -51,6 +51,7 @@ public:
 	void destroyChunk(RenderChunk chunk);
 
 	RenderSprite createSprite(void *data, int width, int height);
+	RenderSprite createSprite(void *data, int width, int height, int fh);
 	void destroySprite(RenderSprite sprite);
 
 private:
