@@ -5,13 +5,18 @@ namespace Cygnet::Shaders {
 const char *spriteVx = R"glsl(
 	uniform mat3 camera;
 	uniform mat3 transform;
+	uniform vec3 frameInfo; // frame height, frame count, frame index
 	attribute vec2 vertex;
 	varying vec2 v_texCoord;
 
 	void main() {
+		v_texCoord = vec2(
+			vertex.x,
+			(frameInfo.x * frameInfo.z + (frameInfo.x * vertex.y)) /
+			(frameInfo.x * frameInfo.y));
+
 		vec3 pos = camera * transform * vec3(vertex, 1);
 		gl_Position = vec4(pos.xy, 0, 1);
-		v_texCoord = vec2(vertex.x, vertex.y);
 	}
 )glsl";
 

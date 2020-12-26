@@ -80,6 +80,7 @@ struct SpriteProg: public GlProgram {
 
 	GLint camera = uniformLoc("camera");
 	GLint transform = uniformLoc("transform");
+	GLint frameInfo = uniformLoc("frameInfo");
 	GLint vertex = attribLoc("vertex");
 	GLint tex = uniformLoc("tex");
 
@@ -185,11 +186,10 @@ void Renderer::draw(const RenderCamera &cam) {
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);
-		for (auto [mat, y, sprite]: draw_sprites_) {
-			// TODO: Handle 'y' here
-
+		for (auto [mat, frame, sprite]: draw_sprites_) {
 			mat.scale(sprite.scale);
 			glUniformMatrix3fv(spriteProg.transform, 1, GL_TRUE, mat.data());
+			glUniform3f(spriteProg.frameInfo, sprite.scale.y, sprite.frameCount, frame);
 			glBindTexture(GL_TEXTURE_2D, sprite.tex);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			glCheck();
@@ -294,6 +294,7 @@ RenderSprite Renderer::createSprite(void *data, int width, int height, int fh) {
 	sprite.scale = {
 		(float)width / SwanCommon::TILE_SIZE,
 		(float)fh / SwanCommon::TILE_SIZE };
+	sprite.frameCount = height / fh;
 	glGenTextures(1, &sprite.tex);
 	glCheck();
 
