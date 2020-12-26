@@ -22,6 +22,13 @@ void addTile(Cygnet::Renderer &rnd, const char *path) {
 	SDL_FreeSurface(surf);
 }
 
+Cygnet::RenderSprite loadSprite(Cygnet::Renderer &rnd, const char *path, int fh) {
+	SDL_Surface *surf = IMG_Load(path);
+	auto sprite = rnd.createSprite(surf->pixels, surf->w, surf->h, fh);
+	SDL_FreeSurface(surf);
+	return sprite;
+}
+
 Cygnet::RenderSprite loadSprite(Cygnet::Renderer &rnd, const char *path) {
 	SDL_Surface *surf = IMG_Load(path);
 	auto sprite = rnd.createSprite(surf->pixels, surf->w, surf->h);
@@ -45,7 +52,7 @@ int main() {
 	}) addTile(rnd, path);
 	rnd.uploadTileTexture();
 
-	Cygnet::RenderSprite playerSprite = loadSprite(rnd, "core.mod/assets/entity/player-running.png");
+	Cygnet::RenderSprite playerSprite = loadSprite(rnd, "core.mod/assets/entity/player-still.png", 64);
 
 	Cygnet::RenderChunk chunk;
 	{
@@ -70,7 +77,7 @@ int main() {
 	double acc = 0;
 	double prevTime = getTime() - 1/60.0;
 	int frames = 0;
-	float x = 0;
+	float x = 0, y = 0;
 
 	while (true) {
 		double currTime = getTime();
@@ -115,16 +122,16 @@ int main() {
 		}
 
 		if (keys[SDL_SCANCODE_A]) {
-			cam.pos.x -= 1 * dt;
+			x -= 1 * dt;
 		}
 		if (keys[SDL_SCANCODE_D]) {
-			cam.pos.x += 1 * dt;
+			x += 1 * dt;
 		}
 		if (keys[SDL_SCANCODE_W]) {
-			cam.pos.y -= 1 * dt;
+			y -= 1 * dt;
 		}
 		if (keys[SDL_SCANCODE_S]) {
-			cam.pos.y += 1 * dt;
+			y += 1 * dt;
 		}
 
 		lol += 1 * dt;
@@ -134,8 +141,8 @@ int main() {
 
 		rnd.drawChunk(chunk, { 0, 0 });
 
-		x += dt;
-		rnd.drawSprite(playerSprite, { x, 0 });
+		rnd.drawSprite(playerSprite, { x, y }, (int)lol % 2);
+		cam.pos = { x, y };
 
 		win.clear();
 		rnd.draw(cam);
