@@ -27,8 +27,7 @@ TileAtlas::TileAtlas(): state_(std::make_unique<AtlasState>()) {
 
 TileAtlas::~TileAtlas() = default;
 
-void TileAtlas::addTile(size_t tileId, const void *data, size_t len) {
-	size_t rows = len / (SwanCommon::TILE_SIZE * 4);
+void TileAtlas::addTile(size_t tileId, const void *data) {
 	const unsigned char *bytes = (const unsigned char *)data;
 	size_t x = tileId % state_->tilesPerLine;
 	size_t y = tileId / state_->tilesPerLine;
@@ -46,7 +45,7 @@ void TileAtlas::addTile(size_t tileId, const void *data, size_t len) {
 		state_->height * SwanCommon::TILE_SIZE * 4;
 	state_->data.resize(requiredSize);
 
-	for (size_t ty = 0; ty < rows; ++ty) {
+	for (size_t ty = 0; ty < SwanCommon::TILE_SIZE; ++ty) {
 		const unsigned char *src = bytes + ty * SwanCommon::TILE_SIZE * 4;
 		unsigned char *dest = state_->data.data() +
 			(y * SwanCommon::TILE_SIZE + ty) * state_->tilesPerLine * SwanCommon::TILE_SIZE * 4 +

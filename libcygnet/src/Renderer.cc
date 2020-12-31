@@ -134,11 +134,14 @@ struct RendererState {
 	SpriteProg spriteProg{spriteVx, spriteFr};
 	ChunkProg chunkProg{chunkVx, chunkFr};
 
-	TileAtlas atlas;
-	GlTexture atlasTex;
+	GLuint atlasTex;
+	SwanCommon::Vec2 atlasTexSize;
 };
 
-Renderer::Renderer(): state_(std::make_unique<RendererState>()) {}
+Renderer::Renderer(): state_(std::make_unique<RendererState>()) {
+	glGenTextures(1, &state_->atlasTex);
+	glCheck();
+}
 
 Renderer::~Renderer() = default;
 
@@ -159,13 +162,11 @@ void Renderer::draw(const RenderCamera &cam) {
 		glUniformMatrix3fv(chunkProg.camera, 1, GL_TRUE, camMat.data());
 		glCheck();
 
-		glUniform2f(chunkProg.tileAtlasSize,
-				(float)(int)(state_->atlasTex.width() / SwanCommon::TILE_SIZE),
-				(float)(int)(state_->atlasTex.height() / SwanCommon::TILE_SIZE));
+		glUniform2f(chunkProg.tileAtlasSize, state_->atlasTexSize.x, state_->atlasTexSize.y);
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, state_->atlasTex.id());
+		glBindTexture(GL_TEXTURE_2D, state_->atlasTex);
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE1);
@@ -200,15 +201,31 @@ void Renderer::draw(const RenderCamera &cam) {
 	}
 }
 
-void Renderer::registerTileTexture(TileID tileId, const void *data, size_t len) {
-	state_->atlas.addTile(tileId, data, len);
+void Renderer::uploadTileAtlas(const void *data, int width, int height) {
+	glBindTexture(GL_TEXTURE_2D, state_->atlasTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glCheck();
+
+	state_->atlasTexSize = {
+		(float)(int)(width / SwanCommon::TILE_SIZE),
+		(float)(int)(height / SwanCommon::TILE_SIZE) };
 }
 
-void Renderer::uploadTileTexture() {
-	size_t w, h;
-	const unsigned char *data = state_->atlas.getImage(&w, &h);
-	state_->atlasTex.upload(w, h, (void *)data, GL_RGBA, GL_UNSIGNED_BYTE);
-	std::cerr << "Uploaded image of size " << w << 'x' << h << '\n';
+void Renderer::modifyTile(TileID id, const void *data) {
+	int w = (int)state_->atlasTexSize.x;
+	int x = id % w;
+	int y = id / w;
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, state_->atlasTex);
+	glTexSubImage2D(
+			GL_TEXTURE_2D, 0, x * SwanCommon::TILE_SIZE, y * SwanCommon::TILE_SIZE,
+			SwanCommon::TILE_SIZE, SwanCommon::TILE_SIZE,
+			GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glCheck();
 }
 
 RenderChunk Renderer::createChunk(

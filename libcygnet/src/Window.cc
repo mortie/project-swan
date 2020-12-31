@@ -32,7 +32,9 @@ Window::Window(const char *name, int w, int h):
 	onResize(w, h);
 }
 
-Window::~Window() = default;
+Window::~Window() {
+	SDL_DestroyWindow(state_->window);
+}
 
 void Window::makeCurrent() {
 	SDL_GL_MakeCurrent(state_->window, state_->glctx);

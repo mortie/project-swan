@@ -21,7 +21,7 @@ public:
 	};
 
 	GlShader(Type type, const char *source);
-	~GlShader();
+	virtual ~GlShader();
 
 	GLuint id() const { return id_; }
 

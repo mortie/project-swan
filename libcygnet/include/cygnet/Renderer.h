@@ -23,6 +23,10 @@ struct RenderSprite {
 	int frameCount;
 };
 
+struct RenderTile {
+	uint16_t id;
+};
+
 struct RenderCamera {
 	SwanCommon::Vec2 pos;
 	SwanCommon::Vec2i size;
@@ -43,16 +47,16 @@ public:
 
 	void draw(const RenderCamera &cam);
 
-	void registerTileTexture(TileID tileId, const void *data, size_t len);
-	void uploadTileTexture();
+	void uploadTileAtlas(const void *data, int width, int height);
+	void modifyTile(TileID id, const void *data);
 
 	RenderChunk createChunk(
 			TileID tiles[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]);
 	void modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id);
 	void destroyChunk(RenderChunk chunk);
 
-	RenderSprite createSprite(void *data, int width, int height);
 	RenderSprite createSprite(void *data, int width, int height, int fh);
+	RenderSprite createSprite(void *data, int width, int height);
 	void destroySprite(RenderSprite sprite);
 
 private:

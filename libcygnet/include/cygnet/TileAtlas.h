@@ -11,7 +11,7 @@ public:
 	TileAtlas();
 	~TileAtlas();
 
-	void addTile(size_t tileId, const void *data, size_t len);
+	void addTile(size_t tileId, const void *data);
 	const unsigned char *getImage(size_t *w, size_t *h);
 
 private:
