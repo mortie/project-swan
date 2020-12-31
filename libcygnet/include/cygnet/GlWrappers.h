@@ -59,20 +59,4 @@ private:
 	GLuint id_;
 };
 
-class GlTexture {
-public:
-	GlTexture();
-
-	void upload(GLsizei width, GLsizei height, void *data,
-			GLenum format, GLenum type);
-	GLuint id() { return id_; }
-	int width() { return w_; }
-	int height() { return h_; }
-
-private:
-	GLuint id_;
-	int w_;
-	int h_;
-};
-
 }
