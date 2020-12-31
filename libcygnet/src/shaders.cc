@@ -63,7 +63,7 @@ const char *chunkFr = R"glsl(
 			tileID + v_tileCoord.x - tilePos.x,
 			floor(tileID / tileAtlasSize.x) + v_tileCoord.y - tilePos.y);
 
-		gl_FragColor = texture2D(tileAtlas, fract(atlasPos / tileAtlasSize));
+		gl_FragColor = texture2D(tileAtlas, atlasPos / tileAtlasSize);
 	}
 )glsl";
 
