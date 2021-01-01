@@ -2,7 +2,8 @@
 
 #include <stdexcept>
 #include <stdint.h>
-#include <SDL.h>
+
+#include "swan-common/Matrix3.h"
 
 namespace Cygnet {
 
@@ -11,6 +12,9 @@ using GLint = int32_t;
 using GLuint = uint32_t;
 using GLsizei = int32_t;
 using GLenum = uint32_t;
+using GLfloat = float;
+
+using Mat3gf = SwanCommon::Matrix3<GLfloat>;
 
 struct SDLError: public std::exception {
 	SDLError(std::string msg): message(std::move(msg)) {}

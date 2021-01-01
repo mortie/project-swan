@@ -2,10 +2,12 @@
 
 #include <iostream>
 #include <vector>
-#include <SDL_opengles2.h>
+#include <algorithm>
 #include <stdio.h>
 #include <string.h>
 #include <swan-common/constants.h>
+
+#include "gl.h"
 
 namespace Cygnet {
 
@@ -20,20 +22,16 @@ struct AtlasState {
 TileAtlas::TileAtlas(): state_(std::make_unique<AtlasState>()) {
 	GLint size;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size);
-	state_->tilesPerLine = size / SwanCommon::TILE_SIZE;
+	state_->tilesPerLine = std::min(size / SwanCommon::TILE_SIZE, 256);
 }
 
 TileAtlas::~TileAtlas() = default;
 
-void TileAtlas::addTile(size_t tileId, const void *data, size_t len) {
-	size_t rows = len / (SwanCommon::TILE_SIZE * 4);
+void TileAtlas::addTile(size_t tileId, const void *data) {
 	const unsigned char *bytes = (const unsigned char *)data;
 	size_t x = tileId % state_->tilesPerLine;
 	size_t y = tileId / state_->tilesPerLine;
-	if (y >= state_->tilesPerLine) {
-		std::cerr << "Cygnet: Warning: Tile ID " << tileId << " too big for texture atlas\n";
-		return;
-	}
+	std::cerr << "Tile " << tileId << " to " << x << ", " << y << '\n';
 
 	if (state_->width <= x) {
 		state_->width = x + 1;
@@ -43,21 +41,21 @@ void TileAtlas::addTile(size_t tileId, const void *data, size_t len) {
 		state_->height = y + 1;
 	}
 
-	size_t tileImgSize = SwanCommon::TILE_SIZE * SwanCommon::TILE_SIZE * 4;
-	size_t requiredSize = (x + 1) * (y + 1) * tileImgSize;
+	size_t requiredSize = state_->tilesPerLine * SwanCommon::TILE_SIZE *
+		state_->height * SwanCommon::TILE_SIZE * 4;
 	state_->data.resize(requiredSize);
 
-	for (size_t ty = 0; ty < rows; ++ty) {
-		unsigned char *dest = state_->data.data() +
-			((y + ty) * state_->width * SwanCommon::TILE_SIZE * 4) +
-			(x * SwanCommon::TILE_SIZE * 4);
+	for (size_t ty = 0; ty < SwanCommon::TILE_SIZE; ++ty) {
 		const unsigned char *src = bytes + ty * SwanCommon::TILE_SIZE * 4;
+		unsigned char *dest = state_->data.data() +
+			(y * SwanCommon::TILE_SIZE + ty) * state_->tilesPerLine * SwanCommon::TILE_SIZE * 4 +
+			(x * SwanCommon::TILE_SIZE * 4);
 		memcpy(dest, src, SwanCommon::TILE_SIZE * 4);
 	}
 }
 
 const unsigned char *TileAtlas::getImage(size_t *w, size_t *h) {
-	*w = state_->width * SwanCommon::TILE_SIZE;
+	*w = state_->tilesPerLine * SwanCommon::TILE_SIZE;
 	*h = state_->height * SwanCommon::TILE_SIZE;
 	return state_->data.data();
 }

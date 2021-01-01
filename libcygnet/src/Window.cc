@@ -1,8 +1,8 @@
 #include "Window.h"
 
 #include <SDL.h>
-#include <SDL_opengles2.h>
 
+#include "gl.h"
 #include "util.h"
 
 namespace Cygnet {
@@ -28,10 +28,13 @@ Window::Window(const char *name, int w, int h):
 	glEnable(GL_BLEND);
 	glCheck();
 
+	SDL_GetWindowSize(state_->window, &w, &h);
 	onResize(w, h);
 }
 
-Window::~Window() = default;
+Window::~Window() {
+	SDL_DestroyWindow(state_->window);
+}
 
 void Window::makeCurrent() {
 	SDL_GL_MakeCurrent(state_->window, state_->glctx);

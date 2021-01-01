@@ -21,7 +21,7 @@ public:
 	};
 
 	GlShader(Type type, const char *source);
-	~GlShader();
+	virtual ~GlShader();
 
 	GLuint id() const { return id_; }
 
@@ -44,13 +44,11 @@ public:
 	template <typename... T>
 	GlProgram(const T &... shaders): GlProgram() { (addShader(shaders), ...); link(); }
 	GlProgram();
-	~GlProgram();
+	virtual ~GlProgram();
 
-	void use();
 	GLuint id() const { return id_; }
 
 protected:
-
 	GLint attribLoc(const char *name);
 	GLint uniformLoc(const char *name);
 
@@ -59,23 +57,6 @@ private:
 	void link();
 
 	GLuint id_;
-};
-
-class GlTexture {
-public:
-	GlTexture();
-
-	void bind();
-	void upload(GLsizei width, GLsizei height, void *data,
-			GLenum format, GLenum type);
-	GLuint id() { return id_; }
-	int width() { return w_; }
-	int height() { return h_; }
-
-private:
-	GLuint id_;
-	int w_;
-	int h_;
 };
 
 }

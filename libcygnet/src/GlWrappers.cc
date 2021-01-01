@@ -1,8 +1,8 @@
 #include "GlWrappers.h"
 
-#include <SDL_opengles2.h>
 #include <iostream>
 
+#include "gl.h"
 #include "util.h"
 
 namespace Cygnet {
@@ -39,6 +39,7 @@ GlShader::GlShader(Type type, const char *source) {
 	glGetShaderiv(id_, GL_COMPILE_STATUS, &status);
 	glCheck();
 	if (status == GL_FALSE) {
+		std::cerr << "Cygnet: Here's the broken shader:\n" << source << '\n';
 		throw GlCompileError("GL shader compilation failed.");
 	}
 }
@@ -55,11 +56,6 @@ GlProgram::GlProgram() {
 
 GlProgram::~GlProgram() {
 	glDeleteProgram(id_);
-	glCheck();
-}
-
-void GlProgram::use() {
-	glUseProgram(id_);
 	glCheck();
 }
 
@@ -95,29 +91,6 @@ void GlProgram::link() {
 	if (status == GL_FALSE) {
 		throw GlCompileError("GL program link failed.");
 	}
-}
-
-GlTexture::GlTexture() {
-	glGenTextures(1, &id_);
-	glCheck();
-}
-
-void GlTexture::bind() {
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, id_);
-}
-
-void GlTexture::upload(GLsizei width, GLsizei height, void *data,
-		GLenum format, GLenum type) {
-	w_ = width;
-	h_ = height;
-	bind();
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, type, data);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glCheck();
 }
 
 }
