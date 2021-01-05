@@ -3,6 +3,8 @@
 namespace Cygnet::Shaders {
 
 const char *spriteVx = R"glsl(
+	#define TILE_SIZE 32.0
+
 	uniform mat3 camera;
 	uniform mat3 transform;
 	uniform vec3 frameInfo; // frame height, frame count, frame index
@@ -10,10 +12,11 @@ const char *spriteVx = R"glsl(
 	varying vec2 v_texCoord;
 
 	void main() {
+		float pixoffset = (1.0 - vertex.y * 2.0) / (TILE_SIZE * frameInfo.x * 2.0);
 		v_texCoord = vec2(
 			vertex.x,
 			(frameInfo.x * frameInfo.z + (frameInfo.x * vertex.y)) /
-			(frameInfo.x * frameInfo.y));
+			(frameInfo.x * frameInfo.y) + pixoffset);
 
 		vec3 pos = camera * transform * vec3(vertex, 1);
 		gl_Position = vec4(pos.xy, 0, 1);
@@ -59,9 +62,11 @@ const char *chunkFr = R"glsl(
 		vec4 tileColor = texture2D(tiles, tilePos / vec2(CHUNK_WIDTH, CHUNK_HEIGHT));
 		float tileID = floor((tileColor.r * 256.0 + tileColor.a) * 256.0);
 
+		vec2 offset = v_tileCoord - tilePos;
+		vec2 pixoffset = (1.0 - offset * 2.0) / (TILE_SIZE * 2.0);
 		vec2 atlasPos = vec2(
-			tileID + v_tileCoord.x - tilePos.x,
-			floor(tileID / tileAtlasSize.x) + v_tileCoord.y - tilePos.y);
+			pixoffset.x + tileID + offset.x,
+			pixoffset.y + floor(tileID / tileAtlasSize.x) + offset.y);
 
 		gl_FragColor = texture2D(tileAtlas, atlasPos / tileAtlasSize);
 	}
