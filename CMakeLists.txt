@@ -65,8 +65,8 @@ target_include_directories(swan-common
 
 add_subdirectory(third-party)
 add_subdirectory(tracy-tools)
-add_subdirectory(libcygnet)
 add_subdirectory(libswan)
+add_subdirectory(libcygnet)
 add_subdirectory(core.mod)
 
 add_executable(swan
