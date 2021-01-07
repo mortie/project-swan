@@ -21,6 +21,6 @@ private:
 
 	ItemStackEntity(): PhysicsEntity(SIZE) {}
 
-	float despawn_timer_ = DESPAWN_TIME;
+	float despawnTimer_ = DESPAWN_TIME;
 	Swan::Item *item_ = NULL;
 };

@@ -40,12 +40,12 @@ test("Insert never overflows") {
 	Swan::ItemStack s2(&item1, 40);
 	s2 = s1.insert(s2);
 
-	expecteq(s1.count(), item1.max_stack_);
-	expecteq(s2.count(), 80 - item1.max_stack_);
+	expecteq(s1.count(), item1.maxStack_);
+	expecteq(s2.count(), 80 - item1.maxStack_);
 }
 
 test("Insert respects max_stack_") {
-	MockItem item1({ .name = "item1", .image = "no", .max_stack = 20 });
+	MockItem item1({ .name = "item1", .image = "no", .maxStack = 20 });
 
 	Swan::ItemStack s1(&item1, 15);
 	Swan::ItemStack s2(&item1, 19);

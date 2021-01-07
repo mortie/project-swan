@@ -19,17 +19,16 @@ static void chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &d
 World::World(Game *game, unsigned long rand_seed):
 		game_(game), random_(rand_seed), resources_(game->win_) {
 
-	std::unique_ptr<Tile> invalid_tile = Tile::createInvalid(resources_);
-	tiles_map_[invalid_tile->name_] = 0;
+	std::unique_ptr<Tile> invalidTile = Tile::createInvalid(resources_);
+	tilesMap_[invalidTile->name_] = 0;
 
 	// tiles_ is empty, so pushing back now will ensure invalid_tile
 	// ends up at location 0
-	tiles_.push_back(std::move(invalid_tile));
+	tiles_.push_back(std::move(invalidTile));
 
 	// We're also going to need an air tile at location 1
 	tiles_.push_back(Tile::createAir(resources_));
-	tiles_map_["@::air"] = 1;
-
+	tilesMap_["@::air"] = 1;
 }
 
 void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
@@ -56,7 +55,7 @@ void World::addMod(ModWrapper &&mod) {
 
 	for (auto t: mod.buildTiles(resources_)) {
 		Tile::ID id = tiles_.size();
-		tiles_map_[t->name_] = id;
+		tilesMap_[t->name_] = id;
 		tiles_.push_back(std::move(t));
 	}
 
@@ -65,43 +64,43 @@ void World::addMod(ModWrapper &&mod) {
 	}
 
 	for (auto fact: mod.getWorldGens()) {
-		worldgen_factories_.emplace(
+		worldgenFactories_.emplace(
 			std::piecewise_construct,
 			std::forward_as_tuple(fact.name),
 			std::forward_as_tuple(fact));
 	}
 
 	for (auto fact: mod.getEntities()) {
-		ent_coll_factories_.push_back(fact);
+		entCollFactories_.push_back(fact);
 	}
 
 	mods_.push_back(std::move(mod));
 }
 
 void World::setWorldGen(std::string gen) {
-	default_world_gen_ = std::move(gen);
+	defaultWorldGen_ = std::move(gen);
 }
 
 void World::spawnPlayer() {
 	player_ = &((dynamic_cast<BodyTrait *>(
-		planes_[current_plane_]->spawnPlayer().get()))->get(BodyTrait::Tag{}));
+		planes_[currentPlane_]->spawnPlayer().get()))->get(BodyTrait::Tag{}));
 }
 
 void World::setCurrentPlane(WorldPlane &plane) {
-	current_plane_ = plane.id_;
+	currentPlane_ = plane.id_;
 }
 
 WorldPlane &World::addPlane(const std::string &gen) {
 	WorldPlane::ID id = planes_.size();
-	auto it = worldgen_factories_.find(gen);
-	if (it == worldgen_factories_.end()) {
+	auto it = worldgenFactories_.find(gen);
+	if (it == worldgenFactories_.end()) {
 		panic << "Tried to add plane with non-existant world gen " << gen << "!";
 		abort();
 	}
 
 	std::vector<std::unique_ptr<EntityCollection>> colls;
-	colls.reserve(ent_coll_factories_.size());
-	for (auto &fact: ent_coll_factories_) {
+	colls.reserve(entCollFactories_.size());
+	for (auto &fact: entCollFactories_) {
 		colls.emplace_back(fact.create(fact.name));
 	}
 
@@ -116,15 +115,15 @@ Item &World::getItem(const std::string &name) {
 	auto iter = items_.find(name);
 	if (iter == items_.end()) {
 		warn << "Tried to get non-existant item " << name << "!";
-		return *game_->invalid_item_;
+		return *game_->invalidItem_;
 	}
 
 	return *iter->second;
 }
 
 Tile::ID World::getTileID(const std::string &name) {
-	auto iter = tiles_map_.find(name);
-	if (iter == tiles_map_.end()) {
+	auto iter = tilesMap_.find(name);
+	if (iter == tilesMap_.end()) {
 		warn << "Tried to get non-existant item " << name << "!";
 		return Tile::INVALID_ID;
 	}
@@ -138,13 +137,13 @@ Tile &World::getTile(const std::string &name) {
 }
 
 SDL_Color World::backgroundColor() {
-	return planes_[current_plane_]->backgroundColor();
+	return planes_[currentPlane_]->backgroundColor();
 }
 
 void World::draw(Win &win) {
 	ZoneScopedN("World draw");
 	win.cam_ = player_->pos - (win.getSize() / 2) + (player_->size / 2);
-	planes_[current_plane_]->draw(win);
+	planes_[currentPlane_]->draw(win);
 }
 
 void World::update(float dt) {
@@ -158,8 +157,8 @@ void World::tick(float dt) {
 	for (auto &plane: planes_)
 		plane->tick(dt);
 
-	chunk_renderer_.tick(
-		*planes_[current_plane_],
+	chunkRenderer_.tick(
+		*planes_[currentPlane_],
 		ChunkPos((int)player_->pos.x / CHUNK_WIDTH, (int)player_->pos.y / CHUNK_HEIGHT));
 }
 

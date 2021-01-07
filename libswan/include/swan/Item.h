@@ -12,16 +12,16 @@ public:
 	struct Builder {
 		std::string name;
 		std::string image;
-		int max_stack = 64;
+		int maxStack = 64;
 	};
 
 	Item(const ResourceManager &resources, const Builder &builder):
 		name_(builder.name), image_(resources.getImage(builder.image)),
-		max_stack_(builder.max_stack) {}
+		maxStack_(builder.maxStack) {}
 
 	const std::string name_;
 	const ImageResource &image_;
-	const int max_stack_;
+	const int maxStack_;
 
 	static std::unique_ptr<Item> createInvalid(Context &ctx);
 
@@ -33,7 +33,7 @@ public:
 protected:
 	Item(const Builder &builder):
 		name_(builder.name), image_(*(ImageResource *)this),
-		max_stack_(builder.max_stack) {}
+		maxStack_(builder.maxStack) {}
 };
 
 }

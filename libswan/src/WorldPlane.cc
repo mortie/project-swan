@@ -47,16 +47,16 @@ WorldPlane::WorldPlane(
 		std::vector<std::unique_ptr<EntityCollection>> &&colls):
 			id_(id), world_(world), gen_(std::move(gen)),
 			lighting_(std::make_unique<LightServer>(*this)),
-			ent_colls_(std::move(colls)) {
+			entColls_(std::move(colls)) {
 
-	for (auto &coll: ent_colls_) {
-		ent_colls_by_type_[coll->type()] = coll.get();
-		ent_colls_by_name_[coll->name()] = coll.get();
+	for (auto &coll: entColls_) {
+		entCollsByType_[coll->type()] = coll.get();
+		entCollsByName_[coll->name()] = coll.get();
 	}
 }
 
 EntityRef WorldPlane::spawnEntity(const std::string &name, const Entity::PackObject &obj) {
-	return ent_colls_by_name_.at(name)->spawn(getContext(), obj);
+	return entCollsByName_.at(name)->spawn(getContext(), obj);
 }
 
 bool WorldPlane::hasChunk(ChunkPos pos) {
@@ -66,13 +66,13 @@ bool WorldPlane::hasChunk(ChunkPos pos) {
 // This function will be a bit weird because it's a really fucking hot function.
 Chunk &WorldPlane::getChunk(ChunkPos pos) {
 	// First, look through all chunks which have been in use this tick
-	for (auto [chpos, chunk]: tick_chunks_) {
+	for (auto [chpos, chunk]: tickChunks_) {
 		if (chpos == pos)
 			return *chunk;
 	}
 
 	Chunk &chunk = slowGetChunk(pos);
-	tick_chunks_.push_back({ pos, &chunk });
+	tickChunks_.push_back({ pos, &chunk });
 	return chunk;
 }
 
@@ -86,8 +86,8 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
 		Chunk &chunk = iter->second;
 
 		gen_->genChunk(*this, chunk);
-		active_chunks_.push_back(&chunk);
-		chunk_init_list_.push_back(&chunk);
+		activeChunks_.push_back(&chunk);
+		chunkInitList_.push_back(&chunk);
 
 		// Need to tell the light engine too
 		NewLightChunk lc;
@@ -95,11 +95,11 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
 			for (int x = 0; x < CHUNK_WIDTH; ++x) {
 				Tile::ID id = chunk.getTileID({ x, y });
 				Tile &tile = world_->getTileByID(id);
-				if (tile.is_solid_) {
+				if (tile.isSolid_) {
 					lc.blocks[y * CHUNK_HEIGHT + x] = true;
 				}
-				if (tile.light_level_ > 0) {
-					lc.light_sources[{ x, y }] = tile.light_level_;
+				if (tile.lightLevel_ > 0) {
+					lc.light_sources[{ x, y }] = tile.lightLevel_;
 				}
 			}
 		}
@@ -109,8 +109,8 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
 	// Otherwise, it might not be active, so let's activate it
 	} else if (!iter->second.isActive()) {
 		iter->second.keepActive();
-		active_chunks_.push_back(&iter->second);
-		chunk_init_list_.push_back(&iter->second);
+		activeChunks_.push_back(&iter->second);
+		chunkInitList_.push_back(&iter->second);
 	}
 
 	return iter->second;
@@ -127,19 +127,19 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 		chunk.setTileID(rp, id, newTile.image_.texture_.get());
 		chunk.markModified();
 
-		if (!oldTile.is_solid_ && newTile.is_solid_) {
+		if (!oldTile.isSolid_ && newTile.isSolid_) {
 			lighting_->onSolidBlockAdded(pos);
-		} else if (oldTile.is_solid_ && !newTile.is_solid_) {
+		} else if (oldTile.isSolid_ && !newTile.isSolid_) {
 			lighting_->onSolidBlockRemoved(pos);
 		}
 
-		if (newTile.light_level_ != oldTile.light_level_) {
-			if (oldTile.light_level_ > 0) {
-				removeLight(pos, oldTile.light_level_);
+		if (newTile.lightLevel_ != oldTile.lightLevel_) {
+			if (oldTile.lightLevel_ > 0) {
+				removeLight(pos, oldTile.lightLevel_);
 			}
 
-			if (newTile.light_level_ > 0) {
-				addLight(pos, newTile.light_level_);
+			if (newTile.lightLevel_ > 0) {
+				addLight(pos, newTile.lightLevel_);
 			}
 		}
 	}
@@ -196,7 +196,7 @@ void WorldPlane::breakTile(TilePos pos) {
 
 	// Change tile to air and emit event
 	setTileID(pos, air);
-	world_->evt_tile_break_.emit(getContext(), pos, world_->getTileByID(id));
+	world_->evtTileBreak_.emit(getContext(), pos, world_->getTileByID(id));
 }
 
 SDL_Color WorldPlane::backgroundColor() {
@@ -216,9 +216,9 @@ void WorldPlane::draw(Win &win) {
 		(int)floor(pbody.pos.y / CHUNK_HEIGHT));
 
 	// Just init one chunk per frame
-	if (chunk_init_list_.size() > 0) {
-		Chunk *chunk = chunk_init_list_.front();
-		chunk_init_list_.pop_front();
+	if (chunkInitList_.size() > 0) {
+		Chunk *chunk = chunkInitList_.front();
+		chunkInitList_.pop_front();
 		chunk->render(ctx, win.renderer_);
 	}
 
@@ -230,11 +230,11 @@ void WorldPlane::draw(Win &win) {
 		}
 	}
 
-	for (auto &coll: ent_colls_)
+	for (auto &coll: entColls_)
 		coll->draw(ctx, win);
 
-	if (debug_boxes_.size() > 0) {
-		for (auto &pos: debug_boxes_) {
+	if (debugBoxes_.size() > 0) {
+		for (auto &pos: debugBoxes_) {
 			win.drawRect(pos, Vec2(1, 1));
 		}
 	}
@@ -244,9 +244,9 @@ void WorldPlane::update(float dt) {
 	ZoneScopedN("WorldPlane update");
 	std::lock_guard<std::mutex> lock(mut_);
 	auto ctx = getContext();
-	debug_boxes_.clear();
+	debugBoxes_.clear();
 
-	for (auto &coll: ent_colls_)
+	for (auto &coll: entColls_)
 		coll->update(ctx, dt);
 }
 
@@ -256,16 +256,16 @@ void WorldPlane::tick(float dt) {
 	auto ctx = getContext();
 
 	// Any chunk which has been in use since last tick should be kept alive
-	for (std::pair<ChunkPos, Chunk *> &ch: tick_chunks_)
+	for (std::pair<ChunkPos, Chunk *> &ch: tickChunks_)
 		ch.second->keepActive();
-	tick_chunks_.clear();
+	tickChunks_.clear();
 
-	for (auto &coll: ent_colls_)
+	for (auto &coll: entColls_)
 		coll->tick(ctx, dt);
 
 	// Tick all chunks, figure out if any of them should be deleted or compressed
-	auto iter = active_chunks_.begin();
-	auto last = active_chunks_.end();
+	auto iter = activeChunks_.begin();
+	auto last = activeChunks_.end();
 	while (iter != last) {
 		auto &chunk = *iter;
 		auto action = chunk->tick(dt);
@@ -274,14 +274,14 @@ void WorldPlane::tick(float dt) {
 		case Chunk::TickAction::DEACTIVATE:
 			info << "Compressing inactive modified chunk " << chunk->pos_;
 			chunk->compress();
-			iter = active_chunks_.erase(iter);
-			last = active_chunks_.end();
+			iter = activeChunks_.erase(iter);
+			last = activeChunks_.end();
 			break;
 		case Chunk::TickAction::DELETE:
 			info << "Deleting inactive unmodified chunk " << chunk->pos_;
 			chunks_.erase(chunk->pos_);
-			iter = active_chunks_.erase(iter);
-			last = active_chunks_.end();
+			iter = activeChunks_.erase(iter);
+			last = activeChunks_.end();
 			break;
 		case Chunk::TickAction::NOTHING:
 			++iter;
@@ -291,7 +291,7 @@ void WorldPlane::tick(float dt) {
 }
 
 void WorldPlane::debugBox(TilePos pos) {
-	debug_boxes_.push_back(pos);
+	debugBoxes_.push_back(pos);
 }
 
 void WorldPlane::addLight(TilePos pos, float level) {
@@ -307,7 +307,7 @@ void WorldPlane::removeLight(TilePos pos, float level) {
 void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos) {
 	std::lock_guard<std::mutex> lock(mut_);
 	Chunk &realChunk = getChunk(pos);
-	realChunk.setLightData(chunk.light_levels);
+	realChunk.setLightData(chunk.lightLevels);
 }
 
 }

@@ -24,8 +24,8 @@ SomeNamespace::someLongFunctionName(
 
 ``` C++
 void someLongFunctionName(
-		int first_argument,
-		int second_argument) {
+		int firstArgument,
+		int secondArgument) {
 	whatever;
 }
 ```
@@ -34,9 +34,10 @@ void someLongFunctionName(
 
 * Classes and structs are PascalCase.
 * Methods and free functions are camelCase.
-* Local variables are snake_case.
-* Class member variables are snake_case_ (with the trailing underscore).
-* Struct member variables are snake_case (without the trailing underscore).
+* Local variables are camelCase.
+* Class member variables are camelCase\_ (with the trailing underscore).
+* Struct member variables are camelCase (without the trailing underscore).
+* Constants are UPPER\_SNAKE\_CASE (no trailing underscore) everywhere.
 
 ## Structure
 

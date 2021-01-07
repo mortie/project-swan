@@ -26,11 +26,11 @@ public:
 	};
 
 	Logger(std::ostream &os, std::string name, bool use_color = false, std::string color = ""):
-		os_(os), name_(std::move(name)), use_color_(use_color), color_(std::move(color)) {}
+		os_(os), name_(std::move(name)), useColor_(use_color), color_(std::move(color)) {}
 
 	template<typename T>
 	NewlineStream operator<<(const T &val) {
-		if (use_color_)
+		if (useColor_)
 			os_ << color_ << name_ << "\033[0m: " << val;
 		else
 			os_ << name_ << ": " << val;
@@ -40,7 +40,7 @@ public:
 private:
 	std::ostream &os_;
 	std::string name_;
-	bool use_color_;
+	bool useColor_;
 	std::string color_;
 };
 

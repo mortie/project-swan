@@ -146,7 +146,7 @@ inline EntityRef EntityCollection::spawn(Args&&... args) {
 
 template<typename Ent>
 inline Entity *EntityCollectionImpl<Ent>::get(size_t idx, size_t generation) {
-	if (idx >=entities_.size())
+	if (idx >= entities_.size())
 		return nullptr;
 
 	auto &e = entities_[idx];

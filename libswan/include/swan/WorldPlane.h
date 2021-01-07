@@ -91,14 +91,14 @@ private:
 	std::unique_ptr<LightServer> lighting_;
 
 	std::map<std::pair<int, int>, Chunk> chunks_;
-	std::vector<Chunk *> active_chunks_;
-	std::vector<std::pair<ChunkPos, Chunk *>> tick_chunks_;
-	std::vector<std::unique_ptr<EntityCollection>> ent_colls_;
-	std::unordered_map<std::type_index, EntityCollection *> ent_colls_by_type_;
-	std::unordered_map<std::string, EntityCollection *> ent_colls_by_name_;
+	std::vector<Chunk *> activeChunks_;
+	std::vector<std::pair<ChunkPos, Chunk *>> tickChunks_;
+	std::vector<std::unique_ptr<EntityCollection>> entColls_;
+	std::unordered_map<std::type_index, EntityCollection *> entCollsByType_;
+	std::unordered_map<std::string, EntityCollection *> entCollsByName_;
 
-	std::deque<Chunk *> chunk_init_list_;
-	std::vector<TilePos> debug_boxes_;
+	std::deque<Chunk *> chunkInitList_;
+	std::vector<TilePos> debugBoxes_;
 };
 
 /*
@@ -112,15 +112,15 @@ inline EntityRef WorldPlane::spawnEntity(Args&&... args) {
 
 template<typename Ent>
 inline EntityCollection &WorldPlane::getCollectionOf() {
-	return *ent_colls_by_type_.at(typeid(Ent));
+	return *entCollsByType_.at(typeid(Ent));
 }
 
 inline EntityCollection &WorldPlane::getCollectionOf(std::string name) {
-	return *ent_colls_by_name_.at(name);
+	return *entCollsByName_.at(name);
 }
 
 inline EntityCollection &WorldPlane::getCollectionOf(std::type_index type) {
-	return *ent_colls_by_type_.at(type);
+	return *entCollsByType_.at(type);
 }
 
 }
