@@ -25,6 +25,7 @@ TileAtlas::TileAtlas(): state_(std::make_unique<AtlasState>()) {
 	state_->tilesPerLine = std::min(size / SwanCommon::TILE_SIZE, 256);
 }
 
+TileAtlas::TileAtlas(TileAtlas &&) = default;
 TileAtlas::~TileAtlas() = default;
 
 void TileAtlas::addTile(size_t tileId, const void *data) {
