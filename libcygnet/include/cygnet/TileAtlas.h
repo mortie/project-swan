@@ -9,6 +9,7 @@ struct AtlasState;
 class TileAtlas {
 public:
 	TileAtlas();
+	TileAtlas(TileAtlas &&);
 	~TileAtlas();
 
 	void addTile(size_t tileId, const void *data);

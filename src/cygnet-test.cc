@@ -53,19 +53,19 @@ int main() {
 		"core.mod/assets/tile/tree-trunk.png",
 	}) addTile(rbuilder, path);
 
-	unsigned char lolTexture[32*32*4*3];
+	unsigned char animTexture[32*32*4*3];
 	for (size_t i = 0; i < 3; ++i) {
 		int col = 100 * i + 50;;
 		for (size_t y = 0; y < 32; ++y) {
 			for (size_t x = 0; x < 32; ++x) {
-				lolTexture[i * 32 * 32 * 4 + y * 32 * 4 + x * 4 + 0] = col;
-				lolTexture[i * 32 * 32 * 4 + y * 32 * 4 + x * 4 + 1] = col;
-				lolTexture[i * 32 * 32 * 4 + y * 32 * 4 + x * 4 + 2] = col;
-				lolTexture[i * 32 * 32 * 4 + y * 32 * 4 + x * 4 + 3] = 255;
+				animTexture[i * 32 * 32 * 4 + y * 32 * 4 + x * 4 + 0] = col;
+				animTexture[i * 32 * 32 * 4 + y * 32 * 4 + x * 4 + 1] = col;
+				animTexture[i * 32 * 32 * 4 + y * 32 * 4 + x * 4 + 2] = col;
+				animTexture[i * 32 * 32 * 4 + y * 32 * 4 + x * 4 + 3] = 255;
 			}
 		}
 	}
-	rbuilder.addTile(10, lolTexture, 3);
+	rbuilder.addTile(10, animTexture, 3);
 
 	Cygnet::RenderSprite playerSprite = loadSprite(
 			rbuilder, "core.mod/assets/entity/player-still.png", 64);
@@ -79,6 +79,11 @@ int main() {
 		tiles[0] = 1;
 		tiles[1] = 2;
 		tiles[2] = 3;
+		for (int y = 0; y < 8; ++y) {
+			for (int x = 0; x < 8; ++x) {
+				tiles[y * SwanCommon::CHUNK_WIDTH + x] = 10;
+			}
+		}
 		tiles[10] = 10;
 		chunk = rnd.createChunk(tiles);
 	}
@@ -89,7 +94,7 @@ int main() {
 		.zoom = 1,
 	};
 
-	float lol = 0;
+	float animAcc = 0;
 
 	bool keys[512] = { 0 };
 
@@ -103,7 +108,7 @@ int main() {
 		double currTime = getTime();
 		double dt = currTime - prevTime;
 		prevTime = currTime;
-		lol += dt;
+		animAcc += dt;
 
 		fpsAcc += dt;
 		frames += 1;
@@ -163,8 +168,8 @@ int main() {
 
 		rnd.drawChunk(chunk, { 0, 0 });
 
-		rnd.drawSprite(playerSprite, { x, y }, (int)lol % 2);
-		cam.pos = { x, y };
+		rnd.drawSprite(playerSprite, { x, y }, (int)animAcc % 2);
+		cam.pos = { x + 0.5f, y + 0.5f };
 
 		win.clear();
 		rnd.draw(cam);
