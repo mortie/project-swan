@@ -137,7 +137,7 @@ void Chunk::render(const Context &ctx, SDL_Renderer *rnd) {
 			}
 
 			SDL_Rect dest{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-			SDL_RenderCopy(rnd, tile->image_.texture_.get(), nullptr, &dest);
+			SDL_RenderCopy(rnd, tile->image.texture_.get(), nullptr, &dest);
 		}
 	}
 

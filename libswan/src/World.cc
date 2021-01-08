@@ -20,7 +20,7 @@ World::World(Game *game, unsigned long rand_seed):
 		game_(game), random_(rand_seed), resources_(game->win_) {
 
 	std::unique_ptr<Tile> invalidTile = Tile::createInvalid(resources_);
-	tilesMap_[invalidTile->name_] = 0;
+	tilesMap_[invalidTile->name] = 0;
 
 	// tiles_ is empty, so pushing back now will ensure invalid_tile
 	// ends up at location 0
@@ -55,12 +55,12 @@ void World::addMod(ModWrapper &&mod) {
 
 	for (auto t: mod.buildTiles(resources_)) {
 		Tile::ID id = tiles_.size();
-		tilesMap_[t->name_] = id;
+		tilesMap_[t->name] = id;
 		tiles_.push_back(std::move(t));
 	}
 
 	for (auto i: mod.buildItems(resources_)) {
-		items_[i->name_] = std::move(i);
+		items_[i->name] = std::move(i);
 	}
 
 	for (auto fact: mod.getWorldGens()) {

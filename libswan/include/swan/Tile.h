@@ -10,8 +10,7 @@
 
 namespace Swan {
 
-// TODO: Switch to struct
-class Tile {
+struct Tile {
 public:
 	using ID = uint16_t;
 
@@ -24,15 +23,15 @@ public:
 	};
 
 	Tile(const ResourceManager &resources, const Builder &builder):
-		name_(builder.name), image_(resources.getImage(builder.image)),
-		isSolid_(builder.isSolid), lightLevel_(builder.lightLevel),
-		droppedItem_(builder.droppedItem) {}
+		name(builder.name), image(resources.getImage(builder.image)),
+		isSolid(builder.isSolid), lightLevel(builder.lightLevel),
+		droppedItem(builder.droppedItem) {}
 
-	const std::string name_;
-	const ImageResource &image_;
-	const bool isSolid_;
-	const float lightLevel_;
-	const std::optional<std::string> droppedItem_;
+	const std::string name;
+	const ImageResource &image;
+	const bool isSolid;
+	const float lightLevel;
+	const std::optional<std::string> droppedItem;
 
 	static std::unique_ptr<Tile> createInvalid(const ResourceManager &ctx);
 	static std::unique_ptr<Tile> createAir(const ResourceManager &ctx);

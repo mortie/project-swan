@@ -95,11 +95,11 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
 			for (int x = 0; x < CHUNK_WIDTH; ++x) {
 				Tile::ID id = chunk.getTileID({ x, y });
 				Tile &tile = world_->getTileByID(id);
-				if (tile.isSolid_) {
+				if (tile.isSolid) {
 					lc.blocks[y * CHUNK_HEIGHT + x] = true;
 				}
-				if (tile.lightLevel_ > 0) {
-					lc.light_sources[{ x, y }] = tile.lightLevel_;
+				if (tile.lightLevel > 0) {
+					lc.lightSources[{ x, y }] = tile.lightLevel;
 				}
 			}
 		}
@@ -124,22 +124,22 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 	if (id != old) {
 		Tile &newTile = world_->getTileByID(id);
 		Tile &oldTile = world_->getTileByID(old);
-		chunk.setTileID(rp, id, newTile.image_.texture_.get());
+		chunk.setTileID(rp, id, newTile.image.texture_.get());
 		chunk.markModified();
 
-		if (!oldTile.isSolid_ && newTile.isSolid_) {
+		if (!oldTile.isSolid && newTile.isSolid) {
 			lighting_->onSolidBlockAdded(pos);
-		} else if (oldTile.isSolid_ && !newTile.isSolid_) {
+		} else if (oldTile.isSolid && !newTile.isSolid) {
 			lighting_->onSolidBlockRemoved(pos);
 		}
 
-		if (newTile.lightLevel_ != oldTile.lightLevel_) {
-			if (oldTile.lightLevel_ > 0) {
-				removeLight(pos, oldTile.lightLevel_);
+		if (newTile.lightLevel != oldTile.lightLevel) {
+			if (oldTile.lightLevel > 0) {
+				removeLight(pos, oldTile.lightLevel);
 			}
 
-			if (newTile.lightLevel_ > 0) {
-				addLight(pos, newTile.lightLevel_);
+			if (newTile.lightLevel > 0) {
+				addLight(pos, newTile.lightLevel);
 			}
 		}
 	}
