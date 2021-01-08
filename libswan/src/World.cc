@@ -16,8 +16,8 @@ static void chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &d
 	}
 }
 
-World::World(Game *game, unsigned long rand_seed):
-		game_(game), random_(rand_seed), resources_(game->win_) {
+World::World(Game *game, unsigned long randSeed):
+		game_(game), random_(randSeed), resources_(game->win_) {
 
 	std::unique_ptr<Tile> invalidTile = Tile::createInvalid(resources_);
 	tilesMap_[invalidTile->name] = 0;
