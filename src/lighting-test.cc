@@ -35,7 +35,7 @@ int main() {
 	for (int x = 12; x < 20; ++x) {
 		set(x, 26);
 	}
-	nc.light_sources = {
+	nc.lightSources = {
 		{ { 20, 10 }, 20 },
 		{ { 16, 30 }, 20 },
 		{ { 5, 27 }, 20 },

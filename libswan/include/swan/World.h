@@ -23,7 +23,7 @@ class Game;
 
 class World {
 public:
-	World(Game *game, unsigned long rand_seed);
+	World(Game *game, unsigned long randSeed);
 
 	void addMod(ModWrapper &&mod);
 	void setWorldGen(std::string gen);

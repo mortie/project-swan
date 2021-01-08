@@ -47,7 +47,7 @@ ImageResource::ImageResource(
 			PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE));
 	}
 
-	frame_height_ = 32;
+	frameHeight_ = 32;
 
 	// Load TOML if it exists
 	errno = ENOENT; // I don't know if ifstream is guaranteed to set errno
@@ -56,7 +56,7 @@ ImageResource::ImageResource(
 		cpptoml::parser parser(tomlfile);
 		try {
 			auto toml = parser.parse();
-			frame_height_ = toml->get_as<int>("height").value_or(frame_height_);
+			frameHeight_ = toml->get_as<int>("height").value_or(frameHeight_);
 		} catch (cpptoml::parse_exception &exc) {
 			warn << "Failed to parse toml file " << assetpath << ".toml: "
 				<< exc.what();
@@ -71,7 +71,7 @@ ImageResource::ImageResource(
 		abort();
 	}
 
-	num_frames_ = surface_->h / frame_height_;
+	numFrames_ = surface_->h / frameHeight_;
 	name_ = id;
 }
 
@@ -90,17 +90,17 @@ ImageResource::ImageResource(
 		abort();
 	}
 
-	frame_height_ = h;
-	num_frames_ = 1;
+	frameHeight_ = h;
+	numFrames_ = 1;
 	name_ = name;
 }
 
 void ImageResource::tick(float dt) {
-	switch_timer_ -= dt;
-	if (switch_timer_ <= 0) {
-		switch_timer_ += switch_interval_;
+	switchTimer_ -= dt;
+	if (switchTimer_ <= 0) {
+		switchTimer_ += switchInterval_;
 		frame_ += 1;
-		if (frame_ >= num_frames_)
+		if (frame_ >= numFrames_)
 			frame_ = 0;
 	}
 }

@@ -165,12 +165,12 @@ Iter<Entity *> WorldPlane::getEntsInArea(Vec2 center, float radius) {
 			-> std::optional<Entity *> {
 
 		// Filter out things which don't have bodies
-		auto *has_body = dynamic_cast<BodyTrait::HasBody *>(ent.get());
-		if (has_body == nullptr)
+		auto *hasBody = dynamic_cast<BodyTrait::HasBody *>(ent.get());
+		if (hasBody == nullptr)
 			return std::nullopt;
 
 		// Filter out things which are too far away from 'center'
-		auto &body = has_body->getBody();
+		auto &body = hasBody->getBody();
 		auto bounds = body.getBounds();
 		Vec2 entcenter = bounds.pos + (bounds.size / 2);
 		auto dist = (entcenter - center).length();
