@@ -230,7 +230,7 @@ int main(int argc, char **argv) {
 		while (tickAcc >= 1.0 / TICK_RATE) {
 			ZoneScopedN("game tick");
 			tickAcc -= 1.0 / TICK_RATE;
-			RTClock tick_clock;
+			RTClock tickClock;
 			game.tick(1.0 / TICK_RATE);
 		}
 
