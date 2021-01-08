@@ -23,19 +23,19 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	State oldState = state_;
 	state_ = State::IDLE;
 
-	mouse_tile_ = ctx.game.getMouseTile();
-	ctx.plane.debugBox(mouse_tile_);
-	jump_timer_.tick(dt);
-	place_timer_.tick(dt);
+	mouseTile_ = ctx.game.getMouseTile();
+	ctx.plane.debugBox(mouseTile_);
+	jumpTimer_.tick(dt);
+	placeTimer_.tick(dt);
 
 	// Break block
 	if (ctx.game.isMousePressed(SDL_BUTTON_LEFT))
-		ctx.plane.breakTile(mouse_tile_);
+		ctx.plane.breakTile(mouseTile_);
 
 	// Place block
-	if (ctx.game.isMousePressed(SDL_BUTTON_RIGHT) && place_timer_.periodic(0.50)) {
-		if (ctx.plane.getTileID(mouse_tile_) == ctx.world.getTileID("@::air")) {
-			ctx.plane.setTile(mouse_tile_, "core::torch");
+	if (ctx.game.isMousePressed(SDL_BUTTON_RIGHT) && placeTimer_.periodic(0.50)) {
+		if (ctx.plane.getTileID(mouseTile_) == ctx.world.getTileID("@::air")) {
+			ctx.plane.setTile(mouseTile_, "core::torch");
 		}
 	}
 
@@ -54,15 +54,15 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 			state_ = State::RUNNING_R;
 	}
 
-	bool jump_pressed = ctx.game.isKeyPressed(SDL_SCANCODE_SPACE);
+	bool jumpPressed = ctx.game.isKeyPressed(SDL_SCANCODE_SPACE);
 
 	// Jump
-	if (physics_.on_ground && jump_pressed && jump_timer_.periodic(0.5)) {
+	if (physics_.onGround && jumpPressed && jumpTimer_.periodic(0.5)) {
 		physics_.vel.y = -JUMP_VEL;
 	}
 
 	// Fall down faster than we went up
-	if (!physics_.on_ground && (!jump_pressed || physics_.vel.y > 0))
+	if (!physics_.on_ground && (!jumpPressed || physics_.vel.y > 0))
 		physics_.force += Swan::Vec2(0, DOWN_FORCE);
 
 	if (state_ != oldState)
@@ -74,14 +74,14 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	// Do this after moving so that it's not behind
 	Swan::Vec2 headPos = body_.topMid() + Swan::Vec2(0, 0.5);
 	Swan::TilePos tilePos = Swan::Vec2i(floor(headPos.x), floor(headPos.y));
-	if (!placed_light_) {
+	if (!placedLight_) {
 		ctx.plane.addLight(tilePos, LIGHT_LEVEL);
-		placed_light_ = true;
-		light_tile_ = tilePos;
-	} else if (tilePos != light_tile_) {
-		ctx.plane.removeLight(light_tile_, LIGHT_LEVEL);
+		placedLight_ = true;
+		lightTile_ = tilePos;
+	} else if (tilePos != lightTile_) {
+		ctx.plane.removeLight(lightTile_, LIGHT_LEVEL);
 		ctx.plane.addLight(tilePos, LIGHT_LEVEL);
-		light_tile_ = tilePos;
+		lightTile_ = tilePos;
 	}
 }
 

@@ -74,17 +74,17 @@ private:
 class RenderTarget: NonCopyable {
 public:
 	RenderTarget(SDL_Renderer *rnd, SDL_Texture *tex): rnd_(rnd) {
-		prev_target_ = SDL_GetRenderTarget(rnd_);
+		prevTarget_ = SDL_GetRenderTarget(rnd_);
 		SDL_SetRenderTarget(rnd_, tex);
 	}
 
 	~RenderTarget() {
-		SDL_SetRenderTarget(rnd_, prev_target_);
+		SDL_SetRenderTarget(rnd_, prevTarget_);
 	}
 
 private:
 	SDL_Renderer *rnd_;
-	SDL_Texture *prev_target_;
+	SDL_Texture *prevTarget_;
 };
 
 class TexLock: NonCopyable {

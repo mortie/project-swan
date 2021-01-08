@@ -9,17 +9,17 @@
 
 namespace testlib {
 
-static const std::string color_reset = "\033[0m";
-static const std::string color_highlight = "\033[1m";
-static const std::string color_testing = color_highlight;
-static const std::string color_desc = "\033[33m";
-static const std::string color_maybe = "\033[35m";
-static const std::string color_success = "\033[32m";
-static const std::string color_fail = "\033[31m";
-static const std::string color_errormsg = "\033[95m";
+static const std::string COLOR_RESET = "\033[0m";
+static const std::string COLOR_HIGHLIGHT = "\033[1m";
+static const std::string COLOR_TESTING = COLOR_HIGHLIGHT;
+static const std::string COLOR_DESC = "\033[33m";
+static const std::string COLOR_MAYBE = "\033[35m";
+static const std::string COLOR_SUCCESS = "\033[32m";
+static const std::string COLOR_FAIL = "\033[31m";
+static const std::string COLOR_ERRORMSG = "\033[95m";
 
 std::string color(const std::string &color, std::string_view str) {
-	return std::string(color) + std::string(str) + std::string(color_reset);
+	return std::string(color) + std::string(str) + std::string(COLOR_RESET);
 }
 
 struct TestCase {
@@ -57,8 +57,8 @@ void addTestCase(TestSpec *testcase) {
 static std::stringstream printFailure(const std::string &msg) {
 	std::stringstream str;
 	str
-		<< "\r" << color(color_highlight + color_fail, "✕ ")
-		<< color(color_fail, "Failed:  ") << "\n"
+		<< "\r" << color(COLOR_HIGHLIGHT + COLOR_FAIL, "✕ ")
+		<< color(COLOR_FAIL, "Failed:  ") << "\n"
 		<< "    " << msg << "\n";
 	return str;
 }
@@ -91,13 +91,13 @@ int main() {
 		if (currfile != testcase.filename) {
 			currfile = testcase.filename;
 			size_t lastslash = currfile.find_last_of('/');
-			std::cout << '\n' << color(color_testing, currfile.substr(lastslash + 1)) << ":\n";
+			std::cout << '\n' << color(COLOR_TESTING, currfile.substr(lastslash + 1)) << ":\n";
 		}
 
 		std::cout
-			<< color(color_highlight + color_maybe, "? ")
-			<< color(color_maybe, "Testing: ")
-			<< color(color_desc, testcase.description) << " " << std::flush;
+			<< color(COLOR_HIGHLIGHT + COLOR_MAYBE, "? ")
+			<< color(COLOR_MAYBE, "Testing: ")
+			<< color(COLOR_DESC, testcase.description) << " " << std::flush;
 
 		bool casefailed = false;
 
@@ -105,9 +105,9 @@ int main() {
 			totaltests += 1;
 			testcase.func();
 			std::cout
-				<< "\r" << color(color_highlight + color_success, "✓ ")
-				<< color(color_success, "Success: ")
-				<< color(color_desc, testcase.description) << "\n";
+				<< "\r" << color(COLOR_HIGHLIGHT + COLOR_SUCCESS, "✓ ")
+				<< color(COLOR_SUCCESS, "Success: ")
+				<< color(COLOR_DESC, testcase.description) << "\n";
 			totalsuccess += 1;
 		} catch (const TestFailure &failure) {
 			casefailed = true;

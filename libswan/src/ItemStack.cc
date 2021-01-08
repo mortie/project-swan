@@ -21,9 +21,9 @@ ItemStack ItemStack::insert(ItemStack st) {
 
 	// Merge
 	count_ += st.count_;
-	if (count_ > item_->max_stack_) {
-		st.count_ = count_ - item_->max_stack_;
-		count_ = item_->max_stack_;
+	if (count_ > item_->maxStack) {
+		st.count_ = count_ - item_->maxStack;
+		count_ = item_->maxStack;
 	} else {
 		st.count_ = 0;
 		st.item_ = nullptr;

@@ -170,14 +170,14 @@ void Renderer::draw(const RenderCamera &cam) {
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE1);
-		for (auto [pos, chunk]: draw_chunks_) {
+		for (auto [pos, chunk]: drawChunks_) {
 			glUniform2f(chunkProg.pos, pos.x, pos.y);
 			glBindTexture(GL_TEXTURE_2D, chunk.tex);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			glCheck();
 		}
 
-		draw_chunks_.clear();
+		drawChunks_.clear();
 		chunkProg.disable();
 	}
 
@@ -187,7 +187,7 @@ void Renderer::draw(const RenderCamera &cam) {
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);
-		for (auto [mat, frame, sprite]: draw_sprites_) {
+		for (auto [mat, frame, sprite]: drawSprites_) {
 			mat.scale(sprite.scale);
 			glUniformMatrix3fv(spriteProg.transform, 1, GL_TRUE, mat.data());
 			glUniform3f(spriteProg.frameInfo, sprite.scale.y, sprite.frameCount, frame);
@@ -196,7 +196,7 @@ void Renderer::draw(const RenderCamera &cam) {
 			glCheck();
 		}
 
-		draw_sprites_.clear();
+		drawSprites_.clear();
 		spriteProg.disable();
 	}
 }

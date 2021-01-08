@@ -4,11 +4,11 @@
 
 #include "entities/PlayerEntity.h"
 
-static int grassLevel(const siv::PerlinNoise &perlin, int x) {
+static int getGrassLevel(const siv::PerlinNoise &perlin, int x) {
 	return (int)(perlin.noise(x / 50.0, 0) * 13);
 }
 
-static int stoneLevel(const siv::PerlinNoise &perlin, int x) {
+static int getStoneLevel(const siv::PerlinNoise &perlin, int x) {
 	return (int)(perlin.noise(x / 50.0, 10) * 10) + 10;
 }
 
@@ -43,18 +43,18 @@ SDL_Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos) {
 }
 
 Swan::Tile::ID DefaultWorldGen::genTile(Swan::TilePos pos) {
-	int grass_level = grassLevel(perlin_, pos.x);
-	int stone_level = stoneLevel(perlin_, pos.x);
+	int grassLevel = getGrassLevel(perlin_, pos.x);
+	int stoneLevel = getStoneLevel(perlin_, pos.x);
 
 	// Caves
-	if (pos.y > grass_level + 7 && perlin_.noise(pos.x / 43.37, pos.y / 16.37) > 0.2)
+	if (pos.y > grassLevel + 7 && perlin_.noise(pos.x / 43.37, pos.y / 16.37) > 0.2)
 		return tAir_;
 
-	if (pos.y > stone_level)
+	if (pos.y > stoneLevel)
 		return tStone_;
-	else if (pos.y > grass_level)
+	else if (pos.y > grassLevel)
 		return tDirt_;
-	else if (pos.y == grass_level)
+	else if (pos.y == grassLevel)
 		return tGrass_;
 	else
 		return tAir_;
@@ -77,5 +77,5 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 Swan::EntityRef DefaultWorldGen::spawnPlayer(const Swan::Context &ctx) {
 	int x = 0;
 	return ctx.plane.spawnEntity<PlayerEntity>(
-		ctx, Swan::Vec2{ (float)x, (float)grassLevel(perlin_, x) - 4 });
+		ctx, Swan::Vec2{ (float)x, (float)getGrassLevel(perlin_, x) - 4 });
 }

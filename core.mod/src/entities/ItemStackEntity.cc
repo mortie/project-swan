@@ -34,8 +34,8 @@ void ItemStackEntity::update(const Swan::Context &ctx, float dt) {
 }
 
 void ItemStackEntity::tick(const Swan::Context &ctx, float dt) {
-	despawn_timer_ -= dt;
-	if (despawn_timer_ <= 0)
+	despawnTimer_ -= dt;
+	if (despawnTimer_ <= 0)
 		despawn(ctx);
 }
 
