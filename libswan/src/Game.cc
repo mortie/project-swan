@@ -63,11 +63,11 @@ void Game::update(float dt) {
 	else if (win_.zoom_ < 0.3)
 		win_.zoom_ = 0.3;
 
-	did_scroll_ = 0;
-	did_press_keys_.reset();
-	did_release_keys_.reset();
-	did_press_buttons_.reset();
-	did_release_buttons_.reset();
+	didScroll_ = 0;
+	didPressKeys_.reset();
+	didReleaseKeys_.reset();
+	didPressButtons_.reset();
+	didReleaseButtons_.reset();
 }
 
 void Game::tick(float dt) {

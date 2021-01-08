@@ -54,7 +54,7 @@ int main() {
 	png::image<png::rgb_pixel> image(Swan::CHUNK_WIDTH, Swan::CHUNK_HEIGHT);
 	for (int y = 0; y < Swan::CHUNK_HEIGHT; ++y) {
 		for (int x = 0; x < Swan::CHUNK_WIDTH; ++x) {
-			uint8_t light = cb.chunk_.light_levels[y * Swan::CHUNK_WIDTH + x];
+			uint8_t light = cb.chunk_.lightLevels[y * Swan::CHUNK_WIDTH + x];
 			bool block = false;
 			if (cb.chunk_.blocks[y * Swan::CHUNK_WIDTH + x]) {
 				block = true;

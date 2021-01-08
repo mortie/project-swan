@@ -46,12 +46,12 @@ private:
 	State state_ = State::IDLE;
 	std::array<Swan::Animation, (int)State::COUNT> anims_;
 
-	Swan::Clock jump_timer_;
-	Swan::Clock place_timer_;
-	Swan::TilePos mouse_tile_;
+	Swan::Clock jumpTimer_;
+	Swan::Clock placeTimer_;
+	Swan::TilePos mouseTile_;
 
-	Swan::TilePos light_tile_;
-	bool placed_light_ = false;
+	Swan::TilePos lightTile_;
+	bool placedLight_ = false;
 
 	BasicInventory inventory_{INVENTORY_SIZE};
 };

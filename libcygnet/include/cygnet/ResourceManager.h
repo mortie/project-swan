@@ -33,7 +33,7 @@ public:
 private:
 	Renderer &rnd_;
 	std::unordered_map<std::string, RenderSprite> sprites_;
-	std::vector<ResourceTileAnimation> tile_anims_;
+	std::vector<ResourceTileAnimation> tileAnims_;
 	TileAtlas atlas_;
 
 	friend ResourceManager;
@@ -52,7 +52,7 @@ private:
 	Renderer &rnd_;
 	std::unordered_map<std::string, RenderSprite> sprites_;
 	std::unordered_map<std::string, RenderTile> tiles_;
-	std::vector<ResourceTileAnimation> tile_anims_;
+	std::vector<ResourceTileAnimation> tileAnims_;
 };
 
 inline RenderSprite ResourceBuilder::addSprite(
@@ -79,7 +79,7 @@ inline void ResourceBuilder::addTile(uint16_t id, void *data, int frames) {
 inline void ResourceBuilder::addTile(Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames) {
 	atlas_.addTile(id, data.get());
 	if (frames > 1) {
-		tile_anims_.push_back({
+		tileAnims_.push_back({
 			.id = id,
 			.frames = frames,
 			.index = 0,

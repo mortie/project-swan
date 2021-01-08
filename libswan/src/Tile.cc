@@ -18,7 +18,7 @@ std::unique_ptr<Tile> Tile::createAir(const ResourceManager &resources) {
 	return std::make_unique<Tile>(resources, Builder{
 		.name = "@::air",
 		.image = "@::air",
-		.is_solid = false,
+		.isSolid = false,
 	});
 }
 

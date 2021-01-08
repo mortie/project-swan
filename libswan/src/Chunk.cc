@@ -33,7 +33,7 @@ void Chunk::compress() {
 		memcpy(data_.get(), dest, destlen);
 
 		texture_.reset();
-		compressed_size_ = destlen;
+		compressedSize_ = destlen;
 
 		info
 			<< "Compressed chunk " << pos_ << " from "
@@ -56,7 +56,7 @@ void Chunk::decompress() {
 	uLongf destlen = DATA_SIZE;
 	int ret = uncompress(
 		dest.get(), &destlen,
-		(Bytef *)data_.get(), compressed_size_);
+		(Bytef *)data_.get(), compressedSize_);
 
 	if (ret != Z_OK) {
 		panic << "Decompressing chunk failed: " << ret;
@@ -64,24 +64,24 @@ void Chunk::decompress() {
 	}
 
 	data_ = std::move(dest);
-	need_render_ = true;
+	needRender_ = true;
 
 	info
 		<< "Decompressed chunk " << pos_ << " from "
-		<< compressed_size_ << " bytes to "
+		<< compressedSize_ << " bytes to "
 		<< DATA_SIZE << " bytes.";
-	compressed_size_ = -1;
+	compressedSize_ = -1;
 }
 
 void Chunk::renderLight(const Context &ctx, SDL_Renderer *rnd) {
 	std::optional<RenderTarget> target;
 
 	// The texture might not be created yet
-	if (!light_texture_) {
-		light_texture_.reset(SDL_CreateTexture(
+	if (!lightTexture_) {
+		lightTexture_.reset(SDL_CreateTexture(
 			ctx.game.win_.renderer_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET,
 			CHUNK_WIDTH, CHUNK_HEIGHT));
-		SDL_SetTextureBlendMode(light_texture_.get(), SDL_BLENDMODE_BLEND);
+		SDL_SetTextureBlendMode(lightTexture_.get(), SDL_BLENDMODE_BLEND);
 
 		target.emplace(rnd, texture_.get());
 	} else {
@@ -89,7 +89,7 @@ void Chunk::renderLight(const Context &ctx, SDL_Renderer *rnd) {
 	}
 
 	// Fill light texture
-	target.emplace(rnd, light_texture_.get());
+	target.emplace(rnd, lightTexture_.get());
 	RenderBlendMode mode(rnd, SDL_BLENDMODE_NONE);
 	RenderDrawColor color(rnd, 0, 0, 0, 0);
 	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
@@ -101,7 +101,7 @@ void Chunk::renderLight(const Context &ctx, SDL_Renderer *rnd) {
 		}
 	}
 
-	need_light_render_ = false;
+	needLightRender_ = false;
 }
 
 void Chunk::render(const Context &ctx, SDL_Renderer *rnd) {
@@ -125,7 +125,7 @@ void Chunk::render(const Context &ctx, SDL_Renderer *rnd) {
 
 	// We're caching tiles so we don't have to world.getTileByID() every time
 	Tile::ID prevID = Tile::INVALID_ID;
-	Tile *tile = ctx.game.invalid_tile_.get();
+	Tile *tile = ctx.game.invalidTile_.get();
 
 	// Fill tile texture
 	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
@@ -137,11 +137,11 @@ void Chunk::render(const Context &ctx, SDL_Renderer *rnd) {
 			}
 
 			SDL_Rect dest{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-			SDL_RenderCopy(rnd, tile->image_.texture_.get(), nullptr, &dest);
+			SDL_RenderCopy(rnd, tile->image.texture_.get(), nullptr, &dest);
 		}
 	}
 
-	need_render_ = false;
+	needRender_ = false;
 
 	renderLight(ctx, rnd);
 }
@@ -158,7 +158,7 @@ void Chunk::renderList(SDL_Renderer *rnd) {
 	// When we FillRect, we must fill transparency.
 	RenderDrawColor color(rnd, 0, 0, 0, 0);
 
-	for (auto &[pos, tex]: draw_list_) {
+	for (auto &[pos, tex]: drawList_) {
 		SDL_Rect dest{pos.x * TILE_SIZE, pos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
 		SDL_RenderFillRect(rnd, &dest);
 		SDL_RenderCopy(rnd, tex, nullptr, &dest);
@@ -170,16 +170,16 @@ void Chunk::draw(const Context &ctx, Win &win) {
 		return;
 
 	// The world plane is responsible for managing initial renders
-	if (need_render_)
+	if (needRender_)
 		return;
 
 	// We're responsible for the light level rendering though
-	if (need_light_render_)
+	if (needLightRender_)
 		renderLight(ctx, win.renderer_);
 
-	if (draw_list_.size() > 0) {
+	if (drawList_.size() > 0) {
 		renderList(win.renderer_);
-		draw_list_.clear();
+		drawList_.clear();
 	}
 
 	auto chunkpos = pos_ * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT);
@@ -187,15 +187,15 @@ void Chunk::draw(const Context &ctx, Win &win) {
 	win.showTexture(chunkpos, texture_.get(), &rect);
 
 	SDL_Rect texrect{ 0, 0, CHUNK_WIDTH, CHUNK_HEIGHT };
-	win.showTexture(chunkpos, light_texture_.get(), &texrect, &rect);
+	win.showTexture(chunkpos, lightTexture_.get(), &texrect, &rect);
 }
 
 Chunk::TickAction Chunk::tick(float dt) {
 	assert(isActive());
 
-	deactivate_timer_ -= dt;
-	if (deactivate_timer_ <= 0) {
-		if (is_modified_)
+	deactivateTimer_ -= dt;
+	if (deactivateTimer_ <= 0) {
+		if (isModified_)
 			return TickAction::DEACTIVATE;
 		else
 			return TickAction::DELETE;
@@ -205,7 +205,7 @@ Chunk::TickAction Chunk::tick(float dt) {
 }
 
 void Chunk::keepActive() {
-	deactivate_timer_ = DEACTIVATE_INTERVAL;
+	deactivateTimer_ = DEACTIVATE_INTERVAL;
 	decompress();
 }
 

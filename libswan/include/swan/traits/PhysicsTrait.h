@@ -19,7 +19,7 @@ struct PhysicsTrait {
 	struct Physics {
 		Vec2 vel{};
 		Vec2 force{};
-		bool on_ground = false;
+		bool onGround = false;
 
 		void friction(Vec2 coef = Vec2(400, 50));
 		void gravity(float mass, Vec2 g = Vec2(0, 20));

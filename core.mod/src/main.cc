@@ -7,7 +7,7 @@
 class CoreMod: public Swan::Mod {
 public:
 	CoreMod(Swan::World &world): Swan::Mod("core") {
-		break_listener_ = world.evt_tile_break_.subscribe(
+		breakListener_ = world.evtTileBreak_.subscribe(
 			std::bind_front(&CoreMod::onTileBreak, this));
 
 		registerImage("tile/stone");
@@ -75,13 +75,13 @@ public:
 	}
 
 	void onTileBreak(const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile &tile) {
-		if (tile.dropped_item_) {
+		if (tile.droppedItem_) {
 			ctx.plane.spawnEntity<ItemStackEntity>(
-				ctx, (Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, *tile.dropped_item_);
+				ctx, (Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, *tile.droppedItem_);
 		}
 	}
 
-	Swan::EventListener break_listener_;
+	Swan::EventListener breakListener_;
 };
 
 extern "C" Swan::Mod *mod_create(Swan::World &world) {

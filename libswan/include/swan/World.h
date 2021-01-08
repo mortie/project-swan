@@ -31,7 +31,7 @@ public:
 
 	void setCurrentPlane(WorldPlane &plane);
 	WorldPlane &addPlane(const std::string &gen);
-	WorldPlane &addPlane() { return addPlane(default_world_gen_); }
+	WorldPlane &addPlane() { return addPlane(defaultWorldGen_); }
 
 	Tile &getTileByID(Tile::ID id) { return *tiles_[id]; }
 	Tile::ID getTileID(const std::string &name);
@@ -45,19 +45,19 @@ public:
 
 	// Event emitters
 	EventEmitter<const Context &, TilePos, Tile &>
-	evt_tile_break_;
+	evtTileBreak_;
 
 	// World owns all mods
 	std::vector<ModWrapper> mods_;
 
 	// World owns tiles and items, the mod just has Builder objects
 	std::vector<std::unique_ptr<Tile>> tiles_;
-	std::unordered_map<std::string, Tile::ID> tiles_map_;
+	std::unordered_map<std::string, Tile::ID> tilesMap_;
 	std::unordered_map<std::string, std::unique_ptr<Item>> items_;
 
 	// Mods give us factories to create new world gens and new entity collections
-	std::unordered_map<std::string, WorldGen::Factory> worldgen_factories_;
-	std::vector<EntityCollection::Factory> ent_coll_factories_;
+	std::unordered_map<std::string, WorldGen::Factory> worldgenFactories_;
+	std::vector<EntityCollection::Factory> entCollFactories_;
 
 	BodyTrait::Body *player_;
 	Game *game_;
@@ -71,10 +71,10 @@ private:
 		void tick(WorldPlane &plane, ChunkPos abspos);
 	};
 
-	ChunkRenderer chunk_renderer_;
-	WorldPlane::ID current_plane_;
+	ChunkRenderer chunkRenderer_;
+	WorldPlane::ID currentPlane_;
 	std::vector<std::unique_ptr<WorldPlane>> planes_;
-	std::string default_world_gen_;
+	std::string defaultWorldGen_;
 };
 
 }

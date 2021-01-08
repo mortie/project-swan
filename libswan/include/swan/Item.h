@@ -6,22 +6,21 @@
 
 namespace Swan {
 
-// TODO: Switch to struct
 class Item {
 public:
 	struct Builder {
 		std::string name;
 		std::string image;
-		int max_stack = 64;
+		int maxStack = 64;
 	};
 
 	Item(const ResourceManager &resources, const Builder &builder):
-		name_(builder.name), image_(resources.getImage(builder.image)),
-		max_stack_(builder.max_stack) {}
+		name(builder.name), image(resources.getImage(builder.image)),
+		maxStack(builder.maxStack) {}
 
-	const std::string name_;
-	const ImageResource &image_;
-	const int max_stack_;
+	const std::string name;
+	const ImageResource &image;
+	const int maxStack;
 
 	static std::unique_ptr<Item> createInvalid(Context &ctx);
 
@@ -32,8 +31,8 @@ public:
 // a complete ImageResource for a headless server, but for now, this will suffice.
 protected:
 	Item(const Builder &builder):
-		name_(builder.name), image_(*(ImageResource *)this),
-		max_stack_(builder.max_stack) {}
+		name(builder.name), image(*(ImageResource *)this),
+		maxStack(builder.maxStack) {}
 };
 
 }

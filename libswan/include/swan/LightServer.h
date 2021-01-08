@@ -14,7 +14,7 @@ namespace Swan {
 
 struct NewLightChunk {
 	std::bitset<CHUNK_WIDTH * CHUNK_HEIGHT> blocks;
-	std::map<std::pair<int, int>, float> light_sources;
+	std::map<std::pair<int, int>, float> lightSources;
 };
 
 struct LightChunk {
@@ -22,16 +22,16 @@ struct LightChunk {
 	LightChunk(NewLightChunk &&ch);
 
 	std::bitset<CHUNK_WIDTH * CHUNK_HEIGHT> blocks;
-	uint8_t light_levels[CHUNK_WIDTH * CHUNK_HEIGHT] = { 0 };
-	float light_buffers[CHUNK_WIDTH * CHUNK_HEIGHT * 2] = { 0 };
+	uint8_t lightLevels[CHUNK_WIDTH * CHUNK_HEIGHT] = { 0 };
+	float lightBuffers[CHUNK_WIDTH * CHUNK_HEIGHT * 2] = { 0 };
 	int buffer = 0;
-	uint8_t blocks_line[CHUNK_WIDTH] = { 0 };
-	std::map<std::pair<int, int>, float> light_sources;
+	uint8_t blocksLine[CHUNK_WIDTH] = { 0 };
+	std::map<std::pair<int, int>, float> lightSources;
 	std::vector<std::pair<TilePos, float>> bounces;
 
-	float *light_buffer() { return light_buffers + CHUNK_WIDTH * CHUNK_HEIGHT * buffer; }
+	float *lightBuffer() { return lightBuffers + CHUNK_WIDTH * CHUNK_HEIGHT * buffer; }
 
-	bool was_updated = false;
+	bool wasUpdated = false;
 };
 
 class LightCallback {
@@ -85,13 +85,13 @@ private:
 	LightCallback &cb_;
 	bool running_ = true;
 	std::map<std::pair<int, int>, LightChunk> chunks_;
-	std::set<std::pair<int, int>> updated_chunks_;
-	LightChunk *cached_chunk_ = nullptr;
-	Vec2i cached_chunk_pos_;
+	std::set<std::pair<int, int>> updatedChunks_;
+	LightChunk *cachedChunk_ = nullptr;
+	Vec2i cachedChunkPos_;
 
 	int buffer_ = 0;
 	std::vector<Event> buffers_[2] = { {}, {} };
-	std::vector<NewLightChunk> new_chunk_buffers_[2] = { {}, {} };
+	std::vector<NewLightChunk> newChunkBuffers_[2] = { {}, {} };
 	std::thread thread_;
 	std::condition_variable cond_;
 	std::mutex mut_;
@@ -124,8 +124,8 @@ inline void LightServer::onLightRemoved(TilePos pos, float level) {
 inline void LightServer::onChunkAdded(Vec2i pos, NewLightChunk &&chunk) {
 	std::lock_guard<std::mutex> lock(mut_);
 	buffers_[buffer_].push_back({ Event::Tag::CHUNK_ADDED, pos,
-			{ .i = (int)new_chunk_buffers_[buffer_].size() } });
-	new_chunk_buffers_[buffer_].push_back(std::move(chunk));
+			{ .i = (int)newChunkBuffers_[buffer_].size() } });
+	newChunkBuffers_[buffer_].push_back(std::move(chunk));
 	cond_.notify_one();
 }
 

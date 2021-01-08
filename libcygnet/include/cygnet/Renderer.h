@@ -73,24 +73,24 @@ private:
 
 	std::unique_ptr<RendererState> state_;
 
-	std::vector<DrawChunk> draw_chunks_;
-	std::vector<DrawSprite> draw_sprites_;
+	std::vector<DrawChunk> drawChunks_;
+	std::vector<DrawSprite> drawSprites_;
 };
 
 inline void Renderer::drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos) {
-	draw_chunks_.emplace_back(pos, chunk);
+	drawChunks_.emplace_back(pos, chunk);
 }
 
 inline void Renderer::drawSprite(RenderSprite sprite, Mat3gf mat, int frame) {
-	draw_sprites_.emplace_back(mat, frame, sprite);
+	drawSprites_.emplace_back(mat, frame, sprite);
 }
 
 inline void Renderer::drawSprite(RenderSprite sprite, SwanCommon::Vec2 pos, int frame) {
-	draw_sprites_.emplace_back(Mat3gf{}.translate(pos), frame, sprite);
+	drawSprites_.emplace_back(Mat3gf{}.translate(pos), frame, sprite);
 }
 
 inline void Renderer::drawSpriteFlipped(RenderSprite sprite, SwanCommon::Vec2 pos, int frame) {
-	draw_sprites_.emplace_back(Mat3gf{}.translate(pos).scale({ -1, 1 }), frame, sprite);
+	drawSprites_.emplace_back(Mat3gf{}.translate(pos).scale({ -1, 1 }), frame, sprite);
 }
 
 }
