@@ -62,7 +62,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	}
 
 	// Fall down faster than we went up
-	if (!physics_.on_ground && (!jumpPressed || physics_.vel.y > 0))
+	if (!physics_.onGround && (!jumpPressed || physics_.vel.y > 0))
 		physics_.force += Swan::Vec2(0, DOWN_FORCE);
 
 	if (state_ != oldState)

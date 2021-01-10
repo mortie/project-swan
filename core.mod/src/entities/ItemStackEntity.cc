@@ -47,6 +47,6 @@ void ItemStackEntity::deserialize(const Swan::Context &ctx, const PackObject &ob
 Swan::Entity::PackObject ItemStackEntity::serialize(const Swan::Context &ctx, msgpack::zone &zone) {
 	return {
 		{ "pos", msgpack::object(body_.pos, zone) },
-		{ "tile", msgpack::object(item_->name_, zone) },
+		{ "tile", msgpack::object(item_->name, zone) },
 	};
 }

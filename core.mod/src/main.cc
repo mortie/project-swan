@@ -22,50 +22,50 @@ public:
 
 		registerTile({
 			.name = "stone",
-			.image = "core/tile/stone",
-			.dropped_item = "core::stone",
+			.image = "core::tile/stone",
+			.droppedItem = "core::stone",
 		});
 		registerTile({
 			.name = "dirt",
-			.image = "core/tile/dirt",
-			.dropped_item = "core::dirt",
+			.image = "core::tile/dirt",
+			.droppedItem = "core::dirt",
 		});
 		registerTile({
 			.name = "grass",
-			.image = "core/tile/grass",
-			.dropped_item = "core::dirt",
+			.image = "core::tile/grass",
+			.droppedItem = "core::dirt",
 		});
 		registerTile({
 			.name = "tree-trunk",
-			.image = "core/tile/tree-trunk",
-			.dropped_item = "core::tree-trunk",
+			.image = "core::tile/tree-trunk",
+			.droppedItem = "core::tree-trunk",
 		});
 		registerTile({
 			.name = "leaves",
-			.image = "core/tile/leaves",
+			.image = "core::tile/leaves",
 		});
 		registerTile({
 			.name = "torch",
-			.image = "core/tile/torch",
-			.is_solid = false,
-			.light_level = 80/255.0,
+			.image = "core::tile/torch",
+			.isSolid = false,
+			.lightLevel = 80/255.0,
 		});
 
 		registerItem({
 			.name = "stone",
-			.image = "core/tile/stone",
+			.image = "core::tile/stone",
 		});
 		registerItem({
 			.name = "dirt",
-			.image = "core/tile/dirt",
+			.image = "core::tile/dirt",
 		});
 		registerItem({
 			.name = "grass",
-			.image = "core/tile/grass",
+			.image = "core::tile/grass",
 		});
 		registerItem({
 			.name = "tree-trunk",
-			.image = "core/tile/tree-trunk",
+			.image = "core::tile/tree-trunk",
 		});
 
 		registerWorldGen<DefaultWorldGen>("default");
@@ -75,9 +75,9 @@ public:
 	}
 
 	void onTileBreak(const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile &tile) {
-		if (tile.droppedItem_) {
+		if (tile.droppedItem) {
 			ctx.plane.spawnEntity<ItemStackEntity>(
-				ctx, (Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, *tile.droppedItem_);
+				ctx, (Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, *tile.droppedItem);
 		}
 	}
 

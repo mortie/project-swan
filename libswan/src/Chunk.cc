@@ -124,7 +124,7 @@ void Chunk::render(const Context &ctx, SDL_Renderer *rnd) {
 	}
 
 	// We're caching tiles so we don't have to world.getTileByID() every time
-	Tile::ID prevID = Tile::INVALID_ID;
+	Tile::ID prevID = World::INVALID_TILE_ID;
 	Tile *tile = ctx.game.invalidTile_.get();
 
 	// Fill tile texture

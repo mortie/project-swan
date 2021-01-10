@@ -23,14 +23,14 @@ public:
 	Mod(std::string name): name_(std::move(name)) {}
 	virtual ~Mod() = default;
 
-	void registerImage(const std::string &id);
 	void registerTile(Tile::Builder tile);
 	void registerItem(Item::Builder item);
-	void registerWorldGen(const std::string &name, std::unique_ptr<WorldGen::Factory> gen);
+	void registerWorldGen(std::string name, std::unique_ptr<WorldGen::Factory> gen);
+	void registerSprite(std::string sprite);
 
 	template<typename WG>
-	void registerWorldGen(const std::string &name) {
-		worldgens_.push_back(WorldGen::Factory{
+	void registerWorldGen(std::string name) {
+		worldGens_.push_back(WorldGen::Factory{
 			.name = name_ + "::" + name,
 			.create = [](World &world) -> std::unique_ptr<WorldGen> {
 				return std::make_unique<WG>(world);
@@ -55,7 +55,8 @@ public:
 	std::vector<std::string> images_;
 	std::vector<Tile::Builder> tiles_;
 	std::vector<Item::Builder> items_;
-	std::vector<WorldGen::Factory> worldgens_;
+	std::vector<std::string> sprites_;
+	std::vector<WorldGen::Factory> worldGens_;
 	std::vector<EntityCollection::Factory> entities_;
 };
 
@@ -71,12 +72,6 @@ public:
 		// so we must run its destructor before deleting the dynlib
 		mod_.reset();
 	}
-
-	Iter<std::unique_ptr<ImageResource>> buildImages(SDL_Renderer *renderer);
-	Iter<std::unique_ptr<Tile>> buildTiles(const ResourceManager &resources);
-	Iter<std::unique_ptr<Item>> buildItems(const ResourceManager &resources);
-	Iter<WorldGen::Factory> getWorldGens();
-	Iter<EntityCollection::Factory> getEntities();
 
 	std::unique_ptr<Mod> mod_;
 	std::string path_;

@@ -1,11 +1,13 @@
 #include "World.h"
 
 #include <algorithm>
+#include <tuple>
 
 #include "log.h"
 #include "Game.h"
 #include "Win.h"
 #include "Clock.h"
+#include "assets.h"
 
 namespace Swan {
 
@@ -16,20 +18,198 @@ static void chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &d
 	}
 }
 
-World::World(Game *game, unsigned long randSeed):
-		game_(game), random_(randSeed), resources_(game->win_) {
+std::vector<ModWrapper> World::loadMods(std::vector<std::string> paths) {
+	std::vector<ModWrapper> mods;
+	mods.reserve(paths.size());
 
-	std::unique_ptr<Tile> invalidTile = Tile::createInvalid(resources_);
-	tilesMap_[invalidTile->name] = 0;
+	for (auto &path: paths) {
+		OS::Dynlib dl(path + "/mod");
+		auto create = dl.get<Mod *(*)(World &)>("mod_create");
+		if (create == NULL) {
+			warn << path << ": No 'mod_create' function!";
+			continue;
+		}
 
-	// tiles_ is empty, so pushing back now will ensure invalid_tile
-	// ends up at location 0
-	tiles_.push_back(std::move(invalidTile));
+		std::unique_ptr<Mod> mod(create(*this));
+		mods.push_back(ModWrapper(std::move(mod), std::move(path), std::move(dl)));
+	}
 
-	// We're also going to need an air tile at location 1
-	tiles_.push_back(Tile::createAir(resources_));
-	tilesMap_["@::air"] = 1;
+	return mods;
 }
+
+Cygnet::ResourceManager World::buildResources() {
+	Cygnet::ResourceBuilder builder(game_->renderer_);
+
+	auto fillTileImage = [&](unsigned char *data, int r, int g, int b, int a) {
+		for (size_t i = 0; i < TILE_SIZE * TILE_SIZE; ++i) {
+			data[i * 4 + 0] = r;
+			data[i * 4 + 1] = g;
+			data[i * 4 + 2] = b;
+			data[i * 4 + 2] = a;
+		}
+	};
+
+	struct ImageAsset fallbackImage = {
+		.width = 32,
+		.frameHeight = 32,
+		.frameCount = 1,
+		.data = std::make_unique<unsigned char[]>(TILE_SIZE * TILE_SIZE * 4),
+	};
+	fillTileImage(fallbackImage.data.get(),
+			PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE, 255);
+
+	auto airImage = std::make_unique<unsigned char[]>(TILE_SIZE * TILE_SIZE * 4);
+	fillTileImage(airImage.get(),
+			PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE, 255);
+
+	// Let tile ID 0 be the invalid tile
+	builder.addTile(INVALID_TILE_ID, fallbackImage.data.get());
+	tilesMap_[INVALID_TILE_NAME] = INVALID_TILE_ID;
+	tiles_.push_back(Tile(INVALID_TILE_ID, INVALID_TILE_NAME, {
+		.name = "", .image = "", // Not used in this case
+		.isSolid = false,
+	}));
+	items_.emplace(INVALID_TILE_NAME, Item(INVALID_TILE_ID, INVALID_TILE_NAME, {
+		.name = "", .image = "", // Not used in this case
+	}));
+
+	// ...And tile ID 1 be the air tile
+	builder.addTile(AIR_TILE_ID, std::move(airImage));
+	tilesMap_[AIR_TILE_NAME] = AIR_TILE_ID;
+	tiles_.push_back(Tile(AIR_TILE_ID, AIR_TILE_NAME, {
+		.name = "", .image = "", // Not used in this case
+		.isSolid = false,
+	}));
+	items_.emplace(AIR_TILE_NAME, Item(AIR_TILE_ID, AIR_TILE_NAME, {
+		.name = "", .image = "", // Not used in this case
+	}));
+
+	// Assets are namespaced on the mod, so if something references, say,
+	// "core::stone", we need to know which directory the "core" mod is in
+	std::unordered_map<std::string, std::string> modPaths;
+	for (auto &mod: mods_) {
+		modPaths[mod.mod_->name_] = mod.path_;
+	}
+
+	auto loadTileImage = [&](std::string path) -> Result<ImageAsset> {
+		// Don't force all tiles/items to have an associated image.
+		// It could be that some tiles/items exist for a purpose which implies
+		// it should never actually be visible.
+		if (path == INVALID_TILE_NAME) {
+			ImageAsset asset{
+				.width = 32,
+				.frameHeight = 32,
+				.frameCount = 1,
+				.data = std::make_unique<unsigned char[]>(TILE_SIZE * TILE_SIZE * 4),
+			};
+			memcpy(asset.data.get(), fallbackImage.data.get(), TILE_SIZE * TILE_SIZE * 4);
+			return {Ok, std::move(asset)};
+		}
+
+		auto image = loadImageAsset(modPaths, path);
+		if (!image) {
+			warn << '\'' << path << "': " << image.err();
+			return {Err, '\'' + path + "': " + image.err()};
+		} else if (image->width != TILE_SIZE) {
+			warn << '\'' << path << "': Width must be " << TILE_SIZE << " pixels";
+			return {Err, '\'' + path + "': Width must be " + std::to_string(TILE_SIZE) + " pixels"};
+		} else {
+			return image;
+		}
+	};
+
+	// Need to fill in every tile before we do items,
+	// because all items will end up after all tiles in the tile atlas.
+	// In the rendering system, there's no real difference between a tile
+	// and an item.
+	for (auto &mod: mods_) {
+		for (auto &tileBuilder: mod.mod_->tiles_) {
+			auto image = loadTileImage(tileBuilder.image);
+
+			std::string tileName = mod.mod_->name_ + "::" + tileBuilder.name;
+			Tile::ID tileId = tiles_.size();
+
+			if (image) {
+				builder.addTile(tileId, std::move(image->data));
+			} else {
+				warn << image.err();
+				builder.addTile(tileId, fallbackImage.data.get());
+			}
+
+			tilesMap_[tileName] = tileId;
+			tiles_.push_back(Tile(tileId, tileName, tileBuilder));
+
+			// All tiles should have an item.
+			// Some items will be overwritten later my mod_->items,
+			// but if not, this is their default item.
+			items_.emplace(tileName, Item(tileId, tileName, {
+				.name = "", .image = "", // Not used in this case
+			}));
+		}
+	}
+
+	// Put all items after all the tiles
+	Tile::ID nextItemId = tiles_.size();
+
+	// Load all items which aren't just tiles in disguise.
+	for (auto &mod: mods_) {
+		for (auto &itemBuilder: mod.mod_->items_) {
+			auto image = loadTileImage(itemBuilder.image);
+
+			std::string itemName = mod.mod_->name_ + "::" + itemBuilder.name;
+			Tile::ID itemId = nextItemId++;
+
+			if (image) {
+				builder.addTile(itemId, std::move(image->data));
+			} else {
+				warn << image.err();
+				builder.addTile(itemId, fallbackImage.data.get());
+			}
+
+			items_.emplace(itemName, Item(itemId, itemName, itemBuilder));
+		}
+	}
+
+	// Load sprites
+	for (auto &mod: mods_) {
+		for (auto spritePath: mod.mod_->sprites_) {
+			std::string path = mod.mod_->name_ + "::" + spritePath;
+			auto image = loadImageAsset(modPaths, path);
+
+			if (image) {
+				builder.addSprite(
+						path, image->data.get(), image->width,
+						image->frameHeight * image->frameCount,
+						image->frameHeight);
+			} else {
+				warn << '\'' << path << "': " << image.err();
+				builder.addSprite(
+						path, fallbackImage.data.get(), fallbackImage.width,
+						fallbackImage.frameHeight * fallbackImage.frameCount,
+						fallbackImage.frameHeight);
+			}
+		}
+	}
+
+	// Load world gens and entities
+	for (auto &mod: mods_) {
+		for (auto &worldGenFactory: mod.mod_->worldGens_) {
+			std::string name = mod.mod_->name_ + "::" + worldGenFactory.name;
+			worldGenFactories_.emplace(name, worldGenFactory);
+		}
+
+		for (auto &entCollFactory: mod.mod_->entities_) {
+			std::string name = mod.mod_->name_ + "::" + entCollFactory.name;
+			entCollFactories_.emplace(name, entCollFactory);
+		}
+	}
+
+	return Cygnet::ResourceManager(std::move(builder));
+}
+
+World::World(Game *game, unsigned long randSeed, std::vector<std::string> modPaths):
+		game_(game), random_(randSeed), mods_(loadMods(std::move(modPaths))),
+		resources_(buildResources()) {}
 
 void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
 	ZoneScopedN("World::ChunkRenderer tick");
@@ -44,37 +224,6 @@ void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
 		chunkLine(l, plane, abspos, Vec2i(-1, 0));
 		l += 1;
 	}
-}
-
-void World::addMod(ModWrapper &&mod) {
-	info << "World: adding mod " << mod.mod_->name_;
-
-	for (auto i: mod.buildImages(game_->win_.renderer_)) {
-		resources_.addImage(std::move(i));
-	}
-
-	for (auto t: mod.buildTiles(resources_)) {
-		Tile::ID id = tiles_.size();
-		tilesMap_[t->name] = id;
-		tiles_.push_back(std::move(t));
-	}
-
-	for (auto i: mod.buildItems(resources_)) {
-		items_[i->name] = std::move(i);
-	}
-
-	for (auto fact: mod.getWorldGens()) {
-		worldgenFactories_.emplace(
-			std::piecewise_construct,
-			std::forward_as_tuple(fact.name),
-			std::forward_as_tuple(fact));
-	}
-
-	for (auto fact: mod.getEntities()) {
-		entCollFactories_.push_back(fact);
-	}
-
-	mods_.push_back(std::move(mod));
 }
 
 void World::setWorldGen(std::string gen) {
@@ -92,8 +241,8 @@ void World::setCurrentPlane(WorldPlane &plane) {
 
 WorldPlane &World::addPlane(const std::string &gen) {
 	WorldPlane::ID id = planes_.size();
-	auto it = worldgenFactories_.find(gen);
-	if (it == worldgenFactories_.end()) {
+	auto it = worldGenFactories_.find(gen);
+	if (it == worldGenFactories_.end()) {
 		panic << "Tried to add plane with non-existant world gen " << gen << "!";
 		abort();
 	}
@@ -101,7 +250,7 @@ WorldPlane &World::addPlane(const std::string &gen) {
 	std::vector<std::unique_ptr<EntityCollection>> colls;
 	colls.reserve(entCollFactories_.size());
 	for (auto &fact: entCollFactories_) {
-		colls.emplace_back(fact.create(fact.name));
+		colls.emplace_back(fact.second.create(fact.second.name));
 	}
 
 	WorldGen::Factory &factory = it->second;
@@ -118,14 +267,14 @@ Item &World::getItem(const std::string &name) {
 		return *game_->invalidItem_;
 	}
 
-	return *iter->second;
+	return iter->second;
 }
 
 Tile::ID World::getTileID(const std::string &name) {
 	auto iter = tilesMap_.find(name);
 	if (iter == tilesMap_.end()) {
 		warn << "Tried to get non-existant item " << name << "!";
-		return Tile::INVALID_ID;
+		return INVALID_TILE_ID;
 	}
 
 	return iter->second;

@@ -25,7 +25,7 @@ class ResourceBuilder {
 public:
 	ResourceBuilder(Renderer &rnd): rnd_(rnd) {}
 
-	RenderSprite addSprite(std::string name, void *data, int width, int height, int fh);
+	RenderSprite addSprite(std::string name, void *data, int width, int height, int frameHeight);
 	RenderSprite addSprite(std::string name, void *data, int width, int height);
 	void addTile(Renderer::TileID id, void *data, int frames = 1);
 	void addTile(Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames = 1);

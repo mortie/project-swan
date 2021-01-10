@@ -5,6 +5,7 @@
 #include <string>
 #include <optional>
 #include <SDL.h>
+#include <cygnet/Renderer.h>
 
 #include "common.h"
 #include "Resource.h"
@@ -19,8 +20,7 @@ public:
 		win_(win),
 		mousePos_(0, 0) {}
 
-	std::optional<ModWrapper> loadMod(std::string path, World &world);
-	void createWorld(const std::string &worldgen, const std::vector<std::string> &mods);
+	void createWorld(const std::string &worldgen, const std::vector<std::string> &modPaths);
 
 	void onKeyDown(SDL_Keysym sym) {
 		pressedKeys_[sym.scancode] = true;
@@ -73,6 +73,7 @@ public:
 	std::unique_ptr<Tile> invalidTile_ = NULL;
 	std::unique_ptr<Item> invalidItem_ = NULL;
 	Win &win_;
+	Cygnet::Renderer renderer_;
 
 private:
 	std::bitset<SDL_NUM_SCANCODES> pressedKeys_;

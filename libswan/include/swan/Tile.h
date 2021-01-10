@@ -5,7 +5,6 @@
 #include <optional>
 #include <memory>
 
-#include "Item.h"
 #include "Resource.h"
 
 namespace Swan {
@@ -22,20 +21,16 @@ public:
 		std::optional<std::string> droppedItem = std::nullopt;
 	};
 
-	Tile(const ResourceManager &resources, const Builder &builder):
-		name(builder.name), image(resources.getImage(builder.image)),
-		isSolid(builder.isSolid), lightLevel(builder.lightLevel),
-		droppedItem(builder.droppedItem) {}
-
+	const ID id;
 	const std::string name;
-	const ImageResource &image;
 	const bool isSolid;
 	const float lightLevel;
 	const std::optional<std::string> droppedItem;
 
-	static std::unique_ptr<Tile> createInvalid(const ResourceManager &ctx);
-	static std::unique_ptr<Tile> createAir(const ResourceManager &ctx);
-	static ID INVALID_ID;
+	Tile(ID id, std::string name, const Builder &builder):
+		id(id), name(name),
+		isSolid(builder.isSolid), lightLevel(builder.lightLevel),
+		droppedItem(builder.droppedItem) {}
 };
 
 }
