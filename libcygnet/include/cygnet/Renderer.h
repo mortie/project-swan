@@ -78,19 +78,19 @@ private:
 };
 
 inline void Renderer::drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos) {
-	drawChunks_.emplace_back(pos, chunk);
+	drawChunks_.push_back({pos, chunk});
 }
 
 inline void Renderer::drawSprite(RenderSprite sprite, Mat3gf mat, int frame) {
-	drawSprites_.emplace_back(mat, frame, sprite);
+	drawSprites_.push_back({mat, frame, sprite});
 }
 
 inline void Renderer::drawSprite(RenderSprite sprite, SwanCommon::Vec2 pos, int frame) {
-	drawSprites_.emplace_back(Mat3gf{}.translate(pos), frame, sprite);
+	drawSprites_.push_back({Mat3gf{}.translate(pos), frame, sprite});
 }
 
 inline void Renderer::drawSpriteFlipped(RenderSprite sprite, SwanCommon::Vec2 pos, int frame) {
-	drawSprites_.emplace_back(Mat3gf{}.translate(pos).scale({ -1, 1 }), frame, sprite);
+	drawSprites_.push_back({Mat3gf{}.translate(pos).scale({ -1, 1 }), frame, sprite});
 }
 
 }
