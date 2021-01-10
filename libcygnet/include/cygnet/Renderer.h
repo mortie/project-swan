@@ -30,7 +30,7 @@ struct RenderTile {
 struct RenderCamera {
 	SwanCommon::Vec2 pos;
 	SwanCommon::Vec2i size;
-	float zoom;
+	float zoom = 0;
 };
 
 class Renderer {

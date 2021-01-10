@@ -7,7 +7,7 @@ public:
 	ItemStackEntity(const Swan::Context &ctx, Swan::Vec2 pos, const std::string &item);
 	ItemStackEntity(const Swan::Context &ctx, const PackObject &obj);
 
-	void draw(const Swan::Context &ctx, Swan::Win &win) override;
+	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
 	void update(const Swan::Context &ctx, float dt) override;
 	void tick(const Swan::Context &ctx, float dt) override;
 	void deserialize(const Swan::Context &ctx, const PackObject &obj) override;

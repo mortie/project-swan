@@ -52,21 +52,19 @@ public:
 	Result(ResultOk, T &&val): isOk_(true), v_(ResultOk{}, std::move(val)) {}
 	Result(ResultErr, Err &&err): isOk_(false), v_(ResultErr{}, std::move(err)) {}
 
-	Result(const Result &other) {
-		isOk_ = other.isOk_;
-		if (other.isOk_) {
+	Result(const Result &other): isOk_(other.isOk_) {
+		if (isOk_) {
 			new (&v_.val) T(other.v_.val);
 		} else {
 			new (&v_.err) T(other.v_.err);
 		}
 	}
 
-	Result(Result &&other) {
-		isOk_ = other.isOk_;
+	Result(Result &&other): isOk_(other.isOk_) {
 		if (other.isOk_) {
 			new (&v_.val) T(std::move(other.v_.val));
 		} else {
-			new (&v_.err) T(std::move(other.v_.err));
+			new (&v_.err) Err(std::move(other.v_.err));
 		}
 	}
 
@@ -77,7 +75,7 @@ public:
 	Result<T, Err> &operator=(const Result<T, Err> &other) {
 		destroy();
 		isOk_ = other.isOk_;
-		if (other.isOk_) {
+		if (isOk_) {
 			new (&v_.val) T(other.v_.val);
 		} else {
 			new (&v_.err) Err(other.v_.err);

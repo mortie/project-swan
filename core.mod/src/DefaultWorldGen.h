@@ -13,9 +13,10 @@ public:
 		tAir_(world.getTileID("@::air")),
 		tTreeTrunk_(world.getTileID("core::tree-trunk")),
 		tLeaves_(world.getTileID("core::leaves")),
-		bgCave_(world.resources_.getImage("core/misc/background-cave")) {}
+		bgCave_(world.getSprite("core::misc/background-cave")) {}
 
-	void drawBackground(const Swan::Context &ctx, Swan::Win &win, Swan::Vec2 pos) override;
+	void drawBackground(
+			const Swan::Context &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos) override;
 	SDL_Color backgroundColor(Swan::Vec2 pos) override;
 	void genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) override;
 	Swan::EntityRef spawnPlayer(const Swan::Context &ctx) override;
@@ -23,6 +24,6 @@ public:
 private:
 	Swan::Tile::ID genTile(Swan::TilePos pos);
 	Swan::Tile::ID tGrass_, tDirt_, tStone_, tAir_, tTreeTrunk_, tLeaves_;
-	Swan::ImageResource &bgCave_;
+	Cygnet::RenderSprite bgCave_;
 	siv::PerlinNoise perlin_ = siv::PerlinNoise(100);
 };

@@ -44,6 +44,7 @@ SDL_Color linearGradient(
 	return arr[size - 1].second;
 }
 
+/*
 void parallaxBackground(
 		Win &win, SDL_Texture *tex,
 		std::optional<SDL_Rect> srcrect, std::optional<SDL_Rect> destrect,
@@ -92,6 +93,7 @@ void parallaxBackground(
 		}
 	}
 }
+TODO */
 
 }
 }

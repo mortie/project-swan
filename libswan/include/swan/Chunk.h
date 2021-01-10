@@ -47,9 +47,9 @@ public:
 		return getTileData()[pos.y * CHUNK_WIDTH + pos.x];
 	}
 
-	void setTileID(RelPos pos, Tile::ID id, SDL_Texture *tex) {
+	void setTileID(RelPos pos, Tile::ID id) {
 		getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
-		drawList_.push_back({ pos, tex });
+		drawList_.push_back({pos, id});
 	}
 
 	void setTileData(RelPos pos, Tile::ID id) {
@@ -66,12 +66,9 @@ public:
 		needLightRender_ = true;
 	}
 
-	void render(const Context &ctx, SDL_Renderer *rnd);
-	void renderLight(const Context &ctx, SDL_Renderer *rnd);
-
 	void compress();
 	void decompress();
-	void draw(const Context &ctx, Win &win);
+	void draw(const Context &ctx, Cygnet::Renderer &rnd);
 	TickAction tick(float dt);
 
 	bool isActive() { return deactivateTimer_ > 0; }
@@ -83,21 +80,16 @@ public:
 private:
 	static constexpr float DEACTIVATE_INTERVAL = 20;
 
-	void renderList(SDL_Renderer *rnd);
-
 	bool isCompressed() { return compressedSize_ != -1; }
 
 	std::unique_ptr<uint8_t[]> data_;
-	std::vector<std::pair<RelPos, SDL_Texture *>> drawList_;
+	std::vector<std::pair<RelPos, Tile::ID>> drawList_;
 
 	ssize_t compressedSize_ = -1; // -1 if not compressed, a positive number if compressed
 	bool needRender_ = false;
 	bool needLightRender_ = false;
 	float deactivateTimer_ = DEACTIVATE_INTERVAL;
 	bool isModified_ = false;
-
-	CPtr<SDL_Texture, SDL_DestroyTexture> texture_;
-	CPtr<SDL_Texture, SDL_DestroyTexture> lightTexture_;
 };
 
 }

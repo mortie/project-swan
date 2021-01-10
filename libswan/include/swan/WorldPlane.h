@@ -70,7 +70,7 @@ public:
 	void breakTile(TilePos pos);
 
 	SDL_Color backgroundColor();
-	void draw(Win &win);
+	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
 	void tick(float dt);
 

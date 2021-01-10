@@ -2,7 +2,6 @@
 
 #include <string>
 
-#include "Resource.h"
 #include "Tile.h"
 
 namespace Swan {

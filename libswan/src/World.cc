@@ -5,7 +5,6 @@
 
 #include "log.h"
 #include "Game.h"
-#include "Win.h"
 #include "Clock.h"
 #include "assets.h"
 
@@ -260,16 +259,6 @@ WorldPlane &World::addPlane(const std::string &gen) {
 	return *planes_[id];
 }
 
-Item &World::getItem(const std::string &name) {
-	auto iter = items_.find(name);
-	if (iter == items_.end()) {
-		warn << "Tried to get non-existant item " << name << "!";
-		return *game_->invalidItem_;
-	}
-
-	return iter->second;
-}
-
 Tile::ID World::getTileID(const std::string &name) {
 	auto iter = tilesMap_.find(name);
 	if (iter == tilesMap_.end()) {
@@ -285,14 +274,34 @@ Tile &World::getTile(const std::string &name) {
 	return getTileByID(id);
 }
 
+Item &World::getItem(const std::string &name) {
+	auto iter = items_.find(name);
+	if (iter == items_.end()) {
+		warn << "Tried to get non-existent item " << name << "!";
+		return items_.at(INVALID_TILE_NAME);
+	}
+
+	return iter->second;
+}
+
+Cygnet::RenderSprite &World::getSprite(const std::string &name) {
+	auto iter = resources_.sprites_.find(name);
+	if (iter == resources_.sprites_.end()) {
+		warn << "Tried to get non-existent sprite " << name << "!";
+		return resources_.sprites_.at(INVALID_TILE_NAME);
+	}
+
+	return iter->second;
+}
+
 SDL_Color World::backgroundColor() {
 	return planes_[currentPlane_]->backgroundColor();
 }
 
-void World::draw(Win &win) {
+void World::draw(Cygnet::Renderer &rnd) {
 	ZoneScopedN("World draw");
-	win.cam_ = player_->pos - (win.getSize() / 2) + (player_->size / 2);
-	planes_[currentPlane_]->draw(win);
+	game_->cam_.pos = player_->pos; // - (win.getSize() / 2) + (player_->size / 2); TODO
+	planes_[currentPlane_]->draw(rnd);
 }
 
 void World::update(float dt) {

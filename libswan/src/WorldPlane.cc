@@ -8,7 +8,6 @@
 #include "World.h"
 #include "Game.h"
 #include "Clock.h"
-#include "Win.h"
 
 namespace Swan {
 
@@ -38,7 +37,6 @@ Context WorldPlane::getContext() {
 		.game = *world_->game_,
 		.world = *world_,
 		.plane = *this,
-		.resources = world_->resources_
 	};
 }
 
@@ -124,7 +122,7 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 	if (id != old) {
 		Tile &newTile = world_->getTileByID(id);
 		Tile &oldTile = world_->getTileByID(old);
-		chunk.setTileID(rp, id, newTile.image.texture_.get());
+		chunk.setTileID(rp, id);
 		chunk.markModified();
 
 		if (!oldTile.isSolid && newTile.isSolid) {
@@ -203,13 +201,13 @@ SDL_Color WorldPlane::backgroundColor() {
 	return gen_->backgroundColor(world_->player_->pos);
 }
 
-void WorldPlane::draw(Win &win) {
+void WorldPlane::draw(Cygnet::Renderer &rnd) {
 	ZoneScopedN("WorldPlane draw");
 	std::lock_guard<std::mutex> lock(mut_);
 	auto ctx = getContext();
 	auto &pbody = *(world_->player_);
 
-	gen_->drawBackground(ctx, win, pbody.pos);
+	gen_->drawBackground(ctx, rnd, pbody.pos);
 
 	ChunkPos pcpos = ChunkPos(
 		(int)floor(pbody.pos.x / CHUNK_WIDTH),
@@ -217,27 +215,31 @@ void WorldPlane::draw(Win &win) {
 
 	// Just init one chunk per frame
 	if (chunkInitList_.size() > 0) {
+		/*
 		Chunk *chunk = chunkInitList_.front();
 		chunkInitList_.pop_front();
 		chunk->render(ctx, win.renderer_);
+		TODO */
 	}
 
 	for (int x = -1; x <= 1; ++x) {
 		for (int y = -1; y <= 1; ++y) {
 			auto iter = chunks_.find(pcpos + ChunkPos(x, y));
 			if (iter != chunks_.end())
-				iter->second.draw(ctx, win);
+				iter->second.draw(ctx, rnd);
 		}
 	}
 
 	for (auto &coll: entColls_)
-		coll->draw(ctx, win);
+		coll->draw(ctx, rnd);
 
+	/*
 	if (debugBoxes_.size() > 0) {
 		for (auto &pos: debugBoxes_) {
-			win.drawRect(pos, Vec2(1, 1));
+			rnd.drawRect(pos, Vec2(1, 1));
 		}
 	}
+	TODO */
 }
 
 void WorldPlane::update(float dt) {

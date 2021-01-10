@@ -1,7 +1,6 @@
 #include "traits/PhysicsTrait.h"
 
 #include "WorldPlane.h"
-#include "Win.h"
 
 namespace Swan {
 

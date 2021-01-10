@@ -14,9 +14,9 @@ PlayerEntity::PlayerEntity(const Swan::Context &ctx, const PackObject &obj):
 	deserialize(ctx, obj);
 }
 
-void PlayerEntity::draw(const Swan::Context &ctx, Swan::Win &win) {
-	body_.outline(win);
-	anims_[(int)state_].draw(body_.pos - Swan::Vec2(0.2, 0.1), win);
+void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
+	// body_.outline(win); TODO
+	anims_[(int)state_].draw(body_.pos - Swan::Vec2(0.2, 0.1), rnd);
 }
 
 void PlayerEntity::update(const Swan::Context &ctx, float dt) {

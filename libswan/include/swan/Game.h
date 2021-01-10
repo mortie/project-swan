@@ -8,7 +8,6 @@
 #include <cygnet/Renderer.h>
 
 #include "common.h"
-#include "Resource.h"
 #include "Mod.h"
 #include "World.h"
 
@@ -16,10 +15,6 @@ namespace Swan {
 
 class Game {
 public:
-	Game(Win &win):
-		win_(win),
-		mousePos_(0, 0) {}
-
 	void createWorld(const std::string &worldgen, const std::vector<std::string> &modPaths);
 
 	void onKeyDown(SDL_Keysym sym) {
@@ -69,11 +64,8 @@ public:
 	void tick(float dt);
 
 	std::unique_ptr<World> world_ = NULL;
-	std::unique_ptr<ImageResource> invalidImage_ = NULL;
-	std::unique_ptr<Tile> invalidTile_ = NULL;
-	std::unique_ptr<Item> invalidItem_ = NULL;
-	Win &win_;
 	Cygnet::Renderer renderer_;
+	Cygnet::RenderCamera cam_;
 
 private:
 	std::bitset<SDL_NUM_SCANCODES> pressedKeys_;

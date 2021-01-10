@@ -7,7 +7,6 @@
 #include "log.h"
 #include "Tile.h"
 #include "OS.h"
-#include "Win.h"
 
 namespace Swan {
 
@@ -22,8 +21,8 @@ void Game::createWorld(const std::string &worldgen, const std::vector<std::strin
 TilePos Game::getMouseTile() {
 	auto mousePos = getMousePos();
 	return TilePos(
-		(int)floor(win_.cam_.x + mousePos.x / (Swan::TILE_SIZE * win_.zoom_)),
-		(int)floor(win_.cam_.y + mousePos.y / (Swan::TILE_SIZE * win_.zoom_)));
+		(int)floor(cam_.pos.x + mousePos.x / (Swan::TILE_SIZE * cam_.zoom)),
+		(int)floor(cam_.pos.y + mousePos.y / (Swan::TILE_SIZE * cam_.zoom)));
 }
 
 SDL_Color Game::backgroundColor() {
@@ -31,18 +30,18 @@ SDL_Color Game::backgroundColor() {
 }
 
 void Game::draw() {
-	world_->draw(win_);
+	world_->draw(renderer_);
 }
 
 void Game::update(float dt) {
-	world_->update(dt);
-
 	// Zoom the window using the scroll wheel
-	win_.zoom_ += (float)wasWheelScrolled() * 0.1f * win_.zoom_;
-	if (win_.zoom_ > 3)
-		win_.zoom_ = 3;
-	else if (win_.zoom_ < 0.3)
-		win_.zoom_ = 0.3;
+	cam_.zoom += (float)wasWheelScrolled() * 0.1f * cam_.zoom;
+	if (cam_.zoom > 3)
+		cam_.zoom = 3;
+	else if (cam_.zoom < 0.3)
+		cam_.zoom = 0.3;
+
+	world_->update(dt);
 
 	didScroll_ = 0;
 	didPressKeys_.reset();

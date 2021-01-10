@@ -3,9 +3,6 @@
 #include <stdint.h>
 #include <string>
 #include <optional>
-#include <memory>
-
-#include "Resource.h"
 
 namespace Swan {
 

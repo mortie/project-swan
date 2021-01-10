@@ -12,7 +12,6 @@
 #include "WorldGen.h"
 #include "Entity.h"
 #include "Collection.h"
-#include "Resource.h"
 #include "OS.h"
 #include "util.h"
 

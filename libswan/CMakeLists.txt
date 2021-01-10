@@ -14,7 +14,6 @@ add_library(libswan SHARED
 	src/LightServer.cc
 	src/Mod.cc
 	src/OS.cc
-	src/Resource.cc
 	src/World.cc
 	src/WorldPlane.cc)
 target_include_directories(libswan

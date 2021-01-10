@@ -1,7 +1,6 @@
 #include "Animation.h"
 
-#include "Win.h"
-#include "gfxutil.h"
+#include <cygnet/Renderer.h>
 
 namespace Swan {
 
@@ -11,14 +10,13 @@ void Animation::tick(float dt) {
 		timer_ += interval_;
 
 		frame_ += 1;
-		if (frame_ >= resource_.numFrames_)
+		if (frame_ >= sprite_.frameCount)
 			frame_ = 0;
 	}
 }
 
-void Animation::draw(const Vec2 &pos, Win &win) {
-	SDL_Rect rect = resource_.frameRect(frame_);
-	win.showTexture(pos, resource_.texture_.get(), &rect, { .flip = flip_ });
+void Animation::draw(const Vec2 &pos, Cygnet::Renderer &rnd) {
+	rnd.drawSprite(sprite_, mat_, frame_);
 }
 
 void Animation::reset() {

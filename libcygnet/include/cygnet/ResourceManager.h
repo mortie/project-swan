@@ -44,11 +44,8 @@ public:
 	ResourceManager(ResourceBuilder &&builder);
 	~ResourceManager();
 
-	RenderSprite getSprite(std::string name) { return sprites_.at(std::move(name)); }
-
 	void tick();
 
-private:
 	Renderer &rnd_;
 	std::unordered_map<std::string, RenderSprite> sprites_;
 	std::unordered_map<std::string, RenderTile> tiles_;

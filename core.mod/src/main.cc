@@ -10,15 +10,9 @@ public:
 		breakListener_ = world.evtTileBreak_.subscribe(
 			std::bind_front(&CoreMod::onTileBreak, this));
 
-		registerImage("tile/stone");
-		registerImage("tile/dirt");
-		registerImage("tile/grass");
-		registerImage("tile/tree-trunk");
-		registerImage("tile/leaves");
-		registerImage("tile/torch");
-		registerImage("entity/player-running");
-		registerImage("entity/player-still");
-		registerImage("misc/background-cave");
+		registerSprite("entity/player-running");
+		registerSprite("entity/player-still");
+		registerSprite("misc/background-cave");
 
 		registerTile({
 			.name = "stone",

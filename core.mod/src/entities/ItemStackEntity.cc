@@ -19,7 +19,8 @@ ItemStackEntity::ItemStackEntity(const Swan::Context &ctx, const PackObject &obj
 	deserialize(ctx, obj);
 }
 
-void ItemStackEntity::draw(const Swan::Context &ctx, Swan::Win &win) {
+void ItemStackEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
+	/*
 	SDL_Rect rect = item_->image_.frameRect();
 
 	SDL_Texture *tex = item_->image_.texture_.get();
@@ -27,6 +28,7 @@ void ItemStackEntity::draw(const Swan::Context &ctx, Swan::Win &win) {
 
 	win.showTexture(body_.pos, tex, &rect,
 		{ .hscale = 0.5, .vscale = 0.5 });
+	TODO */
 }
 
 void ItemStackEntity::update(const Swan::Context &ctx, float dt) {

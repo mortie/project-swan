@@ -15,7 +15,6 @@
 #include "WorldGen.h"
 #include "Entity.h"
 #include "Collection.h"
-#include "Resource.h"
 #include "Mod.h"
 #include "EventEmitter.h"
 
@@ -43,9 +42,10 @@ public:
 	Tile::ID getTileID(const std::string &name);
 	Tile &getTile(const std::string &name);
 	Item &getItem(const std::string &name);
+	Cygnet::RenderSprite &getSprite(const std::string &name);
 
 	SDL_Color backgroundColor();
-	void draw(Win &win);
+	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
 	void tick(float dt);
 
@@ -57,7 +57,6 @@ public:
 	Game *game_; // TODO: reference, not pointer
 	std::mt19937 random_;
 	std::vector<ModWrapper> mods_;
-	//ResourceManager resources_;
 	Cygnet::ResourceManager resources_;
 
 	// World owns tiles and items, the mod just has Builder objects
