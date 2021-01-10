@@ -10,6 +10,8 @@
 #include <string.h>
 #include <imgui.h>
 #include <imgui_sdl/imgui_sdl.h>
+#include <cygnet/Renderer.h>
+#include <cygnet/Window.h>
 
 #include <swan/swan.h>
 
@@ -77,41 +79,31 @@ int main(int argc, char **argv) {
 	imgassert(IMG_Init(imgFlags) == imgFlags, "Could not initialize SDL_Image");
 	Deferred<IMG_Quit> sdlImage;
 
-	// Create the window
-	CPtr<SDL_Window, SDL_DestroyWindow> window(
-		SDL_CreateWindow(
-			"Project: SWAN",
-			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-			(int)(640 * guiScale), (int)(480 * guiScale), winFlags));
+	Cygnet::Window window("Project: SWAN", 640 * guiScale, 480 * guiScale);
 
 	// Load and display application icon
 	CPtr<SDL_Surface, SDL_FreeSurface> icon(
 		IMG_Load("assets/icon.png"));
 	sdlassert(icon, "Could not load icon");
-	SDL_SetWindowIcon(window.get(), icon.get());
-
-	CPtr<SDL_Renderer, SDL_DestroyRenderer> renderer(
-		SDL_CreateRenderer(window.get(), -1, renderFlags));
-	sdlassert(renderer, "Could not create renderer");
-	SDL_SetRenderDrawBlendMode(renderer.get(), SDL_BLENDMODE_BLEND);
-	SDL_SetRenderDrawColor(renderer.get(), 0, 0, 0, 255);
-
-	Win win(window.get(), renderer.get(), guiScale);
+	SDL_SetWindowIcon(window.getWindow(), icon.get());
 
 	// Init ImGUI and ImGUI_SDL
 	IMGUI_CHECKVERSION();
 	CPtr<ImGuiContext, ImGui::DestroyContext> context(
 		ImGui::CreateContext());
+
+	/*
 	ImGuiSDL::Initialize(renderer.get(), (int)win.getPixSize().x, (int)win.getPixSize().y);
 	Deferred<ImGuiSDL::Deinitialize> imguiSDL;
 	info << "Initialized with window size " << win.getPixSize();
+	TODO */
 
 	// ImGuiIO is to glue SDL and ImGUI together
 	ImGuiIO& imguiIO = ImGui::GetIO();
 	imguiIO.BackendPlatformName = "imgui_sdl + Project: SWAN";
 
 	// Create a world
-	Game game(win);
+	Game game;
 	std::vector<std::string> mods{ "core.mod" };
 	game.createWorld("core::default", mods);
 
@@ -124,7 +116,6 @@ int main(int argc, char **argv) {
 	int slowFrames = 0;
 	while (1) {
 		ZoneScopedN("game loop");
-		RTClock totalTimeClock;
 
 		SDL_Event evt;
 		while (SDL_PollEvent(&evt)) {
@@ -137,7 +128,7 @@ int main(int argc, char **argv) {
 				if (evt.window.event == SDL_WINDOWEVENT_RESIZED) {
 					imguiIO.DisplaySize.x = (float)evt.window.data1;
 					imguiIO.DisplaySize.y = (float)evt.window.data2;
-					win.onResize(evt.window.data1, evt.window.data2);
+					window.onResize(evt.window.data1, evt.window.data2);
 				}
 				break;
 
@@ -207,7 +198,6 @@ int main(int argc, char **argv) {
 		}
 
 		// Simple case: we can keep up, only need one physics update
-		RTClock updateClock;
 		if (dt <= 1 / 25.0) {
 			ZoneScopedN("game update");
 			game.update(dt);
@@ -230,14 +220,13 @@ int main(int argc, char **argv) {
 		while (tickAcc >= 1.0 / TICK_RATE) {
 			ZoneScopedN("game tick");
 			tickAcc -= 1.0 / TICK_RATE;
-			RTClock tickClock;
 			game.tick(1.0 / TICK_RATE);
 		}
 
 		{
-			auto [r, g, b, a] = game.backgroundColor();
-			RenderDrawColor c(renderer.get(), r, g, b, a);
-			SDL_RenderClear(renderer.get());
+			//auto [r, g, b, a] = game.backgroundColor();
+			// TODO: Set clear color
+			window.clear();
 		}
 
 		// ImGUI
@@ -246,7 +235,6 @@ int main(int argc, char **argv) {
 
 		{
 			ZoneScopedN("game draw");
-			RTClock drawClock;
 			game.draw();
 		}
 
@@ -257,10 +245,9 @@ int main(int argc, char **argv) {
 			ImGuiSDL::Render(ImGui::GetDrawData());
 		}
 
-		RTClock presentClock;
 		{
 			ZoneScopedN("render present");
-			SDL_RenderPresent(renderer.get());
+			window.flip();
 		}
 		FrameMark
 	}

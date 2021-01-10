@@ -1,4 +1,3 @@
-#include <cygnet/Context.h>
 #include <cygnet/Window.h>
 #include <cygnet/Renderer.h>
 #include <cygnet/ResourceManager.h>
@@ -38,7 +37,7 @@ Cygnet::RenderSprite loadSprite(Cygnet::ResourceBuilder &builder, const char *pa
 }
 
 int main() {
-	Cygnet::Context ctx;
+	SDL_Init(SDL_INIT_VIDEO);
 	IMG_Init(IMG_INIT_PNG);
 	Cygnet::Window win("Cygnet Test", 680, 680);
 	Cygnet::Renderer rnd;
@@ -178,4 +177,5 @@ int main() {
 
 exit:
 	IMG_Quit();
+	SDL_Quit();
 }

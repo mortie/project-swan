@@ -3,6 +3,8 @@
 #include <swan-common/Vector2.h>
 #include <memory>
 
+struct SDL_Window;
+
 namespace Cygnet {
 
 struct WindowState;
@@ -17,6 +19,8 @@ public:
 	void flip();
 	void onResize(int w, int h);
 	SwanCommon::Vec2i size() { return { w_, h_ }; }
+
+	SDL_Window *getWindow();
 
 private:
 	std::unique_ptr<WindowState> state_;
