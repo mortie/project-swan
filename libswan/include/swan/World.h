@@ -49,24 +49,22 @@ public:
 	void update(float dt);
 	void tick(float dt);
 
-	// Event emitters
-	EventEmitter<const Context &, TilePos, Tile &>
-	evtTileBreak_;
+	// These things can be used by the mods as they get initialized in the ctor.
+	EventEmitter<const Context &, TilePos, Tile &> evtTileBreak_;
 
-	// World owns all mods
+	// These things get filled in when the ctor loads mods.
+	std::vector<Tile> tiles_;
+	std::unordered_map<std::string, Tile::ID> tilesMap_;
+	std::unordered_map<std::string, Item> items_;
+	std::unordered_map<std::string, WorldGen::Factory> worldGenFactories_;
+	std::unordered_map<std::string, EntityCollection::Factory> entCollFactories_;
+
+	// These things get initialized in the ctor.
+	// the above members must be initialized before these.
 	Game *game_; // TODO: reference, not pointer
 	std::mt19937 random_;
 	std::vector<ModWrapper> mods_;
 	Cygnet::ResourceManager resources_;
-
-	// World owns tiles and items, the mod just has Builder objects
-	std::vector<Tile> tiles_;
-	std::unordered_map<std::string, Tile::ID> tilesMap_;
-	std::unordered_map<std::string, Item> items_;
-
-	// Mods give us factories to create new world gens and new entity collections
-	std::unordered_map<std::string, WorldGen::Factory> worldGenFactories_;
-	std::unordered_map<std::string, EntityCollection::Factory> entCollFactories_;
 
 	BodyTrait::Body *player_;
 

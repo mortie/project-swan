@@ -242,7 +242,7 @@ WorldPlane &World::addPlane(const std::string &gen) {
 	WorldPlane::ID id = planes_.size();
 	auto it = worldGenFactories_.find(gen);
 	if (it == worldGenFactories_.end()) {
-		panic << "Tried to add plane with non-existant world gen " << gen << "!";
+		panic << "Tried to add plane with non-existent world gen " << gen << "!";
 		abort();
 	}
 
@@ -262,7 +262,7 @@ WorldPlane &World::addPlane(const std::string &gen) {
 Tile::ID World::getTileID(const std::string &name) {
 	auto iter = tilesMap_.find(name);
 	if (iter == tilesMap_.end()) {
-		warn << "Tried to get non-existant item " << name << "!";
+		warn << "Tried to get non-existent item " << name << "!";
 		return INVALID_TILE_ID;
 	}
 
