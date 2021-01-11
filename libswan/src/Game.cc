@@ -32,8 +32,6 @@ SDL_Color Game::backgroundColor() {
 void Game::draw() {
 	world_->draw(renderer_);
 	renderer_.draw(cam_);
-
-	info << "Rendered cam pos " << cam_.pos << " size " << cam_.size << " zoom " << cam_.zoom;
 }
 
 void Game::update(float dt) {

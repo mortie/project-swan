@@ -8,6 +8,9 @@
 
 namespace SwanCommon {
 
+// 3D transformation matrix.
+// All the operations assume that the last row remains {0, 0, 1}.
+// If the last row is modified, methods like .scale, .translate and .rotate won't work.
 template<typename T>
 struct Matrix3 {
 	using Vec = Vector2<T>;
@@ -52,27 +55,27 @@ struct Matrix3 {
 		return *this;
 	}
 
-	constexpr Vec translation() {
-		return {at(2, 0), at(2, 1)};
-	}
-
 	constexpr Matrix3<T> &scale(Vec vec) {
 		at(0, 0) *= vec.x;
+		at(1, 0) *= vec.x;
+		at(2, 0) *= vec.x;
+		at(0, 1) *= vec.y;
 		at(1, 1) *= vec.y;
+		at(2, 1) *= vec.y;
 		return *this;
-	}
-
-	constexpr Vec scale() {
-		return {at(0, 0), at(1, 1)};
 	}
 
 	constexpr Matrix3<T> &rotate(T rads) {
 		T s = std::sin(rads);
 		T c = std::cos(rads);
-		at(0, 0) += c;
-		at(1, 0) -= s;
-		at(0, 1) += s;
-		at(1, 1) += c;
+		T old00 = at(0, 0), old10 = at(1, 0), old20 = at(2, 0);
+
+		at(0, 0) = c * old00 + -s * at(0, 1);
+		at(1, 0) = c * old10 + -s * at(1, 1);
+		at(2, 0) = c * old20 + -s * at(2, 1);
+		at(0, 1) = s * old00 + c * at(0, 1);
+		at(1, 1) = s * old10 + c * at(1, 1);
+		at(2, 1) = s * old20 + c * at(2, 1);
 		return *this;
 	}
 
@@ -89,8 +92,8 @@ template<typename T>
 std::ostream &operator<<(std::ostream &os, const Matrix3<T> &mat) {
 	os << '('
 		<< '(' << mat.at(0, 0) << ", " << mat.at(1, 0) << ", " << mat.at(2, 0) << "), "
-		<< '(' << mat.at(0, 1) << ", " << mat.at(1, 1) << ", " <<  mat.at(2, 1) << "), "
-		<< '(' << mat.at(0, 2) << ", " << mat.at(1, 2) << ", " <<  mat.at(2, 2) << "))";
+		<< '(' << mat.at(0, 1) << ", " << mat.at(1, 1) << ", " << mat.at(2, 1) << "), "
+		<< '(' << mat.at(0, 2) << ", " << mat.at(1, 2) << ", " << mat.at(2, 2) << "))";
 	return os;
 }
 
