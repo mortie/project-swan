@@ -52,10 +52,18 @@ struct Matrix3 {
 		return *this;
 	}
 
+	constexpr Vec translation() {
+		return {at(2, 0), at(2, 1)};
+	}
+
 	constexpr Matrix3<T> &scale(Vec vec) {
 		at(0, 0) *= vec.x;
 		at(1, 1) *= vec.y;
 		return *this;
+	}
+
+	constexpr Vec scale() {
+		return {at(0, 0), at(1, 1)};
 	}
 
 	constexpr Matrix3<T> &rotate(T rads) {

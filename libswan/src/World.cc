@@ -300,7 +300,6 @@ SDL_Color World::backgroundColor() {
 
 void World::draw(Cygnet::Renderer &rnd) {
 	ZoneScopedN("World draw");
-	game_->cam_.pos = player_->pos; // - (win.getSize() / 2) + (player_->size / 2); TODO
 	planes_[currentPlane_]->draw(rnd);
 }
 
@@ -308,6 +307,8 @@ void World::update(float dt) {
 	ZoneScopedN("World update");
 	for (auto &plane: planes_)
 		plane->update(dt);
+
+	game_->cam_.pos = player_->pos + Vec2{0.5, 0.5}; // - (win.getSize() / 2) + (player_->size / 2); TODO
 }
 
 void World::tick(float dt) {

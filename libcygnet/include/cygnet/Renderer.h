@@ -30,7 +30,7 @@ struct RenderTile {
 struct RenderCamera {
 	SwanCommon::Vec2 pos;
 	SwanCommon::Vec2i size;
-	float zoom = 0;
+	float zoom = 1;
 };
 
 class Renderer {
@@ -90,7 +90,8 @@ inline void Renderer::drawSprite(RenderSprite sprite, SwanCommon::Vec2 pos, int 
 }
 
 inline void Renderer::drawSpriteFlipped(RenderSprite sprite, SwanCommon::Vec2 pos, int frame) {
-	drawSprites_.push_back({Mat3gf{}.translate(pos).scale({ -1, 1 }), frame, sprite});
+	// TODO: Translate X by sprite.scale.x?
+	drawSprites_.push_back({Mat3gf{}.translate(pos).scale({-1, 1}), frame, sprite});
 }
 
 }

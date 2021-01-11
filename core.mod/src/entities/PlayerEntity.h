@@ -39,7 +39,7 @@ private:
 			Swan::Animation(ctx.world.getSprite("core::entity/player-still"), 0.8),
 			Swan::Animation(
 				ctx.world.getSprite("core::entity/player-running"),
-				1, Cygnet::Mat3gf{}.scale({-1, 1})),
+				1, Cygnet::Mat3gf{}.scale({-1, 1}).translate({1, 0})),
 			Swan::Animation(ctx.world.getSprite("core::entity/player-running"), 1),
 		} {}
 

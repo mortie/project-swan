@@ -165,10 +165,10 @@ int main() {
 			y += 1 * dt;
 		}
 
-		rnd.drawChunk(chunk, { 0, 0 });
+		rnd.drawChunk(chunk, {0, 0});
 
-		rnd.drawSprite(playerSprite, { x, y }, (int)animAcc % 2);
-		cam.pos = { x + 0.5f, y + 0.5f };
+		rnd.drawSprite(playerSprite, {x, y}, (int)animAcc % 2);
+		cam.pos = {x + 0.5f, y + 0.5f};
 
 		win.clear();
 		rnd.draw(cam);
