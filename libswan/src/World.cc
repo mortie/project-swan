@@ -87,7 +87,7 @@ Cygnet::ResourceManager World::buildResources() {
 	// "core::stone", we need to know which directory the "core" mod is in
 	std::unordered_map<std::string, std::string> modPaths;
 	for (auto &mod: mods_) {
-		modPaths[mod.mod_->name_] = mod.path_;
+		modPaths[mod.name()] = mod.path_;
 	}
 
 	auto loadTileImage = [&](std::string path) -> Result<ImageAsset> {
@@ -122,10 +122,10 @@ Cygnet::ResourceManager World::buildResources() {
 	// In the rendering system, there's no real difference between a tile
 	// and an item.
 	for (auto &mod: mods_) {
-		for (auto &tileBuilder: mod.mod_->tiles_) {
+		for (auto &tileBuilder: mod.tiles()) {
 			auto image = loadTileImage(tileBuilder.image);
 
-			std::string tileName = mod.mod_->name_ + "::" + tileBuilder.name;
+			std::string tileName = mod.name() + "::" + tileBuilder.name;
 			Tile::ID tileId = tiles_.size();
 
 			if (image) {
@@ -152,10 +152,10 @@ Cygnet::ResourceManager World::buildResources() {
 
 	// Load all items which aren't just tiles in disguise.
 	for (auto &mod: mods_) {
-		for (auto &itemBuilder: mod.mod_->items_) {
+		for (auto &itemBuilder: mod.items()) {
 			auto image = loadTileImage(itemBuilder.image);
 
-			std::string itemName = mod.mod_->name_ + "::" + itemBuilder.name;
+			std::string itemName = mod.name() + "::" + itemBuilder.name;
 			Tile::ID itemId = nextItemId++;
 
 			if (image) {
@@ -171,8 +171,8 @@ Cygnet::ResourceManager World::buildResources() {
 
 	// Load sprites
 	for (auto &mod: mods_) {
-		for (auto spritePath: mod.mod_->sprites_) {
-			std::string path = mod.mod_->name_ + "::" + spritePath;
+		for (auto spritePath: mod.sprites()) {
+			std::string path = mod.name() + "::" + spritePath;
 			auto image = loadImageAsset(modPaths, path);
 
 			if (image) {
@@ -192,13 +192,13 @@ Cygnet::ResourceManager World::buildResources() {
 
 	// Load world gens and entities
 	for (auto &mod: mods_) {
-		for (auto &worldGenFactory: mod.mod_->worldGens_) {
-			std::string name = mod.mod_->name_ + "::" + worldGenFactory.name;
+		for (auto &worldGenFactory: mod.worldGens()) {
+			std::string name = mod.name() + "::" + worldGenFactory.name;
 			worldGenFactories_.emplace(name, worldGenFactory);
 		}
 
-		for (auto &entCollFactory: mod.mod_->entities_) {
-			std::string name = mod.mod_->name_ + "::" + entCollFactory.name;
+		for (auto &entCollFactory: mod.entities()) {
+			std::string name = mod.name() + "::" + entCollFactory.name;
 			entCollFactories_.emplace(name, entCollFactory);
 		}
 	}

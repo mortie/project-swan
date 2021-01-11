@@ -85,22 +85,22 @@ int main(int argc, char **argv) {
 	CPtr<SDL_Surface, SDL_FreeSurface> icon(
 		IMG_Load("assets/icon.png"));
 	sdlassert(icon, "Could not load icon");
-	SDL_SetWindowIcon(window.getWindow(), icon.get());
+	SDL_SetWindowIcon(window.sdlWindow(), icon.get());
 
 	// Init ImGUI and ImGUI_SDL
+	/*
 	IMGUI_CHECKVERSION();
 	CPtr<ImGuiContext, ImGui::DestroyContext> context(
 		ImGui::CreateContext());
 
-	/*
 	ImGuiSDL::Initialize(renderer.get(), (int)win.getPixSize().x, (int)win.getPixSize().y);
 	Deferred<ImGuiSDL::Deinitialize> imguiSDL;
 	info << "Initialized with window size " << win.getPixSize();
-	TODO */
 
 	// ImGuiIO is to glue SDL and ImGUI together
 	ImGuiIO& imguiIO = ImGui::GetIO();
 	imguiIO.BackendPlatformName = "imgui_sdl + Project: SWAN";
+	TODO */
 
 	// Create a world
 	Game game;
@@ -126,8 +126,8 @@ int main(int argc, char **argv) {
 
 			case SDL_WINDOWEVENT:
 				if (evt.window.event == SDL_WINDOWEVENT_RESIZED) {
-					imguiIO.DisplaySize.x = (float)evt.window.data1;
-					imguiIO.DisplaySize.y = (float)evt.window.data2;
+					//imguiIO.DisplaySize.x = (float)evt.window.data1;
+					//imguiIO.DisplaySize.y = (float)evt.window.data2;
 					window.onResize(evt.window.data1, evt.window.data2);
 				}
 				break;
@@ -141,27 +141,31 @@ int main(int argc, char **argv) {
 				break;
 
 			case SDL_MOUSEMOTION:
+				/*
 				imguiIO.MousePos.x = (float)evt.motion.x;
 				imguiIO.MousePos.y = (float)evt.motion.y;
-				if (!imguiIO.WantCaptureMouse)
+				if (!imguiIO.WantCaptureMouse) */
 					game.onMouseMove(evt.motion.x, evt.motion.y);
 				break;
 
 			case SDL_MOUSEBUTTONDOWN:
+				/*
 				imguiIO.MouseDown[sdlButtonToImGuiButton(evt.button.button)] = true;
-				if (!imguiIO.WantCaptureMouse)
+				if (!imguiIO.WantCaptureMouse) */
 					game.onMouseDown(evt.button.x, evt.button.y, evt.button.button);
 				break;
 
 			case SDL_MOUSEBUTTONUP:
+				/*
 				imguiIO.MouseDown[sdlButtonToImGuiButton(evt.button.button)] = false;
-				if (!imguiIO.WantCaptureMouse)
+				if (!imguiIO.WantCaptureMouse) */
 					game.onMouseUp(evt.button.x, evt.button.y, evt.button.button);
 				break;
 
 			case SDL_MOUSEWHEEL:
+				/*
 				imguiIO.MouseWheel += (float)evt.wheel.y;
-				if (!imguiIO.WantCaptureMouse)
+				if (!imguiIO.WantCaptureMouse) */
 					game.onScrollWheel(evt.wheel.y);
 				break;
 			}
@@ -230,19 +234,20 @@ int main(int argc, char **argv) {
 		}
 
 		// ImGUI
-		imguiIO.DeltaTime = dt;
-		ImGui::NewFrame();
+		//imguiIO.DeltaTime = dt;
+		//ImGui::NewFrame();
 
 		{
 			ZoneScopedN("game draw");
+			game.cam_.size = window.size();
 			game.draw();
 		}
 
 		// Render ImGUI
 		{
 			ZoneScopedN("imgui render");
-			ImGui::Render();
-			ImGuiSDL::Render(ImGui::GetDrawData());
+			//ImGui::Render();
+			//ImGuiSDL::Render(ImGui::GetDrawData());
 		}
 
 		{

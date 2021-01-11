@@ -16,7 +16,7 @@ Result<ImageAsset> loadImageAsset(
 	}
 
 	auto modPart = path.substr(0, sep);
-	auto pathPart = path.substr(sep, path.size() - sep - 2);
+	auto pathPart = path.substr(sep + 2, path.size() - sep - 2);
 
 	auto modPath = modPaths.find(modPart);
 	if (modPath == modPaths.end()) {
@@ -57,7 +57,6 @@ Result<ImageAsset> loadImageAsset(
 	};
 
 	// TODO: Pixel formats?
-	asset.data.reset();
 	for (size_t y = 0; y < (size_t)surface->h; ++y) {
 		unsigned char *src = (unsigned char *)surface->pixels + y * surface->pitch;
 		unsigned char *dest = asset.data.get() + y * surface->w * 4;

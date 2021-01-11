@@ -20,7 +20,7 @@ public:
 	void onResize(int w, int h);
 	SwanCommon::Vec2i size() { return { w_, h_ }; }
 
-	SDL_Window *getWindow();
+	SDL_Window *sdlWindow();
 
 private:
 	std::unique_ptr<WindowState> state_;

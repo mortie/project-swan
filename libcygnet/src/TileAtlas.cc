@@ -32,7 +32,6 @@ void TileAtlas::addTile(size_t tileId, const void *data) {
 	const unsigned char *bytes = (const unsigned char *)data;
 	size_t x = tileId % state_->tilesPerLine;
 	size_t y = tileId / state_->tilesPerLine;
-	std::cerr << "Tile " << tileId << " to " << x << ", " << y << '\n';
 
 	if (state_->width <= x) {
 		state_->width = x + 1;

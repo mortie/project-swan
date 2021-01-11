@@ -12,7 +12,6 @@ add_library(libswan SHARED
 	src/gfxutil.cc
 	src/ItemStack.cc
 	src/LightServer.cc
-	src/Mod.cc
 	src/OS.cc
 	src/World.cc
 	src/WorldPlane.cc)

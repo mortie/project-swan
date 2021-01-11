@@ -94,7 +94,7 @@ public:
 		return *this;
 	}
 
-	operator bool() { return isOk_; }
+	explicit operator bool() { return isOk_; }
 	bool isOk() { return isOk_; }
 
 	Err &err() { return v_.err; }

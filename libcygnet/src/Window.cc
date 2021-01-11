@@ -67,7 +67,7 @@ void Window::onResize(int w, int h) {
 	glCheck();
 }
 
-SDL_Window *Window::getWindow() {
+SDL_Window *Window::sdlWindow() {
 	return state_->window;
 }
 
