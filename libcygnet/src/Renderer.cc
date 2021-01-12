@@ -231,10 +231,6 @@ void Renderer::modifyTile(TileID id, const void *data) {
 
 RenderChunk Renderer::createChunk(
 		TileID tiles[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]) {
-	// TODO: Maybe don't do this here? Maybe instead store the buffer and
-	// upload the texture in the draw method?
-	// The current approach needs createChunk to be called on the graphics thread.
-
 	RenderChunk chunk;
 	glGenTextures(1, &chunk.tex);
 	glCheck();
@@ -243,8 +239,8 @@ RenderChunk Renderer::createChunk(
 	glBindTexture(GL_TEXTURE_2D, chunk.tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glCheck();
 
 	static_assert(

@@ -13,7 +13,7 @@
 
 namespace Swan {
 
-void Chunk::compress() {
+void Chunk::compress(Cygnet::Renderer &rnd) {
 	if (isCompressed())
 		return;
 
@@ -45,7 +45,7 @@ void Chunk::compress() {
 		warn << "Chunk compression error: " << ret << " (Out of memory?)";
 	}
 
-	// TODO: Delete renderChunk_
+	rnd.destroyChunk(renderChunk_);
 }
 
 void Chunk::decompress() {
@@ -64,7 +64,6 @@ void Chunk::decompress() {
 	}
 
 	data_ = std::move(dest);
-	needRender_ = true;
 
 	info
 		<< "Decompressed chunk " << pos_ << " from "
@@ -72,23 +71,22 @@ void Chunk::decompress() {
 		<< DATA_SIZE << " bytes.";
 	compressedSize_ = -1;
 
-	// TODO: Create renderChunk_
+	needChunkRender_ = true;
 }
 
 void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd) {
 	if (isCompressed())
 		return;
 
-	// The world plane is responsible for managing initial renders
-	if (needRender_)
-		return;
-
-	if (drawList_.size() > 0) {
-		//renderList(win.renderer_); TODO
-		drawList_.clear();
+	if (needChunkRender_) {
+		renderChunk_ = rnd.createChunk((Tile::ID *)data_.get());
+	} else {
+		for (auto &change: changeList_) {
+			rnd.modifyChunk(renderChunk_, change.first, change.second);
+		}
 	}
 
-	// rnd.drawChunk(renderChunk_, (Vec2)pos_ * Vec2{CHUNK_WIDTH, CHUNK_HEIGHT}); TODO
+	rnd.drawChunk(renderChunk_, (Vec2)pos_ * Vec2{CHUNK_WIDTH, CHUNK_HEIGHT});
 }
 
 Chunk::TickAction Chunk::tick(float dt) {

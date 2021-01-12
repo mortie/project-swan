@@ -70,7 +70,7 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 	}
 
 	Chunk &chunk = slowGetChunk(pos);
-	tickChunks_.push_back({ pos, &chunk });
+	tickChunks_.push_back({pos, &chunk});
 	return chunk;
 }
 
@@ -97,7 +97,7 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
 					lc.blocks[y * CHUNK_HEIGHT + x] = true;
 				}
 				if (tile.lightLevel > 0) {
-					lc.lightSources[{ x, y }] = tile.lightLevel;
+					lc.lightSources[{x, y}] = tile.lightLevel;
 				}
 			}
 		}
@@ -123,7 +123,6 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 		Tile &newTile = world_->getTileByID(id);
 		Tile &oldTile = world_->getTileByID(old);
 		chunk.setTileID(rp, id);
-		chunk.markModified();
 
 		if (!oldTile.isSolid && newTile.isSolid) {
 			lighting_->onSolidBlockAdded(pos);
@@ -275,12 +274,13 @@ void WorldPlane::tick(float dt) {
 		switch (action) {
 		case Chunk::TickAction::DEACTIVATE:
 			info << "Compressing inactive modified chunk " << chunk->pos_;
-			chunk->compress();
+			chunk->compress(world_->game_->renderer_);
 			iter = activeChunks_.erase(iter);
 			last = activeChunks_.end();
 			break;
 		case Chunk::TickAction::DELETE:
 			info << "Deleting inactive unmodified chunk " << chunk->pos_;
+			chunk->destroy(world_->game_->renderer_);
 			chunks_.erase(chunk->pos_);
 			iter = activeChunks_.erase(iter);
 			last = activeChunks_.end();

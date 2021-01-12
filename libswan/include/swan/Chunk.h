@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <memory>
+#include <cygnet/Renderer.h>
 
 #include "util.h"
 #include "common.h"
@@ -49,12 +50,12 @@ public:
 
 	void setTileID(RelPos pos, Tile::ID id) {
 		getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
-		drawList_.push_back({pos, id});
+		changeList_.emplace_back(pos, id);
+		isModified_ = true;
 	}
 
 	void setTileData(RelPos pos, Tile::ID id) {
 		getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
-		needRender_ = true;
 	}
 
 	uint8_t getLightLevel(RelPos pos) {
@@ -66,14 +67,15 @@ public:
 		needLightRender_ = true;
 	}
 
-	void compress();
+	void generateDone();
+	void keepActive();
 	void decompress();
+	void compress(Cygnet::Renderer &rnd);
+	void destroy(Cygnet::Renderer &rnd) { rnd.destroyChunk(renderChunk_); }
 	void draw(const Context &ctx, Cygnet::Renderer &rnd);
 	TickAction tick(float dt);
 
 	bool isActive() { return deactivateTimer_ > 0; }
-	void keepActive();
-	void markModified() { isModified_ = true; }
 
 	ChunkPos pos_;
 
@@ -83,10 +85,11 @@ private:
 	bool isCompressed() { return compressedSize_ != -1; }
 
 	std::unique_ptr<uint8_t[]> data_;
-	std::vector<std::pair<RelPos, Tile::ID>> drawList_;
+	std::vector<std::pair<RelPos, Tile::ID>> changeList_;
 
 	ssize_t compressedSize_ = -1; // -1 if not compressed, a positive number if compressed
-	bool needRender_ = false;
+	Cygnet::RenderChunk renderChunk_;
+	bool needChunkRender_ = true;
 	bool needLightRender_ = false;
 	float deactivateTimer_ = DEACTIVATE_INTERVAL;
 	bool isModified_ = false;
