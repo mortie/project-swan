@@ -104,6 +104,7 @@ int main(int argc, char **argv) {
 
 	// Create a world
 	Game game;
+	game.cam_.size = window.size();
 	std::vector<std::string> mods{ "core.mod" };
 	game.createWorld("core::default", mods);
 
@@ -170,6 +171,8 @@ int main(int argc, char **argv) {
 				break;
 			}
 		}
+
+		game.cam_.size = window.size();
 
 		auto now = std::chrono::steady_clock::now();
 		std::chrono::duration<float> dur(now - prevTime);
@@ -239,7 +242,6 @@ int main(int argc, char **argv) {
 
 		{
 			ZoneScopedN("game draw");
-			game.cam_.size = window.size();
 			game.draw();
 		}
 

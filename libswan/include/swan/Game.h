@@ -28,17 +28,17 @@ public:
 	}
 
 	void onMouseMove(Sint32 x, Sint32 y) {
-		mousePos_ = { x, y };
+		mousePos_ = {x, y};
 	}
 
 	void onMouseDown(Sint32 x, Sint32 y, Uint8 button) {
-		mousePos_ = { x, y };
+		mousePos_ = {x, y};
 		pressedButtons_[button] = true;
 		didPressButtons_[button] = true;
+	}
 
-}
 	void onMouseUp(Sint32 x, Sint32 y, Uint8 button) {
-		mousePos_ = { x, y };
+		mousePos_ = {x, y};
 		pressedButtons_[button] = false;
 		didReleaseButtons_[button] = true;
 	}
@@ -65,7 +65,7 @@ public:
 
 	std::unique_ptr<World> world_ = NULL;
 	Cygnet::Renderer renderer_;
-	Cygnet::RenderCamera cam_;
+	Cygnet::RenderCamera cam_{ .zoom = 0.25 };
 
 private:
 	std::bitset<SDL_NUM_SCANCODES> pressedKeys_;
