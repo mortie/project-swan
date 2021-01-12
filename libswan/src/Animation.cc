@@ -15,10 +15,6 @@ void Animation::tick(float dt) {
 	}
 }
 
-void Animation::draw(const Vec2 &pos, Cygnet::Renderer &rnd) {
-	rnd.drawSprite(sprite_, Cygnet::Mat3gf(mat_).translate(pos), frame_);
-}
-
 void Animation::reset() {
 	timer_ = interval_;
 	frame_ = 0;

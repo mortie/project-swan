@@ -7,7 +7,8 @@ const char *spriteVx = R"glsl(
 
 	uniform mat3 camera;
 	uniform mat3 transform;
-	uniform vec3 frameInfo; // frame height, frame count, frame index
+	uniform vec2 frameSize;
+	uniform vec2 frameInfo; // frame count, frame index
 	attribute vec2 vertex;
 	varying vec2 v_texCoord;
 
@@ -16,13 +17,13 @@ const char *spriteVx = R"glsl(
 		// It's just an arbitrary small number, but it works as an offset to make sure
 		// neighbouring parts of the atlas don't bleed into the frame we actually
 		// want to draw due to (nearest neighbour) interpolation.
-		float pixoffset = (1.0 - vertex.y * 2.0) / (frameInfo.x * TILE_SIZE * 16.0);
+		float pixoffset = (1.0 - vertex.y * 2.0) / (frameSize.y * TILE_SIZE * 16.0);
 		v_texCoord = vec2(
 			vertex.x,
-			(frameInfo.x * frameInfo.z + (frameInfo.x * vertex.y)) /
-			(frameInfo.x * frameInfo.y) + pixoffset);
+			(frameSize.y * frameInfo.y + (frameSize.y * vertex.y)) /
+			(frameSize.y * frameInfo.x) + pixoffset);
 
-		vec3 pos = camera * transform * vec3(vertex, 1);
+		vec3 pos = camera * transform * vec3(vertex * frameSize, 1);
 		gl_Position = vec4(pos.xy, 0, 1);
 	}
 )glsl";

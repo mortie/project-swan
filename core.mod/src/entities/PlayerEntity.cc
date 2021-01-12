@@ -15,8 +15,15 @@ PlayerEntity::PlayerEntity(const Swan::Context &ctx, const PackObject &obj):
 }
 
 void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
-	// body_.outline(win); TODO
-	anims_[(int)state_].draw(body_.pos - Swan::Vec2(0.2, 0.1), rnd);
+	Cygnet::Mat3gf mat;
+
+	// Currently, there is no sprite for running left.
+	// Running left is just running right but flipped.
+	if (state_ == State::RUNNING_L) {
+		mat.translate({-0.5, 0}).scale({-1, 1}).translate({0.5, 0});
+	}
+
+	anims_[(int)state_].draw(rnd, mat.translate(body_.pos));
 }
 
 void PlayerEntity::update(const Swan::Context &ctx, float dt) {

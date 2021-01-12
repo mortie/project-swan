@@ -42,8 +42,6 @@ public:
 
 	void drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos);
 	void drawSprite(RenderSprite sprite, Mat3gf mat, int y = 0);
-	void drawSprite(RenderSprite sprite, SwanCommon::Vec2 pos, int y = 0);
-	void drawSpriteFlipped(RenderSprite chunk, SwanCommon::Vec2 pos, int y = 0);
 
 	void draw(const RenderCamera &cam);
 
@@ -83,15 +81,6 @@ inline void Renderer::drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos) {
 
 inline void Renderer::drawSprite(RenderSprite sprite, Mat3gf mat, int frame) {
 	drawSprites_.push_back({mat, frame, sprite});
-}
-
-inline void Renderer::drawSprite(RenderSprite sprite, SwanCommon::Vec2 pos, int frame) {
-	drawSprites_.push_back({Mat3gf{}.translate(pos), frame, sprite});
-}
-
-inline void Renderer::drawSpriteFlipped(RenderSprite sprite, SwanCommon::Vec2 pos, int frame) {
-	// TODO: Translate X by sprite.scale.x?
-	drawSprites_.push_back({Mat3gf{}.translate(pos).scale({-1, 1}), frame, sprite});
 }
 
 }

@@ -80,6 +80,7 @@ struct SpriteProg: public GlProgram {
 
 	GLint camera = uniformLoc("camera");
 	GLint transform = uniformLoc("transform");
+	GLint frameSize = uniformLoc("frameSize");
 	GLint frameInfo = uniformLoc("frameInfo");
 	GLint vertex = attribLoc("vertex");
 	GLint tex = uniformLoc("tex");
@@ -151,8 +152,8 @@ void Renderer::draw(const RenderCamera &cam) {
 	// Make the matrix translate to { -camX, -camY }, fix up the aspect ratio,
 	// flip the Y axis so that positive Y direction is down, and scale according to zoom.
 	float ratio = (float)cam.size.y / (float)cam.size.x;
-	camMat.translate(cam.pos.scale(-ratio, 1) * cam.zoom);
-	camMat.scale({ cam.zoom * ratio, -cam.zoom });
+	camMat.translate(-cam.pos);
+	camMat.scale({cam.zoom * ratio, -cam.zoom});
 
 	auto &chunkProg = state_->chunkProg;
 	auto &spriteProg = state_->spriteProg;
@@ -188,9 +189,9 @@ void Renderer::draw(const RenderCamera &cam) {
 
 		glActiveTexture(GL_TEXTURE0);
 		for (auto [mat, frame, sprite]: drawSprites_) {
-			mat.scale(sprite.scale);
 			glUniformMatrix3fv(spriteProg.transform, 1, GL_TRUE, mat.data());
-			glUniform3f(spriteProg.frameInfo, sprite.scale.y, sprite.frameCount, frame);
+			glUniform2f(spriteProg.frameSize, sprite.scale.x, sprite.scale.y);
+			glUniform2f(spriteProg.frameInfo, sprite.frameCount, frame);
 			glBindTexture(GL_TEXTURE_2D, sprite.tex);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			glCheck();

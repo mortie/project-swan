@@ -167,7 +167,7 @@ int main() {
 
 		rnd.drawChunk(chunk, {0, 0});
 
-		rnd.drawSprite(playerSprite, {x, y}, (int)animAcc % 2);
+		rnd.drawSprite(playerSprite, Cygnet::Mat3gf{}.translate({x, y}), (int)animAcc % 2);
 		cam.pos = {x + 0.5f, y + 0.5f};
 
 		win.clear();
