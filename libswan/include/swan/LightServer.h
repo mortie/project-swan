@@ -82,7 +82,6 @@ private:
 	void processEvent(const Event &event, std::vector<NewLightChunk> &newChunks);
 	void run();
 
-	LightCallback &cb_;
 	bool running_ = true;
 	std::map<std::pair<int, int>, LightChunk> chunks_;
 	std::set<std::pair<int, int>> updatedChunks_;
@@ -92,9 +91,11 @@ private:
 	int buffer_ = 0;
 	std::vector<Event> buffers_[2] = { {}, {} };
 	std::vector<NewLightChunk> newChunkBuffers_[2] = { {}, {} };
-	std::thread thread_;
 	std::condition_variable cond_;
 	std::mutex mut_;
+
+	LightCallback &cb_;
+	std::thread thread_;
 };
 
 inline void LightServer::onSolidBlockAdded(TilePos pos) {
