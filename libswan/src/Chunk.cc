@@ -80,6 +80,7 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd) {
 
 	if (needChunkRender_) {
 		renderChunk_ = rnd.createChunk((Tile::ID *)data_.get());
+		needChunkRender_ = false;
 	} else {
 		for (auto &change: changeList_) {
 			rnd.modifyChunk(renderChunk_, change.first, change.second);
