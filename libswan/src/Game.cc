@@ -19,10 +19,8 @@ void Game::createWorld(const std::string &worldgen, const std::vector<std::strin
 }
 
 TilePos Game::getMouseTile() {
-	auto mousePos = getMousePos();
-	return TilePos(
-		(int)floor(cam_.pos.x + mousePos.x / (Swan::TILE_SIZE * cam_.zoom)),
-		(int)floor(cam_.pos.y + mousePos.y / (Swan::TILE_SIZE * cam_.zoom)));
+	auto pos = (getMousePos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;
+	return TilePos{(int)floor(pos.x), (int)floor(pos.y)};
 }
 
 SDL_Color Game::backgroundColor() {

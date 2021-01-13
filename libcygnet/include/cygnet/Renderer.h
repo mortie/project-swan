@@ -28,8 +28,8 @@ struct RenderTile {
 };
 
 struct RenderCamera {
-	SwanCommon::Vec2 pos;
-	SwanCommon::Vec2i size;
+	SwanCommon::Vec2 pos = {0, 0};
+	SwanCommon::Vec2i size = {1, 1};
 	float zoom = 1;
 };
 
@@ -57,6 +57,8 @@ public:
 	RenderSprite createSprite(void *data, int width, int height);
 	void destroySprite(RenderSprite sprite);
 
+	SwanCommon::Vec2 winScale() { return winScale_; }
+
 private:
 	struct DrawChunk {
 		SwanCommon::Vec2 pos;
@@ -68,6 +70,8 @@ private:
 		int frame;
 		RenderSprite sprite;
 	};
+
+	SwanCommon::Vec2 winScale_ = {1, 1};
 
 	std::unique_ptr<RendererState> state_;
 

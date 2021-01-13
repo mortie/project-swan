@@ -28,17 +28,17 @@ public:
 	}
 
 	void onMouseMove(Sint32 x, Sint32 y) {
-		mousePos_ = {x, y};
+		mousePos_ = (Vec2{(float)x, (float)y} / (Vec2)cam_.size) * renderer_.winScale();
 	}
 
 	void onMouseDown(Sint32 x, Sint32 y, Uint8 button) {
-		mousePos_ = {x, y};
+		onMouseMove(x, y);
 		pressedButtons_[button] = true;
 		didPressButtons_[button] = true;
 	}
 
 	void onMouseUp(Sint32 x, Sint32 y, Uint8 button) {
-		mousePos_ = {x, y};
+		onMouseMove(x, y);
 		pressedButtons_[button] = false;
 		didReleaseButtons_[button] = true;
 	}
@@ -50,7 +50,7 @@ public:
 	bool isKeyPressed(SDL_Scancode code) { return pressedKeys_[code]; }
 	bool wasKeyPressed(SDL_Scancode code) { return didPressKeys_[code]; }
 	bool wasKeyReleased(SDL_Scancode code) { return didReleaseKeys_[code]; }
-	Vec2i getMousePos() { return mousePos_; }
+	Vec2 getMousePos() { return mousePos_; }
 	bool isMousePressed(Uint8 button) { return pressedButtons_[button]; }
 	bool wasMousePressed(Uint8 button) { return didPressButtons_[button]; }
 	bool wasMouseReleased(Uint8 button) { return didReleaseButtons_[button]; }
@@ -65,14 +65,14 @@ public:
 
 	std::unique_ptr<World> world_ = NULL;
 	Cygnet::Renderer renderer_;
-	Cygnet::RenderCamera cam_{ .zoom = 0.25 };
+	Cygnet::RenderCamera cam_{.zoom = 0.25};
 
 private:
 	std::bitset<SDL_NUM_SCANCODES> pressedKeys_;
 	std::bitset<SDL_NUM_SCANCODES> didPressKeys_;
 	std::bitset<SDL_NUM_SCANCODES> didReleaseKeys_;
 
-	Vec2i mousePos_;
+	Vec2 mousePos_;
 	std::bitset<SDL_BUTTON_X2> pressedButtons_;
 	std::bitset<SDL_BUTTON_X2> didPressButtons_;
 	std::bitset<SDL_BUTTON_X2> didReleaseButtons_;

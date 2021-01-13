@@ -149,11 +149,17 @@ Renderer::~Renderer() = default;
 void Renderer::draw(const RenderCamera &cam) {
 	Mat3gf camMat;
 
-	// Make the matrix translate to { -camX, -camY }, fix up the aspect ratio,
-	// flip the Y axis so that positive Y direction is down, and scale according to zoom.
-	float ratio = (float)cam.size.y / (float)cam.size.x;
 	camMat.translate(-cam.pos);
-	camMat.scale({cam.zoom * ratio, -cam.zoom});
+
+	if (cam.size.y > cam.size.x) {
+		float ratio = (float)cam.size.y / (float)cam.size.x;
+		winScale_ = {1/ratio, 1};
+		camMat.scale({cam.zoom * ratio, -cam.zoom});
+	} else {
+		float ratio = (float)cam.size.x / (float)cam.size.y;
+		winScale_ = {1, 1/ratio};
+		camMat.scale({cam.zoom, -cam.zoom * ratio});
+	}
 
 	auto &chunkProg = state_->chunkProg;
 	auto &spriteProg = state_->spriteProg;
