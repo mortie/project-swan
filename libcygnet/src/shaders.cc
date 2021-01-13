@@ -2,6 +2,46 @@
 
 namespace Cygnet::Shaders {
 
+const char *chunkVx = R"glsl(
+	uniform mat3 camera;
+	uniform vec2 pos;
+	attribute vec2 vertex;
+	varying vec2 v_tileCoord;
+
+	void main() {
+		vec3 pos = camera * vec3(pos + vertex, 1);
+		gl_Position = vec4(pos.xy, 0, 1);
+		v_tileCoord = vertex;
+	}
+)glsl";
+
+const char *chunkFr = R"glsl(
+	precision mediump float;
+	#define TILE_SIZE 32.0
+	#define CHUNK_WIDTH 64
+	#define CHUNK_HEIGHT 64
+
+	varying vec2 v_tileCoord;
+	uniform sampler2D tileAtlas;
+	uniform vec2 tileAtlasSize;
+	uniform sampler2D tiles;
+
+	void main() {
+		vec2 tilePos = floor(vec2(v_tileCoord.x, v_tileCoord.y));
+		vec4 tileColor = texture2D(tiles, tilePos / vec2(CHUNK_WIDTH, CHUNK_HEIGHT));
+		float tileID = floor((tileColor.r * 256.0 + tileColor.a) * 256.0);
+
+		// 1/(TILE_SIZE*16) plays the same role here as in the sprite vertex shader.
+		vec2 offset = v_tileCoord - tilePos;
+		vec2 pixoffset = (1.0 - offset * 2.0) / (TILE_SIZE * 16.0);
+		vec2 atlasPos = vec2(
+			pixoffset.x + tileID + offset.x,
+			pixoffset.y + floor(tileID / tileAtlasSize.x) + offset.y);
+
+		gl_FragColor = texture2D(tileAtlas, atlasPos / tileAtlasSize);
+	}
+)glsl";
+
 const char *spriteVx = R"glsl(
 	#define TILE_SIZE 32.0
 
@@ -38,43 +78,36 @@ const char *spriteFr = R"glsl(
 	}
 )glsl";
 
-const char *chunkVx = R"glsl(
+const char *rectVx = R"glsl(
 	uniform mat3 camera;
 	uniform vec2 pos;
+	uniform vec2 size;
 	attribute vec2 vertex;
-	varying vec2 v_tileCoord;
+	varying vec2 v_coord;
 
 	void main() {
-		vec3 pos = camera * vec3(pos + vertex, 1);
+		vec3 pos = camera * vec3(pos + vertex * size, 1);
 		gl_Position = vec4(pos.xy, 0, 1);
-		v_tileCoord = vec2(vertex.x, vertex.y);
+		v_coord = vertex * size;
 	}
 )glsl";
 
-const char *chunkFr = R"glsl(
+const char *rectFr = R"glsl(
 	precision mediump float;
-	#define TILE_SIZE 32.0
-	#define CHUNK_WIDTH 64
-	#define CHUNK_HEIGHT 64
+	#define THICKNESS 0.02
 
-	varying vec2 v_tileCoord;
-	uniform sampler2D tileAtlas;
-	uniform vec2 tileAtlasSize;
-	uniform sampler2D tiles;
+	varying vec2 v_coord;
+	uniform vec2 size;
 
 	void main() {
-		vec2 tilePos = floor(vec2(v_tileCoord.x, v_tileCoord.y));
-		vec4 tileColor = texture2D(tiles, tilePos / vec2(CHUNK_WIDTH, CHUNK_HEIGHT));
-		float tileID = floor((tileColor.r * 256.0 + tileColor.a) * 256.0);
-
-		// 1/(TILE_SIZE*16) plays the same role here as in the sprite vertex shader.
-		vec2 offset = v_tileCoord - tilePos;
-		vec2 pixoffset = (1.0 - offset * 2.0) / (TILE_SIZE * 16.0);
-		vec2 atlasPos = vec2(
-			pixoffset.x + tileID + offset.x,
-			pixoffset.y + floor(tileID / tileAtlasSize.x) + offset.y);
-
-		gl_FragColor = texture2D(tileAtlas, atlasPos / tileAtlasSize);
+		// TODO: This probably shouldn't be an if?
+		if (
+				v_coord.x < THICKNESS || v_coord.x > size.x - THICKNESS ||
+				v_coord.y < THICKNESS || v_coord.y > size.y - THICKNESS) {
+		gl_FragColor = vec4(0.6, 0.6, 0.6, 0.8);
+		} else {
+			gl_FragColor = vec4(0, 0, 0, 0);
+		}
 	}
 )glsl";
 

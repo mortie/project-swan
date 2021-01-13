@@ -73,6 +73,55 @@ struct ChunkProg: public GlProgram {
 	}
 };
 
+struct RectProg: public GlProgram {
+	template<typename... T>
+	RectProg(const T &... shaders): GlProgram(shaders...) { init(); }
+	~RectProg() { deinit(); }
+
+	GLint camera = uniformLoc("camera");
+	GLint pos = uniformLoc("pos");
+	GLint size = uniformLoc("size");
+	GLint vertex = attribLoc("vertex");
+
+	GLuint vbo;
+
+	static constexpr GLfloat vertexes[] = {
+		0.0f,  0.0f, // pos 0: top left
+		0.0f,  1.0f, // pos 1: bottom left
+		1.0f,  1.0f, // pos 2: bottom right
+		1.0f,  1.0f, // pos 2: bottom right
+		1.0f,  0.0f, // pos 3: top right
+		0.0f,  0.0f, // pos 0: top left
+	};
+
+	void enable() {
+		glUseProgram(id());
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+		glEnableVertexAttribArray(vertex);
+		glCheck();
+	}
+
+	void disable() {
+		glDisableVertexAttribArray(vertex);
+		glCheck();
+	}
+
+	void init() {
+		glGenBuffers(1, &vbo);
+		glCheck();
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
+		glCheck();
+	}
+
+	void deinit()  {
+		glDeleteBuffers(1, &vbo);
+		glCheck();
+	}
+};
+
 struct SpriteProg: public GlProgram {
 	template<typename... T>
 	SpriteProg(const T &... shaders): GlProgram(shaders...) { init(); }
@@ -131,9 +180,12 @@ struct RendererState {
 	GlFrShader spriteFr{Shaders::spriteFr};
 	GlVxShader chunkVx{Shaders::chunkVx};
 	GlFrShader chunkFr{Shaders::chunkFr};
+	GlVxShader rectVx{Shaders::rectVx};
+	GlFrShader rectFr{Shaders::rectFr};
 
 	SpriteProg spriteProg{spriteVx, spriteFr};
 	ChunkProg chunkProg{chunkVx, chunkFr};
+	RectProg rectProg{rectVx, rectFr};
 
 	GLuint atlasTex;
 	SwanCommon::Vec2 atlasTexSize;
@@ -163,6 +215,7 @@ void Renderer::draw(const RenderCamera &cam) {
 
 	auto &chunkProg = state_->chunkProg;
 	auto &spriteProg = state_->spriteProg;
+	auto &rectProg = state_->rectProg;
 
 	{
 		chunkProg.enable();
@@ -205,6 +258,22 @@ void Renderer::draw(const RenderCamera &cam) {
 
 		drawSprites_.clear();
 		spriteProg.disable();
+	}
+
+	{
+		rectProg.enable();
+		glUniformMatrix3fv(rectProg.camera, 1, GL_TRUE, camMat.data());
+		glCheck();
+
+		for (auto [pos, size]: drawRects_) {
+			glUniform2f(rectProg.pos, pos.x, pos.y);
+			glUniform2f(rectProg.size, size.x, size.y);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glCheck();
+		}
+
+		drawRects_.clear();
+		rectProg.disable();
 	}
 }
 

@@ -308,7 +308,7 @@ void World::update(float dt) {
 	for (auto &plane: planes_)
 		plane->update(dt);
 
-	game_->cam_.pos = player_->pos + Vec2{0.5, 0.5};
+	game_->cam_.pos = player_->pos + player_->size / 2;
 }
 
 void World::tick(float dt) {

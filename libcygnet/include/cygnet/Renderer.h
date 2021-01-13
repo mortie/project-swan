@@ -23,10 +23,6 @@ struct RenderSprite {
 	int frameCount;
 };
 
-struct RenderTile {
-	uint16_t id;
-};
-
 struct RenderCamera {
 	SwanCommon::Vec2 pos = {0, 0};
 	SwanCommon::Vec2i size = {1, 1};
@@ -42,6 +38,7 @@ public:
 
 	void drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos);
 	void drawSprite(RenderSprite sprite, Mat3gf mat, int y = 0);
+	void drawRect(SwanCommon::Vec2 pos, SwanCommon::Vec2 size);
 
 	void draw(const RenderCamera &cam);
 
@@ -71,12 +68,18 @@ private:
 		RenderSprite sprite;
 	};
 
+	struct DrawRect {
+		SwanCommon::Vec2 pos;
+		SwanCommon::Vec2 size;
+	};
+
 	SwanCommon::Vec2 winScale_ = {1, 1};
 
 	std::unique_ptr<RendererState> state_;
 
 	std::vector<DrawChunk> drawChunks_;
 	std::vector<DrawSprite> drawSprites_;
+	std::vector<DrawRect> drawRects_;
 };
 
 inline void Renderer::drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos) {
@@ -85,6 +88,10 @@ inline void Renderer::drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos) {
 
 inline void Renderer::drawSprite(RenderSprite sprite, Mat3gf mat, int frame) {
 	drawSprites_.push_back({mat, frame, sprite});
+}
+
+inline void Renderer::drawRect(SwanCommon::Vec2 pos, SwanCommon::Vec2 size) {
+	drawRects_.push_back({pos, size});
 }
 
 }

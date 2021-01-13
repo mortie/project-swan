@@ -23,7 +23,11 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
 		mat.translate({-0.5, 0}).scale({-1, 1}).translate({0.5, 0});
 	}
 
-	anims_[(int)state_].draw(rnd, mat.translate(body_.pos));
+	anims_[(int)state_].draw(rnd, mat.translate(
+			body_.pos - Swan::Vec2{0.2, 0.1}));
+
+	rnd.drawRect(mouseTile_, {1, 1});
+	rnd.drawRect(body_.pos, body_.size);
 }
 
 void PlayerEntity::update(const Swan::Context &ctx, float dt) {

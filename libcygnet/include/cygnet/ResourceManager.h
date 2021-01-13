@@ -48,7 +48,7 @@ public:
 
 	Renderer &rnd_;
 	std::unordered_map<std::string, RenderSprite> sprites_;
-	std::unordered_map<std::string, RenderTile> tiles_;
+	std::unordered_map<std::string, Renderer::TileID> tiles_;
 	std::vector<ResourceTileAnimation> tileAnims_;
 };
 
