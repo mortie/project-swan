@@ -103,14 +103,9 @@ const char *rectFr = R"glsl(
 	uniform vec2 size;
 
 	void main() {
-		// TODO: This probably shouldn't be an if?
-		if (
-				v_coord.x < THICKNESS || v_coord.x > size.x - THICKNESS ||
-				v_coord.y < THICKNESS || v_coord.y > size.y - THICKNESS) {
-		gl_FragColor = vec4(0.6, 0.6, 0.6, 0.8);
-		} else {
-			gl_FragColor = vec4(0, 0, 0, 0);
-		}
+		vec2 invCoord = size - v_coord;
+		float minDist = min(v_coord.x, min(v_coord.y, min(invCoord.x, invCoord.y)));
+		gl_FragColor = vec4(0.6, 0.6, 0.6, 0.8) * float(minDist < THICKNESS);
 	}
 )glsl";
 
