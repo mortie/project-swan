@@ -20,9 +20,9 @@ ItemStackEntity::ItemStackEntity(const Swan::Context &ctx, const PackObject &obj
 }
 
 void ItemStackEntity::draw(const Swan::Context &ctx, Swan::Win &win) {
-	SDL_Rect rect = item_->image_.frameRect();
+	SDL_Rect rect = item_->image.frameRect();
 
-	SDL_Texture *tex = item_->image_.texture_.get();
+	SDL_Texture *tex = item_->image.texture_.get();
 	Swan::TexColorMod darken(tex, 220, 220, 220);
 
 	win.showTexture(body_.pos, tex, &rect,
@@ -47,6 +47,6 @@ void ItemStackEntity::deserialize(const Swan::Context &ctx, const PackObject &ob
 Swan::Entity::PackObject ItemStackEntity::serialize(const Swan::Context &ctx, msgpack::zone &zone) {
 	return {
 		{ "pos", msgpack::object(body_.pos, zone) },
-		{ "tile", msgpack::object(item_->name_, zone) },
+		{ "tile", msgpack::object(item_->name, zone) },
 	};
 }

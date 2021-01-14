@@ -11,7 +11,7 @@ void Animation::tick(float dt) {
 		timer_ += interval_;
 
 		frame_ += 1;
-		if (frame_ >= resource_.num_frames_)
+		if (frame_ >= resource_.numFrames_)
 			frame_ = 0;
 	}
 }
