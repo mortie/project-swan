@@ -213,9 +213,13 @@ int main(int argc, char **argv) {
 		} else {
 			int count = (int)ceil(dt / (1/30.0));
 			float delta = dt / (float)count;
-			info << "Delta time " << dt << "s. Running " << count
-				<< " updates in one frame, with a delta as if we had "
-				<< 1.0 / delta << " FPS.";
+
+			// Don't be too noisy with the occasional double update
+			if (count > 2) {
+				info << "Delta time " << dt << "s. Running " << count
+					<< " updates in one frame, with a delta as if we had "
+					<< 1.0 / delta << " FPS.";
+			}
 			for (int i = 0; i < count; ++i) {
 				ZoneScopedN("game update");
 				game.update(delta);
