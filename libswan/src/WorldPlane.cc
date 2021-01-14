@@ -44,8 +44,8 @@ WorldPlane::WorldPlane(
 		ID id, World *world, std::unique_ptr<WorldGen> gen,
 		std::vector<std::unique_ptr<EntityCollection>> &&colls):
 			id_(id), world_(world), gen_(std::move(gen)),
-			lighting_(std::make_unique<LightServer>(*this)),
-			entColls_(std::move(colls)) {
+			entColls_(std::move(colls)),
+			lighting_(std::make_unique<LightServer>(*this)) {
 
 	for (auto &coll: entColls_) {
 		entCollsByType_[coll->type()] = coll.get();

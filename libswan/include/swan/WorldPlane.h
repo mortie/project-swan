@@ -88,8 +88,6 @@ public:
 	std::mutex mut_;
 
 private:
-	std::unique_ptr<LightServer> lighting_;
-
 	std::map<std::pair<int, int>, Chunk> chunks_;
 	std::vector<Chunk *> activeChunks_;
 	std::vector<std::pair<ChunkPos, Chunk *>> tickChunks_;
@@ -99,6 +97,12 @@ private:
 
 	std::deque<Chunk *> chunkInitList_;
 	std::vector<TilePos> debugBoxes_;
+
+	// The lighting server must destruct first. Until it has been destructed,
+	// it might call onLightChunkUpdated. If that happens after some other
+	// members have destructed, we have a problem.
+	// TODO: Rewrite this to not use a callback-based interface.
+	std::unique_ptr<LightServer> lighting_;
 };
 
 /*
