@@ -3,6 +3,7 @@
 namespace Cygnet::Shaders {
 
 const char *chunkVx = R"glsl(
+	precision mediump float;
 	uniform mat3 camera;
 	uniform vec2 pos;
 	attribute vec2 vertex;
@@ -43,6 +44,7 @@ const char *chunkFr = R"glsl(
 )glsl";
 
 const char *spriteVx = R"glsl(
+	precision mediump float;
 	#define TILE_SIZE 32.0
 
 	uniform mat3 camera;
@@ -79,6 +81,7 @@ const char *spriteFr = R"glsl(
 )glsl";
 
 const char *rectVx = R"glsl(
+	precision mediump float;
 	uniform mat3 camera;
 	uniform vec2 pos;
 	uniform vec2 size;
