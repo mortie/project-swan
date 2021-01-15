@@ -127,9 +127,9 @@ int main(int argc, char **argv) {
 
 			case SDL_WINDOWEVENT:
 				if (evt.window.event == SDL_WINDOWEVENT_RESIZED) {
+					window.onResize(evt.window.data1, evt.window.data2);
 					//imguiIO.DisplaySize.x = (float)evt.window.data1;
 					//imguiIO.DisplaySize.y = (float)evt.window.data2;
-					window.onResize(evt.window.data1, evt.window.data2);
 				}
 				break;
 
@@ -164,6 +164,10 @@ int main(int argc, char **argv) {
 				break;
 
 			case SDL_MOUSEWHEEL:
+				if (evt.wheel.y == 0) {
+					break;
+				}
+
 				/*
 				imguiIO.MouseWheel += (float)evt.wheel.y;
 				if (!imguiIO.WantCaptureMouse) */

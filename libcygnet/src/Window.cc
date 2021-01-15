@@ -63,7 +63,10 @@ void Window::flip() {
 void Window::onResize(int w, int h) {
 	w_ = w;
 	h_ = h;
-	glViewport(0, 0, w, h);
+
+	int dw, dh;
+	SDL_GL_GetDrawableSize(state_->window, &dw, &dh);
+	glViewport(0, 0, dw, dh);
 	glCheck();
 }
 
