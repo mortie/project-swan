@@ -73,15 +73,17 @@ struct ChunkProg: public GlProgram {
 	}
 };
 
-struct RectProg: public GlProgram {
+struct TileProg: public GlProgram {
 	template<typename... T>
-	RectProg(const T &... shaders): GlProgram(shaders...) { init(); }
-	~RectProg() { deinit(); }
+	TileProg(const T &... shaders): GlProgram(shaders...) { init(); }
+	~TileProg() { deinit(); }
 
 	GLint camera = uniformLoc("camera");
-	GLint pos = uniformLoc("pos");
-	GLint size = uniformLoc("size");
+	GLint transform = uniformLoc("transform");
 	GLint vertex = attribLoc("vertex");
+	GLint tileAtlas = uniformLoc("tileAtlas");
+	GLint tileAtlasSize = uniformLoc("tileAtlasSize");
+	GLint tileID = uniformLoc("tileID");
 
 	GLuint vbo;
 
@@ -100,6 +102,8 @@ struct RectProg: public GlProgram {
 		glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
 		glEnableVertexAttribArray(vertex);
 		glCheck();
+
+		glUniform1i(tileAtlas, 0);
 	}
 
 	void disable() {
@@ -116,7 +120,7 @@ struct RectProg: public GlProgram {
 		glCheck();
 	}
 
-	void deinit()  {
+	void deinit() {
 		glDeleteBuffers(1, &vbo);
 		glCheck();
 	}
@@ -175,16 +179,68 @@ struct SpriteProg: public GlProgram {
 	}
 };
 
+struct RectProg: public GlProgram {
+	template<typename... T>
+	RectProg(const T &... shaders): GlProgram(shaders...) { init(); }
+	~RectProg() { deinit(); }
+
+	GLint camera = uniformLoc("camera");
+	GLint pos = uniformLoc("pos");
+	GLint size = uniformLoc("size");
+	GLint vertex = attribLoc("vertex");
+
+	GLuint vbo;
+
+	static constexpr GLfloat vertexes[] = {
+		0.0f,  0.0f, // pos 0: top left
+		0.0f,  1.0f, // pos 1: bottom left
+		1.0f,  1.0f, // pos 2: bottom right
+		1.0f,  1.0f, // pos 2: bottom right
+		1.0f,  0.0f, // pos 3: top right
+		0.0f,  0.0f, // pos 0: top left
+	};
+
+	void enable() {
+		glUseProgram(id());
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+		glEnableVertexAttribArray(vertex);
+		glCheck();
+	}
+
+	void disable() {
+		glDisableVertexAttribArray(vertex);
+		glCheck();
+	}
+
+	void init() {
+		glGenBuffers(1, &vbo);
+		glCheck();
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
+		glCheck();
+	}
+
+	void deinit()  {
+		glDeleteBuffers(1, &vbo);
+		glCheck();
+	}
+};
+
 struct RendererState {
-	GlVxShader spriteVx{Shaders::spriteVx};
-	GlFrShader spriteFr{Shaders::spriteFr};
 	GlVxShader chunkVx{Shaders::chunkVx};
 	GlFrShader chunkFr{Shaders::chunkFr};
+	GlVxShader tileVx{Shaders::tileVx};
+	GlFrShader tileFr{Shaders::tileFr};
+	GlVxShader spriteVx{Shaders::spriteVx};
+	GlFrShader spriteFr{Shaders::spriteFr};
 	GlVxShader rectVx{Shaders::rectVx};
 	GlFrShader rectFr{Shaders::rectFr};
 
-	SpriteProg spriteProg{spriteVx, spriteFr};
 	ChunkProg chunkProg{chunkVx, chunkFr};
+	TileProg tileProg{tileVx, tileFr};
+	SpriteProg spriteProg{spriteVx, spriteFr};
 	RectProg rectProg{rectVx, rectFr};
 
 	GLuint atlasTex;
@@ -214,6 +270,7 @@ void Renderer::draw(const RenderCamera &cam) {
 	}
 
 	auto &chunkProg = state_->chunkProg;
+	auto &tileProg = state_->tileProg;
 	auto &spriteProg = state_->spriteProg;
 	auto &rectProg = state_->rectProg;
 
@@ -239,6 +296,30 @@ void Renderer::draw(const RenderCamera &cam) {
 
 		drawChunks_.clear();
 		chunkProg.disable();
+	}
+
+	{
+		tileProg.enable();
+		glUniformMatrix3fv(tileProg.camera, 1, GL_TRUE, camMat.data());
+		glCheck();
+
+		glUniform2f(tileProg.tileAtlasSize, state_->atlasTexSize.x, state_->atlasTexSize.y);
+		glCheck();
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, state_->atlasTex);
+		glCheck();
+
+		glActiveTexture(GL_TEXTURE1);
+		for (auto [mat, id]: drawTiles_) {
+			glUniformMatrix3fv(tileProg.transform, 1, GL_TRUE, mat.data());
+			glUniform1f(tileProg.tileID, id);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glCheck();
+		}
+
+		drawTiles_.clear();
+		tileProg.disable();
 	}
 
 	{

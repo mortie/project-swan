@@ -37,6 +37,7 @@ public:
 	~Renderer();
 
 	void drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos);
+	void drawTile(TileID id, Mat3gf mat);
 	void drawSprite(RenderSprite sprite, Mat3gf mat, int y = 0);
 	void drawRect(SwanCommon::Vec2 pos, SwanCommon::Vec2 size);
 
@@ -62,6 +63,11 @@ private:
 		RenderChunk chunk;
 	};
 
+	struct DrawTile {
+		Mat3gf transform;
+		TileID id;
+	};
+
 	struct DrawSprite {
 		Mat3gf transform;
 		int frame;
@@ -78,12 +84,17 @@ private:
 	std::unique_ptr<RendererState> state_;
 
 	std::vector<DrawChunk> drawChunks_;
+	std::vector<DrawTile> drawTiles_;
 	std::vector<DrawSprite> drawSprites_;
 	std::vector<DrawRect> drawRects_;
 };
 
 inline void Renderer::drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos) {
 	drawChunks_.push_back({pos, chunk});
+}
+
+inline void Renderer::drawTile(TileID id, Mat3gf mat) {
+	drawTiles_.push_back({mat, id});
 }
 
 inline void Renderer::drawSprite(RenderSprite sprite, Mat3gf mat, int frame) {

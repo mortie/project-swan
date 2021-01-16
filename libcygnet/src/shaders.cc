@@ -43,6 +43,42 @@ const char *chunkFr = R"glsl(
 	}
 )glsl";
 
+const char *tileVx = R"glsl(
+	precision mediump float;
+	uniform mat3 camera;
+	uniform mat3 transform;
+	attribute vec2 vertex;
+	varying vec2 v_tileCoord;
+
+	void main() {
+		vec3 pos = camera * transform * vec3(vertex, 1);
+		gl_Position = vec4(pos.xy, 0, 1);
+		v_tileCoord = vertex;
+	}
+)glsl";
+
+const char *tileFr = R"glsl(
+	precision mediump float;
+	#define TILE_SIZE 32.0
+
+	varying vec2 v_tileCoord;
+	uniform sampler2D tileAtlas;
+	uniform vec2 tileAtlasSize;
+	uniform float tileID;
+
+	void main() {
+
+		// 1/(TILE_SIZE*16) plays the same role here as in the sprite vertex shader.
+		vec2 offset = v_tileCoord;
+		vec2 pixoffset = (1.0 - offset * 2.0) / (TILE_SIZE * 16.0);
+		vec2 atlasPos = vec2(
+			pixoffset.x + tileID + offset.x,
+			pixoffset.y + floor(tileID / tileAtlasSize.x) + offset.y);
+
+		gl_FragColor = texture2D(tileAtlas, atlasPos / tileAtlasSize);
+	}
+)glsl";
+
 const char *spriteVx = R"glsl(
 	precision mediump float;
 	#define TILE_SIZE 32.0

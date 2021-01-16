@@ -20,15 +20,9 @@ ItemStackEntity::ItemStackEntity(const Swan::Context &ctx, const PackObject &obj
 }
 
 void ItemStackEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
-	/*
-	SDL_Rect rect = item_->image_.frameRect();
-
-	SDL_Texture *tex = item_->image_.texture_.get();
-	Swan::TexColorMod darken(tex, 220, 220, 220);
-
-	win.showTexture(body_.pos, tex, &rect,
-		{ .hscale = 0.5, .vscale = 0.5 });
-	TODO */
+	// TODO: decrease brightness?
+	rnd.drawTile(item_->id, Cygnet::Mat3gf{}.scale({0.5, 0.5}).translate(body_.pos));
+	rnd.drawRect(body_.pos, body_.size);
 }
 
 void ItemStackEntity::update(const Swan::Context &ctx, float dt) {
