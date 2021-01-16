@@ -7,6 +7,7 @@
 #include <SDL.h>
 #include <cygnet/Renderer.h>
 #include <cygnet/ResourceManager.h>
+#include <cygnet/util.h>
 
 #include "common.h"
 #include "Item.h"
@@ -44,7 +45,7 @@ public:
 	Item &getItem(const std::string &name);
 	Cygnet::RenderSprite &getSprite(const std::string &name);
 
-	SDL_Color backgroundColor();
+	Cygnet::Color backgroundColor();
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
 	void tick(float dt);

@@ -23,7 +23,7 @@ TilePos Game::getMouseTile() {
 	return TilePos{(int)floor(pos.x), (int)floor(pos.y)};
 }
 
-SDL_Color Game::backgroundColor() {
+Cygnet::Color Game::backgroundColor() {
 	return world_->backgroundColor();
 }
 

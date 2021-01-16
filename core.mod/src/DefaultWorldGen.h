@@ -17,7 +17,7 @@ public:
 
 	void drawBackground(
 			const Swan::Context &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos) override;
-	SDL_Color backgroundColor(Swan::Vec2 pos) override;
+	Cygnet::Color backgroundColor(Swan::Vec2 pos) override;
 	void genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) override;
 	Swan::EntityRef spawnPlayer(const Swan::Context &ctx) override;
 

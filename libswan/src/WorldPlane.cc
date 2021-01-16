@@ -196,7 +196,7 @@ void WorldPlane::breakTile(TilePos pos) {
 	world_->evtTileBreak_.emit(getContext(), pos, world_->getTileByID(id));
 }
 
-SDL_Color WorldPlane::backgroundColor() {
+Cygnet::Color WorldPlane::backgroundColor() {
 	return gen_->backgroundColor(world_->player_->pos);
 }
 

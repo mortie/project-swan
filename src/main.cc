@@ -239,9 +239,7 @@ int main(int argc, char **argv) {
 		}
 
 		{
-			//auto [r, g, b, a] = game.backgroundColor();
-			// TODO: Set clear color
-			window.clear();
+			window.clear(game.backgroundColor());
 		}
 
 		// ImGUI

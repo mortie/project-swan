@@ -4,12 +4,13 @@
 #include <optional>
 #include <initializer_list>
 #include <utility>
+#include <cygnet/util.h>
 
 namespace Swan {
 namespace Draw {
 
-SDL_Color linearGradient(
-		float val, std::initializer_list<std::pair<float, SDL_Color>> colors);
+Cygnet::Color linearGradient(
+		float val, std::initializer_list<std::pair<float, Cygnet::Color>> colors);
 
 /*
 void parallaxBackground(

@@ -294,7 +294,7 @@ Cygnet::RenderSprite &World::getSprite(const std::string &name) {
 	return iter->second;
 }
 
-SDL_Color World::backgroundColor() {
+Cygnet::Color World::backgroundColor() {
 	return planes_[currentPlane_]->backgroundColor();
 }
 

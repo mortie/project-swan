@@ -50,7 +50,8 @@ void Window::makeCurrent() {
 	glCheck();
 }
 
-void Window::clear() {
+void Window::clear(Color color) {
+	glClearColor(color.r, color.g, color.b, color.a);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glCheck();
 }

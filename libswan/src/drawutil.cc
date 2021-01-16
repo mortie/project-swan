@@ -8,11 +8,11 @@
 namespace Swan {
 namespace Draw {
 
-static Uint8 linearLine(float from, float to, float frac) {
-	return (Uint8)std::clamp(to * frac + from * (1 - frac), 0.0f, 255.0f);
+static float linearLine(float from, float to, float frac) {
+	return std::clamp(to * frac + from * (1 - frac), 0.0f, 255.0f);
 }
 
-static SDL_Color linearColor(SDL_Color from, SDL_Color to, float frac) {
+static Cygnet::Color linearColor(Cygnet::Color from, Cygnet::Color to, float frac) {
 	return {
 		.r = linearLine(from.r, to.r, frac),
 		.g = linearLine(from.g, to.g, frac),
@@ -21,11 +21,11 @@ static SDL_Color linearColor(SDL_Color from, SDL_Color to, float frac) {
 	};
 }
 
-SDL_Color linearGradient(
+Cygnet::Color linearGradient(
 		float val,
-		std::initializer_list<std::pair<float, SDL_Color>> colors) {
+		std::initializer_list<std::pair<float, Cygnet::Color>> colors) {
 
-	const std::pair<float, SDL_Color> *arr = colors.begin();
+	const std::pair<float, Cygnet::Color> *arr = colors.begin();
 	size_t size = colors.size();
 
 	if (val < arr[0].first)

@@ -6,6 +6,7 @@
 #include <optional>
 #include <SDL.h>
 #include <cygnet/Renderer.h>
+#include <cygnet/util.h>
 
 #include "common.h"
 #include "Mod.h"
@@ -58,7 +59,7 @@ public:
 
 	TilePos getMouseTile();
 
-	SDL_Color backgroundColor();
+	Cygnet::Color backgroundColor();
 	void draw();
 	void update(float dt);
 	void tick(float dt);

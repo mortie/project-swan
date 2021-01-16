@@ -3,6 +3,8 @@
 #include <swan-common/Vector2.h>
 #include <memory>
 
+#include "util.h"
+
 struct SDL_Window;
 
 namespace Cygnet {
@@ -15,7 +17,7 @@ public:
 	~Window();
 
 	void makeCurrent();
-	void clear();
+	void clear(Color color = {});
 	void flip();
 	void onResize(int w, int h);
 	SwanCommon::Vec2i size() { return { w_, h_ }; }
