@@ -4,7 +4,7 @@
 
 namespace Swan {
 
-static float epsilon = 0.001;
+static float epsilon = 0.0001;
 
 static void collideX(
 		PhysicsTrait::Physics &phys, BodyTrait::Body &body,
@@ -13,7 +13,7 @@ static void collideX(
 
 	for (int y = (int)floor(body.top() + epsilon); y <= (int)floor(body.bottom() - epsilon); ++y) {
 		int lx = (int)floor(body.left() + epsilon);
-		Tile &left = plane.getTile({ lx, y });
+		Tile &left = plane.getTile({lx, y});
 		if (left.isSolid) {
 			body.pos.x = (float)lx + 1.0;
 			collided = true;
@@ -21,7 +21,7 @@ static void collideX(
 		}
 
 		int rx = (int)floor(body.right() - epsilon);
-		Tile &right = plane.getTile({ rx, y });
+		Tile &right = plane.getTile({rx, y});
 		if (right.isSolid) {
 			body.pos.x = (float)rx - body.size.x;
 			collided = true;
@@ -44,7 +44,7 @@ static void collideY(
 
 	for (int x = (int)floor(body.left() + epsilon); x <= (int)floor(body.right() - epsilon); ++x) {
 		int ty = (int)floor(body.top() + epsilon);
-		Tile &top = plane.getTile({ x, ty });
+		Tile &top = plane.getTile({x, ty});
 		if (top.isSolid) {
 			body.pos.y = (float)ty + 1.0;
 			collided = true;
@@ -52,7 +52,7 @@ static void collideY(
 		}
 
 		int by = (int)floor(body.bottom() - epsilon);
-		Tile &bottom = plane.getTile({ x, by });
+		Tile &bottom = plane.getTile({x, by});
 		if (bottom.isSolid) {
 			body.pos.y = (float)by - body.size.y;
 			collided = true;
