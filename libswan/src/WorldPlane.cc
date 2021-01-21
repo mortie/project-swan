@@ -229,8 +229,11 @@ void WorldPlane::draw(Cygnet::Renderer &rnd) {
 		}
 	}
 
-	for (auto &coll: entColls_)
+	for (auto &coll: entColls_) {
 		coll->draw(ctx, rnd);
+	}
+
+	lighting_->flip();
 
 	/*
 	if (debugBoxes_.size() > 0) {

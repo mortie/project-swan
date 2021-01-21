@@ -66,7 +66,7 @@ public:
 
 	std::unique_ptr<World> world_ = NULL;
 	Cygnet::Renderer renderer_;
-	Cygnet::RenderCamera cam_{.zoom = 0.25};
+	Cygnet::RenderCamera cam_{.zoom = 0.125};
 
 private:
 	std::bitset<SDL_NUM_SCANCODES> pressedKeys_;

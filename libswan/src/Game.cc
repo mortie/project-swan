@@ -37,8 +37,8 @@ void Game::update(float dt) {
 	cam_.zoom += (float)wasWheelScrolled() * 0.1f * cam_.zoom;
 	if (cam_.zoom > 1)
 		cam_.zoom = 1;
-	else if (cam_.zoom < 0.05)
-		cam_.zoom = 0.05;
+	else if (cam_.zoom < 0.025)
+		cam_.zoom = 0.025;
 
 	world_->update(dt);
 
