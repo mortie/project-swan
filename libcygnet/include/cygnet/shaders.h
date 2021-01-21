@@ -17,4 +17,7 @@ extern const char *spriteFr;
 extern const char *rectVx;
 extern const char *rectFr;
 
+extern const char *blendVx;
+extern const char *blendFr;
+
 }

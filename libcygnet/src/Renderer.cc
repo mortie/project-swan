@@ -281,6 +281,59 @@ struct RectProg: public GlProgram {
 	}
 };
 
+struct BlendProg: public GlProgram {
+	template<typename... T>
+	BlendProg(const T &... shaders): GlProgram(shaders...) { init(); }
+	~BlendProg() { deinit(); }
+
+	GLint vertex = attribLoc("vertex");
+	GLint texCoord = attribLoc("texCoord");
+	GLint tex = uniformLoc("tex");
+
+	GLuint vbo;
+
+	static constexpr GLfloat vertexes[] = {
+		-1.0f, -1.0f, 0.0f, 0.0f, // pos 0: top left
+		-1.0f,  1.0f, 0.0f, 1.0f, // pos 1: bottom left
+		 1.0f,  1.0f, 1.0f, 1.0f, // pos 2: bottom right
+		 1.0f,  1.0f, 1.0f, 1.0f, // pos 2: bottom right
+		 1.0f, -1.0f, 1.0f, 0.0f, // pos 3: top right
+		-1.0f, -1.0f, 0.0f, 0.0f, // pos 0: top left
+	};
+
+	void enable() {
+		glUseProgram(id());
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)0);
+		glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(vertex);
+		glEnableVertexAttribArray(texCoord);
+		glCheck();
+
+		glUniform1i(tex, 0);
+		glCheck();
+	}
+
+	void disable() {
+		glDisableVertexAttribArray(vertex);
+		glCheck();
+	}
+
+	void init() {
+		glGenBuffers(1, &vbo);
+		glCheck();
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
+		glCheck();
+	}
+
+	void deinit()  {
+		glDeleteBuffers(1, &vbo);
+		glCheck();
+	}
+};
+
 struct RendererState {
 	GlVxShader chunkVx{Shaders::chunkVx};
 	GlFrShader chunkFr{Shaders::chunkFr};
@@ -292,23 +345,36 @@ struct RendererState {
 	GlFrShader spriteFr{Shaders::spriteFr};
 	GlVxShader rectVx{Shaders::rectVx};
 	GlFrShader rectFr{Shaders::rectFr};
+	GlVxShader blendVx{Shaders::blendVx};
+	GlFrShader blendFr{Shaders::blendFr};
 
 	ChunkProg chunkProg{chunkVx, chunkFr};
 	ChunkShadowProg chunkShadowProg{chunkShadowVx, chunkShadowFr};
 	TileProg tileProg{tileVx, tileFr};
 	SpriteProg spriteProg{spriteVx, spriteFr};
 	RectProg rectProg{rectVx, rectFr};
+	BlendProg blendProg{blendVx, blendFr};
 
-	GLuint atlasTex;
+	SwanCommon::Vec2i screenSize;
+	GLuint offscreenFramebuffer = 0;
+	GLuint offscreenTex = 0;
+	GLuint atlasTex = 0;
 	SwanCommon::Vec2 atlasTexSize;
 };
 
 Renderer::Renderer(): state_(std::make_unique<RendererState>()) {
 	glGenTextures(1, &state_->atlasTex);
 	glCheck();
+
+	glGenTextures(1, &state_->offscreenTex);
+	glCheck();
 }
 
-Renderer::~Renderer() = default;
+Renderer::~Renderer() {
+	glDeleteFramebuffers(1, &state_->offscreenFramebuffer);
+	glDeleteTextures(1, &state_->offscreenFramebuffer);
+	glDeleteTextures(1, &state_->atlasTex);
+}
 
 void Renderer::draw(const RenderCamera &cam) {
 	Mat3gf camMat;
@@ -330,6 +396,35 @@ void Renderer::draw(const RenderCamera &cam) {
 	auto &tileProg = state_->tileProg;
 	auto &spriteProg = state_->spriteProg;
 	auto &rectProg = state_->rectProg;
+	auto &blendProg = state_->blendProg;
+
+	if (state_->screenSize != cam.size) {
+		state_->screenSize = cam.size;
+		glBindTexture(GL_TEXTURE_2D, state_->offscreenTex);
+		glCheck();
+		glTexImage2D(
+				GL_TEXTURE_2D, 0, GL_RGBA, cam.size.x, cam.size.y, 0,
+				GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glCheck();
+
+		glGenFramebuffers(1, &state_->offscreenFramebuffer);
+		glCheck();
+		glBindFramebuffer(GL_FRAMEBUFFER, state_->offscreenFramebuffer);
+		glCheck();
+		glFramebufferTexture2D(
+				GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+				state_->offscreenTex, 0);
+		glCheck();
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, state_->offscreenFramebuffer);
+	glFramebufferTexture2D(
+			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+			state_->offscreenTex, 0);
+	glClearColor(0, 0, 0, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	{
 		chunkProg.enable();
@@ -412,6 +507,17 @@ void Renderer::draw(const RenderCamera &cam) {
 
 		drawRects_.clear();
 		rectProg.disable();
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	{
+		blendProg.enable();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, state_->offscreenTex);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glCheck();
+		blendProg.disable();
 	}
 
 	{

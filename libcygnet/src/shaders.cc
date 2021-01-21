@@ -174,4 +174,27 @@ const char *rectFr = R"glsl(
 	}
 )glsl";
 
+const char *blendVx = R"glsl(
+	precision mediump float;
+	attribute vec2 vertex;
+	attribute vec2 texCoord;
+	varying vec2 v_texCoord;
+
+	void main() {
+		gl_Position = vec4(vertex.xy, 0, 1);
+		v_texCoord = texCoord;
+	}
+)glsl";
+
+const char *blendFr = R"glsl(
+	precision mediump float;
+	varying vec2 v_texCoord;
+	uniform sampler2D tex;
+
+	void main() {
+		//gl_FragColor = vec4(v_texCoord.x, v_texCoord.y, 0, 1);
+		gl_FragColor = texture2D(tex, v_texCoord);
+	}
+)glsl";
+
 }
