@@ -14,6 +14,15 @@ struct WindowState {
 
 Window::Window(const char *name, int w, int h):
 		state_(std::make_unique<WindowState>()), w_(w), h_(h) {
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
+
+	SDL_GL_SetSwapInterval(1);
 	state_->window = SDL_CreateWindow(name,
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h,
 			SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
@@ -41,7 +50,8 @@ void Window::makeCurrent() {
 	glCheck();
 }
 
-void Window::clear() {
+void Window::clear(Color color) {
+	glClearColor(color.r, color.g, color.b, color.a);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glCheck();
 }
@@ -54,8 +64,15 @@ void Window::flip() {
 void Window::onResize(int w, int h) {
 	w_ = w;
 	h_ = h;
-	glViewport(0, 0, w, h);
+
+	int dw, dh;
+	SDL_GL_GetDrawableSize(state_->window, &dw, &dh);
+	glViewport(0, 0, dw, dh);
 	glCheck();
+}
+
+SDL_Window *Window::sdlWindow() {
+	return state_->window;
 }
 
 }

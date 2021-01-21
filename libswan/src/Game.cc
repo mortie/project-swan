@@ -7,31 +7,11 @@
 #include "log.h"
 #include "Tile.h"
 #include "OS.h"
-#include "Win.h"
 
 namespace Swan {
 
-std::optional<ModWrapper> Game::loadMod(std::string path, World &world) {
-	OS::Dynlib dl(path + "/mod");
-	auto create = dl.get<Mod *(*)(World &)>("mod_create");
-	if (create == NULL) {
-		warn << path << ": No 'mod_create' function!";
-		return std::nullopt;
-	}
-
-	std::unique_ptr<Mod> mod(create(world));
-	return std::make_optional<ModWrapper>(
-		std::move(mod), std::move(path), std::move(dl));
-}
-
-void Game::createWorld(const std::string &worldgen, const std::vector<std::string> &modpaths) {
-	world_.reset(new World(this, time(NULL)));
-
-	for (auto &modpath: modpaths) {
-		auto mod = loadMod(modpath, *world_);
-		if (mod)
-			world_->addMod(std::move(*mod));
-	}
+void Game::createWorld(const std::string &worldgen, const std::vector<std::string> &modPaths) {
+	world_.reset(new World(this, time(NULL), modPaths));
 
 	world_->setWorldGen(worldgen);
 	world_->setCurrentPlane(world_->addPlane());
@@ -39,29 +19,28 @@ void Game::createWorld(const std::string &worldgen, const std::vector<std::strin
 }
 
 TilePos Game::getMouseTile() {
-	auto mousePos = getMousePos();
-	return TilePos(
-		(int)floor(win_.cam_.x + mousePos.x / (Swan::TILE_SIZE * win_.zoom_)),
-		(int)floor(win_.cam_.y + mousePos.y / (Swan::TILE_SIZE * win_.zoom_)));
+	auto pos = (getMousePos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;
+	return TilePos{(int)floor(pos.x), (int)floor(pos.y)};
 }
 
-SDL_Color Game::backgroundColor() {
+Cygnet::Color Game::backgroundColor() {
 	return world_->backgroundColor();
 }
 
 void Game::draw() {
-	world_->draw(win_);
+	world_->draw(renderer_);
+	renderer_.draw(cam_);
 }
 
 void Game::update(float dt) {
-	world_->update(dt);
-
 	// Zoom the window using the scroll wheel
-	win_.zoom_ += (float)wasWheelScrolled() * 0.1f * win_.zoom_;
-	if (win_.zoom_ > 3)
-		win_.zoom_ = 3;
-	else if (win_.zoom_ < 0.3)
-		win_.zoom_ = 0.3;
+	cam_.zoom += (float)wasWheelScrolled() * 0.1f * cam_.zoom;
+	if (cam_.zoom > 1)
+		cam_.zoom = 1;
+	else if (cam_.zoom < 0.025)
+		cam_.zoom = 0.025;
+
+	world_->update(dt);
 
 	didScroll_ = 0;
 	didPressKeys_.reset();

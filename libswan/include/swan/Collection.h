@@ -61,7 +61,7 @@ public:
 	virtual EntityRef spawn(const Context &ctx, const Entity::PackObject &obj) = 0;
 	virtual void update(const Context &ctx, float dt) = 0;
 	virtual void tick(const Context &ctx, float dt) = 0;
-	virtual void draw(const Context &ctx, Win &win) = 0;
+	virtual void draw(const Context &ctx, Cygnet::Renderer &rnd) = 0;
 	virtual void erase(size_t idx, size_t generation) = 0;
 
 private:
@@ -84,7 +84,7 @@ public:
 	EntityRef spawn(const Context &ctx, const Entity::PackObject &obj) override;
 	void update(const Context &ctx, float dt) override;
 	void tick(const Context &ctx, float dt) override;
-	void draw(const Context &ctx, Win &win) override;
+	void draw(const Context &ctx, Cygnet::Renderer &rnd) override;
 	void erase(size_t idx, size_t generation) override;
 
 private:
@@ -190,11 +190,11 @@ inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt) {
 }
 
 template<typename Ent>
-inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Win &win) {
+inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Cygnet::Renderer &rnd) {
 	ZoneScopedN(typeid(Ent).name());
 	for (auto &ent: entities_) {
 		ZoneScopedN("draw");
-		ent->draw(ctx, win);
+		ent->draw(ctx, rnd);
 	}
 }
 

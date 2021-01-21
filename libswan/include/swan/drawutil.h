@@ -4,19 +4,20 @@
 #include <optional>
 #include <initializer_list>
 #include <utility>
-
-#include "Win.h"
+#include <cygnet/util.h>
 
 namespace Swan {
 namespace Draw {
 
-SDL_Color linearGradient(
-		float val, std::initializer_list<std::pair<float, SDL_Color>> colors);
+Cygnet::Color linearGradient(
+		float val, std::initializer_list<std::pair<float, Cygnet::Color>> colors);
 
+/*
 void parallaxBackground(
 		Win &win, SDL_Texture *tex,
 		std::optional<SDL_Rect> srcrect, std::optional<SDL_Rect> destrect,
 		float x, float y, float factor);
+TODO */
 
 }
 }

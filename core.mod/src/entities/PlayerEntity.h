@@ -11,7 +11,7 @@ public:
 	using PhysicsEntity::get;
 	Inventory &get(InventoryTrait::Tag) override { return inventory_; }
 
-	void draw(const Swan::Context &ctx, Swan::Win &win) override;
+	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
 	void update(const Swan::Context &ctx, float dt) override;
 	void tick(const Swan::Context &ctx, float dt) override;
 	void deserialize(const Swan::Context &ctx, const PackObject &obj) override;
@@ -36,11 +36,9 @@ private:
 	PlayerEntity(const Swan::Context &ctx):
 		PhysicsEntity(SIZE),
 		anims_{
-			Swan::Animation(ctx.resources.getImage("core/entity/player-still"), 0.8),
-			Swan::Animation(
-				ctx.resources.getImage("core/entity/player-running"),
-				1, SDL_FLIP_HORIZONTAL),
-			Swan::Animation(ctx.resources.getImage("core/entity/player-running"), 1)
+			Swan::Animation(ctx.world.getSprite("core::entity/player-still"), 0.8),
+			Swan::Animation(ctx.world.getSprite("core::entity/player-running"), 1),
+			Swan::Animation(ctx.world.getSprite("core::entity/player-running"), 1),
 		} {}
 
 	State state_ = State::IDLE;

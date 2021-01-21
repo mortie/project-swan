@@ -26,16 +26,16 @@ set(libraries
 
 if(CMAKE_BUILD_TYPE STREQUAL Sanitize OR CMAKE_BUILD_TYPE STREQUAL "")
 	message(STATUS "Build mode: Sanitize")
-	add_compile_options(-g -fsanitize=address -fsanitize=undefined)
+	add_compile_options(-g -DDEBUG -fsanitize=address -fsanitize=undefined)
 	add_link_options(-fsanitize=address -fsanitize=undefined)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Debug)
 	message(STATUS "Build mode: Debug")
-	add_compile_options(-g)
+	add_compile_options(-g -DDEBUG)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Optimize)
 	message(STATUS "Build mode: Optimize")
-	add_compile_options(-O3 -DNDEBUG -g)
+	add_compile_options(-O3 -g -DDEBUG)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Tracy)
 	message(STATUS "Build mode: Tracy")
@@ -45,7 +45,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL Tracy)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
 	message(STATUS "Build mode: Release")
-	add_compile_options(-O3 -flto -DNDEBUG -g)
+	add_compile_options(-O3 -flto -g -DNDEBUG)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
 
 else()
@@ -72,6 +72,7 @@ add_subdirectory(core.mod)
 add_executable(swan
 	src/main.cc)
 target_link_libraries(swan libswan libcygnet ${libraries})
+add_dependencies(swan core.mod)
 
 add_executable(perlin-test EXCLUDE_FROM_ALL
 	src/perlin-test.cc)

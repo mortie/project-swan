@@ -1,11 +1,10 @@
 #include "traits/PhysicsTrait.h"
 
 #include "WorldPlane.h"
-#include "Win.h"
 
 namespace Swan {
 
-static float epsilon = 0.001;
+static float epsilon = 0.05;
 
 static void collideX(
 		PhysicsTrait::Physics &phys, BodyTrait::Body &body,
@@ -13,16 +12,16 @@ static void collideX(
 	bool collided = false;
 
 	for (int y = (int)floor(body.top() + epsilon); y <= (int)floor(body.bottom() - epsilon); ++y) {
-		int lx = (int)floor(body.left() + epsilon);
-		Tile &left = plane.getTile({ lx, y });
+		int lx = (int)floor(body.left());
+		Tile &left = plane.getTile({lx, y});
 		if (left.isSolid) {
 			body.pos.x = (float)lx + 1.0;
 			collided = true;
 			break;
 		}
 
-		int rx = (int)floor(body.right() - epsilon);
-		Tile &right = plane.getTile({ rx, y });
+		int rx = (int)floor(body.right());
+		Tile &right = plane.getTile({rx, y});
 		if (right.isSolid) {
 			body.pos.x = (float)rx - body.size.x;
 			collided = true;
@@ -44,16 +43,16 @@ static void collideY(
 	phys.onGround = false;
 
 	for (int x = (int)floor(body.left() + epsilon); x <= (int)floor(body.right() - epsilon); ++x) {
-		int ty = (int)floor(body.top() + epsilon);
-		Tile &top = plane.getTile({ x, ty });
+		int ty = (int)floor(body.top());
+		Tile &top = plane.getTile({x, ty});
 		if (top.isSolid) {
 			body.pos.y = (float)ty + 1.0;
 			collided = true;
 			break;
 		}
 
-		int by = (int)floor(body.bottom() - epsilon);
-		Tile &bottom = plane.getTile({ x, by });
+		int by = (int)floor(body.bottom());
+		Tile &bottom = plane.getTile({x, by});
 		if (bottom.isSolid) {
 			body.pos.y = (float)by - body.size.y;
 			collided = true;

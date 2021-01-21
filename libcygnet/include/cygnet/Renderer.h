@@ -17,20 +17,20 @@ struct RenderChunk {
 	GLuint tex;
 };
 
+struct RenderChunkShadow {
+	GLuint tex;
+};
+
 struct RenderSprite {
 	GLuint tex;
 	SwanCommon::Vec2 scale;
 	int frameCount;
 };
 
-struct RenderTile {
-	uint16_t id;
-};
-
 struct RenderCamera {
-	SwanCommon::Vec2 pos;
-	SwanCommon::Vec2i size;
-	float zoom;
+	SwanCommon::Vec2 pos = {0, 0};
+	SwanCommon::Vec2i size = {1, 1};
+	float zoom = 1;
 };
 
 class Renderer {
@@ -41,9 +41,10 @@ public:
 	~Renderer();
 
 	void drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos);
+	void drawChunkShadow(RenderChunkShadow shadow, SwanCommon::Vec2 pos);
+	void drawTile(TileID id, Mat3gf mat);
 	void drawSprite(RenderSprite sprite, Mat3gf mat, int y = 0);
-	void drawSprite(RenderSprite sprite, SwanCommon::Vec2 pos, int y = 0);
-	void drawSpriteFlipped(RenderSprite chunk, SwanCommon::Vec2 pos, int y = 0);
+	void drawRect(SwanCommon::Vec2 pos, SwanCommon::Vec2 size);
 
 	void draw(const RenderCamera &cam);
 
@@ -55,14 +56,33 @@ public:
 	void modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id);
 	void destroyChunk(RenderChunk chunk);
 
+	RenderChunkShadow createChunkShadow(
+			uint8_t data[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]);
+	void modifyChunkShadow(
+			RenderChunkShadow shadow,
+			uint8_t data[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]);
+	void destroyChunkShadow(RenderChunkShadow chunk);
+
 	RenderSprite createSprite(void *data, int width, int height, int fh);
 	RenderSprite createSprite(void *data, int width, int height);
 	void destroySprite(RenderSprite sprite);
+
+	SwanCommon::Vec2 winScale() { return winScale_; }
 
 private:
 	struct DrawChunk {
 		SwanCommon::Vec2 pos;
 		RenderChunk chunk;
+	};
+
+	struct DrawShadow {
+		SwanCommon::Vec2 pos;
+		RenderChunkShadow shadow;
+	};
+
+	struct DrawTile {
+		Mat3gf transform;
+		TileID id;
 	};
 
 	struct DrawSprite {
@@ -71,26 +91,40 @@ private:
 		RenderSprite sprite;
 	};
 
+	struct DrawRect {
+		SwanCommon::Vec2 pos;
+		SwanCommon::Vec2 size;
+	};
+
+	SwanCommon::Vec2 winScale_ = {1, 1};
+
 	std::unique_ptr<RendererState> state_;
 
 	std::vector<DrawChunk> drawChunks_;
+	std::vector<DrawShadow> drawChunkShadows_;
+	std::vector<DrawTile> drawTiles_;
 	std::vector<DrawSprite> drawSprites_;
+	std::vector<DrawRect> drawRects_;
 };
 
 inline void Renderer::drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos) {
-	drawChunks_.emplace_back(pos, chunk);
+	drawChunks_.push_back({pos, chunk});
+}
+
+inline void Renderer::drawChunkShadow(RenderChunkShadow shadow, SwanCommon::Vec2 pos) {
+	drawChunkShadows_.push_back({pos, shadow});
+}
+
+inline void Renderer::drawTile(TileID id, Mat3gf mat) {
+	drawTiles_.push_back({mat, id});
 }
 
 inline void Renderer::drawSprite(RenderSprite sprite, Mat3gf mat, int frame) {
-	drawSprites_.emplace_back(mat, frame, sprite);
+	drawSprites_.push_back({mat, frame, sprite});
 }
 
-inline void Renderer::drawSprite(RenderSprite sprite, SwanCommon::Vec2 pos, int frame) {
-	drawSprites_.emplace_back(Mat3gf{}.translate(pos), frame, sprite);
-}
-
-inline void Renderer::drawSpriteFlipped(RenderSprite sprite, SwanCommon::Vec2 pos, int frame) {
-	drawSprites_.emplace_back(Mat3gf{}.translate(pos).scale({ -1, 1 }), frame, sprite);
+inline void Renderer::drawRect(SwanCommon::Vec2 pos, SwanCommon::Vec2 size) {
+	drawRects_.push_back({pos, size});
 }
 
 }

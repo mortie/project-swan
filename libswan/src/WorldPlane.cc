@@ -8,7 +8,6 @@
 #include "World.h"
 #include "Game.h"
 #include "Clock.h"
-#include "Win.h"
 
 namespace Swan {
 
@@ -38,7 +37,6 @@ Context WorldPlane::getContext() {
 		.game = *world_->game_,
 		.world = *world_,
 		.plane = *this,
-		.resources = world_->resources_
 	};
 }
 
@@ -46,8 +44,8 @@ WorldPlane::WorldPlane(
 		ID id, World *world, std::unique_ptr<WorldGen> gen,
 		std::vector<std::unique_ptr<EntityCollection>> &&colls):
 			id_(id), world_(world), gen_(std::move(gen)),
-			lighting_(std::make_unique<LightServer>(*this)),
-			entColls_(std::move(colls)) {
+			entColls_(std::move(colls)),
+			lighting_(std::make_unique<LightServer>(*this)) {
 
 	for (auto &coll: entColls_) {
 		entCollsByType_[coll->type()] = coll.get();
@@ -72,7 +70,7 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 	}
 
 	Chunk &chunk = slowGetChunk(pos);
-	tickChunks_.push_back({ pos, &chunk });
+	tickChunks_.push_back({pos, &chunk});
 	return chunk;
 }
 
@@ -99,7 +97,7 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
 					lc.blocks[y * CHUNK_HEIGHT + x] = true;
 				}
 				if (tile.lightLevel > 0) {
-					lc.lightSources[{ x, y }] = tile.lightLevel;
+					lc.lightSources[{x, y}] = tile.lightLevel;
 				}
 			}
 		}
@@ -124,8 +122,7 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 	if (id != old) {
 		Tile &newTile = world_->getTileByID(id);
 		Tile &oldTile = world_->getTileByID(old);
-		chunk.setTileID(rp, id, newTile.image.texture_.get());
-		chunk.markModified();
+		chunk.setTileID(rp, id);
 
 		if (!oldTile.isSolid && newTile.isSolid) {
 			lighting_->onSolidBlockAdded(pos);
@@ -199,17 +196,17 @@ void WorldPlane::breakTile(TilePos pos) {
 	world_->evtTileBreak_.emit(getContext(), pos, world_->getTileByID(id));
 }
 
-SDL_Color WorldPlane::backgroundColor() {
+Cygnet::Color WorldPlane::backgroundColor() {
 	return gen_->backgroundColor(world_->player_->pos);
 }
 
-void WorldPlane::draw(Win &win) {
+void WorldPlane::draw(Cygnet::Renderer &rnd) {
 	ZoneScopedN("WorldPlane draw");
 	std::lock_guard<std::mutex> lock(mut_);
 	auto ctx = getContext();
 	auto &pbody = *(world_->player_);
 
-	gen_->drawBackground(ctx, win, pbody.pos);
+	gen_->drawBackground(ctx, rnd, pbody.pos);
 
 	ChunkPos pcpos = ChunkPos(
 		(int)floor(pbody.pos.x / CHUNK_WIDTH),
@@ -217,27 +214,34 @@ void WorldPlane::draw(Win &win) {
 
 	// Just init one chunk per frame
 	if (chunkInitList_.size() > 0) {
+		/*
 		Chunk *chunk = chunkInitList_.front();
 		chunkInitList_.pop_front();
 		chunk->render(ctx, win.renderer_);
+		TODO */
 	}
 
 	for (int x = -1; x <= 1; ++x) {
 		for (int y = -1; y <= 1; ++y) {
 			auto iter = chunks_.find(pcpos + ChunkPos(x, y));
 			if (iter != chunks_.end())
-				iter->second.draw(ctx, win);
+				iter->second.draw(ctx, rnd);
 		}
 	}
 
-	for (auto &coll: entColls_)
-		coll->draw(ctx, win);
+	for (auto &coll: entColls_) {
+		coll->draw(ctx, rnd);
+	}
 
+	lighting_->flip();
+
+	/*
 	if (debugBoxes_.size() > 0) {
 		for (auto &pos: debugBoxes_) {
-			win.drawRect(pos, Vec2(1, 1));
+			rnd.drawRect(pos, Vec2(1, 1));
 		}
 	}
+	TODO */
 }
 
 void WorldPlane::update(float dt) {
@@ -273,12 +277,13 @@ void WorldPlane::tick(float dt) {
 		switch (action) {
 		case Chunk::TickAction::DEACTIVATE:
 			info << "Compressing inactive modified chunk " << chunk->pos_;
-			chunk->compress();
+			chunk->compress(world_->game_->renderer_);
 			iter = activeChunks_.erase(iter);
 			last = activeChunks_.end();
 			break;
 		case Chunk::TickAction::DELETE:
 			info << "Deleting inactive unmodified chunk " << chunk->pos_;
+			chunk->destroy(world_->game_->renderer_);
 			chunks_.erase(chunk->pos_);
 			iter = activeChunks_.erase(iter);
 			last = activeChunks_.end();

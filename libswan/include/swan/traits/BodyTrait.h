@@ -4,8 +4,6 @@
 
 namespace Swan {
 
-class Win;
-
 struct BodyTrait {
 	struct Body;
 	struct Tag {};
@@ -32,7 +30,7 @@ struct BodyTrait {
 		Vec2 midRight() { return { right(), midY() }; }
 		Vec2 bottomRight() { return { right(), bottom() }; }
 
-		void outline(Win &win);
+		//void outline(Win &win); TODO
 	};
 };
 

@@ -12,26 +12,26 @@
 #include "WorldGen.h"
 #include "Entity.h"
 #include "Collection.h"
-#include "Resource.h"
 #include "OS.h"
 #include "util.h"
 
 namespace Swan {
+
+class ModWrapper;
 
 class Mod {
 public:
 	Mod(std::string name): name_(std::move(name)) {}
 	virtual ~Mod() = default;
 
-	void registerImage(const std::string &id);
-	void registerTile(Tile::Builder tile);
-	void registerItem(Item::Builder item);
-	void registerWorldGen(const std::string &name, std::unique_ptr<WorldGen::Factory> gen);
+	void registerTile(Tile::Builder tile) { tiles_.push_back(tile); }
+	void registerItem(Item::Builder item) { items_.push_back(item); }
+	void registerSprite(std::string sprite) { sprites_.push_back(sprite); }
 
 	template<typename WG>
-	void registerWorldGen(const std::string &name) {
-		worldgens_.push_back(WorldGen::Factory{
-			.name = name_ + "::" + name,
+	void registerWorldGen(std::string name) {
+		worldGens_.push_back(WorldGen::Factory{
+			.name = name,
 			.create = [](World &world) -> std::unique_ptr<WorldGen> {
 				return std::make_unique<WG>(world);
 			}
@@ -44,19 +44,22 @@ public:
 			std::is_move_constructible_v<Ent>,
 			"Entities must be movable");
 		entities_.push_back(EntityCollection::Factory{
-			.name = name_ + "::" + name,
+			.name = name,
 			.create = [](std::string name) -> std::unique_ptr<EntityCollection> {
 				return std::make_unique<EntityCollectionImpl<Ent>>(std::move(name));
 			}
 		});
 	}
 
+private:
 	const std::string name_;
-	std::vector<std::string> images_;
 	std::vector<Tile::Builder> tiles_;
 	std::vector<Item::Builder> items_;
-	std::vector<WorldGen::Factory> worldgens_;
+	std::vector<std::string> sprites_;
+	std::vector<WorldGen::Factory> worldGens_;
 	std::vector<EntityCollection::Factory> entities_;
+
+	friend ModWrapper;
 };
 
 class ModWrapper {
@@ -72,11 +75,12 @@ public:
 		mod_.reset();
 	}
 
-	Iter<std::unique_ptr<ImageResource>> buildImages(SDL_Renderer *renderer);
-	Iter<std::unique_ptr<Tile>> buildTiles(const ResourceManager &resources);
-	Iter<std::unique_ptr<Item>> buildItems(const ResourceManager &resources);
-	Iter<WorldGen::Factory> getWorldGens();
-	Iter<EntityCollection::Factory> getEntities();
+	const std::string &name() { return mod_->name_; }
+	const std::vector<Tile::Builder> &tiles() { return mod_->tiles_; }
+	const std::vector<Item::Builder> &items() { return mod_->items_; }
+	const std::vector<std::string> &sprites() { return mod_->sprites_; }
+	const std::vector<WorldGen::Factory> &worldGens() { return mod_->worldGens_; }
+	const std::vector<EntityCollection::Factory> &entities() { return mod_->entities_; }
 
 	std::unique_ptr<Mod> mod_;
 	std::string path_;

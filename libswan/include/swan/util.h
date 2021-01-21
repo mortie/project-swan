@@ -1,11 +1,11 @@
-
- #pragma once
+#pragma once
 
 #include <optional>
 #include <functional>
 #include <memory>
 #include <chrono>
 #include <type_traits>
+#include <string>
 #include <stddef.h>
 
 namespace Swan {
@@ -40,6 +40,94 @@ class Deferred: NonCopyable {
 public:
 	Deferred() = default;
 	~Deferred() { Func(); }
+};
+
+inline struct ResultOk {} Ok;
+inline struct ResultErr {} Err;
+
+// Result type for potential errors
+template<typename T, typename Err = std::string>
+class Result {
+public:
+	Result(ResultOk, T &&val): isOk_(true), v_(ResultOk{}, std::move(val)) {}
+	Result(ResultErr, Err &&err): isOk_(false), v_(ResultErr{}, std::move(err)) {}
+
+	Result(const Result &other): isOk_(other.isOk_) {
+		if (isOk_) {
+			new (&v_.val) T(other.v_.val);
+		} else {
+			new (&v_.err) T(other.v_.err);
+		}
+	}
+
+	Result(Result &&other): isOk_(other.isOk_) {
+		if (other.isOk_) {
+			new (&v_.val) T(std::move(other.v_.val));
+		} else {
+			new (&v_.err) Err(std::move(other.v_.err));
+		}
+	}
+
+	~Result() {
+		destroy();
+	}
+
+	Result<T, Err> &operator=(const Result<T, Err> &other) {
+		destroy();
+		isOk_ = other.isOk_;
+		if (isOk_) {
+			new (&v_.val) T(other.v_.val);
+		} else {
+			new (&v_.err) Err(other.v_.err);
+		}
+		return *this;
+	}
+
+	Result<T, Err> &operator=(Result<T, Err> &&other) {
+		destroy();
+		isOk_ = other.isOk_;
+		if (other.isOk_) {
+			new (&v_.val) T(std::move(other.v_.val));
+		} else {
+			new (&v_.err) Err(std::move(other.v_.err));
+		}
+		return *this;
+	}
+
+	explicit operator bool() { return isOk_; }
+	bool isOk() { return isOk_; }
+
+	Err &err() { return v_.err; }
+	T &value() { return v_.val; }
+
+	T *operator->() {
+		return &v_.val;
+	}
+
+	T &operator*() {
+		return v_.val;
+	}
+
+private:
+	void destroy() {
+		if (isOk_) {
+			v_.val.~T();
+		} else {
+			v_.err.~Err();
+		}
+	}
+
+	bool isOk_;
+	union U {
+		U() {}
+		U(ResultOk, T &&val): val(std::move(val)) {}
+		U(ResultOk, const T &val): val(val) {}
+		U(ResultErr, Err &&err): err(std::move(err)) {}
+		U(ResultErr, const Err &err): err(err) {}
+		~U() {}
+		T val;
+		Err err;
+	} v_;
 };
 
 // Calling begin/end is stupid...

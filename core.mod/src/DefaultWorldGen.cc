@@ -12,11 +12,13 @@ static int getStoneLevel(const siv::PerlinNoise &perlin, int x) {
 	return (int)(perlin.noise(x / 50.0, 10) * 10) + 10;
 }
 
-void DefaultWorldGen::drawBackground(const Swan::Context &ctx, Swan::Win &win, Swan::Vec2 pos) {
+void DefaultWorldGen::drawBackground(
+		const Swan::Context &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos) {
 	int texmin = 10;
-	int texmax = 20;
+	//int texmax = 20;
 
 	if (pos.y > texmin) {
+		/*
 		SDL_Texture *tex = bgCave_.texture_.get();
 
 		Uint8 alpha =  std::clamp(
@@ -27,19 +29,21 @@ void DefaultWorldGen::drawBackground(const Swan::Context &ctx, Swan::Win &win, S
 		Swan::Draw::parallaxBackground(
 			win, tex, std::nullopt, std::nullopt,
 			pos.x * Swan::TILE_SIZE, pos.y * Swan::TILE_SIZE, 0.7);
+		TODO */
 	}
 }
 
-SDL_Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos) {
+Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos) {
 	float y = pos.y;
 	return Swan::Draw::linearGradient(y, {
-		{    0, { 128, 220, 250, 255 } },
-		{   70, { 107,  87,   5, 255 } },
-		{  100, { 107,  87,   5, 255 } },
-		{  200, {  20,  20,  23, 255 } },
-		{  300, {  20,  20,  23, 255 } },
-		{  500, {  25,  10,  10, 255 } },
-		{ 1000, {  65,  10,  10, 255 } } });
+		{   0, Cygnet::ByteColor{128, 220, 250}},
+		{  70, Cygnet::ByteColor{107,  87,   5}},
+		{ 100, Cygnet::ByteColor{107,  87,   5}},
+		{ 200, Cygnet::ByteColor{ 20,  20,  23}},
+		{ 300, Cygnet::ByteColor{ 20,  20,  23}},
+		{ 500, Cygnet::ByteColor{ 25,  10,  10}},
+		{1000, Cygnet::ByteColor{ 65,  10,  10}},
+	});
 }
 
 Swan::Tile::ID DefaultWorldGen::genTile(Swan::TilePos pos) {

@@ -10,62 +10,56 @@ public:
 		breakListener_ = world.evtTileBreak_.subscribe(
 			std::bind_front(&CoreMod::onTileBreak, this));
 
-		registerImage("tile/stone");
-		registerImage("tile/dirt");
-		registerImage("tile/grass");
-		registerImage("tile/tree-trunk");
-		registerImage("tile/leaves");
-		registerImage("tile/torch");
-		registerImage("entity/player-running");
-		registerImage("entity/player-still");
-		registerImage("misc/background-cave");
+		registerSprite("entity/player-running");
+		registerSprite("entity/player-still");
+		registerSprite("misc/background-cave");
 
 		registerTile({
 			.name = "stone",
-			.image = "core/tile/stone",
+			.image = "core::tile/stone",
 			.droppedItem = "core::stone",
 		});
 		registerTile({
 			.name = "dirt",
-			.image = "core/tile/dirt",
+			.image = "core::tile/dirt",
 			.droppedItem = "core::dirt",
 		});
 		registerTile({
 			.name = "grass",
-			.image = "core/tile/grass",
+			.image = "core::tile/grass",
 			.droppedItem = "core::dirt",
 		});
 		registerTile({
 			.name = "tree-trunk",
-			.image = "core/tile/tree-trunk",
+			.image = "core::tile/tree-trunk",
 			.droppedItem = "core::tree-trunk",
 		});
 		registerTile({
 			.name = "leaves",
-			.image = "core/tile/leaves",
+			.image = "core::tile/leaves",
 		});
 		registerTile({
 			.name = "torch",
-			.image = "core/tile/torch",
+			.image = "core::tile/torch",
 			.isSolid = false,
 			.lightLevel = 80/255.0,
 		});
 
 		registerItem({
 			.name = "stone",
-			.image = "core/tile/stone",
+			.image = "core::tile/stone",
 		});
 		registerItem({
 			.name = "dirt",
-			.image = "core/tile/dirt",
+			.image = "core::tile/dirt",
 		});
 		registerItem({
 			.name = "grass",
-			.image = "core/tile/grass",
+			.image = "core::tile/grass",
 		});
 		registerItem({
 			.name = "tree-trunk",
-			.image = "core/tile/tree-trunk",
+			.image = "core::tile/tree-trunk",
 		});
 
 		registerWorldGen<DefaultWorldGen>("default");

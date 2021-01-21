@@ -161,13 +161,11 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 		break;
 
 	case Event::Tag::LIGHT_ADDED:
-		info << cpos << ": Add " << evt.f << " light to " << rpos;
 		ch->lightSources[rpos] += evt.f;
 		markChunksModified(cpos, rpos, ch->lightSources[rpos]);
 		break;
 
 	case Event::Tag::LIGHT_REMOVED:
-		info << cpos << ": Remove " << evt.f << " light to " << rpos;
 		markChunksModified(cpos, rpos, ch->lightSources[rpos]);
 		ch->lightSources[rpos] -= evt.f;
 		if (ch->lightSources[rpos] < LIGHT_CUTOFF) {
@@ -534,8 +532,6 @@ void LightServer::run() {
 		buf.clear();
 		newChunks.clear();
 
-		auto start = std::chrono::steady_clock::now();
-
 		for (auto &pos: updatedChunks_) {
 			auto ch = chunks_.find(pos);
 			if (ch != chunks_.end()) {
@@ -573,11 +569,6 @@ void LightServer::run() {
 				finalizeChunk(ch->second);
 			}
 		}
-
-		auto end = std::chrono::steady_clock::now();
-		auto dur = std::chrono::duration<double, std::milli>(end - start);
-		info << "Generating light for " << updatedChunks_.size()
-			<< " chunks took " << dur.count() << "ms";
 
 		for (auto &pos: updatedChunks_) {
 			auto ch = chunks_.find(pos);

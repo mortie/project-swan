@@ -5,9 +5,10 @@
 #include <string>
 #include <optional>
 #include <SDL.h>
+#include <cygnet/Renderer.h>
+#include <cygnet/util.h>
 
 #include "common.h"
-#include "Resource.h"
 #include "Mod.h"
 #include "World.h"
 
@@ -15,12 +16,7 @@ namespace Swan {
 
 class Game {
 public:
-	Game(Win &win):
-		win_(win),
-		mousePos_(0, 0) {}
-
-	std::optional<ModWrapper> loadMod(std::string path, World &world);
-	void createWorld(const std::string &worldgen, const std::vector<std::string> &mods);
+	void createWorld(const std::string &worldgen, const std::vector<std::string> &modPaths);
 
 	void onKeyDown(SDL_Keysym sym) {
 		pressedKeys_[sym.scancode] = true;
@@ -33,17 +29,17 @@ public:
 	}
 
 	void onMouseMove(Sint32 x, Sint32 y) {
-		mousePos_ = { x, y };
+		mousePos_ = (Vec2{(float)x, (float)y} / (Vec2)cam_.size) * renderer_.winScale();
 	}
 
 	void onMouseDown(Sint32 x, Sint32 y, Uint8 button) {
-		mousePos_ = { x, y };
+		onMouseMove(x, y);
 		pressedButtons_[button] = true;
 		didPressButtons_[button] = true;
+	}
 
-}
 	void onMouseUp(Sint32 x, Sint32 y, Uint8 button) {
-		mousePos_ = { x, y };
+		onMouseMove(x, y);
 		pressedButtons_[button] = false;
 		didReleaseButtons_[button] = true;
 	}
@@ -55,7 +51,7 @@ public:
 	bool isKeyPressed(SDL_Scancode code) { return pressedKeys_[code]; }
 	bool wasKeyPressed(SDL_Scancode code) { return didPressKeys_[code]; }
 	bool wasKeyReleased(SDL_Scancode code) { return didReleaseKeys_[code]; }
-	Vec2i getMousePos() { return mousePos_; }
+	Vec2 getMousePos() { return mousePos_; }
 	bool isMousePressed(Uint8 button) { return pressedButtons_[button]; }
 	bool wasMousePressed(Uint8 button) { return didPressButtons_[button]; }
 	bool wasMouseReleased(Uint8 button) { return didReleaseButtons_[button]; }
@@ -63,23 +59,21 @@ public:
 
 	TilePos getMouseTile();
 
-	SDL_Color backgroundColor();
+	Cygnet::Color backgroundColor();
 	void draw();
 	void update(float dt);
 	void tick(float dt);
 
 	std::unique_ptr<World> world_ = NULL;
-	std::unique_ptr<ImageResource> invalidImage_ = NULL;
-	std::unique_ptr<Tile> invalidTile_ = NULL;
-	std::unique_ptr<Item> invalidItem_ = NULL;
-	Win &win_;
+	Cygnet::Renderer renderer_;
+	Cygnet::RenderCamera cam_{.zoom = 0.125};
 
 private:
 	std::bitset<SDL_NUM_SCANCODES> pressedKeys_;
 	std::bitset<SDL_NUM_SCANCODES> didPressKeys_;
 	std::bitset<SDL_NUM_SCANCODES> didReleaseKeys_;
 
-	Vec2i mousePos_;
+	Vec2 mousePos_;
 	std::bitset<SDL_BUTTON_X2> pressedButtons_;
 	std::bitset<SDL_BUTTON_X2> didPressButtons_;
 	std::bitset<SDL_BUTTON_X2> didReleaseButtons_;
