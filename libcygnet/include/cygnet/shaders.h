@@ -5,6 +5,9 @@ namespace Cygnet::Shaders {
 extern const char *chunkVx;
 extern const char *chunkFr;
 
+extern const char *chunkShadowVx;
+extern const char *chunkShadowFr;
+
 extern const char *tileVx;
 extern const char *tileFr;
 

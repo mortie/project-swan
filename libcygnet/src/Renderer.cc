@@ -73,6 +73,59 @@ struct ChunkProg: public GlProgram {
 	}
 };
 
+struct ChunkShadowProg: public GlProgram {
+	template<typename... T>
+	ChunkShadowProg(const T &... shaders): GlProgram(shaders...) { init(); }
+	~ChunkShadowProg() { deinit(); }
+
+	GLint camera = uniformLoc("camera");
+	GLint pos = uniformLoc("pos");
+	GLint vertex = attribLoc("vertex");
+	GLint tex = uniformLoc("tex");
+
+	GLuint vbo;
+
+	static constexpr float ch = (float)SwanCommon::CHUNK_HEIGHT;
+	static constexpr float cw = (float)SwanCommon::CHUNK_WIDTH;
+	static constexpr GLfloat vertexes[] = {
+		0.0f,  0.0f, // pos 0: top left
+		0.0f,  ch ,  // pos 1: bottom left
+		cw,    ch,   // pos 2: bottom right
+		cw,    ch,   // pos 2: bottom right
+		cw,    0.0f, // pos 3: top right
+		0.0f,  0.0f, // pos 0: top left
+	};
+
+	void enable() {
+		glUseProgram(id());
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+		glEnableVertexAttribArray(vertex);
+		glCheck();
+
+		glUniform1i(tex, 0);
+	}
+
+	void disable() {
+		glDisableVertexAttribArray(vertex);
+		glCheck();
+	}
+
+	void init() {
+		glGenBuffers(1, &vbo);
+		glCheck();
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
+		glCheck();
+	}
+
+	void deinit() {
+		glDeleteBuffers(1, &vbo);
+		glCheck();
+	}
+};
+
 struct TileProg: public GlProgram {
 	template<typename... T>
 	TileProg(const T &... shaders): GlProgram(shaders...) { init(); }
@@ -231,6 +284,8 @@ struct RectProg: public GlProgram {
 struct RendererState {
 	GlVxShader chunkVx{Shaders::chunkVx};
 	GlFrShader chunkFr{Shaders::chunkFr};
+	GlVxShader chunkShadowVx{Shaders::chunkShadowVx};
+	GlFrShader chunkShadowFr{Shaders::chunkShadowFr};
 	GlVxShader tileVx{Shaders::tileVx};
 	GlFrShader tileFr{Shaders::tileFr};
 	GlVxShader spriteVx{Shaders::spriteVx};
@@ -239,6 +294,7 @@ struct RendererState {
 	GlFrShader rectFr{Shaders::rectFr};
 
 	ChunkProg chunkProg{chunkVx, chunkFr};
+	ChunkShadowProg chunkShadowProg{chunkShadowVx, chunkShadowFr};
 	TileProg tileProg{tileVx, tileFr};
 	SpriteProg spriteProg{spriteVx, spriteFr};
 	RectProg rectProg{rectVx, rectFr};
@@ -270,6 +326,7 @@ void Renderer::draw(const RenderCamera &cam) {
 	}
 
 	auto &chunkProg = state_->chunkProg;
+	auto &chunkShadowProg = state_->chunkShadowProg;
 	auto &tileProg = state_->tileProg;
 	auto &spriteProg = state_->spriteProg;
 	auto &rectProg = state_->rectProg;
@@ -355,6 +412,23 @@ void Renderer::draw(const RenderCamera &cam) {
 
 		drawRects_.clear();
 		rectProg.disable();
+	}
+
+	{
+		chunkShadowProg.enable();
+		glUniformMatrix3fv(chunkShadowProg.camera, 1, GL_TRUE, camMat.data());
+		glCheck();
+
+		glActiveTexture(GL_TEXTURE0);
+		for (auto [pos, shadow]: drawChunkShadows_) {
+			glUniform2f(chunkShadowProg.pos, pos.x, pos.y);
+			glBindTexture(GL_TEXTURE_2D, shadow.tex);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glCheck();
+		}
+
+		drawChunkShadows_.clear();
+		chunkShadowProg.disable();
 	}
 }
 
@@ -456,6 +530,47 @@ void Renderer::modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id) 
 
 void Renderer::destroyChunk(RenderChunk chunk) {
 	glDeleteTextures(1, &chunk.tex);
+	glCheck();
+}
+
+RenderChunkShadow Renderer::createChunkShadow(
+		uint8_t data[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]) {
+	RenderChunkShadow shadow;
+	glGenTextures(1, &shadow.tex);
+	glCheck();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, shadow.tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glCheck();
+
+	glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_LUMINANCE,
+			SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
+			0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+	glCheck();
+
+	return shadow;
+}
+
+void Renderer::modifyChunkShadow(
+		RenderChunkShadow shadow,
+		uint8_t data[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]) {
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, shadow.tex);
+
+	glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_LUMINANCE,
+			SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
+			0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+	glCheck();
+}
+
+void Renderer::destroyChunkShadow(RenderChunkShadow shadow) {
+	glDeleteTextures(1, &shadow.tex);
 	glCheck();
 }
 

@@ -46,6 +46,7 @@ void Chunk::compress(Cygnet::Renderer &rnd) {
 	}
 
 	rnd.destroyChunk(renderChunk_);
+	rnd.destroyChunkShadow(renderChunkShadow_);
 }
 
 void Chunk::decompress() {
@@ -79,15 +80,24 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd) {
 		return;
 
 	if (needChunkRender_) {
-		renderChunk_ = rnd.createChunk((Tile::ID *)data_.get());
+		renderChunk_ = rnd.createChunk(getTileData());
+		renderChunkShadow_ = rnd.createChunkShadow(getLightData());
 		needChunkRender_ = false;
+		needLightRender_ = false;
 	} else {
 		for (auto &change: changeList_) {
 			rnd.modifyChunk(renderChunk_, change.first, change.second);
 		}
 	}
 
-	rnd.drawChunk(renderChunk_, (Vec2)pos_ * Vec2{CHUNK_WIDTH, CHUNK_HEIGHT});
+	if (needLightRender_) {
+		rnd.modifyChunkShadow(renderChunkShadow_, getLightData());
+		needLightRender_ = false;
+	}
+
+	Vec2 pos = (Vec2)pos_ * Vec2{CHUNK_WIDTH, CHUNK_HEIGHT};
+	rnd.drawChunk(renderChunk_, pos);
+	rnd.drawChunkShadow(renderChunkShadow_, pos);
 }
 
 Chunk::TickAction Chunk::tick(float dt) {

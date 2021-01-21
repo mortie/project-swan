@@ -89,6 +89,7 @@ private:
 
 	ssize_t compressedSize_ = -1; // -1 if not compressed, a positive number if compressed
 	Cygnet::RenderChunk renderChunk_;
+	Cygnet::RenderChunkShadow renderChunkShadow_;
 	bool needChunkRender_ = true;
 	bool needLightRender_ = false;
 	float deactivateTimer_ = DEACTIVATE_INTERVAL;

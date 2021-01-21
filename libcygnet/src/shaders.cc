@@ -43,6 +43,35 @@ const char *chunkFr = R"glsl(
 	}
 )glsl";
 
+const char *chunkShadowVx = R"glsl(
+	precision mediump float;
+	#define CHUNK_WIDTH 64
+	#define CHUNK_HEIGHT 64
+
+	uniform mat3 camera;
+	uniform vec2 pos;
+	attribute vec2 vertex;
+	varying vec2 v_texCoord;
+
+	void main() {
+		vec3 pos = camera * vec3(pos + vertex, 1);
+		gl_Position = vec4(pos.xy, 0, 1);
+		v_texCoord = vertex / vec2(CHUNK_WIDTH, CHUNK_HEIGHT);
+	}
+)glsl";
+
+const char *chunkShadowFr = R"glsl(
+	precision mediump float;
+
+	varying vec2 v_texCoord;
+	uniform sampler2D tex;
+
+	void main() {
+		vec4 color = texture2D(tex, v_texCoord);
+		gl_FragColor = vec4(0, 0, 0, 1.0 - color.r);
+	}
+)glsl";
+
 const char *tileVx = R"glsl(
 	precision mediump float;
 	uniform mat3 camera;
