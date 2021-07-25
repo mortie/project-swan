@@ -9,7 +9,7 @@
 #include <SDL2/SDL_image.h>
 #include <string.h>
 #include <imgui.h>
-#include <imgui_sdl/imgui_sdl.h>
+#include <imgui_sdl.h>
 #include <cygnet/Renderer.h>
 #include <cygnet/Window.h>
 
