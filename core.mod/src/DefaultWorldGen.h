@@ -2,7 +2,7 @@
 
 #include <swan/swan.h>
 
-#include <PerlinNoise/PerlinNoise.hpp>
+#include <PerlinNoise.hpp>
 
 class DefaultWorldGen: public Swan::WorldGen {
 public:
