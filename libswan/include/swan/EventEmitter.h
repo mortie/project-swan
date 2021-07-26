@@ -11,6 +11,9 @@ namespace Swan {
 class EventEmitterInterface {
 public:
 	virtual void unsubscribe(size_t id) = 0;
+
+protected:
+	~EventEmitterInterface() = default;
 };
 
 class EventListener: NonCopyable {
@@ -50,7 +53,7 @@ private:
 };
 
 template<typename... Evt>
-class EventEmitter: public EventEmitterInterface {
+class EventEmitter final: public EventEmitterInterface {
 public:
 	using Callback = std::function<void(Evt...)>;
 

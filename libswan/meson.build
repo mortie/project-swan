@@ -6,7 +6,6 @@ libswan = declare_dependency(
 	include_directories: 'include',
 	dependencies: libswan_deps,
 	link_with: library('swan',
-		'src/traits/BodyTrait.cc',
 		'src/traits/InventoryTrait.cc',
 		'src/traits/PhysicsTrait.cc',
 		'src/Animation.cc',

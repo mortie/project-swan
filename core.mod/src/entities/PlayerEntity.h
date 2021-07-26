@@ -3,7 +3,7 @@
 #include <swan/swan.h>
 #include <array>
 
-class PlayerEntity: public Swan::PhysicsEntity, public Swan::InventoryTrait {
+class PlayerEntity final: public Swan::PhysicsEntity, public Swan::InventoryTrait {
 public:
 	PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos);
 	PlayerEntity(const Swan::Context &ctx, const PackObject &obj);
@@ -51,5 +51,5 @@ private:
 	Swan::TilePos lightTile_;
 	bool placedLight_ = false;
 
-	BasicInventory inventory_{INVENTORY_SIZE};
+	Swan::BasicInventory inventory_{INVENTORY_SIZE};
 };

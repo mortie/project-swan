@@ -36,6 +36,8 @@ struct LightChunk {
 
 class LightCallback {
 public:
+	virtual ~LightCallback() = default;
+
 	virtual void onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos) = 0;
 };
 

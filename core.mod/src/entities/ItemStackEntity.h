@@ -2,7 +2,7 @@
 
 #include <swan/swan.h>
 
-class ItemStackEntity: public Swan::PhysicsEntity {
+class ItemStackEntity final: public Swan::PhysicsEntity {
 public:
 	ItemStackEntity(const Swan::Context &ctx, Swan::Vec2 pos, const std::string &item);
 	ItemStackEntity(const Swan::Context &ctx, const PackObject &obj);

@@ -5,11 +5,9 @@
 namespace Swan {
 
 struct BodyTrait {
-	struct Body;
 	struct Tag {};
-	virtual Body &get(Tag) = 0;
 
-	struct Body {
+	struct Body final {
 		Vec2 pos{};
 		Vec2 size{};
 
@@ -29,9 +27,11 @@ struct BodyTrait {
 		Vec2 topRight() { return { right(), top() }; }
 		Vec2 midRight() { return { right(), midY() }; }
 		Vec2 bottomRight() { return { right(), bottom() }; }
-
-		//void outline(Win &win); TODO
 	};
+
+	virtual ~BodyTrait() = default;
+
+	virtual Body &get(Tag) = 0;
 };
 
 }

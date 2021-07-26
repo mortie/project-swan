@@ -27,11 +27,11 @@ public:
 	Entity() = default;
 	Entity(Entity &&) = default;
 
+	virtual ~Entity() = default;
+
 	Entity &operator=(Entity &&) = default;
 
 	void despawn(const Swan::Context &ctx);
-
-	virtual ~Entity() = default;
 
 	virtual void draw(const Context &ctx, Cygnet::Renderer &rnd) {}
 	virtual void update(const Context &ctx, float dt) {}
@@ -54,7 +54,7 @@ public:
 
 	void physics(
 			const Context &ctx, float dt,
-			const PhysicsTrait::PhysicsProps &props) {
+			const BasicPhysics::Props &props) {
 
 		physics_.standardForces(props.mass);
 		physics_.update(ctx, dt, body_, props);
@@ -62,7 +62,7 @@ public:
 
 protected:
 	BodyTrait::Body body_;
-	PhysicsTrait::Physics physics_;
+	BasicPhysics physics_;
 };
 
 }

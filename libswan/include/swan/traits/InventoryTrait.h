@@ -9,9 +9,7 @@
 namespace Swan {
 
 struct InventoryTrait {
-	struct Inventory;
 	struct Tag {};
-	virtual Inventory &get(Tag) = 0;
 
 	struct Inventory {
 		virtual ~Inventory() = default;
@@ -24,16 +22,20 @@ struct InventoryTrait {
 		ItemStack insert(ItemStack stack) { return insert(0, stack); }
 	};
 
-	struct BasicInventory: Inventory {
-		BasicInventory(int size): content(size) {}
+	virtual ~InventoryTrait() = default;
 
-		std::vector<ItemStack> content;
+	virtual Inventory &get(Tag) = 0;
+};
 
-		int size() override { return content.size(); }
-		ItemStack get(int slot) override;
-		ItemStack set(int slot, ItemStack stack) override;
-		ItemStack insert(int slot, ItemStack stack) override;
-	};
+struct BasicInventory final: InventoryTrait::Inventory {
+	BasicInventory(int size): content(size) {}
+
+	std::vector<ItemStack> content;
+
+	int size() override { return content.size(); }
+	ItemStack get(int slot) override;
+	ItemStack set(int slot, ItemStack stack) override;
+	ItemStack insert(int slot, ItemStack stack) override;
 };
 
 }

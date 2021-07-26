@@ -7,8 +7,8 @@ namespace Swan {
 static float epsilon = 0.05;
 
 static void collideX(
-		PhysicsTrait::Physics &phys, BodyTrait::Body &body,
-		WorldPlane &plane, const PhysicsTrait::PhysicsProps &props) {
+		BasicPhysics &phys, BodyTrait::Body &body,
+		WorldPlane &plane, const BasicPhysics::Props &props) {
 	bool collided = false;
 
 	for (int y = (int)floor(body.top() + epsilon); y <= (int)floor(body.bottom() - epsilon); ++y) {
@@ -37,8 +37,8 @@ static void collideX(
 }
 
 static void collideY(
-		PhysicsTrait::Physics &phys, BodyTrait::Body &body,
-		WorldPlane &plane, const PhysicsTrait::PhysicsProps &props) {
+		BasicPhysics &phys, BodyTrait::Body &body,
+		WorldPlane &plane, const BasicPhysics::Props &props) {
 	bool collided = false;
 	phys.onGround = false;
 
@@ -68,9 +68,9 @@ static void collideY(
 	}
 }
 
-void PhysicsTrait::Physics::update(
+void BasicPhysics::update(
 		const Swan::Context &ctx, float dt,
-		BodyTrait::Body &body, const PhysicsProps &props) {
+		BodyTrait::Body &body, const BasicPhysics::Props &props) {
 	vel += (force / props.mass) * dt;
 	force = { 0, 0 };
 
