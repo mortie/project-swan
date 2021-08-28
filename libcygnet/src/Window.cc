@@ -1,6 +1,7 @@
 #include "Window.h"
 
 #include <SDL.h>
+#include <iostream>
 
 #include "gl.h"
 #include "util.h"
@@ -13,8 +14,8 @@ struct WindowState {
 };
 
 Window::Window(const char *name, int w, int h):
-		state_(std::make_unique<WindowState>()), w_(w), h_(h) {
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+		state_(std::make_unique<WindowState>()) {
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -32,6 +33,10 @@ Window::Window(const char *name, int w, int h):
 	state_->glctx = SDL_GL_CreateContext(state_->window);
 	glCheck();
 	makeCurrent();
+
+	glewInit();
+
+	std::cerr << "OpenGL Version: " << glGetString(GL_VERSION) << '\n';
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
@@ -62,13 +67,13 @@ void Window::flip() {
 }
 
 void Window::onResize(int w, int h) {
-	w_ = w;
-	h_ = h;
-
 	int dw, dh;
 	SDL_GL_GetDrawableSize(state_->window, &dw, &dh);
 	glViewport(0, 0, dw, dh);
 	glCheck();
+	size_ = {dw, dh};
+
+	ratio_ = (double)dw / (double)w;
 }
 
 SDL_Window *Window::sdlWindow() {

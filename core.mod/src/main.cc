@@ -4,11 +4,13 @@
 #include "entities/PlayerEntity.h"
 #include "entities/ItemStackEntity.h"
 
+#include <functional>
+
 class CoreMod: public Swan::Mod {
 public:
 	CoreMod(Swan::World &world): Swan::Mod("core") {
 		breakListener_ = world.evtTileBreak_.subscribe(
-			std::bind_front(&CoreMod::onTileBreak, this));
+			[=](auto ...args) { return onTileBreak(args...); });
 
 		registerSprite("entity/player-running");
 		registerSprite("entity/player-still");

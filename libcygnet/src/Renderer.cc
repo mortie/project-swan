@@ -589,6 +589,7 @@ RenderChunk Renderer::createChunk(
 				GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA,
 				SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
 				0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, tiles);
+		glCheck();
 	} else if constexpr (std::endian::native == std::endian::big) {
 		uint8_t buf[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT * 2];
 		for (size_t y = 0; y < SwanCommon::CHUNK_HEIGHT; ++y) {
@@ -604,9 +605,9 @@ RenderChunk Renderer::createChunk(
 				GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA,
 				SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
 				0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, buf);
+		glCheck();
 	}
 
-	glCheck();
 	return chunk;
 }
 

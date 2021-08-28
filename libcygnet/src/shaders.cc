@@ -3,7 +3,6 @@
 namespace Cygnet::Shaders {
 
 const char *chunkVx = R"glsl(
-	precision mediump float;
 	uniform mat3 camera;
 	uniform vec2 pos;
 	attribute vec2 vertex;
@@ -17,7 +16,6 @@ const char *chunkVx = R"glsl(
 )glsl";
 
 const char *chunkFr = R"glsl(
-	precision mediump float;
 	#define TILE_SIZE 32.0
 	#define CHUNK_WIDTH 64
 	#define CHUNK_HEIGHT 64
@@ -44,7 +42,6 @@ const char *chunkFr = R"glsl(
 )glsl";
 
 const char *chunkShadowVx = R"glsl(
-	precision mediump float;
 	#define CHUNK_WIDTH 64
 	#define CHUNK_HEIGHT 64
 
@@ -61,8 +58,6 @@ const char *chunkShadowVx = R"glsl(
 )glsl";
 
 const char *chunkShadowFr = R"glsl(
-	precision mediump float;
-
 	varying vec2 v_texCoord;
 	uniform sampler2D tex;
 
@@ -73,7 +68,6 @@ const char *chunkShadowFr = R"glsl(
 )glsl";
 
 const char *tileVx = R"glsl(
-	precision mediump float;
 	uniform mat3 camera;
 	uniform mat3 transform;
 	attribute vec2 vertex;
@@ -87,7 +81,6 @@ const char *tileVx = R"glsl(
 )glsl";
 
 const char *tileFr = R"glsl(
-	precision mediump float;
 	#define TILE_SIZE 32.0
 
 	varying vec2 v_tileCoord;
@@ -109,7 +102,6 @@ const char *tileFr = R"glsl(
 )glsl";
 
 const char *spriteVx = R"glsl(
-	precision mediump float;
 	#define TILE_SIZE 32.0
 
 	uniform mat3 camera;
@@ -136,7 +128,6 @@ const char *spriteVx = R"glsl(
 )glsl";
 
 const char *spriteFr = R"glsl(
-	precision mediump float;
 	varying vec2 v_texCoord;
 	uniform sampler2D tex;
 
@@ -146,7 +137,6 @@ const char *spriteFr = R"glsl(
 )glsl";
 
 const char *rectVx = R"glsl(
-	precision mediump float;
 	uniform mat3 camera;
 	uniform vec2 pos;
 	uniform vec2 size;
@@ -161,7 +151,6 @@ const char *rectVx = R"glsl(
 )glsl";
 
 const char *rectFr = R"glsl(
-	precision mediump float;
 	#define THICKNESS 0.02
 
 	varying vec2 v_coord;
@@ -175,7 +164,6 @@ const char *rectFr = R"glsl(
 )glsl";
 
 const char *blendVx = R"glsl(
-	precision mediump float;
 	attribute vec2 vertex;
 	attribute vec2 texCoord;
 	varying vec2 v_texCoord;
@@ -187,7 +175,6 @@ const char *blendVx = R"glsl(
 )glsl";
 
 const char *blendFr = R"glsl(
-	precision mediump float;
 	varying vec2 v_texCoord;
 	uniform sampler2D tex;
 

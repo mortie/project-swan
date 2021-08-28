@@ -20,14 +20,15 @@ public:
 	void clear(Color color = {});
 	void flip();
 	void onResize(int w, int h);
-	SwanCommon::Vec2i size() { return { w_, h_ }; }
+	SwanCommon::Vec2i size() { return size_; }
+	double pixelRatio() { return ratio_; }
 
 	SDL_Window *sdlWindow();
 
 private:
 	std::unique_ptr<WindowState> state_;
-	int w_;
-	int h_;
+	SwanCommon::Vec2i size_;
+	double ratio_;
 };
 
 }

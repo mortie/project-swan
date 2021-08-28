@@ -1,1 +1,2 @@
-#include <SDL_opengles2.h>
+#include <GL/glew.h>
+#include <SDL_opengl.h>

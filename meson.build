@@ -3,7 +3,11 @@ project('swan', 'cpp',
 
 libdl = meson.get_compiler('cpp').find_library('dl')
 libz = meson.get_compiler('cpp').find_library('z')
-libgles2 = meson.get_compiler('cpp').find_library('GLESv2')
+
+libglew = dependency('glew')
+libgl = dependency('OpenGL')
+#libgl = meson.get_compiler('cpp').find_library('GLESv2')
+
 libsdl2 = dependency('sdl2')
 libsdl2_image = dependency('SDL2_image')
 libthreads = dependency('threads')

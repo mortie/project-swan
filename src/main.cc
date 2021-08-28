@@ -5,8 +5,8 @@
 #include <chrono>
 #include <ratio>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#include <SDL.h>
+#include <SDL_image.h>
 #include <string.h>
 #include <imgui.h>
 #include <imgui_sdl.h>
@@ -146,21 +146,29 @@ int main(int argc, char **argv) {
 				imguiIO.MousePos.x = (float)evt.motion.x;
 				imguiIO.MousePos.y = (float)evt.motion.y;
 				if (!imguiIO.WantCaptureMouse) */
-					game.onMouseMove(evt.motion.x, evt.motion.y);
+					game.onMouseMove(
+							evt.motion.x * window.pixelRatio(),
+							evt.motion.y * window.pixelRatio());
 				break;
 
 			case SDL_MOUSEBUTTONDOWN:
 				/*
 				imguiIO.MouseDown[sdlButtonToImGuiButton(evt.button.button)] = true;
 				if (!imguiIO.WantCaptureMouse) */
-					game.onMouseDown(evt.button.x, evt.button.y, evt.button.button);
+					game.onMouseDown(
+							evt.button.x * window.pixelRatio(),
+							evt.button.y * window.pixelRatio(),
+							evt.button.button);
 				break;
 
 			case SDL_MOUSEBUTTONUP:
 				/*
 				imguiIO.MouseDown[sdlButtonToImGuiButton(evt.button.button)] = false;
 				if (!imguiIO.WantCaptureMouse) */
-					game.onMouseUp(evt.button.x, evt.button.y, evt.button.button);
+					game.onMouseUp(
+							evt.button.x * window.pixelRatio(),
+							evt.button.y * window.pixelRatio(),
+							evt.button.button);
 				break;
 
 			case SDL_MOUSEWHEEL:

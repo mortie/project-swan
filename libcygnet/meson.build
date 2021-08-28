@@ -8,6 +8,6 @@ libcygnet = declare_dependency(
 		'src/TileAtlas.cc',
 		'src/util.cc',
 		'src/Window.cc',
-		dependencies: [common, libtracy, libthreads, libsdl2, libgles2],
+		dependencies: [common, libtracy, libthreads, libsdl2, libgl, libglew],
 		install: true,
 		include_directories: 'include/cygnet'))
