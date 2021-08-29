@@ -93,7 +93,7 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
 			for (int x = 0; x < CHUNK_WIDTH; ++x) {
 				Tile::ID id = chunk.getTileID({ x, y });
 				Tile &tile = world_->getTileByID(id);
-				if (tile.isSolid) {
+				if (tile.isOpaque) {
 					lc.blocks[y * CHUNK_HEIGHT + x] = true;
 				}
 				if (tile.lightLevel > 0) {
@@ -124,9 +124,9 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 		Tile &oldTile = world_->getTileByID(old);
 		chunk.setTileID(rp, id);
 
-		if (!oldTile.isSolid && newTile.isSolid) {
+		if (!oldTile.isOpaque && newTile.isOpaque) {
 			lighting_->onSolidBlockAdded(pos);
-		} else if (oldTile.isSolid && !newTile.isSolid) {
+		} else if (oldTile.isOpaque && !newTile.isOpaque) {
 			lighting_->onSolidBlockRemoved(pos);
 		}
 
@@ -138,6 +138,10 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 			if (newTile.lightLevel > 0) {
 				addLight(pos, newTile.lightLevel);
 			}
+		}
+
+		if (newTile.onSpawn) {
+			newTile.onSpawn(getContext(), pos);
 		}
 	}
 }
@@ -212,15 +216,6 @@ void WorldPlane::draw(Cygnet::Renderer &rnd) {
 		(int)floor(pbody.pos.x / CHUNK_WIDTH),
 		(int)floor(pbody.pos.y / CHUNK_HEIGHT));
 
-	// Just init one chunk per frame
-	if (chunkInitList_.size() > 0) {
-		/*
-		Chunk *chunk = chunkInitList_.front();
-		chunkInitList_.pop_front();
-		chunk->render(ctx, win.renderer_);
-		TODO */
-	}
-
 	for (int x = -1; x <= 1; ++x) {
 		for (int y = -1; y <= 1; ++y) {
 			auto iter = chunks_.find(pcpos + ChunkPos(x, y));
@@ -249,6 +244,23 @@ void WorldPlane::update(float dt) {
 	std::lock_guard<std::mutex> lock(mut_);
 	auto ctx = getContext();
 	debugBoxes_.clear();
+
+	// Just init one chunk per frame
+	if (chunkInitList_.size() > 0) {
+		Chunk *chunk = chunkInitList_.front();
+		chunkInitList_.pop_front();
+
+		TilePos base = chunk->pos_ * Vec2i{CHUNK_WIDTH, CHUNK_HEIGHT};
+		for (int y = 0; y < CHUNK_HEIGHT; ++y) {
+			for (int x = 0; x < CHUNK_WIDTH; ++x) {
+				Tile::ID id = chunk->getTileID({x, y});
+				Tile &tile = world_->getTileByID(id);
+				if (tile.onSpawn) {
+					tile.onSpawn(getContext(), base + Vec2i{x, y});
+				}
+			}
+		}
+	}
 
 	for (auto &coll: entColls_)
 		coll->update(ctx, dt);

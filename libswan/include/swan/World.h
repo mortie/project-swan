@@ -62,7 +62,7 @@ public:
 
 	// These things get initialized in the ctor.
 	// the above members must be initialized before these.
-	Game *game_; // TODO: reference, not pointer
+	Game *game_;
 	std::mt19937 random_;
 	std::vector<ModWrapper> mods_;
 	Cygnet::ResourceManager resources_;

@@ -6,9 +6,18 @@
 #include <chrono>
 #include <type_traits>
 #include <string>
-#include <stddef.h>
+#include <cstddef>
+#include <cstdint>
 
 namespace Swan {
+
+inline uint32_t random(uint32_t x) {
+	x ^= 0x55555555u;
+	x = ((x >> 16u) ^ x) * 0x45d9f3bu;
+	x = ((x >> 16u) ^ x) * 0x45d9f3bu;
+	x = (x >> 16u) ^ x;
+	return x;
+}
 
 // Inherit from this class to make a class non-copyable
 class NonCopyable {
