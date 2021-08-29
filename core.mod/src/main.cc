@@ -3,6 +3,7 @@
 #include "DefaultWorldGen.h"
 #include "entities/PlayerEntity.h"
 #include "entities/ItemStackEntity.h"
+#include "world/tree.h"
 
 #include <functional>
 
@@ -34,11 +35,18 @@ public:
 		registerTile({
 			.name = "tree-trunk",
 			.image = "core::tile/tree-trunk",
+			.isSolid = false,
 			.droppedItem = "core::tree-trunk",
 		});
 		registerTile({
-			.name = "leaves",
+			.name = "tree-leaves",
 			.image = "core::tile/leaves",
+			.isSolid = false,
+		});
+		registerTile({
+			.name = "tree-seeder",
+			.image = "core::tile/leaves",
+			.onSpawn = spawnTree,
 		});
 		registerTile({
 			.name = "torch",

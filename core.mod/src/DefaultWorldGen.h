@@ -10,9 +10,8 @@ public:
 		tGrass_(world.getTileID("core::grass")),
 		tDirt_(world.getTileID("core::dirt")),
 		tStone_(world.getTileID("core::stone")),
+		tTreeSeeder_(world.getTileID("core::tree-seeder")),
 		tAir_(world.getTileID("@::air")),
-		tTreeTrunk_(world.getTileID("core::tree-trunk")),
-		tLeaves_(world.getTileID("core::leaves")),
 		bgCave_(world.getSprite("core::misc/background-cave")) {}
 
 	void drawBackground(
@@ -23,7 +22,9 @@ public:
 
 private:
 	Swan::Tile::ID genTile(Swan::TilePos pos);
-	Swan::Tile::ID tGrass_, tDirt_, tStone_, tAir_, tTreeTrunk_, tLeaves_;
+
+	const uint32_t seed_ = 100;
+	Swan::Tile::ID tGrass_, tDirt_, tStone_, tTreeSeeder_, tAir_;
 	Cygnet::RenderSprite bgCave_;
-	siv::PerlinNoise perlin_ = siv::PerlinNoise(100);
+	siv::PerlinNoise perlin_{seed_};
 };

@@ -1,6 +1,7 @@
 #include "DefaultWorldGen.h"
 
 #include <algorithm>
+#include <cstdint>
 
 #include "entities/PlayerEntity.h"
 
@@ -53,6 +54,25 @@ Swan::Tile::ID DefaultWorldGen::genTile(Swan::TilePos pos) {
 	// Caves
 	if (pos.y > grassLevel + 7 && perlin_.noise(pos.x / 43.37, pos.y / 16.37) > 0.2)
 		return tAir_;
+
+	// Trees
+	if (pos.y == grassLevel - 1) {
+		constexpr int treeProb = 4;
+		bool spawnTree = Swan::random(pos.x) % treeProb == 0;
+		if (spawnTree) {
+			// Avoid trees which are too close
+			for (int rx = 1; rx <= 5; ++rx) {
+				if (Swan::random(pos.x + rx) % treeProb == 0) {
+					spawnTree = false;
+					break;
+				}
+			}
+
+			if (spawnTree) {
+				return tTreeSeeder_;
+			}
+		}
+	}
 
 	if (pos.y > stoneLevel)
 		return tStone_;
