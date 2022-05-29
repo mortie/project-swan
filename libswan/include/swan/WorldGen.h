@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <SDL.h>
 #include <cygnet/util.h>
 
 #include "common.h"

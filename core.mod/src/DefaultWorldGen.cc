@@ -15,23 +15,7 @@ static int getStoneLevel(const siv::PerlinNoise &perlin, int x) {
 
 void DefaultWorldGen::drawBackground(
 		const Swan::Context &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos) {
-	int texmin = 10;
-	//int texmax = 20;
-
-	if (pos.y > texmin) {
-		/*
-		SDL_Texture *tex = bgCave_.texture_.get();
-
-		Uint8 alpha =  std::clamp(
-			(pos.y - texmin) / (texmax - texmin), 0.0f, 1.0f) * 255;
-		Swan::TexAlphaMod amod(tex, alpha);
-
-
-		Swan::Draw::parallaxBackground(
-			win, tex, std::nullopt, std::nullopt,
-			pos.x * Swan::TILE_SIZE, pos.y * Swan::TILE_SIZE, 0.7);
-		TODO */
-	}
+	// TODO: Do something interesting?
 }
 
 Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos) {

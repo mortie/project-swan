@@ -1,7 +1,5 @@
 #include "util.h"
 
-#include <SDL.h>
-
 #include "gl.h"
 
 namespace Cygnet {
@@ -18,12 +16,6 @@ inline const char *glErrorString(int err) {
 	default: return "(unknown)";
 	}
 #undef errcase
-}
-
-void sdlCheck(bool ok) {
-	if (!ok) {
-		throw SDLError(SDL_GetError());
-	}
 }
 
 void glCheck() {

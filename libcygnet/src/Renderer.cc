@@ -35,7 +35,7 @@ struct ChunkProg: public GlProgram {
 	static constexpr float cw = (float)SwanCommon::CHUNK_WIDTH;
 	static constexpr GLfloat vertexes[] = {
 		0.0f,  0.0f, // pos 0: top left
-		0.0f,  ch ,  // pos 1: bottom left
+		0.0f,  ch,   // pos 1: bottom left
 		cw,    ch,   // pos 2: bottom right
 		cw,    ch,   // pos 2: bottom right
 		cw,    0.0f, // pos 3: top right
@@ -586,9 +586,9 @@ RenderChunk Renderer::createChunk(
 
 	if constexpr (std::endian::native == std::endian::little) {
 		glTexImage2D(
-				GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA,
+				GL_TEXTURE_2D, 0, GL_RG,
 				SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
-				0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, tiles);
+				0, GL_RG, GL_UNSIGNED_BYTE, tiles);
 		glCheck();
 	} else if constexpr (std::endian::native == std::endian::big) {
 		uint8_t buf[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT * 2];
@@ -602,9 +602,9 @@ RenderChunk Renderer::createChunk(
 		}
 
 		glTexImage2D(
-				GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA,
+				GL_TEXTURE_2D, 0, GL_RG,
 				SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
-				0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, buf);
+				0, GL_RG, GL_UNSIGNED_BYTE, buf);
 		glCheck();
 	}
 
@@ -624,12 +624,12 @@ void Renderer::modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id) 
 	if constexpr (std::endian::native == std::endian::little) {
 		glTexSubImage2D(
 				GL_TEXTURE_2D, 0, pos.x, pos.y, 1, 1,
-				GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, &id);
+				GL_RG, GL_UNSIGNED_BYTE, &id);
 	} else if constexpr (std::endian::native == std::endian::big) {
 		uint8_t buf[] = { (uint8_t)(id & 0xff), (uint8_t)((id & 0xff00) >> 8) };
 		glTexSubImage2D(
 				GL_TEXTURE_2D, 0, pos.x, pos.y, 1, 1,
-				GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, buf);
+				GL_RG, GL_UNSIGNED_BYTE, buf);
 	}
 
 	glCheck();
@@ -655,9 +655,9 @@ RenderChunkShadow Renderer::createChunkShadow(
 	glCheck();
 
 	glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_LUMINANCE,
+			GL_TEXTURE_2D, 0, GL_RED,
 			SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
-			0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+			0, GL_RED, GL_UNSIGNED_BYTE, data);
 	glCheck();
 
 	return shadow;
@@ -670,9 +670,9 @@ void Renderer::modifyChunkShadow(
 	glBindTexture(GL_TEXTURE_2D, shadow.tex);
 
 	glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_LUMINANCE,
+			GL_TEXTURE_2D, 0, GL_RED,
 			SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
-			0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+			0, GL_RED, GL_UNSIGNED_BYTE, data);
 	glCheck();
 }
 

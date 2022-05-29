@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 #include <optional>
-#include <SDL.h>
+#include <GLFW/glfw3.h>
 #include <cygnet/Renderer.h>
 #include <cygnet/util.h>
 
@@ -18,44 +18,42 @@ class Game {
 public:
 	void createWorld(const std::string &worldgen, const std::vector<std::string> &modPaths);
 
-	void onKeyDown(SDL_Keysym sym) {
-		pressedKeys_[sym.scancode] = true;
-		didPressKeys_[sym.scancode] = true;
+	void onKeyDown(int scancode) {
+		pressedKeys_[scancode] = true;
+		didPressKeys_[scancode] = true;
 	}
 
-	void onKeyUp(SDL_Keysym sym) {
-		pressedKeys_[sym.scancode] = false;
-		didReleaseKeys_[sym.scancode] = true;
+	void onKeyUp(int scancode) {
+		pressedKeys_[scancode] = false;
+		didReleaseKeys_[scancode] = true;
 	}
 
-	void onMouseMove(Sint32 x, Sint32 y) {
-		mousePos_ = (Vec2{(float)x, (float)y} / (Vec2)cam_.size) * renderer_.winScale();
+	void onMouseMove(float x, float y) {
+		mousePos_ = (Vec2{x, y} / (Vec2)cam_.size) * renderer_.winScale();
 	}
 
-	void onMouseDown(Sint32 x, Sint32 y, Uint8 button) {
-		onMouseMove(x, y);
+	void onMouseDown(int button) {
 		pressedButtons_[button] = true;
 		didPressButtons_[button] = true;
 	}
 
-	void onMouseUp(Sint32 x, Sint32 y, Uint8 button) {
-		onMouseMove(x, y);
+	void onMouseUp(int button) {
 		pressedButtons_[button] = false;
 		didReleaseButtons_[button] = true;
 	}
 
-	void onScrollWheel(Sint32 y) {
-		didScroll_ = (y > 0 ? 1 : -1 );
+	void onScrollWheel(double dy) {
+		didScroll_ += dy;
 	}
 
-	bool isKeyPressed(SDL_Scancode code) { return pressedKeys_[code]; }
-	bool wasKeyPressed(SDL_Scancode code) { return didPressKeys_[code]; }
-	bool wasKeyReleased(SDL_Scancode code) { return didReleaseKeys_[code]; }
+	bool isKeyPressed(int key) { return pressedKeys_[glfwGetKeyScancode(key)]; }
+	bool wasKeyPressed(int key) { return didPressKeys_[glfwGetKeyScancode(key)]; }
+	bool wasKeyReleased(int key) { return didReleaseKeys_[glfwGetKeyScancode(key)]; }
 	Vec2 getMousePos() { return mousePos_; }
-	bool isMousePressed(Uint8 button) { return pressedButtons_[button]; }
-	bool wasMousePressed(Uint8 button) { return didPressButtons_[button]; }
-	bool wasMouseReleased(Uint8 button) { return didReleaseButtons_[button]; }
-	int wasWheelScrolled() { return didScroll_; }
+	bool isMousePressed(int button) { return pressedButtons_[button]; }
+	bool wasMousePressed(int button) { return didPressButtons_[button]; }
+	bool wasMouseReleased(int button) { return didReleaseButtons_[button]; }
+	double wasWheelScrolled() { return didScroll_; }
 
 	TilePos getMouseTile();
 
@@ -69,16 +67,16 @@ public:
 	Cygnet::RenderCamera cam_{.zoom = 0.125};
 
 private:
-	std::bitset<SDL_NUM_SCANCODES> pressedKeys_;
-	std::bitset<SDL_NUM_SCANCODES> didPressKeys_;
-	std::bitset<SDL_NUM_SCANCODES> didReleaseKeys_;
+	std::bitset<512> pressedKeys_;
+	std::bitset<512> didPressKeys_;
+	std::bitset<512> didReleaseKeys_;
 
 	Vec2 mousePos_;
-	std::bitset<SDL_BUTTON_X2> pressedButtons_;
-	std::bitset<SDL_BUTTON_X2> didPressButtons_;
-	std::bitset<SDL_BUTTON_X2> didReleaseButtons_;
+	std::bitset<8> pressedButtons_;
+	std::bitset<8> didPressButtons_;
+	std::bitset<8> didReleaseButtons_;
 
-	int didScroll_ = 0;
+	double didScroll_ = 0;
 };
 
 }

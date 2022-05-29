@@ -5,13 +5,14 @@
 #include <chrono>
 #include <ratio>
 
-#include <SDL.h>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 #include <SDL_image.h>
 #include <string.h>
 #include <imgui.h>
-#include <imgui_sdl.h>
+#include <cygnet/gl.h>
 #include <cygnet/Renderer.h>
-#include <cygnet/Window.h>
 
 #include <swan/swan.h>
 
@@ -27,65 +28,80 @@ using namespace Swan;
 #define sdlassert(expr, str) errassert(expr, str, SDL_GetError);
 #define imgassert(expr, str) errassert(expr, str, IMG_GetError);
 
-// ImGUI and SDL have different numbers for mouse buttons
-int sdlButtonToImGuiButton(uint8_t button) {
-	switch (button) {
-	case SDL_BUTTON_LEFT:
-		return 0;
-	case SDL_BUTTON_RIGHT:
-		return 1;
-	case SDL_BUTTON_MIDDLE:
-		return 2;
-	case SDL_BUTTON_X1:
-		return 3;
-	case SDL_BUTTON_X2:
-		return 4;
-	default:
-		warn << "Unknown mouse button: " << button;
-		return 4; // Let's call that X2?
+static Game *gameptr;
+static double pixelRatio = 1;
+
+static void keyCallback(GLFWwindow *, int key, int scancode, int action, int) {
+	if (action == GLFW_PRESS) {
+		gameptr->onKeyDown(scancode);
+	} else if (action == GLFW_RELEASE) {
+		gameptr->onKeyUp(scancode);
 	}
 }
 
-int main(int argc, char **argv) {
-	uint32_t winFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
-	uint32_t renderFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
-	float guiScale = 1;
-
-	for (int i = 1; i < argc; ++i) {
-		if (strcmp(argv[i], "--lodpi") == 0) {
-			winFlags &= ~SDL_WINDOW_ALLOW_HIGHDPI;
-		} else if (strcmp(argv[i], "--fullscreen") == 0) {
-			winFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-		} else if (strcmp(argv[i], "--no-vsync") == 0) {
-			renderFlags &= ~SDL_RENDERER_PRESENTVSYNC;
-		} else if (strcmp(argv[i], "--vulkan") == 0) {
-			winFlags |= SDL_WINDOW_VULKAN;
-		} else if (strcmp(argv[i], "--sw-render") == 0) {
-			renderFlags &= ~SDL_RENDERER_ACCELERATED;
-			renderFlags |= SDL_RENDERER_SOFTWARE;
-		} else if (strcmp(argv[i], "--2x") == 0) {
-			guiScale = 2;
-		} else if (strcmp(argv[i], "--gles") == 0) {
-			SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
-		} else {
-			warn << "Unknown argument: " << argv[i];
-		}
+static void mouseButtonCallback(GLFWwindow *, int button, int action, int) {
+	if (action == GLFW_PRESS) {
+		gameptr->onMouseDown(button);
+	} else if (action == GLFW_RELEASE) {
+		gameptr->onMouseUp(button);
 	}
+}
 
-	sdlassert(SDL_Init(SDL_INIT_VIDEO) >= 0, "Could not initialize SDL");
-	Deferred<SDL_Quit> sdl;
+static void cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {
+	gameptr->onMouseMove(xpos * pixelRatio, ypos * pixelRatio);
+}
+
+static void scrollCallback(GLFWwindow *, double dx, double dy) {
+	gameptr->onScrollWheel(dy);
+}
+
+static void windowSizeCallback(GLFWwindow *window, int width, int height) {
+	int dw, dh;
+	glfwGetFramebufferSize(window, &dw, &dh);
+	glViewport(0, 0, dw, dh);
+	Cygnet::glCheck();
+	gameptr->cam_.size = {dw, dh};
+	pixelRatio = (double)dw / (double)width;
+
+}
+
+int main(int argc, char **argv) {
+	glfwInit();
+	Deferred<glfwTerminate> glfw;
+
+	glfwSetErrorCallback(+[](int error, const char* description) {
+		warn << "GLFW Error: " << error << ": " << description;
+	});
 
 	int imgFlags = IMG_INIT_PNG;
 	imgassert(IMG_Init(imgFlags) == imgFlags, "Could not initialize SDL_Image");
 	Deferred<IMG_Quit> sdlImage;
 
-	Cygnet::Window window("Project: SWAN", 640 * guiScale, 480 * guiScale);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	GLFWwindow *window = glfwCreateWindow(640, 480, "Project: SWAN", nullptr, nullptr);
+	if (!window) {
+		panic << "Failed to create window";
+		return 1;
+	}
+
+	glfwMakeContextCurrent(window);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+
+	// Create one global VAO, so we can pretend VAOs don't exist
+	GLuint globalVao;
+	glGenVertexArrays(1, &globalVao);
+	glBindVertexArray(globalVao);
 
 	// Load and display application icon
+	/*
 	CPtr<SDL_Surface, SDL_FreeSurface> icon(
 		IMG_Load("assets/icon.png"));
 	sdlassert(icon, "Could not load icon");
-	SDL_SetWindowIcon(window.sdlWindow(), icon.get());
+	SDL_SetWindowIcon(window.sdlWindow(), icon.get());*/
 
 	// Init ImGUI and ImGUI_SDL
 	/*
@@ -104,9 +120,22 @@ int main(int argc, char **argv) {
 
 	// Create a world
 	Game game;
-	game.cam_.size = window.size();
 	std::vector<std::string> mods{ "core.mod" };
 	game.createWorld("core::default", mods);
+
+	gameptr = &game;
+	glfwSetKeyCallback(window, keyCallback);
+	glfwSetMouseButtonCallback(window, mouseButtonCallback);
+	glfwSetCursorPosCallback(window, cursorPositionCallback);
+	glfwSetScrollCallback(window, scrollCallback);
+	glfwSetWindowSizeCallback(window, windowSizeCallback);
+
+	// Initialize window size stuff
+	{
+		int width, height;
+		glfwGetWindowSize(window, &width, &height);
+		windowSizeCallback(window, width, height);
+	}
 
 	auto prevTime = std::chrono::steady_clock::now();
 
@@ -115,76 +144,8 @@ int main(int argc, char **argv) {
 
 	int fCount = 0;
 	int slowFrames = 0;
-	while (1) {
+	while (!glfwWindowShouldClose(window)) {
 		ZoneScopedN("game loop");
-
-		SDL_Event evt;
-		while (SDL_PollEvent(&evt)) {
-			switch (evt.type) {
-			case SDL_QUIT:
-				goto exit;
-				break;
-
-			case SDL_WINDOWEVENT:
-				if (evt.window.event == SDL_WINDOWEVENT_RESIZED) {
-					window.onResize(evt.window.data1, evt.window.data2);
-					//imguiIO.DisplaySize.x = (float)evt.window.data1;
-					//imguiIO.DisplaySize.y = (float)evt.window.data2;
-				}
-				break;
-
-			case SDL_KEYDOWN:
-				game.onKeyDown(evt.key.keysym);
-				break;
-
-			case SDL_KEYUP:
-				game.onKeyUp(evt.key.keysym);
-				break;
-
-			case SDL_MOUSEMOTION:
-				/*
-				imguiIO.MousePos.x = (float)evt.motion.x;
-				imguiIO.MousePos.y = (float)evt.motion.y;
-				if (!imguiIO.WantCaptureMouse) */
-					game.onMouseMove(
-							evt.motion.x * window.pixelRatio(),
-							evt.motion.y * window.pixelRatio());
-				break;
-
-			case SDL_MOUSEBUTTONDOWN:
-				/*
-				imguiIO.MouseDown[sdlButtonToImGuiButton(evt.button.button)] = true;
-				if (!imguiIO.WantCaptureMouse) */
-					game.onMouseDown(
-							evt.button.x * window.pixelRatio(),
-							evt.button.y * window.pixelRatio(),
-							evt.button.button);
-				break;
-
-			case SDL_MOUSEBUTTONUP:
-				/*
-				imguiIO.MouseDown[sdlButtonToImGuiButton(evt.button.button)] = false;
-				if (!imguiIO.WantCaptureMouse) */
-					game.onMouseUp(
-							evt.button.x * window.pixelRatio(),
-							evt.button.y * window.pixelRatio(),
-							evt.button.button);
-				break;
-
-			case SDL_MOUSEWHEEL:
-				if (evt.wheel.y == 0) {
-					break;
-				}
-
-				/*
-				imguiIO.MouseWheel += (float)evt.wheel.y;
-				if (!imguiIO.WantCaptureMouse) */
-					game.onScrollWheel(evt.wheel.y);
-				break;
-			}
-		}
-
-		game.cam_.size = window.size();
 
 		auto now = std::chrono::steady_clock::now();
 		std::chrono::duration<float> dur(now - prevTime);
@@ -247,7 +208,9 @@ int main(int argc, char **argv) {
 		}
 
 		{
-			window.clear(game.backgroundColor());
+			Cygnet::Color color = game.backgroundColor();
+			glClearColor(color.r, color.g, color.b, color.a);
+			glClear(GL_COLOR_BUFFER_BIT);
 		}
 
 		// ImGUI
@@ -268,11 +231,10 @@ int main(int argc, char **argv) {
 
 		{
 			ZoneScopedN("render present");
-			window.flip();
+			glfwSwapBuffers(window);
 		}
+
+		glfwPollEvents();
 		FrameMark
 	}
-
-exit:
-	return EXIT_SUCCESS;
 }

@@ -4,11 +4,10 @@ project('swan', 'cpp',
 libdl = meson.get_compiler('cpp').find_library('dl')
 libz = meson.get_compiler('cpp').find_library('z')
 
-libglew = dependency('glew')
+libglfw3 = dependency('glfw3')
 libgl = dependency('OpenGL')
 #libgl = meson.get_compiler('cpp').find_library('GLESv2')
 
-libsdl2 = dependency('sdl2')
 libsdl2_image = dependency('SDL2_image')
 libthreads = dependency('threads')
 
@@ -24,6 +23,6 @@ subdir('core.mod')
 executable('swan', 'src/main.cc',
 	install: true,
 	install_rpath: get_option('libdir'),
-	dependencies: [libswan, libcygnet, common, libimgui, libsdl2, libsdl2_image])
+	dependencies: [libswan, libcygnet, common, libimgui, libsdl2_image, libgl, libglfw3])
 
 install_subdir('assets', install_dir: '')

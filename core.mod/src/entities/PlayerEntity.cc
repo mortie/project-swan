@@ -40,24 +40,24 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	placeTimer_.tick(dt);
 
 	// Break block
-	if (ctx.game.isMousePressed(SDL_BUTTON_LEFT))
+	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_LEFT))
 		ctx.plane.breakTile(mouseTile_);
 
 	// Place block
-	if (ctx.game.isMousePressed(SDL_BUTTON_RIGHT) && placeTimer_.periodic(0.50)) {
+	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_RIGHT) && placeTimer_.periodic(0.50)) {
 		if (ctx.plane.getTileID(mouseTile_) == ctx.world.getTileID("@::air")) {
 			ctx.plane.setTile(mouseTile_, "core::torch");
 		}
 	}
 
 	// Move left
-	if (ctx.game.isKeyPressed(SDL_SCANCODE_A) || ctx.game.isKeyPressed(SDL_SCANCODE_LEFT)) {
+	if (ctx.game.isKeyPressed(GLFW_KEY_A) || ctx.game.isKeyPressed(GLFW_KEY_LEFT)) {
 		physics_.force += Swan::Vec2(-MOVE_FORCE, 0);
 		state_ = State::RUNNING_L;
 	}
 
 	// Move right
-	if (ctx.game.isKeyPressed(SDL_SCANCODE_D) || ctx.game.isKeyPressed(SDL_SCANCODE_RIGHT)) {
+	if (ctx.game.isKeyPressed(GLFW_KEY_D) || ctx.game.isKeyPressed(GLFW_KEY_RIGHT)) {
 		physics_.force += Swan::Vec2(MOVE_FORCE, 0);
 		if (state_ == State::RUNNING_L)
 			state_ = State::IDLE;
@@ -65,7 +65,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 			state_ = State::RUNNING_R;
 	}
 
-	bool jumpPressed = ctx.game.isKeyPressed(SDL_SCANCODE_SPACE);
+	bool jumpPressed = ctx.game.isKeyPressed(GLFW_KEY_SPACE);
 
 	// Jump
 	if (physics_.onGround && jumpPressed && jumpTimer_.periodic(0.5)) {

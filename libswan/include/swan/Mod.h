@@ -5,7 +5,6 @@
 #include <vector>
 #include <memory>
 #include <type_traits>
-#include <SDL.h>
 
 #include "Tile.h"
 #include "Item.h"

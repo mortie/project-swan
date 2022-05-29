@@ -7,7 +7,6 @@
 
 #include "log.h"
 #include "Clock.h"
-#include "gfxutil.h"
 #include "World.h"
 #include "Game.h"
 

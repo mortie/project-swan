@@ -34,7 +34,7 @@ void Game::draw() {
 
 void Game::update(float dt) {
 	// Zoom the window using the scroll wheel
-	cam_.zoom += (float)wasWheelScrolled() * 0.1f * cam_.zoom;
+	cam_.zoom += (float)wasWheelScrolled() * 0.05f * cam_.zoom;
 	if (cam_.zoom > 1)
 		cam_.zoom = 1;
 	else if (cam_.zoom < 0.025)

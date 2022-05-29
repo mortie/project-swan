@@ -7,7 +7,6 @@ libcygnet = declare_dependency(
 		'src/shaders.cc',
 		'src/TileAtlas.cc',
 		'src/util.cc',
-		'src/Window.cc',
-		dependencies: [common, libtracy, libthreads, libsdl2, libgl, libglew],
+		dependencies: [common, libtracy, libthreads, libgl, libglfw3],
 		install: true,
 		include_directories: 'include/cygnet'))

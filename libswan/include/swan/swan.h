@@ -20,5 +20,4 @@
 #include <swan/common.h>
 #include <swan/log.h>
 #include <swan/drawutil.h>
-#include <swan/gfxutil.h>
 #include <swan/util.h>

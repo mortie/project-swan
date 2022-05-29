@@ -3,32 +3,35 @@
 namespace Cygnet::Shaders {
 
 const char *chunkVx = R"glsl(
+	#version 410
+	in vec2 vertex;
 	uniform mat3 camera;
 	uniform vec2 pos;
-	attribute vec2 vertex;
-	varying vec2 v_tileCoord;
+	out vec2 v_tileCoord;
 
 	void main() {
-		vec3 pos = camera * vec3(pos + vertex, 1);
-		gl_Position = vec4(pos.xy, 0, 1);
+		vec3 p = camera * vec3(pos + vertex, 1);
+		gl_Position = vec4(p.xy, 0, 1);
 		v_tileCoord = vertex;
 	}
 )glsl";
 
 const char *chunkFr = R"glsl(
+	#version 410
 	#define TILE_SIZE 32.0
 	#define CHUNK_WIDTH 64
 	#define CHUNK_HEIGHT 64
 
-	varying vec2 v_tileCoord;
+	in vec2 v_tileCoord;
 	uniform sampler2D tileAtlas;
 	uniform vec2 tileAtlasSize;
 	uniform sampler2D tiles;
+	out vec4 fragColor;
 
 	void main() {
 		vec2 tilePos = floor(vec2(v_tileCoord.x, v_tileCoord.y));
-		vec4 tileColor = texture2D(tiles, tilePos / vec2(CHUNK_WIDTH, CHUNK_HEIGHT));
-		float tileID = floor((tileColor.r * 256.0 + tileColor.a) * 256.0);
+		vec4 tileColor = texture(tiles, tilePos / vec2(CHUNK_WIDTH, CHUNK_HEIGHT));
+		float tileID = floor((tileColor.r * 256.0 + tileColor.g) * 256.0);
 
 		// 1/(TILE_SIZE*16) plays the same role here as in the sprite vertex shader.
 		vec2 offset = v_tileCoord - tilePos;
@@ -37,18 +40,19 @@ const char *chunkFr = R"glsl(
 			pixoffset.x + tileID + offset.x,
 			pixoffset.y + floor(tileID / tileAtlasSize.x) + offset.y);
 
-		gl_FragColor = texture2D(tileAtlas, atlasPos / tileAtlasSize);
+		fragColor = texture(tileAtlas, atlasPos / tileAtlasSize);
 	}
 )glsl";
 
 const char *chunkShadowVx = R"glsl(
+	#version 410
 	#define CHUNK_WIDTH 64
 	#define CHUNK_HEIGHT 64
 
+	in vec2 vertex;
 	uniform mat3 camera;
 	uniform vec2 pos;
-	attribute vec2 vertex;
-	varying vec2 v_texCoord;
+	out vec2 v_texCoord;
 
 	void main() {
 		vec3 pos = camera * vec3(pos + vertex, 1);
@@ -58,20 +62,23 @@ const char *chunkShadowVx = R"glsl(
 )glsl";
 
 const char *chunkShadowFr = R"glsl(
-	varying vec2 v_texCoord;
+	#version 410
+	in vec2 v_texCoord;
 	uniform sampler2D tex;
+	out vec4 fragColor;
 
 	void main() {
-		vec4 color = texture2D(tex, v_texCoord);
-		gl_FragColor = vec4(0, 0, 0, 1.0 - color.r);
+		vec4 color = texture(tex, v_texCoord);
+		fragColor = vec4(0, 0, 0, 1.0 - color.r);
 	}
 )glsl";
 
 const char *tileVx = R"glsl(
+	#version 410
+	in vec2 vertex;
 	uniform mat3 camera;
 	uniform mat3 transform;
-	attribute vec2 vertex;
-	varying vec2 v_tileCoord;
+	out vec2 v_tileCoord;
 
 	void main() {
 		vec3 pos = camera * transform * vec3(vertex, 1);
@@ -81,12 +88,14 @@ const char *tileVx = R"glsl(
 )glsl";
 
 const char *tileFr = R"glsl(
+	#version 410
 	#define TILE_SIZE 32.0
 
-	varying vec2 v_tileCoord;
+	in vec2 v_tileCoord;
 	uniform sampler2D tileAtlas;
 	uniform vec2 tileAtlasSize;
 	uniform float tileID;
+	out vec4 fragColor;
 
 	void main() {
 
@@ -97,19 +106,20 @@ const char *tileFr = R"glsl(
 			pixoffset.x + tileID + offset.x,
 			pixoffset.y + floor(tileID / tileAtlasSize.x) + offset.y);
 
-		gl_FragColor = texture2D(tileAtlas, atlasPos / tileAtlasSize);
+		fragColor = texture(tileAtlas, atlasPos / tileAtlasSize);
 	}
 )glsl";
 
 const char *spriteVx = R"glsl(
+	#version 410
 	#define TILE_SIZE 32.0
 
+	in vec2 vertex;
 	uniform mat3 camera;
 	uniform mat3 transform;
 	uniform vec2 frameSize;
 	uniform vec2 frameInfo; // frame count, frame index
-	attribute vec2 vertex;
-	varying vec2 v_texCoord;
+	out vec2 v_texCoord;
 
 	void main() {
 		// Here, I'm basically treating 1/(TILE_SIZE*16) as half the size of a "pixel".
@@ -128,20 +138,23 @@ const char *spriteVx = R"glsl(
 )glsl";
 
 const char *spriteFr = R"glsl(
-	varying vec2 v_texCoord;
+	#version 410
+	in vec2 v_texCoord;
 	uniform sampler2D tex;
+	out vec4 fragColor;
 
 	void main() {
-		gl_FragColor = texture2D(tex, v_texCoord);
+		fragColor = texture(tex, v_texCoord);
 	}
 )glsl";
 
 const char *rectVx = R"glsl(
+	#version 410
+	in vec2 vertex;
 	uniform mat3 camera;
 	uniform vec2 pos;
 	uniform vec2 size;
-	attribute vec2 vertex;
-	varying vec2 v_coord;
+	out vec2 v_coord;
 
 	void main() {
 		vec3 pos = camera * vec3(pos + vertex * size, 1);
@@ -151,22 +164,25 @@ const char *rectVx = R"glsl(
 )glsl";
 
 const char *rectFr = R"glsl(
+	#version 410
 	#define THICKNESS 0.02
 
-	varying vec2 v_coord;
+	in vec2 v_coord;
 	uniform vec2 size;
+	out vec4 fragColor;
 
 	void main() {
 		vec2 invCoord = size - v_coord;
 		float minDist = min(v_coord.x, min(v_coord.y, min(invCoord.x, invCoord.y)));
-		gl_FragColor = vec4(0.6, 0.6, 0.6, 0.8) * float(minDist < THICKNESS);
+		fragColor = vec4(0.6, 0.6, 0.6, 0.8) * float(minDist < THICKNESS);
 	}
 )glsl";
 
 const char *blendVx = R"glsl(
-	attribute vec2 vertex;
-	attribute vec2 texCoord;
-	varying vec2 v_texCoord;
+	#version 410
+	in vec2 vertex;
+	in vec2 texCoord;
+	out vec2 v_texCoord;
 
 	void main() {
 		gl_Position = vec4(vertex.xy, 0, 1);
@@ -175,12 +191,14 @@ const char *blendVx = R"glsl(
 )glsl";
 
 const char *blendFr = R"glsl(
-	varying vec2 v_texCoord;
+	#version 410
+	in vec2 v_texCoord;
 	uniform sampler2D tex;
+	out vec4 fragColor;
 
 	void main() {
 		//gl_FragColor = vec4(v_texCoord.x, v_texCoord.y, 0, 1);
-		gl_FragColor = texture2D(tex, v_texCoord);
+		fragColor = texture(tex, v_texCoord);
 	}
 )glsl";
 

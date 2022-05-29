@@ -1,6 +1,5 @@
 #pragma once
 
-#include <SDL.h>
 #include <cygnet/Renderer.h>
 
 #include "common.h"

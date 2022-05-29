@@ -1,6 +1,6 @@
 libswan_deps = [
-	common, libcygnet, libtracy, libthreads, libsdl2, libsdl2_image,
-	libcpptoml, libdl, libz]
+	common, libcygnet, libtracy, libthreads, libsdl2_image,
+	libcpptoml, libdl, libz, libglfw3]
 
 libswan = declare_dependency(
 	include_directories: 'include',
@@ -15,7 +15,6 @@ libswan = declare_dependency(
 		'src/drawutil.cc',
 		'src/Entity.cc',
 		'src/Game.cc',
-		'src/gfxutil.cc',
 		'src/ItemStack.cc',
 		'src/LightServer.cc',
 		'src/OS.cc',

@@ -9,16 +9,14 @@ libfmt = declare_dependency(
 		include_directories: 'fmt/include'))
 
 libimgui = declare_dependency(
-	include_directories: ['imgui', 'imgui-plot/include', 'imgui_sdl'],
+	include_directories: ['imgui', 'imgui-plot/include'],
 	link_with: library('imgui',
 		'imgui/imgui_demo.cpp',
 		'imgui/imgui_draw.cpp',
 		'imgui/imgui_widgets.cpp',
 		'imgui/imgui.cpp',
-		'imgui_sdl/imgui_sdl.cpp',
 		'imgui-plot/src/imgui_plot.cpp',
-		include_directories: ['imgui', 'imgui-plot/include', 'imgui_sdl'],
-		dependencies: libsdl2,
+		include_directories: ['imgui', 'imgui-plot/include'],
 		cpp_args: ['-Wno-sign-compare', '-Wno-deprecated-enum-enum-conversion']))
 
 libmsgpack = declare_dependency(

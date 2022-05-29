@@ -1,6 +1,5 @@
 #include "assets.h"
 
-#include <SDL.h>
 #include <SDL_image.h>
 #include <cpptoml.h>
 #include <string.h>

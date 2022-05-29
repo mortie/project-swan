@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 #include <random>
-#include <SDL.h>
 #include <cygnet/Renderer.h>
 #include <cygnet/ResourceManager.h>
 #include <cygnet/util.h>
