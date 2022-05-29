@@ -2,4 +2,4 @@
 
 2D sandbox game.
 
-![screenshot](https://git.mort.coffee/mort/project-swan/raw/branch/master/screenshot.png)
+![screenshot](https://raw.githubusercontent.com/mortie/project-swan/main/screenshot.png)
