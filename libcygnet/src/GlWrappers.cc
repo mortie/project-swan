@@ -4,6 +4,7 @@
 
 #include "gl.h"
 #include "util.h"
+#include <swan-common/constants.h>
 
 namespace Cygnet {
 
@@ -22,7 +23,20 @@ GlShader::GlShader(Type type, const char *source) {
 		break;
 	}
 
-	glShaderSource(id_, 1, &source, NULL);
+	std::string chunkWidth = std::to_string(SwanCommon::CHUNK_WIDTH);
+	std::string chunkHeight = std::to_string(SwanCommon::CHUNK_HEIGHT);
+	std::string tileSize = std::to_string(SwanCommon::TILE_SIZE);
+	const char *sources[] = {
+		GLSL_PRELUDE,
+		"\n",
+		"#define SWAN_CHUNK_WIDTH ", chunkWidth.c_str(), "\n",
+		"#define SWAN_CHUNK_HEIGHT ", chunkHeight.c_str(), "\n",
+		"#define SWAN_TILE_SIZE ", tileSize.c_str(), "\n",
+		source,
+	};
+	size_t sourcecount = sizeof(sources) / sizeof(*sources);
+
+	glShaderSource(id_, sourcecount, sources, NULL);
 	glCheck();
 	glCompileShader(id_);
 	glCheck();
@@ -39,7 +53,11 @@ GlShader::GlShader(Type type, const char *source) {
 	glGetShaderiv(id_, GL_COMPILE_STATUS, &status);
 	glCheck();
 	if (status == GL_FALSE) {
-		std::cerr << "Cygnet: Here's the broken shader:\n" << source << '\n';
+		std::cerr << "Cygnet: Here's the broken shader:\n";
+		for (size_t i = 0; i < sourcecount; ++i) {
+			std::cerr << sources[i];
+		}
+		std::cerr << '\n';
 		throw GlCompileError("GL shader compilation failed.");
 	}
 }

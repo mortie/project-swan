@@ -62,7 +62,6 @@ static void windowSizeCallback(GLFWwindow *window, int width, int height) {
 	Cygnet::glCheck();
 	gameptr->cam_.size = {dw, dh};
 	pixelRatio = (double)dw / (double)width;
-
 }
 
 int main(int argc, char **argv) {
@@ -76,6 +75,13 @@ int main(int argc, char **argv) {
 	int imgFlags = IMG_INIT_PNG;
 	imgassert(IMG_Init(imgFlags) == imgFlags, "Could not initialize SDL_Image");
 	Deferred<IMG_Quit> sdlImage;
+
+#ifdef __APPLE__
+	Cygnet::GLSL_PRELUDE = "#version 150\n";
+#else 
+	Cygnet::GLSL_PRELUDE = "#version 320 es\nprecision mediump float;\n";
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+#endif
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -136,6 +142,9 @@ int main(int argc, char **argv) {
 		glfwGetWindowSize(window, &width, &height);
 		windowSizeCallback(window, width, height);
 	}
+
+	// Enable vsync
+	glfwSwapInterval(1);
 
 	auto prevTime = std::chrono::steady_clock::now();
 

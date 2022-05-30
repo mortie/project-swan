@@ -3,7 +3,6 @@
 namespace Cygnet::Shaders {
 
 const char *chunkVx = R"glsl(
-	#version 410
 	in vec2 vertex;
 	uniform mat3 camera;
 	uniform vec2 pos;
@@ -17,11 +16,6 @@ const char *chunkVx = R"glsl(
 )glsl";
 
 const char *chunkFr = R"glsl(
-	#version 410
-	#define TILE_SIZE 32.0
-	#define CHUNK_WIDTH 64
-	#define CHUNK_HEIGHT 64
-
 	in vec2 v_tileCoord;
 	uniform sampler2D tileAtlas;
 	uniform vec2 tileAtlasSize;
@@ -30,12 +24,12 @@ const char *chunkFr = R"glsl(
 
 	void main() {
 		vec2 tilePos = floor(vec2(v_tileCoord.x, v_tileCoord.y));
-		vec4 tileColor = texture(tiles, tilePos / vec2(CHUNK_WIDTH, CHUNK_HEIGHT));
+		vec4 tileColor = texture(tiles, tilePos / vec2(SWAN_CHUNK_WIDTH, SWAN_CHUNK_HEIGHT));
 		float tileID = floor((tileColor.r * 256.0 + tileColor.g) * 256.0);
 
 		// 1/(TILE_SIZE*16) plays the same role here as in the sprite vertex shader.
 		vec2 offset = v_tileCoord - tilePos;
-		vec2 pixoffset = (1.0 - offset * 2.0) / (TILE_SIZE * 16.0);
+		vec2 pixoffset = (1.0 - offset * 2.0) / (float(SWAN_TILE_SIZE) * 16.0);
 		vec2 atlasPos = vec2(
 			pixoffset.x + tileID + offset.x,
 			pixoffset.y + floor(tileID / tileAtlasSize.x) + offset.y);
@@ -45,7 +39,6 @@ const char *chunkFr = R"glsl(
 )glsl";
 
 const char *chunkShadowVx = R"glsl(
-	#version 410
 	#define CHUNK_WIDTH 64
 	#define CHUNK_HEIGHT 64
 
@@ -62,7 +55,6 @@ const char *chunkShadowVx = R"glsl(
 )glsl";
 
 const char *chunkShadowFr = R"glsl(
-	#version 410
 	in vec2 v_texCoord;
 	uniform sampler2D tex;
 	out vec4 fragColor;
@@ -74,7 +66,6 @@ const char *chunkShadowFr = R"glsl(
 )glsl";
 
 const char *tileVx = R"glsl(
-	#version 410
 	in vec2 vertex;
 	uniform mat3 camera;
 	uniform mat3 transform;
@@ -88,7 +79,6 @@ const char *tileVx = R"glsl(
 )glsl";
 
 const char *tileFr = R"glsl(
-	#version 410
 	#define TILE_SIZE 32.0
 
 	in vec2 v_tileCoord;
@@ -111,7 +101,6 @@ const char *tileFr = R"glsl(
 )glsl";
 
 const char *spriteVx = R"glsl(
-	#version 410
 	#define TILE_SIZE 32.0
 
 	in vec2 vertex;
@@ -138,7 +127,6 @@ const char *spriteVx = R"glsl(
 )glsl";
 
 const char *spriteFr = R"glsl(
-	#version 410
 	in vec2 v_texCoord;
 	uniform sampler2D tex;
 	out vec4 fragColor;
@@ -149,7 +137,6 @@ const char *spriteFr = R"glsl(
 )glsl";
 
 const char *rectVx = R"glsl(
-	#version 410
 	in vec2 vertex;
 	uniform mat3 camera;
 	uniform vec2 pos;
@@ -164,7 +151,6 @@ const char *rectVx = R"glsl(
 )glsl";
 
 const char *rectFr = R"glsl(
-	#version 410
 	#define THICKNESS 0.02
 
 	in vec2 v_coord;
@@ -179,7 +165,6 @@ const char *rectFr = R"glsl(
 )glsl";
 
 const char *blendVx = R"glsl(
-	#version 410
 	in vec2 vertex;
 	in vec2 texCoord;
 	out vec2 v_texCoord;
@@ -191,7 +176,6 @@ const char *blendVx = R"glsl(
 )glsl";
 
 const char *blendFr = R"glsl(
-	#version 410
 	in vec2 v_texCoord;
 	uniform sampler2D tex;
 	out vec4 fragColor;
