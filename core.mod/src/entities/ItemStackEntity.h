@@ -13,6 +13,8 @@ public:
 	void deserialize(const Swan::Context &ctx, const PackObject &obj) override;
 	PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) override;
 
+	Swan::Item *item() { return item_; }
+
 private:
 	static constexpr float MASS = 80;
 	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.5, 0.5);

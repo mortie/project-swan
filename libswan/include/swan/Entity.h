@@ -47,7 +47,7 @@ public:
 
 class PhysicsEntity: public Entity, public BodyTrait, public PhysicsTrait {
 public:
-	PhysicsEntity(Vec2 size): body_({ .size = size }) {}
+	PhysicsEntity(Vec2 size): body_({.size = size}) {}
 
 	BodyTrait::Body &get(BodyTrait::Tag) override { return body_; }
 	PhysicsTrait::Physics &get(PhysicsTrait::Tag) override { return physics_; }

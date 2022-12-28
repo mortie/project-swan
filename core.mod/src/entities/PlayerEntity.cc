@@ -23,8 +23,8 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
 		mat.translate({-0.5, 0}).scale({-1, 1}).translate({0.5, 0});
 	}
 
-	anims_[(int)state_].draw(rnd, mat.translate(
-			body_.pos - Swan::Vec2{0.2, 0.1}));
+	currentAnimation_->draw(rnd, mat.translate(
+		body_.pos - Swan::Vec2{0.2, 0.1}));
 
 	rnd.drawRect(mouseTile_, {1, 1});
 	rnd.drawRect(body_.pos, body_.size);
@@ -76,9 +76,19 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	if (!physics_.onGround && (!jumpPressed || physics_.vel.y > 0))
 		physics_.force += Swan::Vec2(0, DOWN_FORCE);
 
-	if (state_ != oldState)
-		anims_[(int)state_].reset();
-	anims_[(int)state_].tick(dt);
+	if (state_ != oldState) {
+		switch (state_) {
+		case State::IDLE:
+			currentAnimation_ = &idleAnimation_;
+			break;
+		case State::RUNNING_L:
+		case State::RUNNING_R:
+			currentAnimation_ = &runningAnimation_;
+			break;
+		}
+		currentAnimation_->reset();
+	}
+	currentAnimation_->tick(dt);
 
 	physics(ctx, dt, { .mass = MASS });
 

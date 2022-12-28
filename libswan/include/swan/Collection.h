@@ -10,6 +10,7 @@
 #include "Entity.h"
 #include "SlotVector.h"
 #include "SmallOptional.h"
+#include "util.h"
 
 namespace Swan {
 
@@ -47,6 +48,9 @@ public:
 	using SlotPolicy = SlotVectorDefaultSentinel<SmallNullOpt>;
 
 	virtual ~EntityCollection() = default;
+
+	template<typename Ent>
+	Iter<Ent *> iter();
 
 	template<typename Ent, typename... Args>
 	EntityRef spawn(Args&&... args);
@@ -120,6 +124,20 @@ inline bool EntityRef::hasValue() {
 /*
  * EntityCollection
  */
+
+template<typename Ent>
+inline Iter<Ent *> EntityCollection::iter() {
+	auto entities = (SlotVector<OptEnt<Ent>, SlotPolicy<Ent>> *)getEntityVector();
+	return Iter<Ent *>([first = entities->begin(), last = entities->end()]() mutable {
+		if (first == last) {
+			return std::optional<Ent *>{};
+		} else {
+			auto &ret = *first;
+			++first;
+			return std::optional(ret.get());
+		}
+	});
+}
 
 template<typename Ent, typename... Args>
 inline EntityRef EntityCollection::spawn(Args&&... args) {

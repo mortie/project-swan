@@ -56,14 +56,7 @@ public:
 
 	template<typename T>
 	Iter<T *>getEntsOfType() {
-		return Iter<T *>([] { return std::nullopt; });
-		/* TODO
-		return mapFilter(entities_.begin(), entities_.end(), [](std::unique_ptr<Entity> &ent) -> std::optional<T *> {
-			if (T *e = dynamic_cast<T *>(ent.get()); e != nullptr)
-				return e;
-			return std::nullopt;
-		});
-		*/
+		return getCollectionOf<T>().template iter<T>();
 	}
 
 	EntityRef spawnPlayer();

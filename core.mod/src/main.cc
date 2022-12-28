@@ -14,7 +14,7 @@ public:
 			[=](auto ...args) { return onTileBreak(args...); });
 
 		registerSprite("entity/player-running");
-		registerSprite("entity/player-still");
+		registerSprite("entity/player-idle");
 		registerSprite("misc/background-cave");
 
 		registerTile({

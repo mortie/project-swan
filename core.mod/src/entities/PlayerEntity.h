@@ -30,19 +30,17 @@ private:
 		IDLE,
 		RUNNING_L,
 		RUNNING_R,
-		COUNT,
 	};
 
 	PlayerEntity(const Swan::Context &ctx):
 		PhysicsEntity(SIZE),
-		anims_{
-			Swan::Animation(ctx.world.getSprite("core::entity/player-still"), 0.8),
-			Swan::Animation(ctx.world.getSprite("core::entity/player-running"), 1),
-			Swan::Animation(ctx.world.getSprite("core::entity/player-running"), 1),
-		} {}
+		idleAnimation_(ctx.world.getSprite("core::entity/player-idle"), 0.8),
+		runningAnimation_(ctx.world.getSprite("core::entity/player-running"), 1) {}
 
 	State state_ = State::IDLE;
-	std::array<Swan::Animation, (int)State::COUNT> anims_;
+	Swan::Animation idleAnimation_;
+	Swan::Animation runningAnimation_;
+	Swan::Animation *currentAnimation_ = &idleAnimation_;
 
 	Swan::Clock jumpTimer_;
 	Swan::Clock placeTimer_;
