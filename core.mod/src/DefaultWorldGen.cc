@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "entities/PlayerEntity.h"
+#include "entities/SpiderEntity.h"
 
 static int getGrassLevel(const siv::PerlinNoise &perlin, int x) {
 	return (int)(perlin.noise(x / 50.0, 0) * 13);
@@ -11,6 +12,10 @@ static int getGrassLevel(const siv::PerlinNoise &perlin, int x) {
 
 static int getStoneLevel(const siv::PerlinNoise &perlin, int x) {
 	return (int)(perlin.noise(x / 50.0, 10) * 10) + 10;
+}
+
+static int getPlayerX(const siv::PerlinNoise &perlin) {
+	return 0;
 }
 
 void DefaultWorldGen::drawBackground(
@@ -68,6 +73,22 @@ Swan::Tile::ID DefaultWorldGen::genTile(Swan::TilePos pos) {
 		return tAir_;
 }
 
+void DefaultWorldGen::initializeTile(const Swan::Context &ctx, Swan::TilePos pos) {
+	int grassLevel = getGrassLevel(perlin_, pos.x);
+
+	int playerX = getPlayerX(perlin_);
+	int playerDist = abs(pos.x - playerX);
+
+	// Spawn mobs
+	if (pos.y == grassLevel - 1 && playerDist > 20) {
+		double r = perlin_.noise(pos.x * 87.411, 10);
+		if (r < -0.25) {
+			Swan::info << "Spawning spider at " << pos;
+			ctx.plane.spawnEntity<SpiderEntity>(ctx, pos);
+		}
+	}
+}
+
 void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 	for (int cx = 0; cx < Swan::CHUNK_WIDTH; ++cx) {
 		int tilex = chunk.pos_.x * Swan::CHUNK_WIDTH + cx;
@@ -82,8 +103,20 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 	}
 }
 
+void DefaultWorldGen::initializeChunk(const Swan::Context &ctx, Swan::Chunk &chunk) {
+	for (int cx = 0; cx < Swan::CHUNK_WIDTH; ++cx) {
+		int tilex = chunk.pos_.x * Swan::CHUNK_WIDTH + cx;
+
+		for (int cy = 0; cy < Swan::CHUNK_HEIGHT; ++cy) {
+			int tiley = chunk.pos_.y * Swan::CHUNK_HEIGHT + cy;
+
+			initializeTile(ctx, {tilex, tiley});
+		}
+	}
+}
+
 Swan::EntityRef DefaultWorldGen::spawnPlayer(const Swan::Context &ctx) {
-	int x = 0;
+	int x = getPlayerX(perlin_);
 	return ctx.plane.spawnEntity<PlayerEntity>(
 		ctx, Swan::Vec2{ (float)x, (float)getGrassLevel(perlin_, x) - 4 });
 }

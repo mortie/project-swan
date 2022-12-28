@@ -260,6 +260,8 @@ void WorldPlane::update(float dt) {
 				}
 			}
 		}
+
+		gen_->initializeChunk(ctx, *chunk);
 	}
 
 	for (auto &coll: entColls_)

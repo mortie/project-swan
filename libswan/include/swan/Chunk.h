@@ -67,6 +67,8 @@ public:
 		needLightRender_ = true;
 	}
 
+	TilePos topLeft() { return pos_ * TilePos{CHUNK_WIDTH, CHUNK_HEIGHT}; }
+
 	void generateDone();
 	void keepActive();
 	void decompress();

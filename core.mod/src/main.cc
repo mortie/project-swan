@@ -3,6 +3,7 @@
 #include "DefaultWorldGen.h"
 #include "entities/PlayerEntity.h"
 #include "entities/ItemStackEntity.h"
+#include "entities/SpiderEntity.h"
 #include "world/tree.h"
 
 #include <functional>
@@ -15,6 +16,7 @@ public:
 
 		registerSprite("entity/player-running");
 		registerSprite("entity/player-idle");
+		registerSprite("entity/spider-idle");
 		registerSprite("misc/background-cave");
 
 		registerTile({
@@ -76,6 +78,7 @@ public:
 
 		registerEntity<PlayerEntity>("player");
 		registerEntity<ItemStackEntity>("item-stack");
+		registerEntity<SpiderEntity>("spider");
 	}
 
 	void onTileBreak(const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile &tile) {

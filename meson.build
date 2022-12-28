@@ -25,4 +25,10 @@ executable('swan', 'src/main.cc',
 	install_rpath: get_option('libdir'),
 	dependencies: [libswan, libcygnet, common, libimgui, libsdl2_image, libgl, libglfw3])
 
+
 install_subdir('assets', install_dir: '')
+
+install_data(
+  'launch-scripts/swan.lldb',
+  install_dir: 'bin',
+  install_mode: 'rwxr-xr-x')

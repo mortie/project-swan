@@ -1,0 +1,2 @@
+#!/bin/sh
+lldb --batch -o run -k bt ./bin/swan

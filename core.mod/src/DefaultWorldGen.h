@@ -18,10 +18,12 @@ public:
 			const Swan::Context &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos) override;
 	Cygnet::Color backgroundColor(Swan::Vec2 pos) override;
 	void genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) override;
+	void initializeChunk(const Swan::Context &plane, Swan::Chunk &chunk) override;
 	Swan::EntityRef spawnPlayer(const Swan::Context &ctx) override;
 
 private:
 	Swan::Tile::ID genTile(Swan::TilePos pos);
+	void initializeTile(const Swan::Context &ctx, Swan::TilePos pos);
 
 	const uint32_t seed_ = 100;
 	Swan::Tile::ID tGrass_, tDirt_, tStone_, tTreeSeeder_, tAir_;
