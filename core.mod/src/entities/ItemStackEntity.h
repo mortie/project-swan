@@ -18,7 +18,7 @@ public:
 private:
 	static constexpr float MASS = 80;
 	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.5, 0.5);
-	static constexpr float DESPAWN_TIME = 5;// * 60;
+	static constexpr float DESPAWN_TIME = 5 * 60;
 	static constexpr float BOUNCINESS = 0.6;
 
 	ItemStackEntity(): PhysicsEntity(SIZE) {}

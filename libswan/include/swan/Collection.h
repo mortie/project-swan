@@ -68,13 +68,14 @@ public:
 	template<typename... Args>
 	EntityRef spawn(Args&&... args);
 
+	EntityRef spawn(const Context &ctx, const Entity::PackObject &obj) override;
+
 	size_t size() override { return entities_.size(); }
 	Entity *get(uint64_t id) override;
 
 	const std::string &name() override { return name_; }
 	std::type_index type() override { return typeid(Ent); }
 
-	EntityRef spawn(const Context &ctx, const Entity::PackObject &obj) override;
 	void update(const Context &ctx, float dt) override;
 	void tick(const Context &ctx, float dt) override;
 	void draw(const Context &ctx, Cygnet::Renderer &rnd) override;
@@ -130,6 +131,23 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(Args&&... args) {
 	entities_.emplace_back(std::forward<Args>(args)...);
 	entities_.back().id_ = id;
 	idToIndex_[id] = index;
+
+	if constexpr (std::is_base_of_v<BodyTrait, Ent>) {
+		BodyTrait::Body &body = entities_[index].get(BodyTrait::Tag{});
+		body.pos -= body.size / 2;
+	}
+
+	return {this, id};
+}
+
+template<typename Ent>
+inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, const Entity::PackObject &obj) {
+	uint64_t id = nextId_++;
+	size_t index = entities_.size();
+	entities_.emplace_back(ctx, obj);
+	entities_.back().id_ = id;
+	idToIndex_[id] = index;
+
 	return {this, id};
 }
 
@@ -144,11 +162,6 @@ inline Entity *EntityCollectionImpl<Ent>::get(uint64_t id) {
 	}
 
 	return &entities_[indexIt->second];
-}
-
-template<typename Ent>
-inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, const Entity::PackObject &obj) {
-	return spawn(ctx, obj);
 }
 
 template<typename Ent>

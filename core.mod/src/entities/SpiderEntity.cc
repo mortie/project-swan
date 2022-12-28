@@ -1,5 +1,7 @@
 #include "SpiderEntity.h"
 
+#include <stdlib.h>
+
 SpiderEntity::SpiderEntity(const Swan::Context &ctx, Swan::Vec2 pos):
 		SpiderEntity(ctx) {
 	body_.pos = pos;
@@ -33,7 +35,7 @@ void SpiderEntity::update(const Swan::Context &ctx, float dt) {
 		physics_.force += {direction.x * MOVE_FORCE, 0};
 
 		if (direction.y < 0 && jumpTimer_ <= 0) {
-			jumpTimer_ = 0.2;
+			jumpTimer_ = (rand() % 10) * 0.03 + 0.05;
 		}
 
 		if (vec.squareLength() < 1.1 * 1.1) {

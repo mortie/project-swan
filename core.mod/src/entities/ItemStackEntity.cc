@@ -20,8 +20,7 @@ ItemStackEntity::ItemStackEntity(const Swan::Context &ctx, const PackObject &obj
 }
 
 void ItemStackEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
-	// TODO: decrease brightness?
-	rnd.drawTile(item_->id, Cygnet::Mat3gf{}.scale({0.5, 0.5}).translate(body_.pos));
+	rnd.drawTile(item_->id, Cygnet::Mat3gf{}.scale({0.5, 0.5}).translate(body_.pos), 0.8);
 }
 
 void ItemStackEntity::update(const Swan::Context &ctx, float dt) {

@@ -42,7 +42,7 @@ public:
 
 	void drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos);
 	void drawChunkShadow(RenderChunkShadow shadow, SwanCommon::Vec2 pos);
-	void drawTile(TileID id, Mat3gf mat);
+	void drawTile(TileID id, Mat3gf mat, float brightness = 1);
 	void drawSprite(RenderSprite sprite, Mat3gf mat, int y = 0);
 	void drawRect(SwanCommon::Vec2 pos, SwanCommon::Vec2 size);
 
@@ -83,6 +83,7 @@ private:
 	struct DrawTile {
 		Mat3gf transform;
 		TileID id;
+		float brightness;
 	};
 
 	struct DrawSprite {
@@ -115,8 +116,8 @@ inline void Renderer::drawChunkShadow(RenderChunkShadow shadow, SwanCommon::Vec2
 	drawChunkShadows_.push_back({pos, shadow});
 }
 
-inline void Renderer::drawTile(TileID id, Mat3gf mat) {
-	drawTiles_.push_back({mat, id});
+inline void Renderer::drawTile(TileID id, Mat3gf mat, float brightness) {
+	drawTiles_.push_back({mat, id, brightness});
 }
 
 inline void Renderer::drawSprite(RenderSprite sprite, Mat3gf mat, int frame) {

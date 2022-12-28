@@ -137,6 +137,7 @@ struct TileProg: public GlProgram {
 	GLint tileAtlas = uniformLoc("tileAtlas");
 	GLint tileAtlasSize = uniformLoc("tileAtlasSize");
 	GLint tileID = uniformLoc("tileID");
+	GLint brightness = uniformLoc("brightness");
 
 	GLuint vbo;
 
@@ -463,9 +464,10 @@ void Renderer::draw(const RenderCamera &cam) {
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE1);
-		for (auto [mat, id]: drawTiles_) {
+		for (auto [mat, id, brightness]: drawTiles_) {
 			glUniformMatrix3fv(tileProg.transform, 1, GL_TRUE, mat.data());
 			glUniform1f(tileProg.tileID, id);
+			glUniform1f(tileProg.brightness, brightness);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			glCheck();
 		}

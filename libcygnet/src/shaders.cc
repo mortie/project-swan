@@ -85,6 +85,7 @@ const char *tileFr = R"glsl(
 	uniform sampler2D tileAtlas;
 	uniform vec2 tileAtlasSize;
 	uniform float tileID;
+	uniform float brightness;
 	out vec4 fragColor;
 
 	void main() {
@@ -96,7 +97,7 @@ const char *tileFr = R"glsl(
 			pixoffset.x + tileID + offset.x,
 			pixoffset.y + floor(tileID / tileAtlasSize.x) + offset.y);
 
-		fragColor = texture(tileAtlas, atlasPos / tileAtlasSize);
+		fragColor = vec4(texture(tileAtlas, atlasPos / tileAtlasSize).rgb * brightness, 1.0);
 	}
 )glsl";
 
