@@ -106,15 +106,6 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 }
 
 void PlayerEntity::tick(const Swan::Context &ctx, float dt) {
-	for (ItemStackEntity *ent: ctx.plane.getEntsOfType<ItemStackEntity>()) {
-		float squared_dist =
-			(body_.bottomMid() - ent->get(Swan::BodyTrait::Tag{}).center())
-			.squareLength();
-
-		if (squared_dist < 0.5 * 0.5) {
-			// TODO: Pick up
-		}
-	}
 }
 
 void PlayerEntity::deserialize(const Swan::Context &ctx, const PackObject &obj) {

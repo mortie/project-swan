@@ -6,7 +6,7 @@ namespace Swan {
 
 void Entity::despawn(const Swan::Context &ctx) {
 	onDespawn(ctx);
-	ctx.plane.getCollectionOf(typeid(*this)).erase(index_, generation_);
+	ctx.plane.getCollectionOf(typeid(*this)).erase(id_);
 }
 
 }

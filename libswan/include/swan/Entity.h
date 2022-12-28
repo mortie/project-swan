@@ -41,8 +41,7 @@ public:
 	virtual void deserialize(const Swan::Context &ctx, const PackObject &obj) {}
 	virtual PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) { return {}; }
 
-	size_t index_;
-	size_t generation_;
+	uint64_t id_;
 };
 
 class PhysicsEntity: public Entity, public BodyTrait, public PhysicsTrait {

@@ -12,7 +12,6 @@
 #include <swan/ItemStack.h>
 #include <swan/Mod.h>
 #include <swan/OS.h>
-#include <swan/SlotVector.h>
 #include <swan/Tile.h>
 #include <swan/World.h>
 #include <swan/WorldGen.h>

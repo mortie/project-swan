@@ -54,11 +54,6 @@ public:
 
 	Iter<Entity *> getEntsInArea(Vec2 center, float radius);
 
-	template<typename T>
-	Iter<T *>getEntsOfType() {
-		return getCollectionOf<T>().template iter<T>();
-	}
-
 	EntityRef spawnPlayer();
 	void breakTile(TilePos pos);
 
