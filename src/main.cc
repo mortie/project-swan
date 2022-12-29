@@ -10,7 +10,9 @@
 
 #include <SDL_image.h>
 #include <string.h>
-#include <imgui.h>
+#include <imgui/imgui.h>
+#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
 #include <cygnet/gl.h>
 #include <cygnet/Renderer.h>
 
@@ -29,9 +31,14 @@ using namespace Swan;
 #define imgassert(expr, str) errassert(expr, str, IMG_GetError);
 
 static Game *gameptr;
+static ImGuiIO *imguiIo;
 static double pixelRatio = 1;
 
 static void keyCallback(GLFWwindow *, int key, int scancode, int action, int) {
+	if (imguiIo->WantCaptureKeyboard) {
+		return;
+	}
+
 	if (action == GLFW_PRESS) {
 		gameptr->onKeyDown(scancode);
 	} else if (action == GLFW_RELEASE) {
@@ -40,6 +47,10 @@ static void keyCallback(GLFWwindow *, int key, int scancode, int action, int) {
 }
 
 static void mouseButtonCallback(GLFWwindow *, int button, int action, int) {
+	if (imguiIo->WantCaptureMouse) {
+		return;
+	}
+
 	if (action == GLFW_PRESS) {
 		gameptr->onMouseDown(button);
 	} else if (action == GLFW_RELEASE) {
@@ -48,10 +59,18 @@ static void mouseButtonCallback(GLFWwindow *, int button, int action, int) {
 }
 
 static void cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {
+	if (imguiIo->WantCaptureMouse) {
+		return;
+	}
+
 	gameptr->onMouseMove(xpos * pixelRatio, ypos * pixelRatio);
 }
 
 static void scrollCallback(GLFWwindow *, double dx, double dy) {
+	if (imguiIo->WantCaptureMouse) {
+		return;
+	}
+
 	gameptr->onScrollWheel(dy);
 }
 
@@ -61,24 +80,39 @@ static void windowSizeCallback(GLFWwindow *window, int width, int height) {
 	glViewport(0, 0, dw, dh);
 	Cygnet::glCheck();
 	gameptr->cam_.size = {dw, dh};
-	pixelRatio = (double)dw / (double)width;
+	double newPixelRatio = (double)dw / (double)width;
+
+	if (newPixelRatio != pixelRatio) {
+		pixelRatio = newPixelRatio;
+		imguiIo->FontGlobalScale = 1.0 / pixelRatio;
+		imguiIo->Fonts->ClearFonts();
+
+		struct ImFontConfig config;
+		config.SizePixels = 13 * pixelRatio;
+		imguiIo->Fonts->AddFontDefault(&config);
+	}
 }
 
 int main(int argc, char **argv) {
-	glfwInit();
-	Deferred<glfwTerminate> glfw;
-
 	glfwSetErrorCallback(+[](int error, const char* description) {
 		warn << "GLFW Error: " << error << ": " << description;
 	});
 
+	if (!glfwInit()) {
+		panic << "Initializing GLFW failed.";
+		return 1;
+	}
+	defer(glfwTerminate());
+
 	int imgFlags = IMG_INIT_PNG;
 	imgassert(IMG_Init(imgFlags) == imgFlags, "Could not initialize SDL_Image");
-	Deferred<IMG_Quit> sdlImage;
+	defer(IMG_Quit());
 
 #ifdef __APPLE__
+	const char *imguiGlsl = "#version 150";
 	Cygnet::GLSL_PRELUDE = "#version 150\n";
 #else 
+	const char *imguiGlsl = "#version 130";
 	Cygnet::GLSL_PRELUDE = "#version 320 es\nprecision mediump float;\n";
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
 #endif
@@ -97,32 +131,8 @@ int main(int argc, char **argv) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 
-	// Create one global VAO, so we can pretend VAOs don't exist
-	GLuint globalVao;
-	glGenVertexArrays(1, &globalVao);
-	glBindVertexArray(globalVao);
-
-	// Load and display application icon
-	/*
-	CPtr<SDL_Surface, SDL_FreeSurface> icon(
-		IMG_Load("assets/icon.png"));
-	sdlassert(icon, "Could not load icon");
-	SDL_SetWindowIcon(window.sdlWindow(), icon.get());*/
-
-	// Init ImGUI and ImGUI_SDL
-	/*
-	IMGUI_CHECKVERSION();
-	CPtr<ImGuiContext, ImGui::DestroyContext> context(
-		ImGui::CreateContext());
-
-	ImGuiSDL::Initialize(renderer.get(), (int)win.getPixSize().x, (int)win.getPixSize().y);
-	Deferred<ImGuiSDL::Deinitialize> imguiSDL;
-	info << "Initialized with window size " << win.getPixSize();
-
-	// ImGuiIO is to glue SDL and ImGUI together
-	ImGuiIO& imguiIO = ImGui::GetIO();
-	imguiIO.BackendPlatformName = "imgui_sdl + Project: SWAN";
-	TODO */
+	// Enable vsync
+	glfwSwapInterval(1);
 
 	// Create a world
 	Game game;
@@ -136,15 +146,30 @@ int main(int argc, char **argv) {
 	glfwSetScrollCallback(window, scrollCallback);
 	glfwSetWindowSizeCallback(window, windowSizeCallback);
 
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	defer(ImGui::DestroyContext());
+
+	imguiIo = &ImGui::GetIO();
+
+	ImGui::StyleColorsDark();
+
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	defer(ImGui_ImplGlfw_Shutdown());
+	ImGui_ImplOpenGL3_Init(imguiGlsl);
+	defer(ImGui_ImplOpenGL3_Shutdown());
+
+	// Create one global VAO, so we can pretend VAOs don't exist
+	GLuint globalVao;
+	glGenVertexArrays(1, &globalVao);
+	glBindVertexArray(globalVao);
+
 	// Initialize window size stuff
 	{
 		int width, height;
 		glfwGetWindowSize(window, &width, &height);
 		windowSizeCallback(window, width, height);
 	}
-
-	// Enable vsync
-	glfwSwapInterval(1);
 
 	auto prevTime = std::chrono::steady_clock::now();
 
@@ -155,6 +180,11 @@ int main(int argc, char **argv) {
 	int slowFrames = 0;
 	while (!glfwWindowShouldClose(window)) {
 		ZoneScopedN("game loop");
+
+		glfwPollEvents();
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
 
 		auto now = std::chrono::steady_clock::now();
 		std::chrono::duration<float> dur(now - prevTime);
@@ -217,25 +247,29 @@ int main(int argc, char **argv) {
 		}
 
 		{
+			ZoneScopedN("game draw");
+			game.draw();
+		}
+
+		{
+			ZoneScopedN("imgui draw");
+			ImGui::Render();
+		}
+
+		{
 			Cygnet::Color color = game.backgroundColor();
 			glClearColor(color.r, color.g, color.b, color.a);
 			glClear(GL_COLOR_BUFFER_BIT);
 		}
 
-		// ImGUI
-		//imguiIO.DeltaTime = dt;
-		//ImGui::NewFrame();
-
 		{
-			ZoneScopedN("game draw");
-			game.draw();
+			ZoneScopedN("game render");
+			game.render();
 		}
 
-		// Render ImGUI
 		{
 			ZoneScopedN("imgui render");
-			//ImGui::Render();
-			//ImGuiSDL::Render(ImGui::GetDrawData());
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
 
 		{
@@ -243,7 +277,6 @@ int main(int argc, char **argv) {
 			glfwSwapBuffers(window);
 		}
 
-		glfwPollEvents();
 		FrameMark;
 	}
 }

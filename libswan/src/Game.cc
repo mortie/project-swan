@@ -27,11 +27,6 @@ Cygnet::Color Game::backgroundColor() {
 	return world_->backgroundColor();
 }
 
-void Game::draw() {
-	world_->draw(renderer_);
-	renderer_.draw(cam_);
-}
-
 void Game::update(float dt) {
 	// Zoom the window using the scroll wheel
 	cam_.zoom += (float)wasWheelScrolled() * 0.05f * cam_.zoom;

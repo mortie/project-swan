@@ -43,13 +43,25 @@ public:
 template<typename T, void (*Func)(T *)>
 using CPtr = std::unique_ptr<T, CPtrDeleter<T, Func>>;
 
-// Take a function, run it when the object goes out of scope
-template<void (*Func)()>
-class Deferred: NonCopyable {
+template <typename F>
+class Defer {
 public:
-	Deferred() = default;
-	~Deferred() { Func(); }
+	Defer(F f)
+		: f_(f)
+	{
+	}
+	~Defer() { f_(); }
+
+private:
+	F f_;
 };
+
+#define DEFER_1(x, y) x##y
+#define DEFER_2(x, y) DEFER_1(x, y)
+#define DEFER_3(x) DEFER_2(x, __COUNTER__)
+
+/// Run some code after the end of the block.
+#define defer(code) auto DEFER_3(_defer_) = ::Swan::Defer([&]() { code; })
 
 inline struct ResultOk {} Ok;
 inline struct ResultErr {} Err;

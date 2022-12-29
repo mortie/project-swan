@@ -58,7 +58,8 @@ public:
 	TilePos getMouseTile();
 
 	Cygnet::Color backgroundColor();
-	void draw();
+	void draw() { world_->draw(renderer_); }
+	void render() { renderer_.draw(cam_); }
 	void update(float dt);
 	void tick(float dt);
 
