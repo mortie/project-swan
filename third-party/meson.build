@@ -24,9 +24,3 @@ libmsgpack = declare_dependency(
 
 libperlinnoise = declare_dependency(
 	include_directories: 'PerlinNoise')
-
-libtracy = declare_dependency(
-	include_directories: 'tracy',
-	link_with: library('tracy',
-		'tracy/TracyClient.cpp',
-		dependencies: libthreads))

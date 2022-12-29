@@ -20,5 +20,5 @@
 	path = third-party/fmt
 	url = https://github.com/fmtlib/fmt.git
 [submodule "third-party/tracy"]
-	path = third-party/tracy
+	path = subprojects/tracy
 	url = https://github.com/wolfpld/tracy.git

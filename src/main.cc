@@ -244,6 +244,6 @@ int main(int argc, char **argv) {
 		}
 
 		glfwPollEvents();
-		FrameMark
+		FrameMark;
 	}
 }

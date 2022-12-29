@@ -166,7 +166,7 @@ inline Entity *EntityCollectionImpl<Ent>::get(uint64_t id) {
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::update(const Context &ctx, float dt) {
-	ZoneScopedN(typeid(Ent).name());
+	ZoneScopedN(__PRETTY_FUNCTION__);
 	for (auto &ent: entities_) {
 		ZoneScopedN("update");
 		ent.update(ctx, dt);
@@ -175,7 +175,7 @@ inline void EntityCollectionImpl<Ent>::update(const Context &ctx, float dt) {
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt) {
-	ZoneScopedN(typeid(Ent).name());
+	ZoneScopedN(__PRETTY_FUNCTION__);
 	for (auto &ent: entities_) {
 		ZoneScopedN("tick");
 		ent.tick(ctx, dt);
@@ -184,7 +184,7 @@ inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt) {
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Cygnet::Renderer &rnd) {
-	ZoneScopedN(typeid(Ent).name());
+	ZoneScopedN(__PRETTY_FUNCTION__);
 	for (auto &ent: entities_) {
 		ZoneScopedN("draw");
 		ent.draw(ctx, rnd);
@@ -193,7 +193,7 @@ inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Cygnet::Renderer
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::erase(uint64_t id) {
-	ZoneScopedN(typeid(Ent).name());
+	ZoneScopedN(__PRETTY_FUNCTION__);
 	auto indexIt = idToIndex_.find(id);
 	if (indexIt == idToIndex_.end()) {
 		Swan::warn
