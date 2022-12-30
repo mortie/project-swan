@@ -32,6 +32,7 @@ void Game::draw() {
 	if (debugShowMenu_) {
 		ImGui::Begin("Debug Menu", &debugShowMenu_, ImGuiWindowFlags_AlwaysAutoResize);
 		ImGui::Checkbox("Draw collision boxes", &debugDrawCollisionBoxes_);
+		ImGui::Checkbox("Draw chunk boundaries", &debugDrawChunkBoundaries_);
 		ImGui::End();
 	}
 

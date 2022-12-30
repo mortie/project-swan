@@ -198,8 +198,15 @@ void WorldPlane::draw(Cygnet::Renderer &rnd) {
 	for (int x = -1; x <= 1; ++x) {
 		for (int y = -1; y <= 1; ++y) {
 			auto iter = chunks_.find(pcpos + ChunkPos(x, y));
-			if (iter != chunks_.end())
-				iter->second.draw(ctx, rnd);
+			if (iter != chunks_.end()) {
+				Chunk &chunk = iter->second;
+				chunk.draw(ctx, rnd);
+
+				if (ctx.game.debugDrawChunkBoundaries_) {
+					Vec2i size = {CHUNK_WIDTH, CHUNK_HEIGHT};
+					rnd.drawRect(chunk.pos_ * size, size); 
+				}
+			}
 		}
 	}
 

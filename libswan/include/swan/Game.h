@@ -74,6 +74,7 @@ public:
 
 	bool debugShowMenu_ = false;
 	bool debugDrawCollisionBoxes_ = false;
+	bool debugDrawChunkBoundaries_ = false;
 
 private:
 	std::bitset<GLFW_KEY_LAST> pressedKeys_;
