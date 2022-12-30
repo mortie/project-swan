@@ -46,6 +46,7 @@ void Chunk::compress(Cygnet::Renderer &rnd) {
 
 	rnd.destroyChunk(renderChunk_);
 	rnd.destroyChunkShadow(renderChunkShadow_);
+	entities_.rehash(0);
 }
 
 void Chunk::decompress() {
@@ -103,11 +104,12 @@ Chunk::TickAction Chunk::tick(const Context &ctx, float dt) {
 	assert(isActive());
 
 	deactivateTimer_ -= dt;
-	if (deactivateTimer_ <= 0) {
-		if (isModified_)
+	if (deactivateTimer_ <= 0 && entities_.size() == 0) {
+		if (isModified_) {
 			return TickAction::DEACTIVATE;
-		else
+		} else {
 			return TickAction::DELETE;
+		}
 	}
 
 	return TickAction::NOTHING;
