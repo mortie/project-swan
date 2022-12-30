@@ -40,9 +40,9 @@ static void keyCallback(GLFWwindow *, int key, int scancode, int action, int) {
 	}
 
 	if (action == GLFW_PRESS) {
-		gameptr->onKeyDown(scancode);
+		gameptr->onKeyDown(scancode, key);
 	} else if (action == GLFW_RELEASE) {
-		gameptr->onKeyUp(scancode);
+		gameptr->onKeyUp(scancode, key);
 	}
 }
 

@@ -7,6 +7,7 @@
 #include "Game.h"
 #include "Clock.h"
 #include "assets.h"
+#include "EntityCollectionImpl.h"
 
 namespace Swan {
 

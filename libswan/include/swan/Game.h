@@ -18,14 +18,16 @@ class Game {
 public:
 	void createWorld(const std::string &worldgen, const std::vector<std::string> &modPaths);
 
-	void onKeyDown(int scancode) {
+	void onKeyDown(int scancode, int key) {
 		pressedKeys_[scancode] = true;
 		didPressKeys_[scancode] = true;
+		pressedLiteralKeys_[key] = true;
+		didPressLiteralKeys_[key] = true;
 	}
 
-	void onKeyUp(int scancode) {
+	void onKeyUp(int scancode, int key) {
 		pressedKeys_[scancode] = false;
-		didReleaseKeys_[scancode] = true;
+		pressedLiteralKeys_[key] = false;
 	}
 
 	void onMouseMove(float x, float y) {
@@ -49,6 +51,9 @@ public:
 	bool isKeyPressed(int key) { return pressedKeys_[glfwGetKeyScancode(key)]; }
 	bool wasKeyPressed(int key) { return didPressKeys_[glfwGetKeyScancode(key)]; }
 	bool wasKeyReleased(int key) { return didReleaseKeys_[glfwGetKeyScancode(key)]; }
+	bool isLiteralKeyPressed(int key) { return pressedLiteralKeys_[key]; }
+	bool wasLiteralKeyPressed(int key) { return didPressLiteralKeys_[key]; }
+	bool wasLiteralKeyReleased(int key) { return didReleaseLiteralKeys_[key]; }
 	Vec2 getMousePos() { return mousePos_; }
 	bool isMousePressed(int button) { return pressedButtons_[button]; }
 	bool wasMousePressed(int button) { return didPressButtons_[button]; }
@@ -58,7 +63,7 @@ public:
 	TilePos getMouseTile();
 
 	Cygnet::Color backgroundColor();
-	void draw() { world_->draw(renderer_); }
+	void draw();
 	void render() { renderer_.draw(cam_); }
 	void update(float dt);
 	void tick(float dt);
@@ -67,15 +72,22 @@ public:
 	Cygnet::Renderer renderer_;
 	Cygnet::RenderCamera cam_{.zoom = 0.125};
 
+	bool debugShowMenu_ = false;
+	bool debugDrawCollisionBoxes_ = false;
+
 private:
-	std::bitset<512> pressedKeys_;
-	std::bitset<512> didPressKeys_;
-	std::bitset<512> didReleaseKeys_;
+	std::bitset<GLFW_KEY_LAST> pressedKeys_;
+	std::bitset<GLFW_KEY_LAST> didPressKeys_;
+	std::bitset<GLFW_KEY_LAST> didReleaseKeys_;
+
+	std::bitset<GLFW_KEY_LAST> pressedLiteralKeys_;
+	std::bitset<GLFW_KEY_LAST> didPressLiteralKeys_;
+	std::bitset<GLFW_KEY_LAST> didReleaseLiteralKeys_;
 
 	Vec2 mousePos_;
-	std::bitset<8> pressedButtons_;
-	std::bitset<8> didPressButtons_;
-	std::bitset<8> didReleaseButtons_;
+	std::bitset<GLFW_MOUSE_BUTTON_LAST> pressedButtons_;
+	std::bitset<GLFW_MOUSE_BUTTON_LAST> didPressButtons_;
+	std::bitset<GLFW_MOUSE_BUTTON_LAST> didReleaseButtons_;
 
 	double didScroll_ = 0;
 };

@@ -2,6 +2,7 @@
 
 #include "EntityCollection.h"
 #include "WorldPlane.h"
+#include "Game.h"
 
 namespace Swan {
 
@@ -170,8 +171,6 @@ inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt) {
 			EntityRef ref{this, w.id};
 			ctx.plane.getChunk(body.chunkPos).entities_.erase(ref);
 			ctx.plane.getChunk(newChunkPos).entities_.insert(ref);
-			info << "Entity " << __PRETTY_FUNCTION__ << ":" << w.id << " moved from "
-				<< body.chunkPos << " to " << newChunkPos;
 			body.chunkPos = newChunkPos;
 		}
 	}
@@ -183,6 +182,15 @@ inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Cygnet::Renderer
 	for (auto &w: entities_) {
 		ZoneScopedN("draw");
 		w.ent.draw(ctx, rnd);
+	}
+
+	if constexpr (std::is_base_of_v<BodyTrait, Ent>) {
+		if (ctx.game.debugDrawCollisionBoxes_) {
+			for (auto &w: entities_) {
+				auto &body = w.ent.get(BodyTrait::Tag{});
+				rnd.drawRect(body.pos, body.size);
+			}
+		}
 	}
 }
 

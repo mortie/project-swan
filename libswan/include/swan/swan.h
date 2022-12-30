@@ -6,6 +6,7 @@
 #include <swan/Chunk.h>
 #include <swan/Clock.h>
 #include <swan/Entity.h>
+#include <swan/EntityCollection.h>
 #include <swan/EventEmitter.h>
 #include <swan/Game.h>
 #include <swan/Item.h>
@@ -20,3 +21,6 @@
 #include <swan/log.h>
 #include <swan/drawutil.h>
 #include <swan/util.h>
+
+#include <swan/EntityCollectionImpl.h>
+#include <swan/ModImpl.h>

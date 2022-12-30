@@ -1,6 +1,6 @@
 libswan_deps = [
   common, libcygnet, libthreads, libsdl2_image,
-  libcpptoml, libdl, libz, libglfw3, libtracy
+  libcpptoml, libdl, libz, libglfw3, libimgui, libtracy
 ]
 
 libswan = declare_dependency(

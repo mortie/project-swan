@@ -11,7 +11,6 @@
 #include "WorldGen.h"
 #include "Entity.h"
 #include "EntityCollection.h"
-#include "EntityCollectionImpl.h"
 #include "OS.h"
 #include "util.h"
 
@@ -24,32 +23,15 @@ public:
 	Mod(std::string name): name_(std::move(name)) {}
 	virtual ~Mod() = default;
 
-	void registerTile(Tile::Builder tile) { tiles_.push_back(tile); }
-	void registerItem(Item::Builder item) { items_.push_back(item); }
-	void registerSprite(std::string sprite) { sprites_.push_back(sprite); }
+	void registerTile(Tile::Builder tile);
+	void registerItem(Item::Builder item);
+	void registerSprite(std::string sprite);
 
 	template<typename WG>
-	void registerWorldGen(std::string name) {
-		worldGens_.push_back(WorldGen::Factory{
-			.name = name,
-			.create = [](World &world) -> std::unique_ptr<WorldGen> {
-				return std::make_unique<WG>(world);
-			}
-		});
-	}
+	void registerWorldGen(std::string name);
 
 	template<typename Ent>
-	void registerEntity(const std::string &name) {
-		static_assert(
-			std::is_move_constructible_v<Ent>,
-			"Entities must be movable");
-		entities_.push_back(EntityCollection::Factory{
-			.name = name,
-			.create = [](std::string name) -> std::unique_ptr<EntityCollection> {
-				return std::make_unique<EntityCollectionImpl<Ent>>(std::move(name));
-			}
-		});
-	}
+	void registerEntity(const std::string name);
 
 private:
 	const std::string name_;
