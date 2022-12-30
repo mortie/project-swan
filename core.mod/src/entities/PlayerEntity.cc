@@ -1,6 +1,7 @@
 #include "PlayerEntity.h"
 
 #include <cmath>
+#include <compare>
 
 #include "ItemStackEntity.h"
 
@@ -34,7 +35,6 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	state_ = State::IDLE;
 
 	mouseTile_ = ctx.game.getMouseTile();
-	ctx.plane.debugBox(mouseTile_);
 	jumpTimer_.tick(dt);
 	placeTimer_.tick(dt);
 
@@ -88,6 +88,33 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 		currentAnimation_->reset();
 	}
 	currentAnimation_->tick(dt);
+
+	if (invincibleTimer_ >= 0) {
+		invincibleTimer_ -= dt;
+	}
+
+	// Collide with stuff
+	auto &collisions = ctx.plane.getCollidingEntities(ctx.plane.currentEntity(), body_);
+	for (auto &c: collisions) {
+		auto *damage = c.entity->trait<Swan::ContactDamageTrait>();
+		bool damaged = false;
+		if (damage && invincibleTimer_ <= 0) {
+			Swan::Vec2 direction;
+			direction.y = -0.5;
+			if (body_.center().x < c.body->center().x) {
+				direction.x = -1;
+			} else {
+				direction.x = 1;
+			}
+
+			physics_.vel += direction * damage->knockback;
+			damaged = true;
+		}
+
+		if (damaged) {
+			invincibleTimer_ = 0.5;
+		}
+	}
 
 	physics(ctx, dt, { .mass = MASS });
 

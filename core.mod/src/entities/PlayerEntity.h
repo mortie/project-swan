@@ -44,6 +44,7 @@ private:
 
 	Swan::Clock jumpTimer_;
 	Swan::Clock placeTimer_;
+	float invincibleTimer_ = 0;
 	Swan::TilePos mouseTile_;
 
 	Swan::TilePos lightTile_;

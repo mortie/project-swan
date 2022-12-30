@@ -8,16 +8,9 @@
 #include "World.h"
 #include "Game.h"
 #include "Clock.h"
+#include "EntityCollectionImpl.h"
 
 namespace Swan {
-
-Context WorldPlane::getContext() {
-	return {
-		.game = *world_->game_,
-		.world = *world_,
-		.plane = *this,
-	};
-}
 
 WorldPlane::WorldPlane(
 		ID id, World *world, std::unique_ptr<WorldGen> gen,
@@ -32,8 +25,69 @@ WorldPlane::WorldPlane(
 	}
 }
 
+Context WorldPlane::getContext() {
+	return {
+		.game = *world_->game_,
+		.world = *world_,
+		.plane = *this,
+	};
+}
+
 EntityRef WorldPlane::spawnEntity(const std::string &name, const Entity::PackObject &obj) {
 	return entCollsByName_.at(name)->spawn(getContext(), obj);
+}
+
+std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(
+		EntityRef ref, BodyTrait::Body &body) {
+	constexpr float PADDING = 10;
+	auto topLeft = body.topLeft() - Vec2{PADDING, PADDING};
+	auto topLeftTile = TilePos{(int)floor(topLeft.x), (int)floor(topLeft.y)};
+	auto bottomRight = body.bottomRight() + Vec2{PADDING, PADDING};
+	auto bottomRightTile = TilePos{(int)ceil(bottomRight.x), (int)ceil(bottomRight.y)};
+	auto bottomLeftTile = TilePos{topLeftTile.x, bottomRightTile.y};
+	auto topRightTile = TilePos{bottomRightTile.x, topLeftTile.y};
+
+	auto topLeftChunk = tilePosToChunkPos(topRightTile);
+	auto bottomLeftChunk = tilePosToChunkPos(bottomLeftTile);
+	auto topRightChunk = tilePosToChunkPos(topRightTile);
+	auto bottomRightChunk = tilePosToChunkPos(bottomRightTile);
+
+	foundEntitiesRet_.clear();
+	auto checkChunk = [&](ChunkPos pos) {
+		Chunk &chunk = getChunk(pos);
+		for (const EntityRef &constCandidate: chunk.entities_) {
+			EntityRef candidate = constCandidate;
+			Entity *ent = candidate.get();
+			BodyTrait::Body *candidateBody = ent->trait<BodyTrait>();
+			if (!candidateBody || candidateBody == &body) {
+				continue;
+			}
+
+			if (body.collidesWith(*candidateBody)) {
+				foundEntitiesRet_.push_back({ent, candidateBody, candidate});
+			}
+		}
+	};
+
+	// TODO: I'm 99% sure we can do something better here
+
+	checkChunk(topLeftChunk);
+
+	if (bottomLeftChunk != topLeftChunk) {
+		checkChunk(bottomLeftChunk);
+	}
+
+	if (bottomRightChunk != bottomLeftChunk && bottomRightChunk != topLeftChunk) {
+		checkChunk(bottomRightChunk);
+	}
+
+	if (
+			topRightChunk != bottomRightChunk && topRightChunk != bottomLeftChunk &&
+			topRightChunk != topLeftChunk) {
+		checkChunk(topRightChunk);
+	}
+
+	return foundEntitiesRet_;
 }
 
 bool WorldPlane::hasChunk(ChunkPos pos) {
@@ -137,31 +191,6 @@ Tile &WorldPlane::getTile(TilePos pos) {
 	return world_->getTileByID(getTileID(pos));
 }
 
-Iter<Entity *> WorldPlane::getEntsInArea(Vec2 center, float radius) {
-	return Iter<Entity *>([] { return std::nullopt; });
-	// TODO: this
-	/*
-	return mapFilter(entities_.begin(), entities_.end(), [=](std::unique_ptr<Entity> &ent)
-			-> std::optional<Entity *> {
-
-		// Filter out things which don't have bodies
-		auto *hasBody = dynamic_cast<BodyTrait::HasBody *>(ent.get());
-		if (hasBody == nullptr)
-			return std::nullopt;
-
-		// Filter out things which are too far away from 'center'
-		auto &body = hasBody->getBody();
-		auto bounds = body.getBounds();
-		Vec2 entcenter = bounds.pos + (bounds.size / 2);
-		auto dist = (entcenter - center).length();
-		if (dist > radius)
-			return std::nullopt;
-
-		return ent.get();
-	});
-	*/
-}
-
 EntityRef WorldPlane::spawnPlayer() {
 	return gen_->spawnPlayer(getContext());
 }
@@ -215,21 +244,12 @@ void WorldPlane::draw(Cygnet::Renderer &rnd) {
 	}
 
 	lighting_->flip();
-
-	/*
-	if (debugBoxes_.size() > 0) {
-		for (auto &pos: debugBoxes_) {
-			rnd.drawRect(pos, Vec2(1, 1));
-		}
-	}
-	TODO */
 }
 
 void WorldPlane::update(float dt) {
 	ZoneScopedN("WorldPlane update");
 	std::lock_guard<std::mutex> lock(mut_);
 	auto ctx = getContext();
-	debugBoxes_.clear();
 
 	// Just init one chunk per frame
 	if (chunkInitList_.size() > 0) {
@@ -250,8 +270,10 @@ void WorldPlane::update(float dt) {
 		gen_->initializeChunk(ctx, *chunk);
 	}
 
-	for (auto &coll: entColls_)
+	for (auto &coll: entColls_) {
+		currentEntCol_ = coll.get();
 		coll->update(ctx, dt);
+	}
 
 	for (auto &ref: entDespawnList_) {
 		ref.coll_->erase(ctx, ref.id_);
@@ -269,15 +291,17 @@ void WorldPlane::tick(float dt) {
 		ch.second->keepActive();
 	tickChunks_.clear();
 
-	for (auto &coll: entColls_)
+	for (auto &coll: entColls_) {
+		currentEntCol_ = coll.get();
 		coll->tick(ctx, dt);
+	}
 
 	// Tick all chunks, figure out if any of them should be deleted or compressed
 	auto iter = activeChunks_.begin();
 	auto last = activeChunks_.end();
 	while (iter != last) {
 		auto &chunk = *iter;
-		auto action = chunk->tick(ctx, dt);
+		auto action = chunk->tick(dt);
 
 		switch (action) {
 		case Chunk::TickAction::DEACTIVATE:
@@ -298,10 +322,6 @@ void WorldPlane::tick(float dt) {
 			break;
 		}
 	}
-}
-
-void WorldPlane::debugBox(TilePos pos) {
-	debugBoxes_.push_back(pos);
 }
 
 void WorldPlane::addLight(TilePos pos, float level) {

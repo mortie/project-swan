@@ -100,7 +100,7 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd) {
 	rnd.drawChunkShadow(renderChunkShadow_, pos);
 }
 
-Chunk::TickAction Chunk::tick(const Context &ctx, float dt) {
+Chunk::TickAction Chunk::tick(float dt) {
 	assert(isActive());
 
 	deactivateTimer_ -= dt;

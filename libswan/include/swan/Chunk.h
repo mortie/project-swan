@@ -75,7 +75,7 @@ public:
 	void compress(Cygnet::Renderer &rnd);
 	void destroy(Cygnet::Renderer &rnd) { rnd.destroyChunk(renderChunk_); }
 	void draw(const Context &ctx, Cygnet::Renderer &rnd);
-	TickAction tick(const Context &ctx, float dt);
+	TickAction tick(float dt);
 
 	bool isActive() { return deactivateTimer_ > 0; }
 

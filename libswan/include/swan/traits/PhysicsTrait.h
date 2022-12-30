@@ -16,8 +16,6 @@ struct PhysicsTrait {
 		virtual Vec2 getVelocity() = 0;
 	};
 
-	virtual ~PhysicsTrait() = default;
-
 	virtual Physics &get(Tag) = 0;
 };
 

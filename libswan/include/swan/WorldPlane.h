@@ -29,9 +29,17 @@ class WorldPlane final: NonCopyable, public LightCallback {
 public:
 	using ID = uint16_t;
 
+	struct FoundEntity {
+		Entity *entity;
+		BodyTrait::Body *body;
+		EntityRef ref;
+	};
+
 	WorldPlane(
 			ID id, World *world, std::unique_ptr<WorldGen> gen,
 			std::vector<std::unique_ptr<EntityCollection>> &&colls);
+
+	Context getContext();
 
 	EntityRef spawnEntity(const std::string &name, const Entity::PackObject &params);
 	template<typename Ent, typename... Args>
@@ -39,7 +47,7 @@ public:
 
 	void despawnEntity(EntityRef ref);
 
-	Context getContext();
+	std::vector<FoundEntity> &getCollidingEntities(EntityRef ref, BodyTrait::Body &body);
 
 	EntityRef currentEntity();
 
@@ -52,8 +60,6 @@ public:
 	Tile::ID getTileID(TilePos pos);
 	Tile &getTile(TilePos pos);
 
-	Iter<Entity *> getEntsInArea(Vec2 center, float radius);
-
 	EntityRef spawnPlayer();
 	void breakTile(TilePos pos);
 
@@ -61,8 +67,6 @@ public:
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
 	void tick(float dt);
-
-	void debugBox(TilePos pos);
 
 	void addLight(TilePos pos, float level);
 	void removeLight(TilePos pos, float level);
@@ -89,9 +93,10 @@ private:
 	std::unordered_map<std::string, EntityCollection *> entCollsByName_;
 	EntityCollection *currentEntCol_;
 
+	std::vector<FoundEntity> foundEntitiesRet_;
+
 	std::vector<EntityRef> entDespawnList_;
 	std::deque<Chunk *> chunkInitList_;
-	std::vector<TilePos> debugBoxes_;
 
 	// The lighting server must destruct first. Until it has been destructed,
 	// it might call onLightChunkUpdated. If that happens after some other

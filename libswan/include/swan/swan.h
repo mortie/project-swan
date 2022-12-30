@@ -1,7 +1,9 @@
 #pragma once
 
 #include <swan/traits/BodyTrait.h>
+#include <swan/traits/ContactDamageTrait.h>
 #include <swan/traits/InventoryTrait.h>
+#include <swan/traits/PhysicsTrait.h>
 #include <swan/Animation.h>
 #include <swan/Chunk.h>
 #include <swan/Clock.h>

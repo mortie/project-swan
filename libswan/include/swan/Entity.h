@@ -38,6 +38,16 @@ public:
 
 	virtual void deserialize(const Swan::Context &ctx, const PackObject &obj) {}
 	virtual PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) { return {}; }
+
+	template<typename T>
+	auto trait() {
+		using Tag = typename T::Tag;
+		T *t = dynamic_cast<T *>(this);
+		if (!t) {
+			return (decltype(&t->get(Tag{})))nullptr;
+		}
+		return &t->get(Tag{});
+	}
 };
 
 class PhysicsEntity: public Entity, public BodyTrait, public PhysicsTrait {

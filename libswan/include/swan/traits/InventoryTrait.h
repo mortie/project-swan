@@ -22,8 +22,6 @@ struct InventoryTrait {
 		ItemStack insert(ItemStack stack) { return insert(0, stack); }
 	};
 
-	virtual ~InventoryTrait() = default;
-
 	virtual Inventory &get(Tag) = 0;
 };
 
