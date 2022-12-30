@@ -46,7 +46,7 @@ public:
 	void drawChunkShadow(RenderChunkShadow shadow, SwanCommon::Vec2 pos);
 	void drawTile(TileID id, Mat3gf mat, float brightness = 1);
 	void drawSprite(RenderSprite sprite, Mat3gf mat, int y = 0);
-	void drawRect(SwanCommon::Vec2 pos, SwanCommon::Vec2 size);
+	void drawRect(SwanCommon::Vec2 pos, SwanCommon::Vec2 size, Color color = {0.6, 0.6, 0.6, 0.8});
 
 	void draw(const RenderCamera &cam);
 
@@ -97,6 +97,7 @@ private:
 	struct DrawRect {
 		SwanCommon::Vec2 pos;
 		SwanCommon::Vec2 size;
+		Color color;
 	};
 
 	SwanCommon::Vec2 winScale_ = {1, 1};
@@ -126,8 +127,8 @@ inline void Renderer::drawSprite(RenderSprite sprite, Mat3gf mat, int frame) {
 	drawSprites_.push_back({mat, frame, sprite});
 }
 
-inline void Renderer::drawRect(SwanCommon::Vec2 pos, SwanCommon::Vec2 size) {
-	drawRects_.push_back({pos, size});
+inline void Renderer::drawRect(SwanCommon::Vec2 pos, SwanCommon::Vec2 size, Color color) {
+	drawRects_.push_back({pos, size, color});
 }
 
 }

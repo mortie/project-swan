@@ -156,12 +156,13 @@ const char *rectFr = R"glsl(
 
 	in vec2 v_coord;
 	uniform vec2 size;
+	uniform vec4 color;
 	out vec4 fragColor;
 
 	void main() {
 		vec2 invCoord = size - v_coord;
 		float minDist = min(v_coord.x, min(v_coord.y, min(invCoord.x, invCoord.y)));
-		fragColor = vec4(0.6, 0.6, 0.6, 0.8) * float(minDist < THICKNESS);
+		fragColor = color * float(minDist < THICKNESS);
 	}
 )glsl";
 

@@ -241,6 +241,7 @@ struct RectProg: public GlProgram {
 	GLint camera = uniformLoc("camera");
 	GLint pos = uniformLoc("pos");
 	GLint size = uniformLoc("size");
+	GLint color = uniformLoc("color");
 	GLint vertex = attribLoc("vertex");
 
 	GLuint vbo;
@@ -495,22 +496,6 @@ void Renderer::draw(const RenderCamera &cam) {
 		spriteProg.disable();
 	}
 
-	{
-		rectProg.enable();
-		glUniformMatrix3fv(rectProg.camera, 1, GL_TRUE, camMat.data());
-		glCheck();
-
-		for (auto [pos, size]: drawRects_) {
-			glUniform2f(rectProg.pos, pos.x, pos.y);
-			glUniform2f(rectProg.size, size.x, size.y);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-			glCheck();
-		}
-
-		drawRects_.clear();
-		rectProg.disable();
-	}
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	{
@@ -537,6 +522,23 @@ void Renderer::draw(const RenderCamera &cam) {
 
 		drawChunkShadows_.clear();
 		chunkShadowProg.disable();
+	}
+
+	{
+		rectProg.enable();
+		glUniformMatrix3fv(rectProg.camera, 1, GL_TRUE, camMat.data());
+		glCheck();
+
+		for (auto [pos, size, color]: drawRects_) {
+			glUniform2f(rectProg.pos, pos.x, pos.y);
+			glUniform2f(rectProg.size, size.x, size.y);
+			glUniform4f(rectProg.color, color.r, color.g, color.b, color.a);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glCheck();
+		}
+
+		drawRects_.clear();
+		rectProg.disable();
 	}
 }
 
