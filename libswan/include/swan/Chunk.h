@@ -8,16 +8,16 @@
 #include "util.h"
 #include "common.h"
 #include "Tile.h"
+#include "EntityCollection.h"
 
 namespace Swan {
 
 class World;
+class WorldPlane;
 class Game;
 
 class Chunk {
 public:
-	using RelPos = TilePos;
-
 	static constexpr size_t DATA_SIZE =
 		CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID) + // Tiles
 		CHUNK_WIDTH * CHUNK_HEIGHT; // Light levels
@@ -44,21 +44,21 @@ public:
 		return data_.get() + CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID);
 	}
 
-	Tile::ID getTileID(RelPos pos) {
+	Tile::ID getTileID(ChunkRelPos pos) {
 		return getTileData()[pos.y * CHUNK_WIDTH + pos.x];
 	}
 
-	void setTileID(RelPos pos, Tile::ID id) {
+	void setTileID(ChunkRelPos pos, Tile::ID id) {
 		getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
 		changeList_.emplace_back(pos, id);
 		isModified_ = true;
 	}
 
-	void setTileData(RelPos pos, Tile::ID id) {
+	void setTileData(ChunkRelPos pos, Tile::ID id) {
 		getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
 	}
 
-	uint8_t getLightLevel(RelPos pos) {
+	uint8_t getLightLevel(ChunkRelPos pos) {
 		return getLightData()[pos.y * CHUNK_WIDTH + pos.x];
 	}
 
@@ -75,11 +75,12 @@ public:
 	void compress(Cygnet::Renderer &rnd);
 	void destroy(Cygnet::Renderer &rnd) { rnd.destroyChunk(renderChunk_); }
 	void draw(const Context &ctx, Cygnet::Renderer &rnd);
-	TickAction tick(float dt);
+	TickAction tick(const Context &ctx, float dt);
 
 	bool isActive() { return deactivateTimer_ > 0; }
 
-	ChunkPos pos_;
+	const ChunkPos pos_;
+	std::unordered_set<EntityRef> entities_;
 
 private:
 	static constexpr float DEACTIVATE_INTERVAL = 20;
@@ -87,7 +88,7 @@ private:
 	bool isCompressed() { return compressedSize_ != -1; }
 
 	std::unique_ptr<uint8_t[]> data_;
-	std::vector<std::pair<RelPos, Tile::ID>> changeList_;
+	std::vector<std::pair<ChunkRelPos, Tile::ID>> changeList_;
 
 	ssize_t compressedSize_ = -1; // -1 if not compressed, a positive number if compressed
 	Cygnet::RenderChunk renderChunk_;

@@ -14,7 +14,7 @@
 #include "WorldPlane.h"
 #include "WorldGen.h"
 #include "Entity.h"
-#include "Collection.h"
+#include "EntityCollection.h"
 #include "Mod.h"
 #include "EventEmitter.h"
 

@@ -11,27 +11,6 @@
 
 namespace Swan {
 
-static ChunkPos chunkPos(TilePos pos) {
-	// This might look weird, but it reduces an otherwise complex series of operations
-	// including conditional branches into like four x64 instructions.
-	// Basically, the problem is that we want 'floor(pos.x / CHUNK_WIDTH)', but
-	// integer division rounds towards zero, it doesn't round down.
-	// Solution: Move the position far to the right in the number line, do the math there
-	// with integer division which always rounds down (because the numbers are always >0),
-	// then move the result back to something hovering around 0 again.
-	return ChunkPos(
-		((long long)pos.x + (LLONG_MAX / 2) + 1) / CHUNK_WIDTH - ((LLONG_MAX / 2) / CHUNK_WIDTH) - 1,
-		((long long)pos.y + (LLONG_MAX / 2) + 1) / CHUNK_HEIGHT - ((LLONG_MAX / 2) / CHUNK_HEIGHT) - 1);
-}
-
-static Chunk::RelPos relPos(TilePos pos) {
-	// This uses a similar trick to chunkPos to turn a mess of conditional moves
-	// and math instructions into literally one movabs and one 'and'
-	return Chunk::RelPos(
-		(pos.x + (long long)CHUNK_WIDTH * ((LLONG_MAX / 2) / CHUNK_WIDTH)) % CHUNK_WIDTH,
-		(pos.y + (long long)CHUNK_HEIGHT * ((LLONG_MAX / 2) / CHUNK_HEIGHT)) % CHUNK_HEIGHT);
-}
-
 Context WorldPlane::getContext() {
 	return {
 		.game = *world_->game_,
@@ -115,8 +94,8 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
 }
 
 void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
-	Chunk &chunk = getChunk(chunkPos(pos));
-	Chunk::RelPos rp = relPos(pos);
+	Chunk &chunk = getChunk(tilePosToChunkPos(pos));
+	ChunkRelPos rp = tilePosToChunkRelPos(pos);
 
 	Tile::ID old = chunk.getTileID(rp);
 	if (id != old) {
@@ -151,7 +130,7 @@ void WorldPlane::setTile(TilePos pos, const std::string &name) {
 }
 
 Tile::ID WorldPlane::getTileID(TilePos pos) {
-	return getChunk(chunkPos(pos)).getTileID(relPos(pos));
+	return getChunk(tilePosToChunkPos(pos)).getTileID(tilePosToChunkRelPos(pos));
 }
 
 Tile &WorldPlane::getTile(TilePos pos) {
@@ -266,6 +245,11 @@ void WorldPlane::update(float dt) {
 
 	for (auto &coll: entColls_)
 		coll->update(ctx, dt);
+
+	for (auto &ref: entDespawnList_) {
+		ref.coll_->erase(ctx, ref.id_);
+	}
+	entDespawnList_.clear();
 }
 
 void WorldPlane::tick(float dt) {
@@ -286,7 +270,7 @@ void WorldPlane::tick(float dt) {
 	auto last = activeChunks_.end();
 	while (iter != last) {
 		auto &chunk = *iter;
-		auto action = chunk->tick(dt);
+		auto action = chunk->tick(ctx, dt);
 
 		switch (action) {
 		case Chunk::TickAction::DEACTIVATE:
@@ -314,12 +298,12 @@ void WorldPlane::debugBox(TilePos pos) {
 }
 
 void WorldPlane::addLight(TilePos pos, float level) {
-	getChunk(chunkPos(pos));
+	getChunk(tilePosToChunkPos(pos));
 	lighting_->onLightAdded(pos, level);
 }
 
 void WorldPlane::removeLight(TilePos pos, float level) {
-	getChunk(chunkPos(pos));
+	getChunk(tilePosToChunkPos(pos));
 	lighting_->onLightRemoved(pos, level);
 }
 

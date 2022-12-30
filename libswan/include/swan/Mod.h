@@ -10,7 +10,8 @@
 #include "Item.h"
 #include "WorldGen.h"
 #include "Entity.h"
-#include "Collection.h"
+#include "EntityCollection.h"
+#include "EntityCollectionImpl.h"
 #include "OS.h"
 #include "util.h"
 

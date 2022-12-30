@@ -31,8 +31,6 @@ public:
 
 	Entity &operator=(Entity &&) = default;
 
-	void despawn(const Swan::Context &ctx);
-
 	virtual void draw(const Context &ctx, Cygnet::Renderer &rnd) {}
 	virtual void update(const Context &ctx, float dt) {}
 	virtual void tick(const Context &ctx, float dt) {}
@@ -40,8 +38,6 @@ public:
 
 	virtual void deserialize(const Swan::Context &ctx, const PackObject &obj) {}
 	virtual PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) { return {}; }
-
-	uint64_t id_;
 };
 
 class PhysicsEntity: public Entity, public BodyTrait, public PhysicsTrait {

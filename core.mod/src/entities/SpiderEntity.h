@@ -2,7 +2,7 @@
 
 #include <swan/swan.h>
 
-class SpiderEntity: public Swan::PhysicsEntity {
+class SpiderEntity final: public Swan::PhysicsEntity {
 public:
 	SpiderEntity(const Swan::Context &ctx, Swan::Vec2 pos);
 	SpiderEntity(const Swan::Context &ctx, const PackObject &obj);

@@ -6,7 +6,7 @@
 #include "common.h"
 #include "Chunk.h"
 #include "Entity.h"
-#include "Collection.h"
+#include "EntityCollection.h"
 #include "traits/BodyTrait.h"
 
 namespace Swan {

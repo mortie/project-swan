@@ -29,8 +29,9 @@ void ItemStackEntity::update(const Swan::Context &ctx, float dt) {
 
 void ItemStackEntity::tick(const Swan::Context &ctx, float dt) {
 	despawnTimer_ -= dt;
-	if (despawnTimer_ <= 0)
-		despawn(ctx);
+	if (despawnTimer_ <= 0) {
+		ctx.plane.despawnEntity(ctx.plane.currentEntity());
+	}
 }
 
 void ItemStackEntity::deserialize(const Swan::Context &ctx, const PackObject &obj) {

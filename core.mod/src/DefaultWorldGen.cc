@@ -83,7 +83,7 @@ void DefaultWorldGen::initializeTile(const Swan::Context &ctx, Swan::TilePos pos
 	if (pos.y == grassLevel - 1 && playerDist > 20) {
 		double r = perlin_.noise(pos.x * 87.411, 10);
 		if (r < -0.25) {
-			ctx.plane.spawnEntity<SpiderEntity>(ctx, pos);
+			ctx.plane.spawnEntity<SpiderEntity>(pos);
 		}
 	}
 }
@@ -96,7 +96,7 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 			int tiley = chunk.pos_.y * Swan::CHUNK_HEIGHT + cy;
 
 			Swan::TilePos pos(tilex, tiley);
-			Swan::Chunk::RelPos rel(cx, cy);
+			Swan::ChunkRelPos rel(cx, cy);
 			chunk.setTileData(rel, genTile(pos));
 		}
 	}
@@ -117,5 +117,5 @@ void DefaultWorldGen::initializeChunk(const Swan::Context &ctx, Swan::Chunk &chu
 Swan::EntityRef DefaultWorldGen::spawnPlayer(const Swan::Context &ctx) {
 	int x = getPlayerX(perlin_);
 	return ctx.plane.spawnEntity<PlayerEntity>(
-		ctx, Swan::Vec2{ (float)x, (float)getGrassLevel(perlin_, x) - 2 });
+		Swan::Vec2{ (float)x, (float)getGrassLevel(perlin_, x) - 2 });
 }

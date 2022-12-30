@@ -84,7 +84,7 @@ public:
 	void onTileBreak(const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile &tile) {
 		if (tile.droppedItem) {
 			ctx.plane.spawnEntity<ItemStackEntity>(
-				ctx, (Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, *tile.droppedItem);
+				(Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, *tile.droppedItem);
 		}
 	}
 

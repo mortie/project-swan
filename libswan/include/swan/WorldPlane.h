@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 #include <typeindex>
+#include <type_traits>
 #include <mutex>
 
 #include "common.h"
@@ -16,7 +17,7 @@
 #include "Tile.h"
 #include "WorldGen.h"
 #include "Entity.h"
-#include "Collection.h"
+#include "EntityCollection.h"
 #include "LightServer.h"
 
 namespace Swan {
@@ -36,18 +37,17 @@ public:
 	template<typename Ent, typename... Args>
 	EntityRef spawnEntity(Args&&... args);
 
+	void despawnEntity(EntityRef ref);
+
 	Context getContext();
+
+	EntityRef currentEntity();
 
 	bool hasChunk(ChunkPos pos);
 	Chunk &getChunk(ChunkPos pos);
 	Chunk &slowGetChunk(ChunkPos pos);
 	void setTileID(TilePos pos, Tile::ID id);
 	void setTile(TilePos pos, const std::string &name);
-
-	template<typename Ent>
-	EntityCollection &getCollectionOf();
-	EntityCollection &getCollectionOf(std::string name);
-	EntityCollection &getCollectionOf(std::type_index type);
 
 	Tile::ID getTileID(TilePos pos);
 	Tile &getTile(TilePos pos);
@@ -76,13 +76,20 @@ public:
 	std::mutex mut_;
 
 private:
+	template<typename Ent>
+	EntityCollection &getCollectionOf();
+	EntityCollection &getCollectionOf(std::string name);
+	EntityCollection &getCollectionOf(std::type_index type);
+
 	std::map<std::pair<int, int>, Chunk> chunks_;
 	std::vector<Chunk *> activeChunks_;
 	std::vector<std::pair<ChunkPos, Chunk *>> tickChunks_;
 	std::vector<std::unique_ptr<EntityCollection>> entColls_;
 	std::unordered_map<std::type_index, EntityCollection *> entCollsByType_;
 	std::unordered_map<std::string, EntityCollection *> entCollsByName_;
+	EntityCollection *currentEntCol_;
 
+	std::vector<EntityRef> entDespawnList_;
 	std::deque<Chunk *> chunkInitList_;
 	std::vector<TilePos> debugBoxes_;
 
@@ -99,7 +106,16 @@ private:
 
 template<typename Ent, typename... Args>
 inline EntityRef WorldPlane::spawnEntity(Args&&... args) {
-	return getCollectionOf(typeid(Ent)).spawn<Ent, Args...>(std::forward<Args>(args)...);
+	return getCollectionOf(typeid(Ent)).spawn<Ent, Args...>(
+		getContext(), std::forward<Args>(args)...);
+}
+
+inline EntityRef WorldPlane::currentEntity() {
+	return currentEntCol_->currentEntity();
+}
+
+inline void WorldPlane::despawnEntity(EntityRef ref) {
+	entDespawnList_.push_back(ref);
 }
 
 template<typename Ent>

@@ -4,12 +4,17 @@
 
 namespace Swan {
 
+class EntityRef;
+
 struct BodyTrait {
 	struct Tag {};
 
 	struct Body final {
 		Vec2 pos{};
 		Vec2 size{};
+
+		// The chunkPos is managed by the engine (notably, EntityCollection)
+		ChunkPos chunkPos{};
 
 		float left() { return pos.x; }
 		float right() { return pos.x + size.x; }

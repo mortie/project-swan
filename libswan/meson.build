@@ -14,7 +14,6 @@ libswan = declare_dependency(
     'src/Chunk.cc',
     'src/Clock.cc',
     'src/drawutil.cc',
-    'src/Entity.cc',
     'src/Game.cc',
     'src/ItemStack.cc',
     'src/LightServer.cc',
