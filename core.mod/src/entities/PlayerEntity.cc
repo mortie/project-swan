@@ -96,7 +96,10 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	// Collide with stuff
 	auto &collisions = ctx.plane.getCollidingEntities(ctx.plane.currentEntity(), body_);
 	for (auto &c: collisions) {
-		auto *damage = c.entity->trait<Swan::ContactDamageTrait>();
+		auto *entity = c.ref.get();
+
+		// Get damaged if it's something which deals contact damage
+		auto *damage = entity->trait<Swan::ContactDamageTrait>();
 		bool damaged = false;
 		if (damage && invincibleTimer_ <= 0) {
 			Swan::Vec2 direction;
@@ -113,6 +116,16 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 
 		if (damaged) {
 			invincibleTimer_ = 0.5;
+		}
+
+		// Pick it up if it's an item stack
+		auto *itemStackEnt = dynamic_cast<ItemStackEntity *>(entity);
+		if (itemStackEnt) {
+			Swan::ItemStack stack{itemStackEnt->item(), 1};
+			stack = inventory_.insert(0, stack);
+			if (stack.empty()) {
+				ctx.plane.despawnEntity(c.ref);
+			}
 		}
 	}
 

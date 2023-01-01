@@ -6,7 +6,7 @@
 
 namespace Swan {
 
-class Item {
+struct Item {
 public:
 	struct Builder {
 		std::string name;

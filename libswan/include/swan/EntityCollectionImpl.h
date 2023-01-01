@@ -38,6 +38,7 @@ public:
 
 	size_t size() override { return entities_.size(); }
 	Entity *get(uint64_t id) override;
+	BodyTrait::Body *getBody(uint64_t id) override;
 
 	const std::string &name() override { return name_; }
 	std::type_index type() override { return typeid(Ent); }
@@ -70,7 +71,11 @@ inline Entity *EntityRef::get() {
 	return coll_->get(id_);
 }
 
-inline bool EntityRef::hasValue() {
+inline BodyTrait::Body *EntityRef::getBody() {
+	return coll_->getBody(id_);
+}
+
+inline bool EntityRef::exists() {
 	return get() != nullptr;
 }
 
@@ -144,6 +149,23 @@ inline Entity *EntityCollectionImpl<Ent>::get(uint64_t id) {
 }
 
 template<typename Ent>
+inline BodyTrait::Body *EntityCollectionImpl<Ent>::getBody(uint64_t id) {
+	if constexpr (std::is_base_of_v<BodyTrait, Ent>) {
+		auto indexIt = idToIndex_.find(id);
+		if (indexIt == idToIndex_.end()) {
+			Swan::info
+				<< "Looked for non-existent '" << typeid(Ent).name()
+				<< "' entity with ID " << id;
+			return nullptr;
+		}
+
+		return &entities_[indexIt->second].ent.get(BodyTrait::Tag{});
+	} else {
+		return nullptr;
+	}
+}
+
+template<typename Ent>
 inline void EntityCollectionImpl<Ent>::update(const Context &ctx, float dt) {
 	ZoneScopedN(__PRETTY_FUNCTION__);
 	for (auto &w: entities_) {
@@ -206,15 +228,16 @@ inline void EntityCollectionImpl<Ent>::erase(const Context &ctx, uint64_t id) {
 	}
 
 	size_t index = indexIt->second;
-	if (index == entities_.size() - 1) {
-		entities_.pop_back();
-		return;
-	}
 
 	if constexpr (std::is_base_of_v<BodyTrait, Ent>) {
 		auto &w = entities_[index];
 		BodyTrait::Body &body = w.ent.get(BodyTrait::Tag{});
 		ctx.plane.getChunk(body.chunkPos).entities_.erase({this, w.id});
+	}
+
+	if (index == entities_.size() - 1) {
+		entities_.pop_back();
+		return;
 	}
 
 	entities_[index] = std::move(entities_.back());

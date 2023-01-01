@@ -2,7 +2,7 @@
 
 namespace Swan {
 
-class Item;
+struct Item;
 
 class ItemStack {
 public:

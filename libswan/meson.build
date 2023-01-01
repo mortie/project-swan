@@ -25,3 +25,11 @@ libswan = declare_dependency(
     include_directories: 'include/swan',
   ),
 )
+
+executable(
+  'libswan_test',
+  'test/lib/test.cc',
+  'test/ItemStack.t.cc',
+  dependencies: libswan_deps + libswan,
+  include_directories: 'include/swan',
+)

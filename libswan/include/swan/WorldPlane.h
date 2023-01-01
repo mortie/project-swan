@@ -30,9 +30,8 @@ public:
 	using ID = uint16_t;
 
 	struct FoundEntity {
-		Entity *entity;
-		BodyTrait::Body *body;
 		EntityRef ref;
+		BodyTrait::Body *body;
 	};
 
 	WorldPlane(

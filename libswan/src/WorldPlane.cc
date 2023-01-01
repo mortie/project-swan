@@ -56,15 +56,18 @@ std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(
 	auto checkChunk = [&](ChunkPos pos) {
 		Chunk &chunk = getChunk(pos);
 		for (const EntityRef &constCandidate: chunk.entities_) {
-			EntityRef candidate = constCandidate;
-			Entity *ent = candidate.get();
-			BodyTrait::Body *candidateBody = ent->trait<BodyTrait>();
+			EntityRef candidateRef = constCandidate;
+
+			// The entities_ array in a chunk should always be kept updated
+			assert(candidateRef);
+
+			BodyTrait::Body *candidateBody = candidateRef.getBody();
 			if (!candidateBody || candidateBody == &body) {
 				continue;
 			}
 
 			if (body.collidesWith(*candidateBody)) {
-				foundEntitiesRet_.push_back({ent, candidateBody, candidate});
+				foundEntitiesRet_.push_back({candidateRef, candidateBody});
 			}
 		}
 	};

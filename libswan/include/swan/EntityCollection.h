@@ -12,6 +12,7 @@
 #include "log.h"
 #include "Entity.h"
 #include "util.h"
+#include "traits/BodyTrait.h"
 
 namespace Swan {
 
@@ -30,7 +31,7 @@ public:
 		return *this;
 	}
 
-	operator bool() { return hasValue(); }
+	operator bool() { return exists(); }
 	Entity *operator->() { return get(); }
 	Entity &operator*() { return *get(); }
 
@@ -41,8 +42,12 @@ public:
 	template<typename Func>
 	EntityRef &then(Func func);
 
-	bool hasValue();
+	bool exists();
 	Entity *get();
+	BodyTrait::Body *getBody();
+
+	uint64_t id() const { return id_; }
+	EntityCollection *collection() const { return coll_; }
 
 private:
 	EntityCollection *coll_;
@@ -71,6 +76,7 @@ public:
 
 	virtual size_t size() = 0;
 	virtual Entity *get(uint64_t id) = 0;
+	virtual BodyTrait::Body *getBody(uint64_t id) = 0;
 
 	virtual EntityRef spawn(const Context &ctx, const Entity::PackObject &obj) = 0;
 	virtual void update(const Context &ctx, float dt) = 0;
