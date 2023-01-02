@@ -108,14 +108,8 @@ int main(int argc, char **argv) {
 	imgassert(IMG_Init(imgFlags) == imgFlags, "Could not initialize SDL_Image");
 	defer(IMG_Quit());
 
-#ifdef __APPLE__
-	const char *imguiGlsl = "#version 150";
 	Cygnet::GLSL_PRELUDE = "#version 150\n";
-#else 
-	const char *imguiGlsl = "#version 130";
-	Cygnet::GLSL_PRELUDE = "#version 320 es\nprecision mediump float;\n";
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-#endif
+	const char *imguiGlsl = Cygnet::GLSL_PRELUDE;
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);

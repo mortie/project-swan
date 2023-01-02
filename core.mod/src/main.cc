@@ -12,7 +12,7 @@ class CoreMod: public Swan::Mod {
 public:
 	CoreMod(Swan::World &world): Swan::Mod("core") {
 		breakListener_ = world.evtTileBreak_.subscribe(
-			[=](auto ...args) { return onTileBreak(args...); });
+			[&](auto ...args) { return onTileBreak(args...); });
 
 		registerSprite("entity/player-running");
 		registerSprite("entity/player-idle");

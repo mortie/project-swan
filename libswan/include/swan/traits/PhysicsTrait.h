@@ -9,14 +9,18 @@ struct PhysicsTrait {
 	struct Tag {};
 
 	struct Physics {
-		virtual ~Physics() = default;
-
 		virtual void applyForce(Vec2 force) = 0;
 		virtual void addVelocity(Vec2 vel) = 0;
 		virtual Vec2 getVelocity() = 0;
+
+	protected:
+		~Physics() = default;
 	};
 
 	virtual Physics &get(Tag) = 0;
+
+protected:
+	~PhysicsTrait() = default;
 };
 
 struct BasicPhysics final: public PhysicsTrait::Physics {

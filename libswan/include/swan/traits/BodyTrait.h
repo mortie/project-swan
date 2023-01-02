@@ -39,6 +39,9 @@ struct BodyTrait {
 	};
 
 	virtual Body &get(Tag) = 0;
+
+protected:
+	~BodyTrait() = default;
 };
 
 }

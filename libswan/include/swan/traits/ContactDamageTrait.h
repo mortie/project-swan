@@ -13,6 +13,9 @@ struct ContactDamageTrait {
 	};
 
 	virtual Damage &get(Tag) = 0;
+
+protected:
+	~ContactDamageTrait() = default;
 };
 
 }

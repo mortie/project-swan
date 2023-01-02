@@ -12,17 +12,21 @@ struct InventoryTrait {
 	struct Tag {};
 
 	struct Inventory {
-		virtual ~Inventory() = default;
-
 		virtual int size() = 0;
 		virtual ItemStack get(int slot) = 0;
 		virtual ItemStack set(int slot, ItemStack stack) = 0;
 		virtual ItemStack insert(int slot, ItemStack stack) = 0;
 
 		ItemStack insert(ItemStack stack) { return insert(0, stack); }
+
+	protected:
+		~Inventory() = default;
 	};
 
 	virtual Inventory &get(Tag) = 0;
+
+protected:
+	~InventoryTrait() = default;
 };
 
 struct BasicInventory final: InventoryTrait::Inventory {
