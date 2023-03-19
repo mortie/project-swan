@@ -109,7 +109,6 @@ int main(int argc, char **argv) {
 	defer(IMG_Quit());
 
 	Cygnet::GLSL_PRELUDE = "#version 150\n";
-	const char *imguiGlsl = Cygnet::GLSL_PRELUDE;
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -150,7 +149,7 @@ int main(int argc, char **argv) {
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	defer(ImGui_ImplGlfw_Shutdown());
-	ImGui_ImplOpenGL3_Init(imguiGlsl);
+	ImGui_ImplOpenGL3_Init(Cygnet::GLSL_PRELUDE);
 	defer(ImGui_ImplOpenGL3_Shutdown());
 
 	// Create one global VAO, so we can pretend VAOs don't exist

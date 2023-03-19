@@ -3,6 +3,8 @@ project(
   default_options: ['cpp_std=c++2a'],
 )
 
+shaderpp_prog = find_program('./scripts/shaderpp.py')
+
 tracy_proj = subproject('tracy')
 libtracy = tracy_proj.get_variable('tracy_dep')
 if get_option('trace')
@@ -39,9 +41,3 @@ executable('swan', 'src/main.cc',
 )
 
 install_subdir('assets', install_dir: '')
-
-install_data(
-  'launch-scripts/swan.lldb',
-  install_dir: get_option('bindir'),
-  install_mode: 'rwxr-xr-x',
-)

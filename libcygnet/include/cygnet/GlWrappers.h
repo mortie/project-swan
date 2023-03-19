@@ -41,9 +41,14 @@ public:
 
 class GlProgram {
 public:
-	template <typename... T>
-	GlProgram(const T &... shaders): GlProgram() { (addShader(shaders), ...); link(); }
+	GlProgram(const char *vertex, const char *fragment): GlProgram() {
+		addShader(GlVxShader(vertex));
+		addShader(GlFrShader(fragment));
+		link();
+	}
+
 	GlProgram();
+
 	virtual ~GlProgram();
 
 	GLuint id() const { return id_; }
@@ -57,6 +62,12 @@ private:
 	void link();
 
 	GLuint id_;
+};
+
+template<typename T>
+class GlProg: public GlProgram {
+public:
+	GlProg(): GlProgram(T::vertex, T::fragment) {}
 };
 
 }

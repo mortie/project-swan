@@ -32,6 +32,7 @@ GlShader::GlShader(Type type, const char *source) {
 		"#define SWAN_CHUNK_WIDTH ", chunkWidth.c_str(), "\n",
 		"#define SWAN_CHUNK_HEIGHT ", chunkHeight.c_str(), "\n",
 		"#define SWAN_TILE_SIZE ", tileSize.c_str(), "\n",
+		"\n",
 		source,
 	};
 	size_t sourcecount = sizeof(sources) / sizeof(*sources);

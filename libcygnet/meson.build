@@ -1,5 +1,11 @@
 cygnet_deps = [common, libthreads, libgl, libglfw3, libtracy, libstb_truetype]
 
+shader_gen = generator(
+  shaderpp_prog,
+  output: ['@PLAINNAME@.h', '@PLAINNAME@.cc'],
+  arguments: ['@INPUT@', '@OUTPUT0@', '@OUTPUT1@'],
+)
+
 libcygnet = declare_dependency(
   include_directories: 'include',
   link_with: library('cygnet',
@@ -7,10 +13,17 @@ libcygnet = declare_dependency(
     'src/GlWrappers.cc',
     'src/Renderer.cc',
     'src/ResourceManager.cc',
-    'src/shaders.cc',
     'src/TextCache.cc',
     'src/TileAtlas.cc',
     'src/util.cc',
+    shader_gen.process(
+      'src/glsl/Blend.glsl',
+      'src/glsl/Chunk.glsl',
+      'src/glsl/ChunkShadow.glsl',
+      'src/glsl/Rect.glsl',
+      'src/glsl/Sprite.glsl',
+      'src/glsl/Tile.glsl',
+    ),
     dependencies: cygnet_deps,
     install: true,
     include_directories: 'include/cygnet',
