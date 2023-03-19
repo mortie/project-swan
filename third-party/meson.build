@@ -34,3 +34,11 @@ libmsgpack = declare_dependency(
 libperlinnoise = declare_dependency(
   include_directories: 'PerlinNoise'
 )
+
+libstb_truetype = declare_dependency(
+  include_directories: '.',
+  link_with: static_library('stb_truetype',
+    'stb_impls/stb_truetype.cc',
+    include_directories: '.',
+  ),
+)

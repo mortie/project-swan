@@ -1,4 +1,4 @@
-cygnet_deps = [common, libthreads, libgl, libglfw3, libtracy]
+cygnet_deps = [common, libthreads, libgl, libglfw3, libtracy, libstb_truetype]
 
 libcygnet = declare_dependency(
   include_directories: 'include',
@@ -8,6 +8,7 @@ libcygnet = declare_dependency(
     'src/Renderer.cc',
     'src/ResourceManager.cc',
     'src/shaders.cc',
+    'src/TextCache.cc',
     'src/TileAtlas.cc',
     'src/util.cc',
     dependencies: cygnet_deps,
