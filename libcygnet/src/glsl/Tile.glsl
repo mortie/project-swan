@@ -1,7 +1,12 @@
-// @Vertex
-in vec2 vertex;
 uniform mat3 camera;
 uniform mat3 transform;
+uniform sampler2D tileAtlas;
+uniform vec2 tileAtlasSize;
+uniform float tileID;
+uniform float brightness;
+
+// @Vertex
+in vec2 vertex;
 out vec2 v_tileCoord;
 
 void main() {
@@ -11,19 +16,13 @@ void main() {
 }
 
 // @Fragment
-#define TILE_SIZE 32.0
-
 in vec2 v_tileCoord;
-uniform sampler2D tileAtlas;
-uniform vec2 tileAtlasSize;
-uniform float tileID;
-uniform float brightness;
 out vec4 fragColor;
 
 void main() {
 	// 1/(TILE_SIZE*16) plays the same role here as in the sprite vertex shader.
 	vec2 offset = v_tileCoord;
-	vec2 pixoffset = (1.0 - offset * 2.0) / (TILE_SIZE * 16.0);
+	vec2 pixoffset = (1.0 - offset * 2.0) / (float(SWAN_TILE_SIZE) * 16.0);
 	vec2 atlasPos = vec2(
 		pixoffset.x + tileID + offset.x,
 		pixoffset.y + floor(tileID / tileAtlasSize.x) + offset.y);

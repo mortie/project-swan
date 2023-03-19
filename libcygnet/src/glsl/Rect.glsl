@@ -1,8 +1,12 @@
-// @Vertex
-in vec2 vertex;
+#define THICKNESS 0.02
+
 uniform mat3 camera;
 uniform vec2 pos;
 uniform vec2 size;
+uniform vec4 color;
+
+// @Vertex
+in vec2 vertex;
 out vec2 v_coord;
 
 void main() {
@@ -12,11 +16,7 @@ void main() {
 }
 
 // @Fragment
-#define THICKNESS 0.02
-
 in vec2 v_coord;
-uniform vec2 size;
-uniform vec4 color;
 out vec4 fragColor;
 
 void main() {

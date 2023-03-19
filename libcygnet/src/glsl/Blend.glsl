@@ -1,3 +1,5 @@
+uniform sampler2D tex;
+
 // @Vertex
 in vec2 vertex;
 in vec2 texCoord;
@@ -10,7 +12,6 @@ void main() {
 
 // @Fragment
 in vec2 v_texCoord;
-uniform sampler2D tex;
 out vec4 fragColor;
 
 void main() {

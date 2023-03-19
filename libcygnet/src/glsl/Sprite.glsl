@@ -1,11 +1,11 @@
-// @Vertex
-#define TILE_SIZE 32.0
-
-in vec2 vertex;
 uniform mat3 camera;
 uniform mat3 transform;
 uniform vec2 frameSize;
 uniform vec2 frameInfo; // frame count, frame index
+uniform sampler2D tex;
+
+// @Vertex
+in vec2 vertex;
 out vec2 v_texCoord;
 
 void main() {
@@ -13,7 +13,7 @@ void main() {
 	// It's just an arbitrary small number, but it works as an offset to make sure
 	// neighbouring parts of the atlas don't bleed into the frame we actually
 	// want to draw due to (nearest neighbour) interpolation.
-	float pixoffset = (1.0 - vertex.y * 2.0) / (frameSize.y * TILE_SIZE * 16.0);
+	float pixoffset = (1.0 - vertex.y * 2.0) / (frameSize.y * float(SWAN_TILE_SIZE) * 16.0);
 	v_texCoord = vec2(
 		vertex.x,
 		(frameSize.y * frameInfo.y + (frameSize.y * vertex.y)) /
@@ -25,7 +25,6 @@ void main() {
 
 // @Fragment
 in vec2 v_texCoord;
-uniform sampler2D tex;
 out vec4 fragColor;
 
 void main() {

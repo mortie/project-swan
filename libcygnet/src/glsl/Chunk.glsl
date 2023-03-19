@@ -1,7 +1,11 @@
-// @Vertex
-in vec2 vertex;
 uniform mat3 camera;
 uniform vec2 pos;
+uniform sampler2D tileAtlas;
+uniform vec2 tileAtlasSize;
+uniform sampler2D tiles;
+
+// @Vertex
+in vec2 vertex;
 out vec2 v_tileCoord;
 
 void main() {
@@ -12,9 +16,6 @@ void main() {
 
 // @Fragment
 in vec2 v_tileCoord;
-uniform sampler2D tileAtlas;
-uniform vec2 tileAtlasSize;
-uniform sampler2D tiles;
 out vec4 fragColor;
 
 void main() {
