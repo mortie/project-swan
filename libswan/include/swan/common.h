@@ -1,8 +1,6 @@
 #pragma once
 
-// We want every file to be able to easily add Tracy zones
-#include <tracy/Tracy.hpp>
-
+#include <swan-common/trace.h>
 #include <swan-common/Vector2.h>
 #include <swan-common/constants.h>
 

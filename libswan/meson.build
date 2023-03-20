@@ -1,11 +1,8 @@
-libswan_deps = [
-  common, libcygnet, libthreads, libsdl2_image,
-  libcpptoml, libdl, libz, libglfw3, libimgui, libtracy
-]
-
 libswan = declare_dependency(
   include_directories: 'include',
-  dependencies: libswan_deps,
+  dependencies: [
+    common, libcygnet, libglfw3,
+  ] + maybe_libtracy,
   link_with: library('swan',
     'src/traits/InventoryTrait.cc',
     'src/traits/PhysicsTrait.cc',
@@ -20,7 +17,10 @@ libswan = declare_dependency(
     'src/OS.cc',
     'src/World.cc',
     'src/WorldPlane.cc',
-    dependencies: libswan_deps,
+    dependencies: [
+      common, libcygnet, libthreads, libsdl2_image,
+      libcpptoml, libdl, libz, libglfw3, libimgui,
+    ] + maybe_libtracy,
     install: true,
     include_directories: 'include/swan',
   ),
@@ -30,6 +30,6 @@ executable(
   'libswan_test',
   'test/lib/test.cc',
   'test/ItemStack.t.cc',
-  dependencies: libswan_deps + libswan,
+  dependencies: libswan,
   include_directories: 'include/swan',
 )

@@ -5,9 +5,10 @@ project(
 
 shaderpp_prog = find_program('./scripts/shaderpp.py')
 
-tracy_proj = subproject('tracy')
-libtracy = tracy_proj.get_variable('tracy_dep')
+maybe_libtracy = []
 if get_option('trace')
+  tracy_proj = subproject('tracy')
+  maybe_libtracy = [tracy_proj.get_variable('tracy_dep')]
   add_project_arguments('-DTRACY_ENABLE', language: 'cpp')
 endif
 
@@ -36,8 +37,8 @@ executable('swan', 'src/main.cc',
   install: true,
   install_rpath: get_option('libdir'),
   dependencies: [
-    libswan, libcygnet, common, libimgui, libsdl2_image, libgl, libglfw3, libtracy,
-  ],
+    libswan, libcygnet, common, libimgui, libsdl2_image, libgl, libglfw3,
+  ] + maybe_libtracy,
 )
 
 install_subdir('assets', install_dir: '')

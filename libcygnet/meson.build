@@ -1,5 +1,3 @@
-cygnet_deps = [common, libthreads, libgl, libglfw3, libtracy, libstb_truetype]
-
 shader_gen = generator(
   shaderpp_prog,
   output: ['@PLAINNAME@.h', '@PLAINNAME@.cc'],
@@ -24,7 +22,9 @@ libcygnet = declare_dependency(
       'src/glsl/Sprite.glsl',
       'src/glsl/Tile.glsl',
     ),
-    dependencies: cygnet_deps,
+    dependencies: [
+      common, libthreads, libgl, libglfw3, libstb_truetype,
+    ] + maybe_libtracy,
     install: true,
     include_directories: 'include/cygnet',
   ),
