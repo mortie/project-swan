@@ -5,10 +5,16 @@ uniform vec2 frameInfo; // frame count, frame index
 uniform sampler2D tex;
 
 // @Vertex
-in vec2 vertex;
 out vec2 v_texCoord;
 
 void main() {
+	vec2 lut[4] = vec2[](
+		vec2(0.0, 0.0),
+		vec2(0.0, 1.0),
+		vec2(1.0, 0.0),
+		vec2(1.0, 1.0));
+	vec2 vertex = lut[gl_VertexID];
+
 	// Here, I'm basically treating 1/(TILE_SIZE*16) as half the size of a "pixel".
 	// It's just an arbitrary small number, but it works as an offset to make sure
 	// neighbouring parts of the atlas don't bleed into the frame we actually

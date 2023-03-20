@@ -6,10 +6,16 @@ uniform float tileID;
 uniform float brightness;
 
 // @Vertex
-in vec2 vertex;
 out vec2 v_atlasPos;
 
 void main() {
+	vec2 lut[4] = vec2[](
+		vec2(0.0, 0.0),
+		vec2(0.0, 1.0),
+		vec2(1.0, 0.0),
+		vec2(1.0, 1.0));
+	vec2 vertex = lut[gl_VertexID];
+
 	vec3 pos = camera * transform * vec3(vertex, 1);
 	gl_Position = vec4(pos.xy, 0, 1);
 

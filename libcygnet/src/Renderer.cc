@@ -25,95 +25,24 @@
 namespace Cygnet {
 
 struct BlendProg: public GlProg<Shader::Blend> {
-	Shader::Blend locs{id()};
-	GLuint vbo;
-
-	static constexpr GLfloat vertexes[] = {
-		-1.0f, -1.0f, 0.0f, 0.0f, // pos 0: top left
-		-1.0f,  1.0f, 0.0f, 1.0f, // pos 1: bottom left
-		 1.0f,  1.0f, 1.0f, 1.0f, // pos 2: bottom right
-		 1.0f,  1.0f, 1.0f, 1.0f, // pos 2: bottom right
-		 1.0f, -1.0f, 1.0f, 0.0f, // pos 3: top right
-		-1.0f, -1.0f, 0.0f, 0.0f, // pos 0: top left
-	};
-
-	BlendProg() {
-		glGenBuffers(1, &vbo);
-		glCheck();
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
-		glCheck();
-	}
-
-	~BlendProg()  {
-		glDeleteBuffers(1, &vbo);
-		glCheck();
-	}
-
 	void draw(GLuint tex) {
 		glUseProgram(id());
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glVertexAttribPointer(
-			locs.attrVertex, 2, GL_FLOAT, GL_FALSE,
-			4 * sizeof(GLfloat), (void *)0);
-		glVertexAttribPointer(
-			locs.attrTexCoord, 2, GL_FLOAT, GL_FALSE,
-			4 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
-		glEnableVertexAttribArray(locs.attrVertex);
-		glEnableVertexAttribArray(locs.attrTexCoord);
-		glCheck();
 
-		glUniform1i(locs.uniTex, 0);
+		glUniform1i(shader.uniTex, 0);
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, tex);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glCheck();
-
-		glDisableVertexAttribArray(locs.attrVertex);
-		glDisableVertexAttribArray(locs.attrTexCoord);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		glCheck();
 	}
 };
 
 struct ChunkProg: public GlProg<Shader::Chunk> {
-	GLuint vbo;
-
-	static constexpr float ch = (float)SwanCommon::CHUNK_HEIGHT;
-	static constexpr float cw = (float)SwanCommon::CHUNK_WIDTH;
-	static constexpr GLfloat vertexes[] = {
-		0.0f,  0.0f, // pos 0: top left
-		0.0f,  ch,   // pos 1: bottom left
-		cw,    ch,   // pos 2: bottom right
-		cw,    ch,   // pos 2: bottom right
-		cw,    0.0f, // pos 3: top right
-		0.0f,  0.0f, // pos 0: top left
-	};
-
-	ChunkProg() {
-		glGenBuffers(1, &vbo);
-		glCheck();
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
-		glCheck();
-	}
-
-	~ChunkProg() {
-		glDeleteBuffers(1, &vbo);
-		glCheck();
-	}
-
 	void draw(
 			const std::vector<Renderer::DrawChunk> &drawChunks, const Mat3gf &cam,
 			GLuint atlasTex, SwanCommon::Vec2 atlasTexSize) {
 		glUseProgram(id());
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glVertexAttribPointer(shader.attrVertex, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-		glEnableVertexAttribArray(shader.attrVertex);
-		glCheck();
 
 		glUniform1i(shader.uniTileAtlas, 0);
 		glUniform1i(shader.uniTiles, 1);
@@ -134,49 +63,15 @@ struct ChunkProg: public GlProg<Shader::Chunk> {
 		for (auto [pos, chunk]: drawChunks) {
 			glUniform2f(shader.uniPos, pos.x, pos.y);
 			glBindTexture(GL_TEXTURE_2D, chunk.tex);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			glCheck();
 		}
-
-		glDisableVertexAttribArray(shader.attrVertex);
-		glCheck();
 	}
 };
 
 struct ChunkShadowProg: public GlProg<Shader::ChunkShadow> {
-	GLuint vbo;
-
-	static constexpr float ch = (float)SwanCommon::CHUNK_HEIGHT;
-	static constexpr float cw = (float)SwanCommon::CHUNK_WIDTH;
-	static constexpr GLfloat vertexes[] = {
-		0.0f,  0.0f, // pos 0: top left
-		0.0f,  ch ,  // pos 1: bottom left
-		cw,    ch,   // pos 2: bottom right
-		cw,    ch,   // pos 2: bottom right
-		cw,    0.0f, // pos 3: top right
-		0.0f,  0.0f, // pos 0: top left
-	};
-
-	ChunkShadowProg() {
-		glGenBuffers(1, &vbo);
-		glCheck();
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
-		glCheck();
-	}
-
-	~ChunkShadowProg() {
-		glDeleteBuffers(1, &vbo);
-		glCheck();
-	}
-
 	void draw(const std::vector<Renderer::DrawChunkShadow> &drawChunkShadows, const Mat3gf &cam) {
 		glUseProgram(id());
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glVertexAttribPointer(shader.attrVertex, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-		glEnableVertexAttribArray(shader.attrVertex);
-		glCheck();
 
 		glUniform1i(shader.uniTex, 0);
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
@@ -186,47 +81,15 @@ struct ChunkShadowProg: public GlProg<Shader::ChunkShadow> {
 		for (auto [pos, shadow]: drawChunkShadows) {
 			glUniform2f(shader.uniPos, pos.x, pos.y);
 			glBindTexture(GL_TEXTURE_2D, shadow.tex);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			glCheck();
 		}
-
-		glDisableVertexAttribArray(shader.attrVertex);
-		glCheck();
 	}
 };
 
 struct RectProg: public GlProg<Shader::Rect> {
-	GLuint vbo;
-
-	static constexpr GLfloat vertexes[] = {
-		0.0f,  0.0f, // pos 0: top left
-		0.0f,  1.0f, // pos 1: bottom left
-		1.0f,  1.0f, // pos 2: bottom right
-		1.0f,  1.0f, // pos 2: bottom right
-		1.0f,  0.0f, // pos 3: top right
-		0.0f,  0.0f, // pos 0: top left
-	};
-
-	RectProg() {
-		glGenBuffers(1, &vbo);
-		glCheck();
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
-		glCheck();
-	}
-
-	~RectProg()  {
-		glDeleteBuffers(1, &vbo);
-		glCheck();
-	}
-
 	void draw(const std::vector<Renderer::DrawRect> &drawRects, const Mat3gf &cam) {
 		glUseProgram(id());
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glVertexAttribPointer(shader.attrVertex, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-		glEnableVertexAttribArray(shader.attrVertex);
-		glCheck();
 
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
 		glCheck();
@@ -235,47 +98,15 @@ struct RectProg: public GlProg<Shader::Rect> {
 			glUniform2f(shader.uniPos, pos.x, pos.y);
 			glUniform2f(shader.uniSize, size.x, size.y);
 			glUniform4f(shader.uniColor, color.r, color.g, color.b, color.a);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			glCheck();
 		}
-
-		glDisableVertexAttribArray(shader.attrVertex);
-		glCheck();
 	}
 };
 
 struct SpriteProg: public GlProg<Shader::Sprite> {
-	GLuint vbo;
-
-	static constexpr GLfloat vertexes[] = {
-		0.0f,  0.0f, // pos 0: top left
-		0.0f,  1.0f, // pos 1: bottom left
-		1.0f,  1.0f, // pos 2: bottom right
-		1.0f,  1.0f, // pos 2: bottom right
-		1.0f,  0.0f, // pos 3: top right
-		0.0f,  0.0f, // pos 0: top left
-	};
-
-	SpriteProg() {
-		glGenBuffers(1, &vbo);
-		glCheck();
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
-		glCheck();
-	}
-
-	~SpriteProg()  {
-		glDeleteBuffers(1, &vbo);
-		glCheck();
-	}
-
 	void draw(const std::vector<Renderer::DrawSprite> &drawSprites, const Mat3gf &cam) {
 		glUseProgram(id());
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glVertexAttribPointer(shader.attrVertex, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-		glEnableVertexAttribArray(shader.attrVertex);
-		glCheck();
 
 		glUniform1i(shader.uniTex, 0);
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
@@ -287,49 +118,17 @@ struct SpriteProg: public GlProg<Shader::Sprite> {
 			glUniform2f(shader.uniFrameSize, sprite.scale.x, sprite.scale.y);
 			glUniform2f(shader.uniFrameInfo, sprite.frameCount, frame);
 			glBindTexture(GL_TEXTURE_2D, sprite.tex);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			glCheck();
 		}
-
-		glDisableVertexAttribArray(shader.attrVertex);
-		glCheck();
 	}
 };
 
 struct TileProg: public GlProg<Shader::Tile> {
-	GLuint vbo;
-
-	static constexpr GLfloat vertexes[] = {
-		0.0f,  0.0f, // pos 0: top left
-		0.0f,  1.0f, // pos 1: bottom left
-		1.0f,  1.0f, // pos 2: bottom right
-		1.0f,  1.0f, // pos 2: bottom right
-		1.0f,  0.0f, // pos 3: top right
-		0.0f,  0.0f, // pos 0: top left
-	};
-
-	TileProg() {
-		glGenBuffers(1, &vbo);
-		glCheck();
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
-		glCheck();
-	}
-
-	~TileProg() {
-		glDeleteBuffers(1, &vbo);
-		glCheck();
-	}
-
 	void draw(
 			const std::vector<Renderer::DrawTile> &drawTiles, const Mat3gf &cam,
 			GLuint atlasTex, SwanCommon::Vec2 atlasTexSize) {
 		glUseProgram(id());
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glVertexAttribPointer(shader.attrVertex, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-		glEnableVertexAttribArray(shader.attrVertex);
-		glCheck();
 
 		glUniform1i(shader.uniTileAtlas, 0);
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
@@ -347,12 +146,10 @@ struct TileProg: public GlProg<Shader::Tile> {
 			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, mat.data());
 			glUniform1f(shader.uniTileID, id);
 			glUniform1f(shader.uniBrightness, brightness);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
 			glCheck();
 		}
-
-		glDisableVertexAttribArray(shader.attrVertex);
-		glCheck();
 	}
 };
 
