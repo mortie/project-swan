@@ -96,8 +96,8 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd) {
 	}
 
 	Vec2 pos = (Vec2)pos_ * Vec2{CHUNK_WIDTH, CHUNK_HEIGHT};
-	rnd.drawChunk(renderChunk_, pos);
-	rnd.drawChunkShadow(renderChunkShadow_, pos);
+	rnd.drawChunk({pos, renderChunk_});
+	rnd.drawChunkShadow({pos, renderChunkShadow_});
 }
 
 Chunk::TickAction Chunk::tick(float dt) {

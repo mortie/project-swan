@@ -39,14 +39,42 @@ class Renderer {
 public:
 	using TileID = uint16_t;
 
+	struct DrawChunk {
+		SwanCommon::Vec2 pos;
+		RenderChunk chunk;
+	};
+
+	struct DrawChunkShadow {
+		SwanCommon::Vec2 pos;
+		RenderChunkShadow shadow;
+	};
+
+	struct DrawTile {
+		Mat3gf transform;
+		TileID id;
+		float brightness;
+	};
+
+	struct DrawSprite {
+		Mat3gf transform;
+		int frame;
+		RenderSprite sprite;
+	};
+
+	struct DrawRect {
+		SwanCommon::Vec2 pos;
+		SwanCommon::Vec2 size;
+		Color color = {0.6, 0.6, 0.6, 0.8};
+	};
+
 	Renderer();
 	~Renderer();
 
-	void drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos);
-	void drawChunkShadow(RenderChunkShadow shadow, SwanCommon::Vec2 pos);
-	void drawTile(TileID id, Mat3gf mat, float brightness = 1);
-	void drawSprite(RenderSprite sprite, Mat3gf mat, int y = 0);
-	void drawRect(SwanCommon::Vec2 pos, SwanCommon::Vec2 size, Color color = {0.6, 0.6, 0.6, 0.8});
+	void drawChunk(DrawChunk chunk) { drawChunks_.push_back(chunk); }
+	void drawChunkShadow(DrawChunkShadow chunkShadow) { drawChunkShadows_.push_back(chunkShadow); }
+	void drawTile(DrawTile drawTile) { drawTiles_.push_back(drawTile); }
+	void drawSprite(DrawSprite drawSprite) { drawSprites_.push_back(drawSprite); }
+	void drawRect(DrawRect drawRect) { drawRects_.push_back(drawRect); }
 
 	void draw(const RenderCamera &cam);
 
@@ -72,63 +100,15 @@ public:
 	SwanCommon::Vec2 winScale() { return winScale_; }
 
 private:
-	struct DrawChunk {
-		SwanCommon::Vec2 pos;
-		RenderChunk chunk;
-	};
-
-	struct DrawShadow {
-		SwanCommon::Vec2 pos;
-		RenderChunkShadow shadow;
-	};
-
-	struct DrawTile {
-		Mat3gf transform;
-		TileID id;
-		float brightness;
-	};
-
-	struct DrawSprite {
-		Mat3gf transform;
-		int frame;
-		RenderSprite sprite;
-	};
-
-	struct DrawRect {
-		SwanCommon::Vec2 pos;
-		SwanCommon::Vec2 size;
-		Color color;
-	};
-
 	SwanCommon::Vec2 winScale_ = {1, 1};
 
 	std::unique_ptr<RendererState> state_;
 
 	std::vector<DrawChunk> drawChunks_;
-	std::vector<DrawShadow> drawChunkShadows_;
+	std::vector<DrawChunkShadow> drawChunkShadows_;
 	std::vector<DrawTile> drawTiles_;
 	std::vector<DrawSprite> drawSprites_;
 	std::vector<DrawRect> drawRects_;
 };
-
-inline void Renderer::drawChunk(RenderChunk chunk, SwanCommon::Vec2 pos) {
-	drawChunks_.push_back({pos, chunk});
-}
-
-inline void Renderer::drawChunkShadow(RenderChunkShadow shadow, SwanCommon::Vec2 pos) {
-	drawChunkShadows_.push_back({pos, shadow});
-}
-
-inline void Renderer::drawTile(TileID id, Mat3gf mat, float brightness) {
-	drawTiles_.push_back({mat, id, brightness});
-}
-
-inline void Renderer::drawSprite(RenderSprite sprite, Mat3gf mat, int frame) {
-	drawSprites_.push_back({mat, frame, sprite});
-}
-
-inline void Renderer::drawRect(SwanCommon::Vec2 pos, SwanCommon::Vec2 size, Color color) {
-	drawRects_.push_back({pos, size, color});
-}
 
 }

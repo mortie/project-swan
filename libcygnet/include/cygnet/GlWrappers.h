@@ -53,10 +53,6 @@ public:
 
 	GLuint id() const { return id_; }
 
-protected:
-	GLint attribLoc(const char *name);
-	GLint uniformLoc(const char *name);
-
 private:
 	void addShader(const GlShader &shader);
 	void link();
@@ -67,7 +63,8 @@ private:
 template<typename T>
 class GlProg: public GlProgram {
 public:
-	GlProg(): GlProgram(T::vertex, T::fragment) {}
+	GlProg(): GlProgram(T::vertex, T::fragment), shader(id()) {}
+	T shader;
 };
 
 }

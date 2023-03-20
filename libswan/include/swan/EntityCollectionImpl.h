@@ -210,7 +210,7 @@ inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Cygnet::Renderer
 		if (ctx.game.debugDrawCollisionBoxes_) {
 			for (auto &w: entities_) {
 				auto &body = w.ent.get(BodyTrait::Tag{});
-				rnd.drawRect(body.pos, body.size);
+				rnd.drawRect({body.pos, body.size});
 			}
 		}
 	}

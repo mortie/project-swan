@@ -236,7 +236,7 @@ void WorldPlane::draw(Cygnet::Renderer &rnd) {
 
 				if (ctx.game.debugDrawChunkBoundaries_) {
 					Vec2i size = {CHUNK_WIDTH, CHUNK_HEIGHT};
-					rnd.drawRect(chunk.pos_ * size, size, {0.7, 0.1, 0.2, 1}); 
+					rnd.drawRect({chunk.pos_ * size, size, {0.7, 0.1, 0.2, 1}});
 				}
 			}
 		}

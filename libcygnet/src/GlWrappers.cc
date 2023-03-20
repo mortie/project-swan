@@ -83,14 +83,6 @@ void GlProgram::addShader(const GlShader &shader) {
 	glCheck();
 }
 
-GLint GlProgram::attribLoc(const char *name) {
-	return glGetAttribLocation(id_, name);
-}
-
-GLint GlProgram::uniformLoc(const char *name) {
-	return glGetUniformLocation(id_, name);
-}
-
 void GlProgram::link() {
 	std::cout << "Cygnet: Linking...\n";
 	glLinkProgram(id_);
