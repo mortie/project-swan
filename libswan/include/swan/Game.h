@@ -4,9 +4,11 @@
 #include <map>
 #include <string>
 #include <optional>
-#include <GLFW/glfw3.h>
 #include <cygnet/Renderer.h>
 #include <cygnet/util.h>
+
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
 
 #include "common.h"
 #include "Mod.h"
