@@ -50,7 +50,7 @@ struct ChunkProg: public GlProg<Shader::Chunk> {
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
 		glCheck();
 
-		glUniform2f(
+		glUniform2ui(
 			shader.uniTileAtlasSize,
 			atlasTexSize.x, atlasTexSize.y);
 		glCheck();
@@ -63,7 +63,7 @@ struct ChunkProg: public GlProg<Shader::Chunk> {
 		for (auto [pos, chunk]: drawChunks) {
 			glUniform2f(shader.uniPos, pos.x, pos.y);
 			glBindTexture(GL_TEXTURE_2D, chunk.tex);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			glDrawArrays(GL_TRIANGLES, 0, 6 * SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT);
 			glCheck();
 		}
 	}
@@ -134,7 +134,7 @@ struct TileProg: public GlProg<Shader::Tile> {
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
 		glCheck();
 
-		glUniform2f(shader.uniTileAtlasSize, atlasTexSize.x, atlasTexSize.y);
+		glUniform2ui(shader.uniTileAtlasSize, atlasTexSize.x, atlasTexSize.y);
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);
@@ -144,7 +144,7 @@ struct TileProg: public GlProg<Shader::Tile> {
 		glActiveTexture(GL_TEXTURE1);
 		for (auto [mat, id, brightness]: drawTiles) {
 			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, mat.data());
-			glUniform1f(shader.uniTileID, id);
+			glUniform1ui(shader.uniTileID, id);
 			glUniform1f(shader.uniBrightness, brightness);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -285,34 +285,11 @@ RenderChunk Renderer::createChunk(
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glCheck();
 
-	static_assert(
-			std::endian::native == std::endian::big ||
-			std::endian::native == std::endian::little,
-			"Expected either big or little endian");
-
-	if constexpr (std::endian::native == std::endian::little) {
-		glTexImage2D(
-				GL_TEXTURE_2D, 0, GL_RG,
-				SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
-				0, GL_RG, GL_UNSIGNED_BYTE, tiles);
-		glCheck();
-	} else if constexpr (std::endian::native == std::endian::big) {
-		uint8_t buf[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT * 2];
-		for (size_t y = 0; y < SwanCommon::CHUNK_HEIGHT; ++y) {
-			for (size_t x = 0; x < SwanCommon::CHUNK_WIDTH; ++x) {
-				size_t dst = y * SwanCommon::CHUNK_WIDTH * 2 + x * 2;
-				size_t src = y * SwanCommon::CHUNK_WIDTH + x;
-				buf[dst + 0] = tiles[src] & 0xff;
-				buf[dst + 1] = (tiles[src] & 0xff00) >> 8;
-			}
-		}
-
-		glTexImage2D(
-				GL_TEXTURE_2D, 0, GL_RG,
-				SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
-				0, GL_RG, GL_UNSIGNED_BYTE, buf);
-		glCheck();
-	}
+	glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_R16UI,
+			SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
+			0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, tiles);
+	glCheck();
 
 	return chunk;
 }
@@ -322,22 +299,9 @@ void Renderer::modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id) 
 	glBindTexture(GL_TEXTURE_2D, chunk.tex);
 	glCheck();
 
-	static_assert(
-			std::endian::native == std::endian::big ||
-			std::endian::native == std::endian::little,
-			"Expected either big or little endian");
-
-	if constexpr (std::endian::native == std::endian::little) {
-		glTexSubImage2D(
-				GL_TEXTURE_2D, 0, pos.x, pos.y, 1, 1,
-				GL_RG, GL_UNSIGNED_BYTE, &id);
-	} else if constexpr (std::endian::native == std::endian::big) {
-		uint8_t buf[] = { (uint8_t)(id & 0xff), (uint8_t)((id & 0xff00) >> 8) };
-		glTexSubImage2D(
-				GL_TEXTURE_2D, 0, pos.x, pos.y, 1, 1,
-				GL_RG, GL_UNSIGNED_BYTE, buf);
-	}
-
+	glTexSubImage2D(
+			GL_TEXTURE_2D, 0, pos.x, pos.y, 1, 1,
+			GL_RED_INTEGER, GL_UNSIGNED_SHORT, &id);
 	glCheck();
 }
 

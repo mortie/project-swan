@@ -1,8 +1,8 @@
 uniform mat3 camera;
 uniform mat3 transform;
 uniform sampler2D tileAtlas;
-uniform vec2 tileAtlasSize;
-uniform float tileID;
+uniform uvec2 tileAtlasSize;
+uniform uint tileID;
 uniform float brightness;
 
 // @Vertex
