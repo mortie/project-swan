@@ -33,6 +33,15 @@ void Game::draw() {
 		ImGui::Begin("Debug Menu", &debugShowMenu_, ImGuiWindowFlags_AlwaysAutoResize);
 		ImGui::Checkbox("Draw collision boxes", &debugDrawCollisionBoxes_);
 		ImGui::Checkbox("Draw chunk boundaries", &debugDrawChunkBoundaries_);
+
+		bool prevEnableVSync = debugEnableVSync_;
+		ImGui::Checkbox("Enable VSync", &debugEnableVSync_);
+		if (debugEnableVSync_ && !prevEnableVSync) {
+			glfwSwapInterval(1);
+		} else if (!debugEnableVSync_ && prevEnableVSync) {
+			glfwSwapInterval(0);
+		}
+
 		ImGui::End();
 	}
 
