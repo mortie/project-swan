@@ -60,7 +60,7 @@ struct ChunkProg: public GlProg<Shader::Chunk> {
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE1);
-		for (auto [pos, chunk]: drawChunks) {
+		for (auto &[pos, chunk]: drawChunks) {
 			glUniform2f(shader.uniPos, pos.x, pos.y);
 			glBindTexture(GL_TEXTURE_2D, chunk.tex);
 			glDrawArrays(GL_TRIANGLES, 0, 6 * SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT);
@@ -78,7 +78,7 @@ struct ChunkShadowProg: public GlProg<Shader::ChunkShadow> {
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);
-		for (auto [pos, shadow]: drawChunkShadows) {
+		for (auto &[pos, shadow]: drawChunkShadows) {
 			glUniform2f(shader.uniPos, pos.x, pos.y);
 			glBindTexture(GL_TEXTURE_2D, shadow.tex);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -94,7 +94,7 @@ struct RectProg: public GlProg<Shader::Rect> {
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
 		glCheck();
 
-		for (auto [pos, size, color]: drawRects) {
+		for (auto &[pos, size, color]: drawRects) {
 			glUniform2f(shader.uniPos, pos.x, pos.y);
 			glUniform2f(shader.uniSize, size.x, size.y);
 			glUniform4f(shader.uniColor, color.r, color.g, color.b, color.a);
@@ -113,7 +113,7 @@ struct SpriteProg: public GlProg<Shader::Sprite> {
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);
-		for (auto [mat, frame, sprite]: drawSprites) {
+		for (auto &[mat, frame, sprite]: drawSprites) {
 			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, mat.data());
 			glUniform2f(shader.uniFrameSize, sprite.scale.x, sprite.scale.y);
 			glUniform2f(shader.uniFrameInfo, sprite.frameCount, frame);
@@ -142,7 +142,7 @@ struct TileProg: public GlProg<Shader::Tile> {
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE1);
-		for (auto [mat, id, brightness]: drawTiles) {
+		for (auto &[mat, id, brightness]: drawTiles) {
 			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, mat.data());
 			glUniform1ui(shader.uniTileID, id);
 			glUniform1f(shader.uniBrightness, brightness);

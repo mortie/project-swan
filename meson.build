@@ -17,7 +17,7 @@ libz = meson.get_compiler('cpp').find_library('z')
 
 libglfw3 = dependency('glfw3')
 libgl = dependency('OpenGL')
-libdw = dependency('libdw')
+libdw = dependency('libdw', required: false)
 
 libsdl2_image = dependency('SDL2_image')
 libthreads = dependency('threads')
