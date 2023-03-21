@@ -25,3 +25,6 @@
 [submodule "third-party/stb"]
 	path = third-party/stb
 	url = https://github.com/nothings/stb.git
+[submodule "third-party/backward-cpp"]
+	path = third-party/backward-cpp
+	url = https://github.com/bombela/backward-cpp.git

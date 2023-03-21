@@ -17,6 +17,7 @@ libz = meson.get_compiler('cpp').find_library('z')
 
 libglfw3 = dependency('glfw3')
 libgl = dependency('OpenGL')
+libdw = dependency('libdw')
 
 libsdl2_image = dependency('SDL2_image')
 libthreads = dependency('threads')
@@ -36,7 +37,7 @@ executable('swan', 'src/main.cc',
   install: true,
   install_rpath: get_option('libdir'),
   dependencies: [
-    libswan, libcygnet, common, libimgui, libsdl2_image, libgl, libglfw3,
+    libswan, libcygnet, common, libimgui, libsdl2_image, libgl, libglfw3, libbackwardcpp,
   ] + maybe_libtracy,
 )
 

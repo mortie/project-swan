@@ -180,6 +180,7 @@ Renderer::~Renderer() {
 	glDeleteFramebuffers(1, &state_->offscreenFramebuffer);
 	glDeleteTextures(1, &state_->offscreenFramebuffer);
 	glDeleteTextures(1, &state_->atlasTex);
+	glCheck();
 }
 
 void Renderer::draw(const RenderCamera &cam) {
@@ -224,6 +225,7 @@ void Renderer::draw(const RenderCamera &cam) {
 		state_->offscreenTex, 0);
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
+	glCheck();
 
 	state_->chunkProg.draw(drawChunks_, camMat, state_->atlasTex, state_->atlasTexSize);
 	drawChunks_.clear();
@@ -242,6 +244,8 @@ void Renderer::draw(const RenderCamera &cam) {
 
 	state_->rectProg.draw(drawRects_, camMat);
 	drawRects_.clear();
+
+	glCheck();
 }
 
 void Renderer::uploadTileAtlas(const void *data, int width, int height) {
@@ -382,6 +386,7 @@ RenderSprite Renderer::createSprite(void *data, int width, int height) {
 
 void Renderer::destroySprite(RenderSprite sprite) {
 	glDeleteTextures(1, &sprite.tex);
+	glCheck();
 }
 
 }

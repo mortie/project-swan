@@ -8,6 +8,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#include <backward.hpp>
 #include <SDL_image.h>
 #include <string.h>
 #include <imgui/imgui.h>
@@ -74,9 +75,10 @@ static void scrollCallback(GLFWwindow *, double dx, double dy) {
 	gameptr->onScrollWheel(dy);
 }
 
-static void windowSizeCallback(GLFWwindow *window, int width, int height) {
-	int dw, dh;
-	glfwGetFramebufferSize(window, &dw, &dh);
+static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh) {
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
+	info << "win size: " << width << 'x' << height << ", fb size: " << dw << 'x' << dh;
 	glViewport(0, 0, dw, dh);
 	Cygnet::glCheck();
 	gameptr->cam_.size = {dw, dh};
@@ -90,10 +92,14 @@ static void windowSizeCallback(GLFWwindow *window, int width, int height) {
 		struct ImFontConfig config;
 		config.SizePixels = 13 * pixelRatio;
 		imguiIo->Fonts->AddFontDefault(&config);
+		imguiIo->Fonts->Build();
 	}
 }
 
 int main(int argc, char **argv) {
+	backward::SignalHandling sh;
+
+
 	glfwSetErrorCallback(+[](int error, const char* description) {
 		warn << "GLFW Error: " << error << ": " << description;
 	});
@@ -137,7 +143,7 @@ int main(int argc, char **argv) {
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 	glfwSetCursorPosCallback(window, cursorPositionCallback);
 	glfwSetScrollCallback(window, scrollCallback);
-	glfwSetWindowSizeCallback(window, windowSizeCallback);
+	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -149,20 +155,19 @@ int main(int argc, char **argv) {
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	defer(ImGui_ImplGlfw_Shutdown());
-	ImGui_ImplOpenGL3_Init(Cygnet::GLSL_PRELUDE);
+	ImGui_ImplOpenGL3_Init("#version 150");
 	defer(ImGui_ImplOpenGL3_Shutdown());
+
+	{
+		int dw, dh;
+		glfwGetFramebufferSize(window, &dw, &dh);
+		framebufferSizeCallback(window, dw, dh);
+	}
 
 	// Create one global VAO, so we can pretend VAOs don't exist
 	GLuint globalVao;
 	glGenVertexArrays(1, &globalVao);
 	glBindVertexArray(globalVao);
-
-	// Initialize window size stuff
-	{
-		int width, height;
-		glfwGetWindowSize(window, &width, &height);
-		windowSizeCallback(window, width, height);
-	}
 
 	auto prevTime = std::chrono::steady_clock::now();
 
@@ -178,6 +183,7 @@ int main(int argc, char **argv) {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+		Cygnet::glCheck();
 
 		auto now = std::chrono::steady_clock::now();
 		std::chrono::duration<float> dur(now - prevTime);
@@ -242,34 +248,42 @@ int main(int argc, char **argv) {
 		{
 			ZoneScopedN("game draw");
 			game.draw();
+			Cygnet::glCheck();
 		}
 
 		{
 			ZoneScopedN("imgui draw");
 			ImGui::Render();
+			Cygnet::glCheck();
 		}
 
 		{
 			Cygnet::Color color = game.backgroundColor();
 			glClearColor(color.r, color.g, color.b, color.a);
 			glClear(GL_COLOR_BUFFER_BIT);
+			Cygnet::glCheck();
 		}
 
 		{
 			ZoneScopedN("game render");
 			game.render();
+			Cygnet::glCheck();
 		}
 
 		{
 			ZoneScopedN("imgui render");
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			Cygnet::glCheck();
 		}
 
 		{
 			ZoneScopedN("render present");
 			glfwSwapBuffers(window);
+			Cygnet::glCheck();
 		}
 
 		FrameMark;
 	}
+
+	return 0;
 }

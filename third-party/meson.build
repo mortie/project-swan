@@ -35,6 +35,18 @@ libperlinnoise = declare_dependency(
   include_directories: 'PerlinNoise'
 )
 
+if libdw.found()
+  libbackwardcpp = declare_dependency(
+    include_directories: 'backward-cpp',
+    compile_args: ['-DBACKWARD_HAS_DW=1'],
+    dependencies: [libdw],
+  )
+else
+  libbackwardcpp = declare_dependency(
+    include_directories: 'backward-cpp',
+  )
+endif
+
 libstb_truetype = declare_dependency(
   include_directories: '.',
   link_with: static_library('stb_truetype',
