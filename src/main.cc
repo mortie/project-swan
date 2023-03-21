@@ -1,5 +1,6 @@
 #include <time.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <vector>
 #include <memory>
 #include <chrono>
@@ -99,6 +100,10 @@ static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh) {
 int main(int argc, char **argv) {
 	backward::SignalHandling sh;
 
+	char *swanRoot = getenv("SWAN_ROOT");
+	if (swanRoot != nullptr && swanRoot[0] != '\0') {
+		chdir(swanRoot);
+	}
 
 	glfwSetErrorCallback(+[](int error, const char* description) {
 		warn << "GLFW Error: " << error << ": " << description;
@@ -129,9 +134,11 @@ int main(int argc, char **argv) {
 	glfwMakeContextCurrent(window);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
+	Cygnet::glCheck();
 
 	// Enable vsync
 	glfwSwapInterval(1);
+	Cygnet::glCheck();
 
 	// Create a world
 	Game game;
