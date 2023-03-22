@@ -19,6 +19,7 @@
 #include <cygnet/Renderer.h>
 
 #include <swan/swan.h>
+#include <swan/assets.h>
 
 using namespace Swan;
 
@@ -102,7 +103,7 @@ int main(int argc, char **argv) {
 
 	char *swanRoot = getenv("SWAN_ROOT");
 	if (swanRoot != nullptr && swanRoot[0] != '\0') {
-		chdir(swanRoot);
+		Swan::assetBasePath = swanRoot;
 	}
 
 	glfwSetErrorCallback(+[](int error, const char* description) {

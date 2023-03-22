@@ -6,6 +6,8 @@
 
 namespace Swan {
 
+extern std::string assetBasePath;
+
 struct ImageAsset {
 	int width;
 	int frameHeight;

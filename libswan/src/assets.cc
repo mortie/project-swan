@@ -6,6 +6,8 @@
 
 namespace Swan {
 
+std::string assetBasePath = ".";
+
 Result<ImageAsset> loadImageAsset(
 		const std::unordered_map<std::string, std::string> modPaths,
 		std::string path) {
@@ -22,7 +24,7 @@ Result<ImageAsset> loadImageAsset(
 		return {Err, "No mod named '" + modPart + '\''};
 	}
 
-	std::string assetPath = modPath->second + "/assets/" + pathPart;
+	std::string assetPath = assetBasePath + "/" + modPath->second + "/assets/" + pathPart;
 	std::string pngPath = assetPath + ".png";
 	std::string tomlPath = assetPath + ".toml";
 
