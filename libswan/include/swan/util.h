@@ -9,6 +9,7 @@
 #include <string_view>
 #include <cstddef>
 #include <cstdint>
+#include <string.h>
 
 namespace Swan {
 
