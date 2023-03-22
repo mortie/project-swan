@@ -23,13 +23,17 @@ public:
 	void onKeyDown(int scancode, int key) {
 		pressedKeys_[scancode] = true;
 		didPressKeys_[scancode] = true;
-		pressedLiteralKeys_[key] = true;
-		didPressLiteralKeys_[key] = true;
+		if (key >= 0) {
+			pressedLiteralKeys_[key] = true;
+			didPressLiteralKeys_[key] = true;
+		}
 	}
 
 	void onKeyUp(int scancode, int key) {
 		pressedKeys_[scancode] = false;
-		pressedLiteralKeys_[key] = false;
+		if (key >= 0) {
+			pressedLiteralKeys_[key] = false;
+		}
 	}
 
 	void onMouseMove(float x, float y) {
@@ -80,18 +84,18 @@ public:
 	bool debugEnableVSync_ = true;
 
 private:
-	std::bitset<GLFW_KEY_LAST> pressedKeys_;
-	std::bitset<GLFW_KEY_LAST> didPressKeys_;
-	std::bitset<GLFW_KEY_LAST> didReleaseKeys_;
+	std::bitset<GLFW_KEY_LAST + 1> pressedKeys_;
+	std::bitset<GLFW_KEY_LAST + 1> didPressKeys_;
+	std::bitset<GLFW_KEY_LAST + 1> didReleaseKeys_;
 
-	std::bitset<GLFW_KEY_LAST> pressedLiteralKeys_;
-	std::bitset<GLFW_KEY_LAST> didPressLiteralKeys_;
-	std::bitset<GLFW_KEY_LAST> didReleaseLiteralKeys_;
+	std::bitset<GLFW_KEY_LAST + 1> pressedLiteralKeys_;
+	std::bitset<GLFW_KEY_LAST + 1> didPressLiteralKeys_;
+	std::bitset<GLFW_KEY_LAST + 1> didReleaseLiteralKeys_;
 
 	Vec2 mousePos_;
-	std::bitset<GLFW_MOUSE_BUTTON_LAST> pressedButtons_;
-	std::bitset<GLFW_MOUSE_BUTTON_LAST> didPressButtons_;
-	std::bitset<GLFW_MOUSE_BUTTON_LAST> didReleaseButtons_;
+	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> pressedButtons_;
+	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> didPressButtons_;
+	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> didReleaseButtons_;
 
 	double didScroll_ = 0;
 };
