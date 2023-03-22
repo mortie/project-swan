@@ -64,7 +64,8 @@ def write_c_string(s, f, pfx = "\n\t"):
             f.write(chr(ch))
 
 def preprocess(inpath, hfile, ccfile):
-    struct_name = os.path.splitext(os.path.basename(inpath))[0]
+    file_name = os.path.basename(inpath)
+    struct_name = os.path.splitext(file_name)[0]
 
     code = {
         "common": "",
@@ -83,6 +84,7 @@ def preprocess(inpath, hfile, ccfile):
 
     hfile.write(f"struct {struct_name} {{\n")
     hfile.write(f"\t{struct_name}(GLuint id);\n\n")
+    hfile.write(f"\tstatic constexpr const char *name = \"{file_name}\";\n\n")
     hfile.write("\tstatic const char vertex[];\n");
     hfile.write("\tstatic const char fragment[];\n");
 

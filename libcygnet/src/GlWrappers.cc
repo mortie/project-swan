@@ -9,17 +9,18 @@
 namespace Cygnet {
 
 GlShader::GlShader(Type type, const char *source) {
+	const char *t = nullptr;
 	switch (type) {
 	case Type::VERTEX:
 		id_ = glCreateShader(GL_VERTEX_SHADER);
 		glCheck();
-		std::cerr << "Cygnet: Compiling vertex shader...\n";
+		t = "vertex";
 		break;
 
 	case Type::FRAGMENT:
 		id_ = glCreateShader(GL_FRAGMENT_SHADER);
 		glCheck();
-		std::cerr << "Cygnet: Compiling fragment shader...\n";
+		t = "fragment";
 		break;
 	}
 
@@ -47,7 +48,7 @@ GlShader::GlShader(Type type, const char *source) {
 	glGetShaderInfoLog(id_, sizeof(log), &length, log);
 	glCheck();
 	if (length != 0) {
-		std::cerr << "Cygnet: Shader compile info (" << length << "):\n" << log << '\n';
+		std::cerr << "Cygnet: Shader compile info (" << t << "):\n" << log << '\n';
 	}
 
 	GLint status = 0;
@@ -68,6 +69,13 @@ GlShader::~GlShader() {
 	glCheck();
 }
 
+GlProgram::GlProgram(const char *name, const char *vertex, const char *fragment): GlProgram() {
+	std::cerr << "Cygnet: Compiling " << name << "...\n";
+	addShader(GlVxShader(vertex));
+	addShader(GlFrShader(fragment));
+	link();
+}
+
 GlProgram::GlProgram() {
 	id_ = glCreateProgram();
 	glCheck();
@@ -84,7 +92,6 @@ void GlProgram::addShader(const GlShader &shader) {
 }
 
 void GlProgram::link() {
-	std::cout << "Cygnet: Linking...\n";
 	glLinkProgram(id_);
 	glCheck();
 
