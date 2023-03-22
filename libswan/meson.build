@@ -18,7 +18,7 @@ libswan = declare_dependency(
     'src/World.cc',
     'src/WorldPlane.cc',
     dependencies: [
-      common, libcygnet, libthreads, libsdl2_image,
+      common, libcygnet, libthreads, libstb_image,
       libcpptoml, libdl, libz, libglfw3, libimgui,
     ] + maybe_libtracy,
     install: true,

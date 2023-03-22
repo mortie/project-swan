@@ -43,6 +43,17 @@ public:
 template<typename T, void (*Func)(T *)>
 using CPtr = std::unique_ptr<T, CPtrDeleter<T, Func>>;
 
+// Free memory with 'free'
+template<typename T>
+class MallocedDeleter {
+public:
+	void operator()(T *ptr) { free((void *)ptr); }
+};
+
+// This is just a bit nicer to use than using unique_ptr directly
+template<typename T>
+using MallocedPtr = std::unique_ptr<T, MallocedDeleter<T>>;
+
 template <typename F>
 class Defer {
 public:

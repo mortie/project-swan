@@ -10,7 +10,6 @@
 #include <GLFW/glfw3.h>
 
 #include <backward.hpp>
-#include <SDL_image.h>
 #include <string.h>
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_glfw.h>
@@ -29,9 +28,6 @@ using namespace Swan;
 		return EXIT_FAILURE; \
 	} \
 } while (0)
-
-#define sdlassert(expr, str) errassert(expr, str, SDL_GetError);
-#define imgassert(expr, str) errassert(expr, str, IMG_GetError);
 
 static Game *gameptr;
 static ImGuiIO *imguiIo;
@@ -115,10 +111,6 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	defer(glfwTerminate());
-
-	int imgFlags = IMG_INIT_PNG;
-	imgassert(IMG_Init(imgFlags) == imgFlags, "Could not initialize SDL_Image");
-	defer(IMG_Quit());
 
 	Cygnet::GLSL_PRELUDE = "#version 150\n";
 

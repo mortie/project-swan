@@ -54,3 +54,11 @@ libstb_truetype = declare_dependency(
     include_directories: '.',
   ),
 )
+
+libstb_image = declare_dependency(
+  include_directories: '.',
+  link_with: static_library('stb_image',
+    'stb_impls/stb_image.cc',
+    include_directories: '.',
+  ),
+)

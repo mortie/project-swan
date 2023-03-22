@@ -1,6 +1,6 @@
 #include "assets.h"
 
-#include <SDL_image.h>
+#include <stb/stb_image.h>
 #include <cpptoml.h>
 #include <string.h>
 
@@ -28,12 +28,21 @@ Result<ImageAsset> loadImageAsset(
 	std::string pngPath = assetPath + ".png";
 	std::string tomlPath = assetPath + ".toml";
 
-	CPtr<SDL_Surface, SDL_FreeSurface> surface(IMG_Load(pngPath.c_str()));
-	if (!surface) {
-		return {Err, "Loading image " + pngPath + " failed: " + SDL_GetError()};
+	int w, h;
+	MallocedPtr<unsigned char> buffer{stbi_load(pngPath.c_str(), &w, &h, nullptr, 4)};
+	if (!buffer) {
+		return {Err, "Loading image " + pngPath + " failed"};
 	}
 
-	int frameHeight = surface->h;
+	// Need to make a new buffer in order to be able to use a plain unique_ptr
+	// which uses the delete[] deleter.
+	// TODO(perf): Re-structure stuff so that we can avoid the copy
+	size_t size = (size_t)w * (size_t)h * 4;
+	auto bufferCopy = std::make_unique<unsigned char[]>(size);
+	memcpy(bufferCopy.get(), buffer.get(), size);
+	buffer.reset();
+
+	int frameHeight = h;
 
 	// Load TOML if it exists
 	errno = ENOENT; // I don't know if ifstream is guaranteed to set errno
@@ -51,18 +60,11 @@ Result<ImageAsset> loadImageAsset(
 	}
 
 	ImageAsset asset{
-		.width = surface->w,
+		.width = w,
 		.frameHeight = frameHeight,
-		.frameCount = surface->h / frameHeight,
-		.data = std::make_unique<unsigned char[]>(surface->w * surface->h * 4),
+		.frameCount = h / frameHeight,
+		.data = std::move(bufferCopy),
 	};
-
-	// TODO: Pixel formats?
-	for (size_t y = 0; y < (size_t)surface->h; ++y) {
-		unsigned char *src = (unsigned char *)surface->pixels + y * surface->pitch;
-		unsigned char *dest = asset.data.get() + y * surface->w * 4;
-		memcpy(dest, src, surface->w * 4);
-	}
 
 	return {Ok, std::move(asset)};
 }

@@ -19,7 +19,6 @@ libglfw3 = dependency('glfw3')
 libgl = dependency('OpenGL')
 libdw = dependency('libdw', required: false)
 
-libsdl2_image = dependency('SDL2_image')
 libthreads = dependency('threads')
 
 subdir('third-party')
@@ -37,7 +36,7 @@ executable('swan', 'src/main.cc',
   install: true,
   install_rpath: get_option('libdir'),
   dependencies: [
-    libswan, libcygnet, common, libimgui, libsdl2_image, libgl, libglfw3, libbackwardcpp,
+    libswan, libcygnet, common, libimgui, libgl, libglfw3, libbackwardcpp,
   ] + maybe_libtracy,
 )
 
