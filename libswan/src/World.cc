@@ -109,10 +109,10 @@ Cygnet::ResourceManager World::buildResources() {
 		auto image = loadImageAsset(modPaths, path);
 		if (!image) {
 			warn << '\'' << path << "': " << image.err();
-			return {Err, '\'' + path + "': " + image.err()};
+			return {Err, cat("'", path, "': ", image.err())};
 		} else if (image->width != TILE_SIZE) {
 			warn << '\'' << path << "': Width must be " << TILE_SIZE << " pixels";
-			return {Err, '\'' + path + "': Width must be " + std::to_string(TILE_SIZE) + " pixels"};
+			return {Err, cat("'", path, "': Width must be ", std::to_string(TILE_SIZE), " pixels")};
 		} else {
 			return image;
 		}
@@ -126,7 +126,7 @@ Cygnet::ResourceManager World::buildResources() {
 		for (auto &tileBuilder: mod.tiles()) {
 			auto image = loadTileImage(tileBuilder.image);
 
-			std::string tileName = mod.name() + "::" + tileBuilder.name;
+			std::string tileName = cat(mod.name(), "::", tileBuilder.name);
 			Tile::ID tileId = tiles_.size();
 
 			if (image) {
@@ -156,7 +156,7 @@ Cygnet::ResourceManager World::buildResources() {
 		for (auto &itemBuilder: mod.items()) {
 			auto image = loadTileImage(itemBuilder.image);
 
-			std::string itemName = mod.name() + "::" + itemBuilder.name;
+			std::string itemName = cat(mod.name(), "::", itemBuilder.name);
 			Tile::ID itemId = nextItemId++;
 
 			if (image) {
@@ -173,7 +173,7 @@ Cygnet::ResourceManager World::buildResources() {
 	// Load sprites
 	for (auto &mod: mods_) {
 		for (auto spritePath: mod.sprites()) {
-			std::string path = mod.name() + "::" + spritePath;
+			std::string path = cat(mod.name(), "::", spritePath);
 			auto image = loadImageAsset(modPaths, path);
 
 			if (image) {
@@ -194,12 +194,12 @@ Cygnet::ResourceManager World::buildResources() {
 	// Load world gens and entities
 	for (auto &mod: mods_) {
 		for (auto &worldGenFactory: mod.worldGens()) {
-			std::string name = mod.name() + "::" + worldGenFactory.name;
+			std::string name = cat(mod.name(), "::", worldGenFactory.name);
 			worldGenFactories_.emplace(name, worldGenFactory);
 		}
 
 		for (auto &entCollFactory: mod.entities()) {
-			std::string name = mod.name() + "::" + entCollFactory.name;
+			std::string name = cat(mod.name(), "::", entCollFactory.name);
 			entCollFactories_.emplace(name, entCollFactory);
 		}
 	}

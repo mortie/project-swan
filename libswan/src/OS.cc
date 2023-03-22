@@ -15,7 +15,7 @@ bool isTTY(FILE *f) {
 }
 
 Dynlib::Dynlib(const std::string &path) {
-	handle_ = dlopen((path + ".so").c_str(), RTLD_LAZY);
+	handle_ = dlopen(cat(path, ".so").c_str(), RTLD_LAZY);
 	if (!handle_)
 		throw std::runtime_error(dlerror());
 }

@@ -6,6 +6,7 @@
 #include <chrono>
 #include <type_traits>
 #include <string>
+#include <string_view>
 #include <cstddef>
 #include <cstdint>
 
@@ -172,6 +173,27 @@ template<typename T>
 auto callEnd(T &v) {
 	using namespace std;
 	return end(v);
+}
+
+// Concatinate strings
+template<typename ...Args>
+inline std::string cat(Args &&...args) {
+	std::string_view strs[] = {std::forward<Args>(args)...};
+
+	size_t size = 0;
+	for (auto &s: strs) {
+		size += s.size();
+	}
+
+	std::string buf;
+	buf.resize(size);
+	size_t idx = 0;
+	for (auto &s: strs) {
+		memcpy(&buf[idx], s.data(), s.size());
+		idx += s.size();
+	}
+
+	return buf;
 }
 
 }

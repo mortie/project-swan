@@ -9,7 +9,7 @@ namespace Swan {
 std::string assetBasePath = ".";
 
 Result<ImageAsset> loadImageAsset(
-		const std::unordered_map<std::string, std::string> modPaths,
+		const std::unordered_map<std::string, std::string> &modPaths,
 		std::string path) {
 	auto sep = path.find("::");
 	if (sep == std::string::npos) {
@@ -21,17 +21,17 @@ Result<ImageAsset> loadImageAsset(
 
 	auto modPath = modPaths.find(modPart);
 	if (modPath == modPaths.end()) {
-		return {Err, "No mod named '" + modPart + '\''};
+		return {Err, cat("No mod named '", modPart, "'")};
 	}
 
-	std::string assetPath = assetBasePath + "/" + modPath->second + "/assets/" + pathPart;
-	std::string pngPath = assetPath + ".png";
-	std::string tomlPath = assetPath + ".toml";
+	std::string assetPath = cat(assetBasePath, "/", modPath->second, "/assets/", pathPart);
+	std::string pngPath = cat(assetPath, ".png");
+	std::string tomlPath = cat(assetPath, ".toml");
 
 	int w, h;
 	MallocedPtr<unsigned char> buffer{stbi_load(pngPath.c_str(), &w, &h, nullptr, 4)};
 	if (!buffer) {
-		return {Err, "Loading image " + pngPath + " failed"};
+		return {Err, cat("Loading image ", pngPath, " failed")};
 	}
 
 	// Need to make a new buffer in order to be able to use a plain unique_ptr
@@ -45,7 +45,6 @@ Result<ImageAsset> loadImageAsset(
 	int frameHeight = h;
 
 	// Load TOML if it exists
-	errno = ENOENT; // I don't know if ifstream is guaranteed to set errno
 	std::ifstream tomlFile(tomlPath);
 	if (tomlFile) {
 		cpptoml::parser parser(tomlFile);
@@ -53,10 +52,10 @@ Result<ImageAsset> loadImageAsset(
 			auto toml = parser.parse();
 			frameHeight = toml->get_as<int>("height").value_or(frameHeight);
 		} catch (cpptoml::parse_exception &exc) {
-			return {Err, "Failed to parse toml file " + tomlPath + ": " + exc.what()};
+			return {Err, cat("Failed to parse toml file ", tomlPath, ": ", exc.what())};
 		}
 	} else if (errno != ENOENT) {
-		return {Err, "Couldn't open " + tomlPath + ": " + strerror(errno)};
+		return {Err, cat("Couldn't open ", tomlPath, ": ", strerror(errno))};
 	}
 
 	ImageAsset asset{
