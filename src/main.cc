@@ -76,7 +76,6 @@ static void scrollCallback(GLFWwindow *, double dx, double dy) {
 static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh) {
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
-	info << "win size: " << width << 'x' << height << ", fb size: " << dw << 'x' << dh;
 	glViewport(0, 0, dw, dh);
 	Cygnet::glCheck();
 	gameptr->cam_.size = {dw, dh};
