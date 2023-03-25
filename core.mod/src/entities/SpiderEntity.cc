@@ -30,6 +30,7 @@ void SpiderEntity::update(const Swan::Context &ctx, float dt) {
 	}
 
 	physicsBody_.standardForces();
+	physicsBody_.collideAll(ctx.plane);
 
 	if (target_) {
 		auto vec = target_->bottomMid() - physicsBody_.body.center();

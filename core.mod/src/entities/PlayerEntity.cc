@@ -94,9 +94,10 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	}
 
 	// Collide with stuff
-	auto &collisions = ctx.plane.getCollidingEntities(ctx.plane.currentEntity(), physicsBody_.body);
-	for (auto &c: collisions) {
+	for (auto &c: ctx.plane.getCollidingEntities(physicsBody_.body)) {
 		auto *entity = c.ref.get();
+
+		physicsBody_.collideWith(c.body);
 
 		// Get damaged if it's something which deals contact damage
 		auto *damage = entity->trait<Swan::ContactDamageTrait>();
@@ -104,13 +105,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 		if (damage && invincibleTimer_ <= 0) {
 			Swan::Vec2 direction;
 			direction.y = -0.5;
-			if (physicsBody_.body.center().x < c.body->center().x) {
+			if (physicsBody_.body.center().x < c.body.center().x) {
 				direction.x = -1;
 			} else {
 				direction.x = 1;
 			}
 
-			physicsBody_.vel += direction * damage->knockback;
+			//physicsBody_.vel += direction * damage->knockback;
 			damaged = true;
 		}
 

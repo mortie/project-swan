@@ -197,4 +197,30 @@ inline std::string cat(Args &&...args) {
 	return buf;
 }
 
+template<typename A, typename B>
+auto max(A a, B b) {
+	using T = decltype(a + b);
+	if (a > b) return T(a);
+	return T(b);
+}
+
+template<typename Head, typename ...Tail>
+auto max(Head head, Tail ...tail) {
+	using T = decltype(head + max(tail...));
+	return Swan::max(T(head), T(Swan::max(tail...)));
+}
+
+template<typename A, typename B>
+auto min(A a, B b) {
+	using T = decltype(a + b);
+	if (a < b) return T(a);
+	return T(b);
+}
+
+template<typename Head, typename ...Tail>
+auto min(Head head, Tail ...tail) {
+	using T = decltype(head + max(tail...));
+	return Swan::min(T(head), T(Swan::min(tail...)));
+}
+
 }

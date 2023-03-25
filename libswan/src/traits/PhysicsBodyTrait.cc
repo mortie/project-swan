@@ -1,6 +1,7 @@
 #include "traits/PhysicsBodyTrait.h"
 
 #include "WorldPlane.h"
+#include "util.h"
 
 namespace Swan {
 
@@ -65,6 +66,23 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane) {
 		phys.vel.y *= -phys.props.bounciness;
 		if (abs(phys.vel.y) < phys.props.mushyness)
 			phys.vel.y = 0;
+	}
+}
+
+void BasicPhysicsBody::collideWith(const BodyTrait::Body &other) {
+	auto dist = Swan::max(0.5,
+		std::abs(body.bottom() - other.top()),
+		std::abs(body.top() - other.bottom()),
+		std::abs(body.left() - other.right()),
+		std::abs(body.right() - other.left()));
+
+	auto direction = (body.center() - other.center()).norm();
+	applyForce(direction * dist * 10000);
+}
+
+void BasicPhysicsBody::collideAll(WorldPlane &plane) {
+	for (auto &c: plane.getCollidingEntities(body)) {
+		collideWith(c.body);
 	}
 }
 

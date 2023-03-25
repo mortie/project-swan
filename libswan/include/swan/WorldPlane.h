@@ -31,7 +31,7 @@ public:
 
 	struct FoundEntity {
 		EntityRef ref;
-		BodyTrait::Body *body;
+		BodyTrait::Body &body;
 	};
 
 	WorldPlane(
@@ -46,7 +46,7 @@ public:
 
 	void despawnEntity(EntityRef ref);
 
-	std::vector<FoundEntity> &getCollidingEntities(EntityRef ref, BodyTrait::Body &body);
+	std::vector<FoundEntity> &getCollidingEntities(BodyTrait::Body &body);
 
 	EntityRef currentEntity();
 

@@ -37,8 +37,7 @@ EntityRef WorldPlane::spawnEntity(const std::string &name, const Entity::PackObj
 	return entCollsByName_.at(name)->spawn(getContext(), obj);
 }
 
-std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(
-		EntityRef ref, BodyTrait::Body &body) {
+std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(BodyTrait::Body &body) {
 	constexpr float PADDING = 10;
 	auto topLeft = body.topLeft() - Vec2{PADDING, PADDING};
 	auto topLeftTile = TilePos{(int)floor(topLeft.x), (int)floor(topLeft.y)};
@@ -67,7 +66,7 @@ std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(
 			}
 
 			if (body.collidesWith(*candidateBody)) {
-				foundEntitiesRet_.push_back({candidateRef, candidateBody});
+				foundEntitiesRet_.push_back({candidateRef, *candidateBody});
 			}
 		}
 	};

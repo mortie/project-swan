@@ -48,7 +48,10 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 	void addVelocity(Vec2 v) override;
 	Vec2 velocity() override { return vel; }
 
-	void update(const Swan::Context &ctx, float dt);
+	void collideWith(const BodyTrait::Body &otehr);
+	void collideAll(WorldPlane &plane);
+
+	void update(const Context &ctx, float dt);
 };
 
 /*
