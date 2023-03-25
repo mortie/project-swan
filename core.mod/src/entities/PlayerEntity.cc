@@ -111,7 +111,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 				direction.x = 1;
 			}
 
-			//physicsBody_.vel += direction * damage->knockback;
+			physicsBody_.vel += direction * damage->knockback;
 			damaged = true;
 		}
 

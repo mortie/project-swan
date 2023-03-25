@@ -40,16 +40,15 @@ EntityRef WorldPlane::spawnEntity(const std::string &name, const Entity::PackObj
 std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(BodyTrait::Body &body) {
 	constexpr float PADDING = 10;
 	auto topLeft = body.topLeft() - Vec2{PADDING, PADDING};
-	auto topLeftTile = TilePos{(int)floor(topLeft.x), (int)floor(topLeft.y)};
 	auto bottomRight = body.bottomRight() + Vec2{PADDING, PADDING};
-	auto bottomRightTile = TilePos{(int)ceil(bottomRight.x), (int)ceil(bottomRight.y)};
-	auto bottomLeftTile = TilePos{topLeftTile.x, bottomRightTile.y};
-	auto topRightTile = TilePos{bottomRightTile.x, topLeftTile.y};
 
-	auto topLeftChunk = tilePosToChunkPos(topRightTile);
-	auto bottomLeftChunk = tilePosToChunkPos(bottomLeftTile);
-	auto topRightChunk = tilePosToChunkPos(topRightTile);
+	auto topLeftTile = TilePos{(int)floor(topLeft.x), (int)floor(topLeft.y)};
+	auto bottomRightTile = TilePos{(int)ceil(bottomRight.x), (int)ceil(bottomRight.y)};
+
+	auto topLeftChunk = tilePosToChunkPos(topLeftTile);
 	auto bottomRightChunk = tilePosToChunkPos(bottomRightTile);
+	auto bottomLeftChunk = ChunkPos{topLeftChunk.x, bottomRightChunk.y};
+	auto topRightChunk = ChunkPos{bottomRightChunk.x, topLeftChunk.y};
 
 	foundEntitiesRet_.clear();
 	auto checkChunk = [&](ChunkPos pos) {

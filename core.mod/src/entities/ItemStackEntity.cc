@@ -24,6 +24,7 @@ void ItemStackEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
 }
 
 void ItemStackEntity::update(const Swan::Context &ctx, float dt) {
+	physicsBody_.standardForces();
 	physicsBody_.update(ctx, dt);
 }
 

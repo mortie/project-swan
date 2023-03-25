@@ -42,6 +42,14 @@ void Game::draw() {
 			glfwSwapInterval(0);
 		}
 
+		ImGui::SliderFloat("Time scale", &debugTimeScale_, 0, 3.0, "%.03f", ImGuiSliderFlags_Logarithmic);
+		if (ImGui::BeginPopupContextItem("Timer scale")) {
+			if (ImGui::MenuItem("Reset")) {
+				debugTimeScale_ = 1.0;
+			}
+			ImGui::EndPopup();
+		}
+
 		ImGui::End();
 	}
 
@@ -49,6 +57,8 @@ void Game::draw() {
 }
 
 void Game::update(float dt) {
+	dt *= debugTimeScale_;
+
 	// Zoom the window using the scroll wheel
 	cam_.zoom += (float)wasWheelScrolled() * 0.05f * cam_.zoom;
 	if (cam_.zoom > 1) {
@@ -73,6 +83,7 @@ void Game::update(float dt) {
 }
 
 void Game::tick(float dt) {
+	dt *= debugTimeScale_;
 	world_->tick(dt);
 }
 

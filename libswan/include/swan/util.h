@@ -223,4 +223,11 @@ auto min(Head head, Tail ...tail) {
 	return Swan::min(T(head), T(Swan::min(tail...)));
 }
 
+template<typename T>
+int sign(T val) {
+	if (val < T{0}) return -1;
+	if (val > T{0}) return 1;
+	return 0;
+}
+
 }

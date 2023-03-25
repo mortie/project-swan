@@ -52,18 +52,18 @@ public:
 	struct DrawTile {
 		Mat3gf transform;
 		TileID id;
-		float brightness;
+		float brightness = 1.0;
 	};
 
 	struct DrawSprite {
 		Mat3gf transform;
-		int frame;
+		int frame = 0;
 		RenderSprite sprite;
 	};
 
 	struct DrawRect {
 		SwanCommon::Vec2 pos;
-		SwanCommon::Vec2 size;
+		SwanCommon::Vec2 size = {1.0, 1.0};
 		Color color = {0.6, 0.6, 0.6, 0.8};
 	};
 
