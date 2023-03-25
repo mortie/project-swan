@@ -7,7 +7,7 @@
 
 PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
 		PlayerEntity(ctx) {
-	body_.pos = pos;
+	physicsBody_.body.pos = pos;
 }
 
 PlayerEntity::PlayerEntity(const Swan::Context &ctx, const PackObject &obj):
@@ -25,7 +25,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
 	}
 
 	currentAnimation_->draw(rnd, mat.translate(
-		body_.pos - Swan::Vec2{0.2, 0.1}));
+		physicsBody_.body.pos - Swan::Vec2{0.2, 0.1}));
 
 	rnd.drawRect({mouseTile_, {1, 1}});
 }
@@ -51,13 +51,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 
 	// Move left
 	if (ctx.game.isKeyPressed(GLFW_KEY_A) || ctx.game.isKeyPressed(GLFW_KEY_LEFT)) {
-		physics_.force += Swan::Vec2(-MOVE_FORCE, 0);
+		physicsBody_.force += Swan::Vec2(-MOVE_FORCE, 0);
 		state_ = State::RUNNING_L;
 	}
 
 	// Move right
 	if (ctx.game.isKeyPressed(GLFW_KEY_D) || ctx.game.isKeyPressed(GLFW_KEY_RIGHT)) {
-		physics_.force += Swan::Vec2(MOVE_FORCE, 0);
+		physicsBody_.force += Swan::Vec2(MOVE_FORCE, 0);
 		if (state_ == State::RUNNING_L)
 			state_ = State::IDLE;
 		else
@@ -67,13 +67,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	bool jumpPressed = ctx.game.isKeyPressed(GLFW_KEY_SPACE);
 
 	// Jump
-	if (physics_.onGround && jumpPressed && jumpTimer_.periodic(0.5)) {
-		physics_.vel.y = -JUMP_VEL;
+	if (physicsBody_.onGround && jumpPressed && jumpTimer_.periodic(0.5)) {
+		physicsBody_.vel.y = -JUMP_VEL;
 	}
 
 	// Fall down faster than we went up
-	if (!physics_.onGround && (!jumpPressed || physics_.vel.y > 0))
-		physics_.force += Swan::Vec2(0, DOWN_FORCE);
+	if (!physicsBody_.onGround && (!jumpPressed || physicsBody_.vel.y > 0))
+		physicsBody_.force += Swan::Vec2(0, DOWN_FORCE);
 
 	if (state_ != oldState) {
 		switch (state_) {
@@ -94,7 +94,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	}
 
 	// Collide with stuff
-	auto &collisions = ctx.plane.getCollidingEntities(ctx.plane.currentEntity(), body_);
+	auto &collisions = ctx.plane.getCollidingEntities(ctx.plane.currentEntity(), physicsBody_.body);
 	for (auto &c: collisions) {
 		auto *entity = c.ref.get();
 
@@ -104,13 +104,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 		if (damage && invincibleTimer_ <= 0) {
 			Swan::Vec2 direction;
 			direction.y = -0.5;
-			if (body_.center().x < c.body->center().x) {
+			if (physicsBody_.body.center().x < c.body->center().x) {
 				direction.x = -1;
 			} else {
 				direction.x = 1;
 			}
 
-			physics_.vel += direction * damage->knockback;
+			physicsBody_.vel += direction * damage->knockback;
 			damaged = true;
 		}
 
@@ -129,10 +129,11 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 		}
 	}
 
-	physics(ctx, dt, { .mass = MASS });
+	physicsBody_.standardForces();
+	physicsBody_.update(ctx, dt);
 
 	// Do this after moving so that it's not behind
-	Swan::Vec2 headPos = body_.topMid() + Swan::Vec2(0, 0.5);
+	Swan::Vec2 headPos = physicsBody_.body.topMid() + Swan::Vec2(0, 0.5);
 	Swan::TilePos tilePos = Swan::Vec2i(floor(headPos.x), floor(headPos.y));
 	if (!placedLight_) {
 		ctx.plane.addLight(tilePos, LIGHT_LEVEL);

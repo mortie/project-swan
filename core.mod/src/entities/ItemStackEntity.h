@@ -2,10 +2,14 @@
 
 #include <swan/swan.h>
 
-class ItemStackEntity final: public Swan::PhysicsEntity {
+class ItemStackEntity final: public Swan::Entity,
+		public Swan::PhysicsBodyTrait {
 public:
 	ItemStackEntity(const Swan::Context &ctx, Swan::Vec2 pos, const std::string &item);
 	ItemStackEntity(const Swan::Context &ctx, const PackObject &obj);
+
+	Body &get(BodyTrait::Tag) override { return physicsBody_.body; }
+	PhysicsBody &get(PhysicsBodyTrait::Tag) override { return physicsBody_; }
 
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
 	void update(const Swan::Context &ctx, float dt) override;
@@ -21,8 +25,8 @@ private:
 	static constexpr float DESPAWN_TIME = 5 * 60;
 	static constexpr float BOUNCINESS = 0.6;
 
-	ItemStackEntity(): PhysicsEntity(SIZE) {}
-
 	float despawnTimer_ = DESPAWN_TIME;
 	Swan::Item *item_ = NULL;
+
+	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS, .bounciness = BOUNCINESS}};
 };

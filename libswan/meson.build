@@ -5,7 +5,7 @@ libswan = declare_dependency(
   ] + maybe_libtracy,
   link_with: library('swan',
     'src/traits/InventoryTrait.cc',
-    'src/traits/PhysicsTrait.cc',
+    'src/traits/PhysicsBodyTrait.cc',
     'src/Animation.cc',
     'src/assets.cc',
     'src/Chunk.cc',

@@ -2,7 +2,8 @@
 
 #include <swan/swan.h>
 
-class SpiderEntity final: public Swan::PhysicsEntity, public Swan::ContactDamageTrait {
+class SpiderEntity final: public Swan::Entity,
+		public Swan::PhysicsBodyTrait, public Swan::ContactDamageTrait {
 public:
 	SpiderEntity(const Swan::Context &ctx, Swan::Vec2 pos);
 	SpiderEntity(const Swan::Context &ctx, const PackObject &obj);
@@ -13,7 +14,8 @@ public:
 	void deserialize(const Swan::Context &ctx, const PackObject &obj) override;
 	PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) override;
 
-	using PhysicsEntity::get;
+	Body &get(BodyTrait::Tag) override { return physicsBody_.body; }
+	PhysicsBody &get(PhysicsBodyTrait::Tag) override { return physicsBody_; }
 	Damage &get(ContactDamageTrait::Tag) override { return damage_; }
 
 private:
@@ -23,13 +25,13 @@ private:
 	static constexpr float JUMP_VEL = 9;
 
 	SpiderEntity(const Swan::Context &ctx):
-		PhysicsEntity(SIZE),
 		idleAnimation_(ctx.world.getSprite("core::entity/spider-idle"), 0.8) {}
 
 	Swan::Animation idleAnimation_;
 
 	float jumpTimer_ = 0;
-
 	Body *target_ = nullptr;
+
+	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS}};
 	Damage damage_{};
 };

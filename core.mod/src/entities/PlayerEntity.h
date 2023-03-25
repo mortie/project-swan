@@ -3,12 +3,14 @@
 #include <swan/swan.h>
 #include <array>
 
-class PlayerEntity final: public Swan::PhysicsEntity, public Swan::InventoryTrait {
+class PlayerEntity final: public Swan::Entity,
+		public Swan::PhysicsBodyTrait, public Swan::InventoryTrait {
 public:
 	PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos);
 	PlayerEntity(const Swan::Context &ctx, const PackObject &obj);
 
-	using PhysicsEntity::get;
+	Body &get(BodyTrait::Tag) override { return physicsBody_.body; }
+	PhysicsBody &get(PhysicsBodyTrait::Tag) override { return physicsBody_; }
 	Inventory &get(InventoryTrait::Tag) override { return inventory_; }
 
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
@@ -33,7 +35,6 @@ private:
 	};
 
 	PlayerEntity(const Swan::Context &ctx):
-		PhysicsEntity(SIZE),
 		idleAnimation_(ctx.world.getSprite("core::entity/player-idle"), 0.8),
 		runningAnimation_(ctx.world.getSprite("core::entity/player-running"), 1) {}
 
@@ -51,4 +52,5 @@ private:
 	bool placedLight_ = false;
 
 	Swan::BasicInventory inventory_{INVENTORY_SIZE};
+	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS}};
 };
