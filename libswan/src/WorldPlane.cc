@@ -247,6 +247,14 @@ void WorldPlane::draw(Cygnet::Renderer &rnd) {
 	lighting_->flip();
 }
 
+void WorldPlane::ui() {
+	ZoneScopedN("WorldPlane ui");
+
+	for (auto &coll: entColls_) {
+		coll->ui();
+	}
+}
+
 void WorldPlane::update(float dt) {
 	ZoneScopedN("WorldPlane update");
 	std::lock_guard<std::mutex> lock(mut_);

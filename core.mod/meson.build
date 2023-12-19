@@ -9,6 +9,6 @@ core_mod = shared_library('mod',
 	name_suffix: 'so',
 	install: true,
 	install_dir: 'core.mod',
-	dependencies: [libswan, libperlinnoise])
+	dependencies: [libswan, libperlinnoise, libimgui])
 
 install_subdir('assets', install_dir: 'core.mod')

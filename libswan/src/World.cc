@@ -304,6 +304,11 @@ void World::draw(Cygnet::Renderer &rnd) {
 	planes_[currentPlane_]->draw(rnd);
 }
 
+void World::ui() {
+	ZoneScopedN("World UI");
+	planes_[currentPlane_]->ui();
+}
+
 void World::update(float dt) {
 	ZoneScopedN("World update");
 	for (auto &plane: planes_)

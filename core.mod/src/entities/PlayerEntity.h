@@ -14,6 +14,7 @@ public:
 	Inventory &get(InventoryTrait::Tag) override { return inventory_; }
 
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
+	void ui() override;
 	void update(const Swan::Context &ctx, float dt) override;
 	void tick(const Swan::Context &ctx, float dt) override;
 	void deserialize(const Swan::Context &ctx, const PackObject &obj) override;
@@ -47,9 +48,7 @@ private:
 	Swan::Clock placeTimer_;
 	float invincibleTimer_ = 0;
 	Swan::TilePos mouseTile_;
-
-	Swan::TilePos lightTile_;
-	bool placedLight_ = false;
+	int selectedInventorySlot_ = 0;
 
 	Swan::BasicInventory inventory_{INVENTORY_SIZE};
 	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS}};

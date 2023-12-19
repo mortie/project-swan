@@ -54,6 +54,8 @@ void Game::draw() {
 	}
 
 	world_->draw(renderer_);
+
+	world_->ui();
 }
 
 void Game::update(float dt) {

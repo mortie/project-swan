@@ -32,4 +32,22 @@ ItemStack ItemStack::insert(ItemStack st) {
 	return st;
 }
 
+ItemStack ItemStack::remove(int count) {
+	if (empty()) {
+		return ItemStack();
+	}
+
+	if (count > count_) {
+		count = count_;
+	}
+
+	ItemStack newStack(item_, count);
+	count_ -= count;
+	if (count_ == 0) {
+		item_ = nullptr;
+	}
+
+	return newStack;
+}
+
 }

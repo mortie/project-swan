@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <compare>
+#include <imgui/imgui.h>
 
 #include "ItemStackEntity.h"
 
@@ -30,6 +31,29 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
 	rnd.drawRect({mouseTile_, {1, 1}});
 }
 
+void PlayerEntity::ui() {
+	ImGui::Begin("Inventory");
+
+	auto &selectedStack = inventory_.content[selectedInventorySlot_];
+	if (selectedStack.empty()) {
+		ImGui::Text("Selected: [%d]: Empty", selectedInventorySlot_);
+	} else {
+		ImGui::Text("Selected: [%d]: %d x %s", selectedInventorySlot_,
+			selectedStack.count(), selectedStack.item()->name.c_str());
+	}
+
+	for (size_t i = 0; i < inventory_.content.size(); ++i) {
+		auto &stack = inventory_.content[i];
+		if (stack.empty()) {
+			continue;
+		}
+
+		ImGui::Text("%zu: %d x %s", i, stack.count(),
+			stack.item()->name.c_str());
+	}
+	ImGui::End();
+}
+
 void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	State oldState = state_;
 	state_ = State::IDLE;
@@ -38,6 +62,29 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	jumpTimer_.tick(dt);
 	placeTimer_.tick(dt);
 
+	// Select item slots
+	if (ctx.game.wasKeyPressed(GLFW_KEY_1)) {
+		selectedInventorySlot_ = 0;
+	} else if (ctx.game.wasKeyPressed(GLFW_KEY_2)) {
+		selectedInventorySlot_ = 1;
+	} else if (ctx.game.wasKeyPressed(GLFW_KEY_3)) {
+		selectedInventorySlot_ = 2;
+	} else if (ctx.game.wasKeyPressed(GLFW_KEY_4)) {
+		selectedInventorySlot_ = 3;
+	} else if (ctx.game.wasKeyPressed(GLFW_KEY_5)) {
+		selectedInventorySlot_ = 4;
+	} else if (ctx.game.wasKeyPressed(GLFW_KEY_6)) {
+		selectedInventorySlot_ = 5;
+	} else if (ctx.game.wasKeyPressed(GLFW_KEY_7)) {
+		selectedInventorySlot_ = 6;
+	} else if (ctx.game.wasKeyPressed(GLFW_KEY_8)) {
+		selectedInventorySlot_ = 7;
+	} else if (ctx.game.wasKeyPressed(GLFW_KEY_9)) {
+		selectedInventorySlot_ = 8;
+	} else if (ctx.game.wasKeyPressed(GLFW_KEY_0)) {
+		selectedInventorySlot_ = 9;
+	}
+
 	// Break block
 	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_LEFT))
 		ctx.plane.breakTile(mouseTile_);
@@ -45,7 +92,10 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	// Place block
 	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_RIGHT) && placeTimer_.periodic(0.50)) {
 		if (ctx.plane.getTileID(mouseTile_) == ctx.world.getTileID("@::air")) {
-			ctx.plane.setTile(mouseTile_, "core::torch");
+			Swan::ItemStack stack = inventory_.content[selectedInventorySlot_].remove(1);
+			if (!stack.empty()) {
+				ctx.plane.setTile(mouseTile_, stack.item()->name);
+			}
 		}
 	}
 
@@ -132,19 +182,6 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 
 	physicsBody_.standardForces();
 	physicsBody_.update(ctx, dt);
-
-	// Do this after moving so that it's not behind
-	Swan::Vec2 headPos = physicsBody_.body.topMid() + Swan::Vec2(0, 0.5);
-	Swan::TilePos tilePos = Swan::Vec2i(floor(headPos.x), floor(headPos.y));
-	if (!placedLight_) {
-		ctx.plane.addLight(tilePos, LIGHT_LEVEL);
-		placedLight_ = true;
-		lightTile_ = tilePos;
-	} else if (tilePos != lightTile_) {
-		ctx.plane.removeLight(lightTile_, LIGHT_LEVEL);
-		ctx.plane.addLight(tilePos, LIGHT_LEVEL);
-		lightTile_ = tilePos;
-	}
 }
 
 void PlayerEntity::tick(const Swan::Context &ctx, float dt) {

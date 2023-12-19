@@ -82,6 +82,7 @@ public:
 	virtual void update(const Context &ctx, float dt) = 0;
 	virtual void tick(const Context &ctx, float dt) = 0;
 	virtual void draw(const Context &ctx, Cygnet::Renderer &rnd) = 0;
+	virtual void ui() = 0;
 	virtual void erase(const Context &ctx, uint64_t id) = 0;
 
 protected:
