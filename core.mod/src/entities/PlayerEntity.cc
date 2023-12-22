@@ -91,12 +91,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 
 	// Place block
 	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_RIGHT) && placeTimer_.periodic(0.50)) {
-		if (ctx.plane.getTileID(mouseTile_) == ctx.world.getTileID("@::air")) {
-			Swan::ItemStack stack = inventory_.content[selectedInventorySlot_].remove(1);
-			if (!stack.empty()) {
-				ctx.plane.setTile(mouseTile_, stack.item()->name);
-			}
-		}
+		placeTile(ctx);
 	}
 
 	// Move left
@@ -147,6 +142,17 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	for (auto &c: ctx.plane.getCollidingEntities(physicsBody_.body)) {
 		auto *entity = c.ref.get();
 
+		// Pick it up if it's an item stack, and don't collide
+		auto *itemStackEnt = dynamic_cast<ItemStackEntity *>(entity);
+		if (itemStackEnt) {
+			Swan::ItemStack stack{itemStackEnt->item(), 1};
+			stack = inventory_.insert(0, stack);
+			if (stack.empty()) {
+				ctx.plane.despawnEntity(c.ref);
+			}
+			continue;
+		}
+
 		physicsBody_.collideWith(c.body);
 
 		// Get damaged if it's something which deals contact damage
@@ -168,16 +174,6 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 		if (damaged) {
 			invincibleTimer_ = 0.5;
 		}
-
-		// Pick it up if it's an item stack
-		auto *itemStackEnt = dynamic_cast<ItemStackEntity *>(entity);
-		if (itemStackEnt) {
-			Swan::ItemStack stack{itemStackEnt->item(), 1};
-			stack = inventory_.insert(0, stack);
-			if (stack.empty()) {
-				ctx.plane.despawnEntity(c.ref);
-			}
-		}
 	}
 
 	physicsBody_.standardForces();
@@ -198,4 +194,35 @@ Swan::Entity::PackObject PlayerEntity::serialize(const Swan::Context &ctx, msgpa
 		{ "body", body_.serialize(w) },
 	};
 	*/
+}
+
+void PlayerEntity::placeTile(const Swan::Context &ctx) {
+	Swan::ItemStack &stack = inventory_.content[selectedInventorySlot_];
+	if (stack.empty()) {
+		Swan::info << "Not placing tile because the selected inventory slot is empty";
+		return;
+	}
+
+	Swan::Item &item = *stack.item();
+	if (!item.tile) {
+		Swan::info << "Not placing tile because the item '" << item.name << "' has no tile";
+		return;
+	}
+
+	Swan::Tile &tileAtMouse = ctx.plane.getTile(mouseTile_);
+	if (tileAtMouse.name != "@::air") {
+		Swan::info << "Not placing tile because mouseTile is '" << tileAtMouse.name << "'";
+		return;
+	}
+
+	if (!ctx.plane.getEntitiesInTile(mouseTile_).empty()) {
+		Swan::info << "Not placing tile because there are entities in " << mouseTile_;
+		return;
+	}
+
+	if (stack.remove(1).empty()) {
+		Swan::info << "Not placing tile because stack.remove(1) is empty";
+	}
+
+	ctx.plane.setTile(mouseTile_, item.tile.value());
 }

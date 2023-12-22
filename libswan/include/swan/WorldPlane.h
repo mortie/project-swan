@@ -47,6 +47,7 @@ public:
 	void despawnEntity(EntityRef ref);
 
 	std::vector<FoundEntity> &getCollidingEntities(BodyTrait::Body &body);
+	std::vector<FoundEntity> &getEntitiesInTile(TilePos pos);
 
 	EntityRef currentEntity();
 

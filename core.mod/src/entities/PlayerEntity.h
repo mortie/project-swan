@@ -35,6 +35,8 @@ private:
 		RUNNING_R,
 	};
 
+	void placeTile(const Swan::Context &ctx);
+
 	PlayerEntity(const Swan::Context &ctx):
 		idleAnimation_(ctx.world.getSprite("core::entity/player-idle"), 0.8),
 		runningAnimation_(ctx.world.getSprite("core::entity/player-running"), 1) {}

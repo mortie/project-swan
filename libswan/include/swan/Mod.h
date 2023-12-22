@@ -23,9 +23,10 @@ public:
 	Mod(std::string name): name_(std::move(name)) {}
 	virtual ~Mod() = default;
 
-	void registerTile(Tile::Builder tile);
-	void registerItem(Item::Builder item);
-	void registerSprite(std::string sprite);
+	void registerTile(Tile::Builder &&tile);
+	void registerItem(Item::Builder &&item);
+	void registerTileWithItem(Tile::Builder &&tile);
+	void registerSprite(std::string &&sprite);
 
 	template<typename WG>
 	void registerWorldGen(std::string name);

@@ -166,6 +166,7 @@ Cygnet::ResourceManager World::buildResources() {
 				builder.addTile(itemId, fallbackImage.data.get());
 			}
 
+			items_.erase(itemName);
 			items_.emplace(itemName, Item(itemId, itemName, itemBuilder));
 		}
 	}

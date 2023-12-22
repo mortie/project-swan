@@ -91,6 +91,15 @@ std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(BodyTrait
 	return foundEntitiesRet_;
 }
 
+std::vector<WorldPlane::FoundEntity> &WorldPlane::getEntitiesInTile(TilePos pos) {
+	BodyTrait::Body body = {
+		.pos = pos,
+		.size = {1, 1},
+		.chunkPos = tilePosToChunkPos(pos),
+	};
+	return getCollidingEntities(body);
+}
+
 bool WorldPlane::hasChunk(ChunkPos pos) {
 	return chunks_.find(pos) != chunks_.end();
 }

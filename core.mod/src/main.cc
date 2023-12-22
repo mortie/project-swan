@@ -19,59 +19,42 @@ public:
 		registerSprite("entity/spider-idle");
 		registerSprite("misc/background-cave");
 
-		registerTile({
+		registerTileWithItem({
 			.name = "stone",
 			.image = "core::tile/stone",
 			.droppedItem = "core::stone",
 		});
-		registerTile({
+		registerTileWithItem({
 			.name = "dirt",
 			.image = "core::tile/dirt",
 			.droppedItem = "core::dirt",
 		});
-		registerTile({
+		registerTileWithItem({
 			.name = "grass",
 			.image = "core::tile/grass",
 			.droppedItem = "core::dirt",
 		});
-		registerTile({
+		registerTileWithItem({
 			.name = "tree-trunk",
 			.image = "core::tile/tree-trunk",
 			.isSolid = false,
 			.droppedItem = "core::tree-trunk",
 		});
-		registerTile({
+		registerTileWithItem({
 			.name = "tree-leaves",
 			.image = "core::tile/leaves",
 			.isSolid = false,
 		});
-		registerTile({
+		registerTileWithItem({
 			.name = "tree-seeder",
 			.image = "core::tile/leaves",
 			.onSpawn = spawnTree,
 		});
-		registerTile({
+		registerTileWithItem({
 			.name = "torch",
 			.image = "core::tile/torch",
 			.isSolid = false,
 			.lightLevel = 80/255.0,
-		});
-
-		registerItem({
-			.name = "stone",
-			.image = "core::tile/stone",
-		});
-		registerItem({
-			.name = "dirt",
-			.image = "core::tile/dirt",
-		});
-		registerItem({
-			.name = "grass",
-			.image = "core::tile/grass",
-		});
-		registerItem({
-			.name = "tree-trunk",
-			.image = "core::tile/tree-trunk",
 		});
 
 		registerWorldGen<DefaultWorldGen>("default");

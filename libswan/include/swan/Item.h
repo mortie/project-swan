@@ -12,14 +12,16 @@ public:
 		std::string name;
 		std::string image;
 		int maxStack = 64;
+		std::optional<std::string> tile;
 	};
 
 	const Tile::ID id;
 	const std::string name;
 	const int maxStack;
+	const std::optional<std::string> tile;
 
 	Item(Tile::ID id, std::string name, const Builder &builder):
-		id(id), name(name), maxStack(builder.maxStack) {}
+		id(id), name(name), maxStack(builder.maxStack), tile(builder.tile) {}
 };
 
 }
