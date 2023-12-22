@@ -1,5 +1,5 @@
 OUT ?= ./build
-PREFIX ?= /opt/swan
+PREFIX ?= $(abspath $(OUT)/pfx)
 
 all: $(OUT)/swan
 
@@ -14,8 +14,8 @@ $(OUT)/libswan/libswan_test: $(OUT)/build.ninja phony
 
 .PHONY: run
 run: $(OUT)/swan
-	DESTDIR=$(abspath $(OUT)) ninja -C $(OUT) install
-	cd $(OUT)$(PREFIX) && ./bin/swan
+	ninja -C $(OUT) install
+	cd $(PREFIX) && ./bin/swan
 
 .PHONY: setup
 setup: $(OUT)/build.ninja
