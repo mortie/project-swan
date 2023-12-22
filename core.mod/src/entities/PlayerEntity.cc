@@ -90,7 +90,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 		ctx.plane.breakTile(mouseTile_);
 
 	// Place block
-	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_RIGHT) && placeTimer_.periodic(0.50)) {
+	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_RIGHT)) {
 		placeTile(ctx);
 	}
 
@@ -199,24 +199,24 @@ Swan::Entity::PackObject PlayerEntity::serialize(const Swan::Context &ctx, msgpa
 void PlayerEntity::placeTile(const Swan::Context &ctx) {
 	Swan::ItemStack &stack = inventory_.content[selectedInventorySlot_];
 	if (stack.empty()) {
-		Swan::info << "Not placing tile because the selected inventory slot is empty";
 		return;
 	}
 
 	Swan::Item &item = *stack.item();
 	if (!item.tile) {
-		Swan::info << "Not placing tile because the item '" << item.name << "' has no tile";
 		return;
 	}
 
 	Swan::Tile &tileAtMouse = ctx.plane.getTile(mouseTile_);
 	if (tileAtMouse.name != "@::air") {
-		Swan::info << "Not placing tile because mouseTile is '" << tileAtMouse.name << "'";
 		return;
 	}
 
 	if (!ctx.plane.getEntitiesInTile(mouseTile_).empty()) {
-		Swan::info << "Not placing tile because there are entities in " << mouseTile_;
+		return;
+	}
+
+	if (!placeTimer_.periodic(0.50)) {
 		return;
 	}
 
