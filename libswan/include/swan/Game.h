@@ -1,9 +1,7 @@
 #pragma once
 
 #include <bitset>
-#include <map>
 #include <string>
-#include <optional>
 #include <cygnet/Renderer.h>
 #include <cygnet/util.h>
 
@@ -11,7 +9,6 @@
 #include <GLFW/glfw3.h>
 
 #include "common.h"
-#include "Mod.h"
 #include "World.h"
 
 namespace Swan {

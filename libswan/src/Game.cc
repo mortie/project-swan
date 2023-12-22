@@ -5,10 +5,6 @@
 #include <memory>
 #include <imgui/imgui.h>
 
-#include "log.h"
-#include "Tile.h"
-#include "OS.h"
-
 namespace Swan {
 
 void Game::createWorld(const std::string &worldgen, const std::vector<std::string> &modPaths) {

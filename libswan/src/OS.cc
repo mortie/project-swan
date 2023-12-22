@@ -4,8 +4,6 @@
 #include <unistd.h>
 #include <dlfcn.h>
 
-#include "log.h"
-
 namespace Swan {
 namespace OS {
 

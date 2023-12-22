@@ -1,7 +1,5 @@
 #include "Clock.h"
 
-#include <time.h>
-
 namespace Swan {
 
 bool Clock::periodic(float secs) {

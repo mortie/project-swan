@@ -3,14 +3,14 @@
 namespace Swan {
 
 ItemStack BasicInventory::get(int slot) {
-	if (slot >= (ssize_t)content.size())
+	if ((size_t)slot >= content.size())
 		return ItemStack{};
 
 	return content[slot];
 }
 
 ItemStack BasicInventory::set(int slot, ItemStack stack) {
-	if (slot >= (ssize_t)content.size())
+	if ((size_t)slot >= content.size())
 		return stack;
 
 	ItemStack st = content[slot];
@@ -19,7 +19,7 @@ ItemStack BasicInventory::set(int slot, ItemStack stack) {
 }
 
 ItemStack BasicInventory::insert(int slot, ItemStack stack) {
-	for (int i = 0; !stack.empty() && i < (ssize_t)content.size(); ++i)
+	for (int i = 0; !stack.empty() && (size_t)i < content.size(); ++i)
 		stack = content[i].insert(stack);
 	return stack;
 }

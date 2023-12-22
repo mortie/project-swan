@@ -1,9 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <stdlib.h>
 
-#include "../common.h"
 #include "../ItemStack.h"
 
 namespace Swan {

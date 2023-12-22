@@ -1,17 +1,12 @@
 #pragma once
 
-#include <vector>
 #include <string>
 #include <typeindex>
-#include <type_traits>
-#include <unordered_map>
 #include <functional>
 #include <stdint.h>
 
 #include "common.h"
-#include "log.h"
 #include "Entity.h"
-#include "util.h"
 #include "traits/BodyTrait.h"
 
 namespace Swan {

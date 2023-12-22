@@ -1,12 +1,10 @@
 #pragma once
 
 #include <memory>
-#include <optional>
 #include <msgpack.hpp>
 
 #include "common.h"
-#include "log.h"
-#include "traits/BodyTrait.h"
+#include "util.h"
 
 namespace Swan {
 

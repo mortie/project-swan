@@ -1,16 +1,12 @@
-#include <time.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <vector>
-#include <memory>
 #include <chrono>
-#include <ratio>
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
 #include <backward.hpp>
-#include <string.h>
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <imgui/backends/imgui_impl_opengl3.h>

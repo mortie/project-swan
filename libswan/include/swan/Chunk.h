@@ -5,7 +5,6 @@
 #include <memory>
 #include <cygnet/Renderer.h>
 
-#include "util.h"
 #include "common.h"
 #include "Tile.h"
 #include "EntityCollection.h"

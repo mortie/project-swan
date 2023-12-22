@@ -1,18 +1,14 @@
 #pragma once
 
-#include <stdint.h>
 #include <string>
 #include <vector>
 #include <memory>
-#include <type_traits>
 
 #include "Tile.h"
 #include "Item.h"
 #include "WorldGen.h"
-#include "Entity.h"
 #include "EntityCollection.h"
 #include "OS.h"
-#include "util.h"
 
 namespace Swan {
 

@@ -3,7 +3,6 @@
 #include <cygnet/Renderer.h>
 
 #include "common.h"
-#include "Clock.h"
 
 namespace Swan {
 

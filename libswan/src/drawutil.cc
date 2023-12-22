@@ -1,7 +1,6 @@
 #include "drawutil.h"
 
 #include <algorithm>
-#include <cmath>
 
 namespace Swan {
 namespace Draw {

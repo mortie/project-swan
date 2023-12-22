@@ -1,7 +1,5 @@
 #include "PlayerEntity.h"
 
-#include <cmath>
-#include <compare>
 #include <imgui/imgui.h>
 
 #include "ItemStackEntity.h"

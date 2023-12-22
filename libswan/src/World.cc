@@ -1,13 +1,10 @@
 #include "World.h"
 
-#include <algorithm>
-#include <tuple>
-
 #include "log.h"
 #include "Game.h"
 #include "Clock.h"
 #include "assets.h"
-#include "EntityCollectionImpl.h"
+#include "EntityCollectionImpl.h" // IWYU pragma: keep
 
 namespace Swan {
 

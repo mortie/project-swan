@@ -2,8 +2,6 @@
 
 #include <algorithm>
 
-#include "log.h"
-
 namespace Swan {
 
 static ChunkPos lightChunkPos(TilePos pos) {

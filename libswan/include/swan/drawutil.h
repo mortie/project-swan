@@ -1,6 +1,5 @@
 #pragma once
 
-#include <optional>
 #include <initializer_list>
 #include <utility>
 #include <cygnet/util.h>

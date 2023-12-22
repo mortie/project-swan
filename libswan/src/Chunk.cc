@@ -3,12 +3,8 @@
 #include <zlib.h>
 #include <stdint.h>
 #include <assert.h>
-#include <algorithm>
 
 #include "log.h"
-#include "Clock.h"
-#include "World.h"
-#include "Game.h"
 
 namespace Swan {
 

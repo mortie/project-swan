@@ -5,9 +5,7 @@
 #include <utility>
 #include <memory>
 #include <map>
-#include <set>
 #include <typeindex>
-#include <type_traits>
 #include <mutex>
 
 #include "common.h"

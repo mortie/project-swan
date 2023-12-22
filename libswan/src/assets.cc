@@ -1,5 +1,6 @@
 #include "assets.h"
 
+#include <limits> // IWYU pragma: keep -- needed for cpptoml.h
 #include <stb/stb_image.h>
 #include <cpptoml.h>
 #include <string.h>
