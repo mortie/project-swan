@@ -29,13 +29,13 @@ struct TestSpec {
 
 }
 
-#define test3(name, id) name ## id
-#define test2(uniqid, desc) \
-	static void test3(_test_func_, uniqid)(); \
-	static __attribute__((unused)) testlib::TestSpec test3(_test_register_, uniqid)( \
-		&test3(_test_func_, uniqid), desc, __FILE__, __LINE__, uniqid); \
-	static void test3(_test_func_, uniqid)()
-#define test(desc) test2(__COUNTER__, desc)
+#define TEST3(name, id) name ## id
+#define TEST2(uniqid, desc) \
+	static void TEST3(_test_func_, uniqid)(); \
+	static __attribute__((unused)) testlib::TestSpec TEST3(_test_register_, uniqid)( \
+		&TEST3(_test_func_, uniqid), desc, __FILE__, __LINE__, uniqid); \
+	static void TEST3(_test_func_, uniqid)()
+#define TEST(desc) TEST2(__COUNTER__, desc)
 
 #define expect(expr) do { \
 	if (!(expr)) { \

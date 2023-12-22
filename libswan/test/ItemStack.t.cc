@@ -5,7 +5,7 @@
 
 using namespace Swan;
 
-test("Basic insert") {
+TEST("Basic insert") {
 	Item item1(0, "test::item1", {});
 
 	ItemStack s1(&item1, 0);
@@ -16,7 +16,7 @@ test("Basic insert") {
 	expecteq(s2.count(), 0);
 }
 
-test("Insert rejects different items") {
+TEST("Insert rejects different items") {
 	Item item1(0, "test::item1", {});
 	Item item2(1, "test::item2", {});
 
@@ -30,7 +30,7 @@ test("Insert rejects different items") {
 	expecteq(ret.item(), s2.item());
 }
 
-test("Insert never overflows") {
+TEST("Insert never overflows") {
 	Item item1(0, "test::item1", {});
 
 	ItemStack s1(&item1, 40);
@@ -41,7 +41,7 @@ test("Insert never overflows") {
 	expecteq(s2.count(), 80 - item1.maxStack);
 }
 
-test("Insert respects maxStack") {
+TEST("Insert respects maxStack") {
 	Item item1(0, "test::item1", {.maxStack = 20});
 
 	Swan::ItemStack s1(&item1, 15);
@@ -52,7 +52,7 @@ test("Insert respects maxStack") {
 	expecteq(s2.count(), 14);
 }
 
-test("When insert empties an ItemStack, it should have its item nulled out") {
+TEST("When insert empties an ItemStack, it should have its item nulled out") {
 	Item item1(0, "test::item1", {});
 	Item item2(1, "test::item2", {});
 
@@ -66,7 +66,7 @@ test("When insert empties an ItemStack, it should have its item nulled out") {
 	expect(s2.empty());
 }
 
-test("Insert on an empty item stack") {
+TEST("Insert on an empty item stack") {
 	Item item1(0, "test::item1", {});
 
 	ItemStack s1(nullptr, 0);
