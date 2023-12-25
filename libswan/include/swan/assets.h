@@ -12,6 +12,7 @@ struct ImageAsset {
 	int width;
 	int frameHeight;
 	int frameCount;
+	int repeatFrom;
 	std::unique_ptr<unsigned char[]> data;
 };
 

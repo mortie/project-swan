@@ -44,6 +44,7 @@ Result<ImageAsset> loadImageAsset(
 	buffer.reset();
 
 	int frameHeight = h;
+	int repeatFrom = 0;
 
 	// Load TOML if it exists
 	std::ifstream tomlFile(tomlPath);
@@ -52,6 +53,7 @@ Result<ImageAsset> loadImageAsset(
 		try {
 			auto toml = parser.parse();
 			frameHeight = toml->get_as<int>("height").value_or(frameHeight);
+			repeatFrom = toml->get_as<int>("repeatFrom").value_or(repeatFrom);
 		} catch (cpptoml::parse_exception &exc) {
 			return {Err, cat("Failed to parse toml file ", tomlPath, ": ", exc.what())};
 		}
@@ -63,6 +65,7 @@ Result<ImageAsset> loadImageAsset(
 		.width = w,
 		.frameHeight = frameHeight,
 		.frameCount = h / frameHeight,
+		.repeatFrom = repeatFrom,
 		.data = std::move(bufferCopy),
 	};
 

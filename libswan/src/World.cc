@@ -50,6 +50,7 @@ Cygnet::ResourceManager World::buildResources() {
 		.width = 32,
 		.frameHeight = 32,
 		.frameCount = 1,
+		.repeatFrom = 0,
 		.data = std::make_unique<unsigned char[]>(TILE_SIZE * TILE_SIZE * 4),
 	};
 	fillTileImage(fallbackImage.data.get(),
@@ -97,6 +98,7 @@ Cygnet::ResourceManager World::buildResources() {
 				.width = 32,
 				.frameHeight = 32,
 				.frameCount = 1,
+				.repeatFrom = 0,
 				.data = std::make_unique<unsigned char[]>(TILE_SIZE * TILE_SIZE * 4),
 			};
 			memcpy(asset.data.get(), fallbackImage.data.get(), TILE_SIZE * TILE_SIZE * 4);
@@ -197,20 +199,22 @@ Cygnet::ResourceManager World::buildResources() {
 	for (auto &mod: mods_) {
 		for (auto spritePath: mod.sprites()) {
 			std::string path = cat(mod.name(), "::", spritePath);
-			auto image = loadImageAsset(modPaths, path);
+			auto imageResult = loadImageAsset(modPaths, path);
+			ImageAsset *image;
 
-			if (image) {
-				builder.addSprite(
-						path, image->data.get(), image->width,
-						image->frameHeight * image->frameCount,
-						image->frameHeight);
+			if (imageResult) {
+				image = &imageResult.value();
 			} else {
-				warn << '\'' << path << "': " << image.err();
-				builder.addSprite(
-						path, fallbackImage.data.get(), fallbackImage.width,
-						fallbackImage.frameHeight * fallbackImage.frameCount,
-						fallbackImage.frameHeight);
+				warn << '\'' << path << "': " << imageResult.err();
+				image = &fallbackImage;
 			}
+
+			builder.addSprite(path, image->data.get(), {
+				.width = image->width,
+				.height = image->frameHeight * image->frameCount,
+				.frameHeight = image->frameHeight,
+				.repeatFrom = image->repeatFrom,
+			});
 		}
 	}
 

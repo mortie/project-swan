@@ -31,8 +31,10 @@ private:
 
 	enum class State {
 		IDLE,
-		RUNNING_L,
-		RUNNING_R,
+		RUNNING,
+		JUMPING,
+		FALLING,
+		LANDING,
 	};
 
 	void placeTile(const Swan::Context &ctx);
@@ -40,12 +42,18 @@ private:
 	void dropItem(const Swan::Context &ctx);
 
 	PlayerEntity(const Swan::Context &ctx):
-		idleAnimation_(ctx.world.getSprite("core::entity/player-idle"), 0.8),
-		runningAnimation_(ctx.world.getSprite("core::entity/player-running"), 1) {}
+		idleAnimation_(ctx.world.getSprite("core::entity/player/idle"), 0.2),
+		runningAnimation_(ctx.world.getSprite("core::entity/player/running"), 0.1),
+		fallingAnimation_(ctx.world.getSprite("core::entity/player/falling"), 0.1),
+		jumpingAnimation_(ctx.world.getSprite("core::entity/player/jumping"), 0.1),
+		landingAnimation_(ctx.world.getSprite("core::entity/player/landing"), 0.1) {}
 
 	State state_ = State::IDLE;
 	Swan::Animation idleAnimation_;
 	Swan::Animation runningAnimation_;
+	Swan::Animation fallingAnimation_;
+	Swan::Animation jumpingAnimation_;
+	Swan::Animation landingAnimation_;
 	Swan::Animation *currentAnimation_ = &idleAnimation_;
 
 	Swan::Clock jumpTimer_;
@@ -53,6 +61,7 @@ private:
 	float invincibleTimer_ = 0;
 	Swan::TilePos mouseTile_;
 	int selectedInventorySlot_ = 0;
+	int lastDirection_ = 1;
 
 	Swan::BasicInventory inventory_{INVENTORY_SIZE};
 	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS}};

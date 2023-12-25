@@ -21,12 +21,17 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
 
 	// Currently, there is no sprite for running left.
 	// Running left is just running right but flipped.
-	if (state_ == State::RUNNING_L) {
-		mat.translate({-0.5, 0}).scale({-1, 1}).translate({0.5, 0});
+	if (lastDirection_ < 0) {
+		mat.translate({-0.9, 0}).scale({-1, 1}).translate({0.9, 0});
+	}
+
+	// The running animation dips into the ground a bit
+	if (state_ == State::RUNNING) {
+		mat.translate({0, 4.0/32.0});
 	}
 
 	currentAnimation_->draw(rnd, mat.translate(
-		physicsBody_.body.pos - Swan::Vec2{0.2, 0.1}));
+		physicsBody_.body.pos - Swan::Vec2{0.6, 0.1}));
 
 	rnd.drawRect({mouseTile_, {1, 1}});
 }
@@ -151,19 +156,36 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 		dropItem(ctx);
 	}
 
-	// Move left
+	// Handle left/right key press
+	int runDirection = 0;
 	if (ctx.game.isKeyPressed(GLFW_KEY_A) || ctx.game.isKeyPressed(GLFW_KEY_LEFT)) {
-		physicsBody_.force += Swan::Vec2(-MOVE_FORCE, 0);
-		state_ = State::RUNNING_L;
+		runDirection -= 1;
+	}
+	if (ctx.game.isKeyPressed(GLFW_KEY_D) || ctx.game.isKeyPressed(GLFW_KEY_RIGHT)) {
+		runDirection += 1;
 	}
 
-	// Move right
-	if (ctx.game.isKeyPressed(GLFW_KEY_D) || ctx.game.isKeyPressed(GLFW_KEY_RIGHT)) {
+	// Act on run direction
+	if (runDirection < 0) {
+		state_ = State::RUNNING;
+		lastDirection_ = -1;
+		physicsBody_.force += Swan::Vec2(-MOVE_FORCE, 0);
+	} else if (runDirection > 0) {
+		state_ = State::RUNNING;
+		lastDirection_ = 1;
 		physicsBody_.force += Swan::Vec2(MOVE_FORCE, 0);
-		if (state_ == State::RUNNING_L)
-			state_ = State::IDLE;
-		else
-			state_ = State::RUNNING_R;
+	} else {
+		state_ = State::IDLE;
+	}
+
+	// If we hit the ground, override the desired state to be landing
+	if (physicsBody_.onGround && (oldState == State::FALLING || oldState == State::JUMPING)) {
+		state_ = State::LANDING;
+	}
+
+	// Don't switch away from landing unless it's done!
+	if (oldState == State::LANDING && !landingAnimation_.done()) {
+		state_ = State::LANDING;
 	}
 
 	bool jumpPressed = ctx.game.isKeyPressed(GLFW_KEY_SPACE);
@@ -174,17 +196,35 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	}
 
 	// Fall down faster than we went up
-	if (!physicsBody_.onGround && (!jumpPressed || physicsBody_.vel.y > 0))
+	if (!physicsBody_.onGround && (!jumpPressed || physicsBody_.vel.y > 0)) {
 		physicsBody_.force += Swan::Vec2(0, DOWN_FORCE);
+	}
+
+	// Show falling or jumping animation depending on whether we're going up or down
+	if (!physicsBody_.onGround && (state_ != State::JUMPING && state_ != State::FALLING)) {
+		if (physicsBody_.vel.y < -0.1) {
+			state_ = State::JUMPING;
+		} else {
+			state_ = State::FALLING;
+		}
+	}
 
 	if (state_ != oldState) {
 		switch (state_) {
 		case State::IDLE:
 			currentAnimation_ = &idleAnimation_;
 			break;
-		case State::RUNNING_L:
-		case State::RUNNING_R:
+		case State::RUNNING:
 			currentAnimation_ = &runningAnimation_;
+			break;
+		case State::FALLING:
+			currentAnimation_ = &fallingAnimation_;
+			break;
+		case State::JUMPING:
+			currentAnimation_ = &jumpingAnimation_;
+			break;
+		case State::LANDING:
+			currentAnimation_ = &landingAnimation_;
 			break;
 		}
 		currentAnimation_->reset();

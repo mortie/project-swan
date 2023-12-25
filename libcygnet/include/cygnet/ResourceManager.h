@@ -25,8 +25,15 @@ class ResourceBuilder {
 public:
 	ResourceBuilder(Renderer &rnd): rnd_(rnd) {}
 
-	RenderSprite addSprite(std::string name, void *data, int width, int height, int frameHeight);
-	RenderSprite addSprite(std::string name, void *data, int width, int height);
+	struct SpriteMeta {
+		int width;
+		int height;
+		int frameHeight;
+		int repeatFrom;
+	};
+
+	RenderSprite addSprite(std::string name, void *data, SpriteMeta meta);
+	RenderSprite addSprite(std::string name, void *data);
 	void addTile(Renderer::TileID id, void *data, int frames = 1);
 	void addTile(Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames = 1);
 
@@ -53,13 +60,9 @@ public:
 };
 
 inline RenderSprite ResourceBuilder::addSprite(
-		std::string name, void *data, int width, int height, int fh) {
-	return sprites_[std::move(name)] = rnd_.createSprite(data, width, height, fh);
-}
-
-inline RenderSprite ResourceBuilder::addSprite(
-		std::string name, void *data, int width, int height) {
-	return sprites_[std::move(name)] = rnd_.createSprite(data, width, height);
+		std::string name, void *data, SpriteMeta meta) {
+	return sprites_[std::move(name)] = rnd_.createSprite(
+		data, meta.width, meta.height, meta.frameHeight, meta.repeatFrom);
 }
 
 inline void ResourceBuilder::addTile(uint16_t id, void *data, int frames) {

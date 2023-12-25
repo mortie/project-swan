@@ -11,7 +11,8 @@ void Animation::tick(float dt) {
 
 		frame_ += 1;
 		if (frame_ >= sprite_.frameCount) {
-			frame_ = 0;
+			frame_ = sprite_.repeatFrom;
+			done_ = true;
 		}
 	}
 }
@@ -19,6 +20,7 @@ void Animation::tick(float dt) {
 void Animation::reset() {
 	timer_ = interval_;
 	frame_ = 0;
+	done_ = false;
 }
 
 }

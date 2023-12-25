@@ -27,6 +27,7 @@ struct RenderSprite {
 	GLuint tex;
 	SwanCommon::Vec2 scale;
 	int frameCount;
+	int repeatFrom;
 };
 
 struct RenderCamera {
@@ -93,8 +94,7 @@ public:
 			uint8_t data[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]);
 	void destroyChunkShadow(RenderChunkShadow chunk);
 
-	RenderSprite createSprite(void *data, int width, int height, int fh);
-	RenderSprite createSprite(void *data, int width, int height);
+	RenderSprite createSprite(void *data, int width, int height, int fh, int repeatFrom);
 	void destroySprite(RenderSprite sprite);
 
 	SwanCommon::Vec2 winScale() { return winScale_; }

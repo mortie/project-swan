@@ -355,12 +355,13 @@ void Renderer::destroyChunkShadow(RenderChunkShadow shadow) {
 	glCheck();
 }
 
-RenderSprite Renderer::createSprite(void *data, int width, int height, int fh) {
+RenderSprite Renderer::createSprite(void *data, int width, int height, int fh, int repeatFrom) {
 	RenderSprite sprite;
 	sprite.scale = {
 		(float)width / SwanCommon::TILE_SIZE,
 		(float)fh / SwanCommon::TILE_SIZE };
 	sprite.frameCount = height / fh;
+	sprite.repeatFrom = repeatFrom;
 	glGenTextures(1, &sprite.tex);
 	glCheck();
 
@@ -378,10 +379,6 @@ RenderSprite Renderer::createSprite(void *data, int width, int height, int fh) {
 	glCheck();
 
 	return sprite;
-}
-
-RenderSprite Renderer::createSprite(void *data, int width, int height) {
-	return createSprite(data, width, height, height);
 }
 
 void Renderer::destroySprite(RenderSprite sprite) {

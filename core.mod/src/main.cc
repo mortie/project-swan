@@ -14,9 +14,12 @@ public:
 		breakListener_ = world.evtTileBreak_.subscribe(
 			[&](auto ...args) { return onTileBreak(args...); });
 
-		registerSprite("entity/player-running");
-		registerSprite("entity/player-idle");
-		registerSprite("entity/spider-idle");
+		registerSprite("entity/player/idle");
+		registerSprite("entity/player/running");
+		registerSprite("entity/player/falling");
+		registerSprite("entity/player/jumping");
+		registerSprite("entity/player/landing");
+		registerSprite("entity/spider/idle");
 		registerSprite("misc/background-cave");
 
 		registerTile({

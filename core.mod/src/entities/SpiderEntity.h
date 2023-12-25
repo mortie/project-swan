@@ -25,7 +25,7 @@ private:
 	static constexpr float JUMP_VEL = 9;
 
 	SpiderEntity(const Swan::Context &ctx):
-		idleAnimation_(ctx.world.getSprite("core::entity/spider-idle"), 0.8) {}
+		idleAnimation_(ctx.world.getSprite("core::entity/spider/idle"), 0.8) {}
 
 	Swan::Animation idleAnimation_;
 

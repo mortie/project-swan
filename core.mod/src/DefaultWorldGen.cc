@@ -82,7 +82,7 @@ void DefaultWorldGen::initializeTile(const Swan::Context &ctx, Swan::TilePos pos
 	// Spawn mobs
 	if (pos.y == grassLevel - 1 && playerDist > 20) {
 		double r = perlin_.noise(pos.x * 87.411, 10);
-		if (r < -0.25) {
+		if (r < -0.75) {
 			ctx.plane.spawnEntity<SpiderEntity>(pos);
 		}
 	}
