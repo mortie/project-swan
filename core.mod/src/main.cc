@@ -53,6 +53,7 @@ public:
 		registerTileWithItem({
 			.name = "torch",
 			.image = "core::tile/torch",
+			.droppedItem = "core::torch",
 			.isSolid = false,
 			.lightLevel = 80/255.0,
 		});
@@ -65,6 +66,11 @@ public:
 		registerRecipe({
 			.inputs = {{1, "core::tree-trunk"}},
 			.output = {8, "core::wood-pole"},
+			.kind = "crafting",
+		});
+		registerRecipe({
+			.inputs = {{1, "core::wood-pole"}},
+			.output = {1, "core::torch"},
 			.kind = "crafting",
 		});
 

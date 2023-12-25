@@ -100,6 +100,7 @@ void PlayerEntity::ui(const Swan::Context &ctx) {
 		ImGui::Text("%s", text.c_str());
 
 		if (ImGui::Button("Craft")) {
+			Swan::info << "Crafting recipe: " << text;
 			craft(recipe);
 		}
 	}
