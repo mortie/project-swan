@@ -17,6 +17,7 @@
 #include "EntityCollection.h"
 #include "Mod.h"
 #include "EventEmitter.h"
+#include "Recipe.h"
 
 namespace Swan {
 
@@ -57,6 +58,7 @@ public:
 	std::vector<Tile> tiles_;
 	std::unordered_map<std::string, Tile::ID> tilesMap_;
 	std::unordered_map<std::string, Item> items_;
+	std::vector<Recipe> recipes_;
 	std::unordered_map<std::string, WorldGen::Factory> worldGenFactories_;
 	std::unordered_map<std::string, EntityCollection::Factory> entCollFactories_;
 

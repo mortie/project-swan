@@ -1,8 +1,10 @@
 #include "PlayerEntity.h"
 
 #include <imgui/imgui.h>
+#include <unordered_map>
 
 #include "ItemStackEntity.h"
+#include "swan-common/Vector2.h"
 
 PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
 		PlayerEntity(ctx) {
@@ -29,9 +31,11 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
 	rnd.drawRect({mouseTile_, {1, 1}});
 }
 
-void PlayerEntity::ui() {
-	ImGui::Begin("Inventory");
+void PlayerEntity::ui(const Swan::Context &ctx) {
+	// This whole method is stupid inefficient and does a bunch of memory allocation every frame.
+	// TODO: fix.
 
+	ImGui::Begin("Inventory");
 	auto &selectedStack = inventory_.content[selectedInventorySlot_];
 	if (selectedStack.empty()) {
 		ImGui::Text("Selected: [%d]: Empty", selectedInventorySlot_);
@@ -40,14 +44,64 @@ void PlayerEntity::ui() {
 			selectedStack.count(), selectedStack.item()->name.c_str());
 	}
 
+	std::unordered_map<Swan::Item *, int> itemCounts;
 	for (size_t i = 0; i < inventory_.content.size(); ++i) {
 		auto &stack = inventory_.content[i];
 		if (stack.empty()) {
 			continue;
 		}
 
+		itemCounts[stack.item()] += stack.count();
+
 		ImGui::Text("%zu: %d x %s", i, stack.count(),
 			stack.item()->name.c_str());
+	}
+	ImGui::End();
+
+	ImGui::Begin("Crafting");
+	std::string text;
+	for (const auto &recipe: ctx.world.recipes_) {
+		if (recipe.kind != "crafting") {
+			continue;
+		}
+
+		bool craftable = true;
+		for (const auto &input: recipe.inputs) {
+			if (!itemCounts.contains(input.item)) {
+				craftable = false;
+				break;
+			}
+
+			if (itemCounts[input.item] < input.count) {
+				craftable = false;
+				break;
+			}
+		}
+
+		if (!craftable) {
+			continue;
+		}
+
+		text.clear();
+		for (const auto &input: recipe.inputs) {
+			if (text != "") {
+				text += ", ";
+			}
+
+			text += std::to_string(input.count);
+			text += ' ';
+			text += input.item->name;
+		}
+
+		text += " => ";
+		text += std::to_string(recipe.output.count);
+		text += ' ';
+		text += recipe.output.item->name;
+		ImGui::Text("%s", text.c_str());
+
+		if (ImGui::Button("Craft")) {
+			craft(recipe);
+		}
 	}
 	ImGui::End();
 }
@@ -90,6 +144,11 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	// Place block
 	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_RIGHT)) {
 		placeTile(ctx);
+	}
+
+	// Drop item
+	if (ctx.game.wasKeyPressed(GLFW_KEY_Q)) {
+		dropItem(ctx);
 	}
 
 	// Move left
@@ -143,6 +202,11 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 		// Pick it up if it's an item stack, and don't collide
 		auto *itemStackEnt = dynamic_cast<ItemStackEntity *>(entity);
 		if (itemStackEnt) {
+			// Don't pick up immediately
+			if (itemStackEnt->lifetime_ < 0.2) {
+				continue;
+			}
+
 			Swan::ItemStack stack{itemStackEnt->item(), 1};
 			stack = inventory_.insert(0, stack);
 			if (stack.empty()) {
@@ -223,4 +287,54 @@ void PlayerEntity::placeTile(const Swan::Context &ctx) {
 	}
 
 	ctx.plane.setTile(mouseTile_, item.tile.value());
+}
+
+void PlayerEntity::craft(const Swan::Recipe &recipe) {
+	// Back up the state of the inventory,
+	// so that we can undo everything if it turns out we don't have enough items
+	Swan::BasicInventory backup = inventory_;
+
+	for (const auto &input: recipe.inputs) {
+		int needed = input.count;
+		for (auto &slot: inventory_.content) {
+			if (slot.empty() || slot.item() != input.item) {
+				continue;
+			}
+
+			auto got = slot.remove(needed);
+			needed -= got.count();
+			if (needed == 0) {
+				break;
+			}
+		}
+
+		if (needed != 0) {
+			Swan::info << "Attempted to craft " << recipe.output.item
+				<< ", but missing " << needed << ' ' << input.item;
+			inventory_ = backup;
+			return;
+		}
+	}
+
+	Swan::ItemStack stack(recipe.output.item, recipe.output.count);
+	stack = inventory_.insert(0, stack);
+	if (!stack.empty()) {
+		Swan::info << "Attempted to craft " << recipe.output.item
+			<< ", but there wasn't enough space in the inventory to put the result";
+		inventory_ = backup;
+	}
+}
+
+void PlayerEntity::dropItem(const Swan::Context &ctx) {
+	auto &stack = inventory_.content[selectedInventorySlot_];
+	if (stack.empty()) {
+		return;
+	}
+
+	auto pos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.5};
+	auto direction = (Swan::Vec2{float(mouseTile_.x), float(mouseTile_.y)} - pos).norm();
+	auto vel = direction * 20.0;
+
+	auto removed = stack.remove(1);
+	ctx.plane.spawnEntity<ItemStackEntity>(pos, vel, removed.item());
 }

@@ -57,6 +57,17 @@ public:
 			.lightLevel = 80/255.0,
 		});
 
+		registerItem({
+			.name = "wood-pole",
+			.image = "core::tile/wood-pole",
+		});
+
+		registerRecipe({
+			.inputs = {{1, "core::tree-trunk"}},
+			.output = {8, "core::wood-pole"},
+			.kind = "crafting",
+		});
+
 		registerWorldGen<DefaultWorldGen>("default");
 
 		registerEntity<PlayerEntity>("player");

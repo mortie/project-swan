@@ -6,6 +6,7 @@
 
 #include "Tile.h"
 #include "Item.h"
+#include "Recipe.h"
 #include "WorldGen.h"
 #include "EntityCollection.h"
 #include "OS.h"
@@ -22,6 +23,7 @@ public:
 	void registerTile(Tile::Builder &&tile);
 	void registerItem(Item::Builder &&item);
 	void registerTileWithItem(Tile::Builder &&tile);
+	void registerRecipe(Recipe::Builder &&recipe);
 	void registerSprite(std::string &&sprite);
 
 	template<typename WG>
@@ -34,6 +36,7 @@ private:
 	const std::string name_;
 	std::vector<Tile::Builder> tiles_;
 	std::vector<Item::Builder> items_;
+	std::vector<Recipe::Builder> recipes_;
 	std::vector<std::string> sprites_;
 	std::vector<WorldGen::Factory> worldGens_;
 	std::vector<EntityCollection::Factory> entities_;
@@ -57,6 +60,7 @@ public:
 	const std::string &name() { return mod_->name_; }
 	const std::vector<Tile::Builder> &tiles() { return mod_->tiles_; }
 	const std::vector<Item::Builder> &items() { return mod_->items_; }
+	const std::vector<Recipe::Builder> &recipes() { return mod_->recipes_; }
 	const std::vector<std::string> &sprites() { return mod_->sprites_; }
 	const std::vector<WorldGen::Factory> &worldGens() { return mod_->worldGens_; }
 	const std::vector<EntityCollection::Factory> &entities() { return mod_->entities_; }

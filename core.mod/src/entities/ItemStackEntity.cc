@@ -8,8 +8,15 @@ ItemStackEntity::ItemStackEntity(
 	static std::uniform_real_distribution vy(-2.3f, -1.2f);
 
 	physicsBody_.body.pos = pos;
-	item_ = &ctx.world.getItem(item);
 	physicsBody_.vel += Swan::Vec2{ vx(ctx.world.random_), vy(ctx.world.random_) };
+	item_ = &ctx.world.getItem(item);
+}
+
+ItemStackEntity::ItemStackEntity(
+		const Swan::Context &ctx, Swan::Vec2 pos, Swan::Vec2 vel, Swan::Item *item) {
+	physicsBody_.body.pos = pos;
+	physicsBody_.vel += vel;
+	item_ = item;
 }
 
 ItemStackEntity::ItemStackEntity(const Swan::Context &ctx, const PackObject &obj) {
@@ -29,8 +36,8 @@ void ItemStackEntity::update(const Swan::Context &ctx, float dt) {
 }
 
 void ItemStackEntity::tick(const Swan::Context &ctx, float dt) {
-	despawnTimer_ -= dt;
-	if (despawnTimer_ <= 0) {
+	lifetime_ += dt;
+	if (lifetime_ >= DESPAWN_TIME) {
 		ctx.plane.despawnEntity(ctx.plane.currentEntity());
 	}
 }

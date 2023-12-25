@@ -6,11 +6,15 @@
 namespace Swan {
 
 inline void Mod::registerTile(Tile::Builder &&tile) {
-	tiles_.push_back(tile);
+	tiles_.push_back(std::move(tile));
 }
 
 inline void Mod::registerItem(Item::Builder &&item) {
-	items_.push_back(item);
+	items_.push_back(std::move(item));
+}
+
+inline void Mod::registerRecipe(Recipe::Builder &&recipe) {
+	recipes_.push_back(std::move(recipe));
 }
 
 inline void Mod::registerSprite(std::string &&sprite) {
@@ -21,7 +25,6 @@ inline void Mod::registerTileWithItem(Tile::Builder &&tile) {
 	std::string qualifiedName = name_;
 	qualifiedName += "::";
 	qualifiedName += tile.name;
-	info << "Registering item with tile '" << qualifiedName << "'";
 	registerItem({
 		.name = tile.name,
 		.image = tile.image,

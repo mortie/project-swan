@@ -9,7 +9,6 @@
 namespace Swan {
 
 struct Tile {
-public:
 	using ID = uint16_t;
 
 	struct Builder {

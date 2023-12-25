@@ -168,6 +168,29 @@ Cygnet::ResourceManager World::buildResources() {
 		}
 	}
 
+	// Load recipes
+	std::vector<Recipe::Items> recipeInputs;
+	for (auto &mod: mods_) {
+		for (auto &recipeBuilder: mod.recipes()) {
+			recipeInputs.clear();
+			for (const auto &inputBuilder: recipeBuilder.inputs) {
+				recipeInputs.push_back({
+					.count = inputBuilder.count,
+					.item = &getItem(inputBuilder.item),
+				});
+			}
+
+			recipes_.push_back({
+				.inputs = recipeInputs, // Copy, don't move, so we shrink to fit
+				.output = {
+					.count = recipeBuilder.output.count,
+					.item = &getItem(recipeBuilder.output.item),
+				},
+				.kind = recipeBuilder.kind,
+			});
+		}
+	}
+
 	// Load sprites
 	for (auto &mod: mods_) {
 		for (auto spritePath: mod.sprites()) {

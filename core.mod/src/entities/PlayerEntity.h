@@ -14,7 +14,7 @@ public:
 	Inventory &get(InventoryTrait::Tag) override { return inventory_; }
 
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
-	void ui() override;
+	void ui(const Swan::Context &ctx) override;
 	void update(const Swan::Context &ctx, float dt) override;
 	void tick(const Swan::Context &ctx, float dt) override;
 	void deserialize(const Swan::Context &ctx, const PackObject &obj) override;
@@ -36,6 +36,8 @@ private:
 	};
 
 	void placeTile(const Swan::Context &ctx);
+	void craft(const Swan::Recipe &recipe);
+	void dropItem(const Swan::Context &ctx);
 
 	PlayerEntity(const Swan::Context &ctx):
 		idleAnimation_(ctx.world.getSprite("core::entity/player-idle"), 0.8),
