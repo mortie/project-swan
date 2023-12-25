@@ -38,9 +38,9 @@ void PlayerEntity::ui(const Swan::Context &ctx) {
 	ImGui::Begin("Inventory");
 	auto &selectedStack = inventory_.content[selectedInventorySlot_];
 	if (selectedStack.empty()) {
-		ImGui::Text("Selected: [%d]: Empty", selectedInventorySlot_);
+		ImGui::Text("Selected: [%d]: Empty", selectedInventorySlot_ + 1);
 	} else {
-		ImGui::Text("Selected: [%d]: %d x %s", selectedInventorySlot_,
+		ImGui::Text("Selected: [%d]: %d x %s", selectedInventorySlot_ + 1,
 			selectedStack.count(), selectedStack.item()->name.c_str());
 	}
 
@@ -52,9 +52,7 @@ void PlayerEntity::ui(const Swan::Context &ctx) {
 		}
 
 		itemCounts[stack.item()] += stack.count();
-
-		ImGui::Text("%zu: %d x %s", i, stack.count(),
-			stack.item()->name.c_str());
+		ImGui::Text("%zu: %d x %s", i + 1, stack.count(), stack.item()->name.c_str());
 	}
 	ImGui::End();
 
@@ -87,7 +85,7 @@ void PlayerEntity::ui(const Swan::Context &ctx) {
 		text += std::to_string(recipe.output.count);
 		text += ' ';
 		text += recipe.output.item->name;
-		text += ": ";
+		text += " from ";
 
 		bool first = true;
 		for (const auto &input: recipe.inputs) {
