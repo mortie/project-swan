@@ -19,38 +19,38 @@ public:
 		registerSprite("entity/spider-idle");
 		registerSprite("misc/background-cave");
 
-		registerTileWithItem({
+		registerTile({
 			.name = "stone",
 			.image = "core::tile/stone",
 			.droppedItem = "core::stone",
 		});
-		registerTileWithItem({
+		registerTile({
 			.name = "dirt",
 			.image = "core::tile/dirt",
 			.droppedItem = "core::dirt",
 		});
-		registerTileWithItem({
+		registerTile({
 			.name = "grass",
 			.image = "core::tile/grass",
 			.droppedItem = "core::dirt",
 		});
-		registerTileWithItem({
+		registerTile({
 			.name = "tree-trunk",
 			.image = "core::tile/tree-trunk",
 			.isSolid = false,
 			.droppedItem = "core::tree-trunk",
 		});
-		registerTileWithItem({
+		registerTile({
 			.name = "tree-leaves",
 			.image = "core::tile/leaves",
 			.isSolid = false,
 		});
-		registerTileWithItem({
+		registerTile({
 			.name = "tree-seeder",
 			.image = "core::tile/leaves",
 			.onSpawn = spawnTree,
 		});
-		registerTileWithItem({
+		registerTile({
 			.name = "torch",
 			.image = "core::tile/torch",
 			.droppedItem = "core::torch",

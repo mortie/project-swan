@@ -83,24 +83,25 @@ void PlayerEntity::ui(const Swan::Context &ctx) {
 		}
 
 		text.clear();
+		text += "Craft ";
+		text += std::to_string(recipe.output.count);
+		text += ' ';
+		text += recipe.output.item->name;
+		text += ": ";
+
+		bool first = true;
 		for (const auto &input: recipe.inputs) {
-			if (text != "") {
+			if (!first) {
 				text += ", ";
 			}
+			first = false;
 
 			text += std::to_string(input.count);
 			text += ' ';
 			text += input.item->name;
 		}
 
-		text += " => ";
-		text += std::to_string(recipe.output.count);
-		text += ' ';
-		text += recipe.output.item->name;
-		ImGui::Text("%s", text.c_str());
-
-		if (ImGui::Button("Craft")) {
-			Swan::info << "Crafting recipe: " << text;
+		if (ImGui::Button(text.c_str())) {
 			craft(recipe);
 		}
 	}
@@ -275,7 +276,7 @@ void PlayerEntity::placeTile(const Swan::Context &ctx) {
 		return;
 	}
 
-	if (!ctx.plane.getEntitiesInTile(mouseTile_).empty()) {
+	if (item.tile->isSolid && !ctx.plane.getEntitiesInTile(mouseTile_).empty()) {
 		return;
 	}
 
@@ -287,7 +288,7 @@ void PlayerEntity::placeTile(const Swan::Context &ctx) {
 		Swan::info << "Not placing tile because stack.remove(1) is empty";
 	}
 
-	ctx.plane.setTile(mouseTile_, item.tile.value());
+	ctx.plane.setTileID(mouseTile_, item.tile->id);
 }
 
 void PlayerEntity::craft(const Swan::Recipe &recipe) {

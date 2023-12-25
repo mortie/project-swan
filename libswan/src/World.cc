@@ -135,14 +135,13 @@ Cygnet::ResourceManager World::buildResources() {
 
 			tilesMap_[tileName] = tileId;
 			tiles_.push_back(Tile(tileId, tileName, tileBuilder));
-
-			// All tiles should have an item.
-			// Some items will be overwritten later my mod_->items,
-			// but if not, this is their default item.
-			items_.emplace(tileName, Item(tileId, tileName, {
-				.name = "", .image = "", // Not used in this case
-			}));
 		}
+	}
+
+	// Create a dummy item for each tile.
+	for (auto &tile: tiles_) {
+		items_.emplace(tile.name, Item(tile.id, tile.name, {}));
+		items_.at(tile.name).tile = &tile;
 	}
 
 	// Put all items after all the tiles
@@ -165,6 +164,9 @@ Cygnet::ResourceManager World::buildResources() {
 
 			items_.erase(itemName);
 			items_.emplace(itemName, Item(itemId, itemName, itemBuilder));
+			if (itemBuilder.tile) {
+				items_.at(itemName).tile = &getTile(itemBuilder.tile.value());
+			}
 		}
 	}
 

@@ -21,19 +21,6 @@ inline void Mod::registerSprite(std::string &&sprite) {
 	sprites_.push_back(sprite);
 }
 
-inline void Mod::registerTileWithItem(Tile::Builder &&tile) {
-	std::string qualifiedName = name_;
-	qualifiedName += "::";
-	qualifiedName += tile.name;
-	registerItem({
-		.name = tile.name,
-		.image = tile.image,
-		.tile = std::move(qualifiedName),
-	});
-
-	registerTile(std::move(tile));
-}
-
 template<typename WG>
 inline void Mod::registerWorldGen(std::string name) {
 	worldGens_.push_back(WorldGen::Factory{

@@ -22,7 +22,6 @@ public:
 
 	void registerTile(Tile::Builder &&tile);
 	void registerItem(Item::Builder &&item);
-	void registerTileWithItem(Tile::Builder &&tile);
 	void registerRecipe(Recipe::Builder &&recipe);
 	void registerSprite(std::string &&sprite);
 

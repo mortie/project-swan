@@ -18,10 +18,10 @@ public:
 	const Tile::ID id;
 	const std::string name;
 	const int maxStack;
-	const std::optional<std::string> tile;
+	const Tile *tile;
 
 	Item(Tile::ID id, std::string name, const Builder &builder):
-		id(id), name(name), maxStack(builder.maxStack), tile(builder.tile) {}
+		id(id), name(name), maxStack(builder.maxStack), tile(nullptr) {}
 };
 
 }
