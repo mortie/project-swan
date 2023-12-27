@@ -10,19 +10,20 @@
 namespace Swan {
 
 WorldPlane::WorldPlane(
-		ID id, World *world, std::unique_ptr<WorldGen> gen,
-		std::vector<std::unique_ptr<EntityCollection>> &&colls):
-			id_(id), world_(world), gen_(std::move(gen)),
-			entColls_(std::move(colls)),
-			lighting_(std::make_unique<LightServer>(*this)) {
-
+	ID id, World *world, std::unique_ptr<WorldGen> gen,
+	std::vector<std::unique_ptr<EntityCollection> > &&colls):
+	id_(id), world_(world), gen_(std::move(gen)),
+	entColls_(std::move(colls)),
+	lighting_(std::make_unique<LightServer>(*this))
+{
 	for (auto &coll: entColls_) {
 		entCollsByType_[coll->type()] = coll.get();
 		entCollsByName_[coll->name()] = coll.get();
 	}
 }
 
-Context WorldPlane::getContext() {
+Context WorldPlane::getContext()
+{
 	return {
 		.game = *world_->game_,
 		.world = *world_,
@@ -30,11 +31,13 @@ Context WorldPlane::getContext() {
 	};
 }
 
-EntityRef WorldPlane::spawnEntity(const std::string &name, const Entity::PackObject &obj) {
+EntityRef WorldPlane::spawnEntity(const std::string &name, const Entity::PackObject &obj)
+{
 	return entCollsByName_.at(name)->spawn(getContext(), obj);
 }
 
-std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(BodyTrait::Body &body) {
+std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(BodyTrait::Body &body)
+{
 	constexpr float PADDING = 10;
 	auto topLeft = body.topLeft() - Vec2{PADDING, PADDING};
 	auto bottomRight = body.bottomRight() + Vec2{PADDING, PADDING};
@@ -80,33 +83,38 @@ std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(BodyTrait
 	}
 
 	if (
-			topRightChunk != bottomRightChunk && topRightChunk != bottomLeftChunk &&
-			topRightChunk != topLeftChunk) {
+		topRightChunk != bottomRightChunk && topRightChunk != bottomLeftChunk &&
+		topRightChunk != topLeftChunk) {
 		checkChunk(topRightChunk);
 	}
 
 	return foundEntitiesRet_;
 }
 
-std::vector<WorldPlane::FoundEntity> &WorldPlane::getEntitiesInTile(TilePos pos) {
+std::vector<WorldPlane::FoundEntity> &WorldPlane::getEntitiesInTile(TilePos pos)
+{
 	BodyTrait::Body body = {
 		.pos = pos,
 		.size = {1, 1},
 		.chunkPos = tilePosToChunkPos(pos),
 	};
+
 	return getCollidingEntities(body);
 }
 
-bool WorldPlane::hasChunk(ChunkPos pos) {
+bool WorldPlane::hasChunk(ChunkPos pos)
+{
 	return chunks_.find(pos) != chunks_.end();
 }
 
 // This function will be a bit weird because it's a really fucking hot function.
-Chunk &WorldPlane::getChunk(ChunkPos pos) {
+Chunk &WorldPlane::getChunk(ChunkPos pos)
+{
 	// First, look through all chunks which have been in use this tick
 	for (auto [chpos, chunk]: tickChunks_) {
-		if (chpos == pos)
+		if (chpos == pos) {
 			return *chunk;
+		}
 	}
 
 	Chunk &chunk = slowGetChunk(pos);
@@ -114,7 +122,8 @@ Chunk &WorldPlane::getChunk(ChunkPos pos) {
 	return chunk;
 }
 
-Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
+Chunk &WorldPlane::slowGetChunk(ChunkPos pos)
+{
 	ZoneScopedN("WorldPlane slowGetChunk");
 	auto iter = chunks_.find(pos);
 
@@ -131,7 +140,7 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
 		NewLightChunk lc;
 		for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 			for (int x = 0; x < CHUNK_WIDTH; ++x) {
-				Tile::ID id = chunk.getTileID({ x, y });
+				Tile::ID id = chunk.getTileID({x, y});
 				Tile &tile = world_->getTileByID(id);
 				if (tile.isOpaque) {
 					lc.blocks[y * CHUNK_HEIGHT + x] = true;
@@ -144,8 +153,9 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
 
 		lighting_->onChunkAdded(pos, std::move(lc));
 
-	// Otherwise, it might not be active, so let's activate it
-	} else if (!iter->second.isActive()) {
+		// Otherwise, it might not be active, so let's activate it
+	}
+	else if (!iter->second.isActive()) {
 		iter->second.keepActive();
 		activeChunks_.push_back(&iter->second);
 		chunkInitList_.push_back(&iter->second);
@@ -154,11 +164,13 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos) {
 	return iter->second;
 }
 
-void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
+void WorldPlane::setTileID(TilePos pos, Tile::ID id)
+{
 	Chunk &chunk = getChunk(tilePosToChunkPos(pos));
 	ChunkRelPos rp = tilePosToChunkRelPos(pos);
 
 	Tile::ID old = chunk.getTileID(rp);
+
 	if (id != old) {
 		Tile &newTile = world_->getTileByID(id);
 		Tile &oldTile = world_->getTileByID(old);
@@ -166,7 +178,8 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 
 		if (!oldTile.isOpaque && newTile.isOpaque) {
 			lighting_->onSolidBlockAdded(pos);
-		} else if (oldTile.isOpaque && !newTile.isOpaque) {
+		}
+		else if (oldTile.isOpaque && !newTile.isOpaque) {
 			lighting_->onSolidBlockRemoved(pos);
 		}
 
@@ -186,29 +199,35 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id) {
 	}
 }
 
-void WorldPlane::setTile(TilePos pos, const std::string &name) {
+void WorldPlane::setTile(TilePos pos, const std::string &name)
+{
 	setTileID(pos, world_->getTileID(name));
 }
 
-Tile::ID WorldPlane::getTileID(TilePos pos) {
+Tile::ID WorldPlane::getTileID(TilePos pos)
+{
 	return getChunk(tilePosToChunkPos(pos)).getTileID(tilePosToChunkRelPos(pos));
 }
 
-Tile &WorldPlane::getTile(TilePos pos) {
+Tile &WorldPlane::getTile(TilePos pos)
+{
 	return world_->getTileByID(getTileID(pos));
 }
 
-EntityRef WorldPlane::spawnPlayer() {
+EntityRef WorldPlane::spawnPlayer()
+{
 	return gen_->spawnPlayer(getContext());
 }
 
-void WorldPlane::breakTile(TilePos pos) {
-
+void WorldPlane::breakTile(TilePos pos)
+{
 	// If the block is already air, do nothing
 	Tile::ID id = getTileID(pos);
 	Tile::ID air = world_->getTileID("@::air");
-	if (id == air)
+
+	if (id == air) {
 		return;
+	}
 
 	Context ctx = getContext();
 	Tile &tile = world_->getTileByID(id);
@@ -222,11 +241,13 @@ void WorldPlane::breakTile(TilePos pos) {
 	world_->evtTileBreak_.emit(getContext(), pos, world_->getTileByID(id));
 }
 
-Cygnet::Color WorldPlane::backgroundColor() {
+Cygnet::Color WorldPlane::backgroundColor()
+{
 	return gen_->backgroundColor(world_->player_->pos);
 }
 
-void WorldPlane::draw(Cygnet::Renderer &rnd) {
+void WorldPlane::draw(Cygnet::Renderer &rnd)
+{
 	ZoneScopedN("WorldPlane draw");
 	std::lock_guard<std::mutex> lock(mut_);
 	auto ctx = getContext();
@@ -260,7 +281,8 @@ void WorldPlane::draw(Cygnet::Renderer &rnd) {
 	lighting_->flip();
 }
 
-void WorldPlane::ui() {
+void WorldPlane::ui()
+{
 	ZoneScopedN("WorldPlane ui");
 
 	auto ctx = getContext();
@@ -269,7 +291,8 @@ void WorldPlane::ui() {
 	}
 }
 
-void WorldPlane::update(float dt) {
+void WorldPlane::update(float dt)
+{
 	ZoneScopedN("WorldPlane update");
 	std::lock_guard<std::mutex> lock(mut_);
 	auto ctx = getContext();
@@ -304,14 +327,16 @@ void WorldPlane::update(float dt) {
 	entDespawnList_.clear();
 }
 
-void WorldPlane::tick(float dt) {
+void WorldPlane::tick(float dt)
+{
 	ZoneScopedN("WorldPlane tick");
 	std::lock_guard<std::mutex> lock(mut_);
 	auto ctx = getContext();
 
 	// Any chunk which has been in use since last tick should be kept alive
-	for (std::pair<ChunkPos, Chunk *> &ch: tickChunks_)
+	for (std::pair<ChunkPos, Chunk *> &ch: tickChunks_) {
 		ch.second->keepActive();
+	}
 	tickChunks_.clear();
 
 	for (auto &coll: entColls_) {
@@ -333,6 +358,7 @@ void WorldPlane::tick(float dt) {
 			iter = activeChunks_.erase(iter);
 			last = activeChunks_.end();
 			break;
+
 		case Chunk::TickAction::DELETE:
 			info << "Deleting inactive unmodified chunk " << chunk->pos_;
 			chunk->destroy(world_->game_->renderer_);
@@ -340,6 +366,7 @@ void WorldPlane::tick(float dt) {
 			iter = activeChunks_.erase(iter);
 			last = activeChunks_.end();
 			break;
+
 		case Chunk::TickAction::NOTHING:
 			++iter;
 			break;
@@ -354,19 +381,23 @@ void WorldPlane::tick(float dt) {
 	}
 }
 
-void WorldPlane::addLight(TilePos pos, float level) {
+void WorldPlane::addLight(TilePos pos, float level)
+{
 	getChunk(tilePosToChunkPos(pos));
 	lighting_->onLightAdded(pos, level);
 }
 
-void WorldPlane::removeLight(TilePos pos, float level) {
+void WorldPlane::removeLight(TilePos pos, float level)
+{
 	getChunk(tilePosToChunkPos(pos));
 	lighting_->onLightRemoved(pos, level);
 }
 
-void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos) {
+void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos)
+{
 	std::lock_guard<std::mutex> lock(mut_);
 	Chunk &realChunk = getChunk(pos);
+
 	realChunk.setLightData(chunk.lightLevels);
 }
 

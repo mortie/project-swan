@@ -5,14 +5,21 @@
 namespace CoreMod {
 
 class ItemStackEntity final: public Swan::Entity,
-		public Swan::PhysicsBodyTrait {
+	public Swan::PhysicsBodyTrait {
 public:
 	ItemStackEntity(const Swan::Context &ctx, Swan::Vec2 pos, const std::string &item);
 	ItemStackEntity(const Swan::Context &ctx, Swan::Vec2 pos, Swan::Vec2 vel, Swan::Item *item);
 	ItemStackEntity(const Swan::Context &ctx, const PackObject &obj);
 
-	Body &get(BodyTrait::Tag) override { return physicsBody_.body; }
-	PhysicsBody &get(PhysicsBodyTrait::Tag) override { return physicsBody_; }
+	Body &get(BodyTrait::Tag) override
+	{
+		return physicsBody_.body;
+	}
+
+	PhysicsBody &get(PhysicsBodyTrait::Tag) override
+	{
+		return physicsBody_;
+	}
 
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
 	void update(const Swan::Context &ctx, float dt) override;
@@ -20,7 +27,10 @@ public:
 	void deserialize(const Swan::Context &ctx, const PackObject &obj) override;
 	PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) override;
 
-	Swan::Item *item() { return item_; }
+	Swan::Item *item()
+	{
+		return item_;
+	}
 
 	float lifetime_ = 0;
 

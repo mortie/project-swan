@@ -7,7 +7,8 @@
 
 namespace Swan {
 
-void Game::createWorld(const std::string &worldgen, const std::vector<std::string> &modPaths) {
+void Game::createWorld(const std::string &worldgen, const std::vector<std::string> &modPaths)
+{
 	world_.reset(new World(this, time(NULL), modPaths));
 
 	world_->setWorldGen(worldgen);
@@ -15,16 +16,20 @@ void Game::createWorld(const std::string &worldgen, const std::vector<std::strin
 	world_->spawnPlayer();
 }
 
-TilePos Game::getMouseTile() {
+TilePos Game::getMouseTile()
+{
 	auto pos = (getMousePos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;
+
 	return TilePos{(int)floor(pos.x), (int)floor(pos.y)};
 }
 
-Cygnet::Color Game::backgroundColor() {
+Cygnet::Color Game::backgroundColor()
+{
 	return world_->backgroundColor();
 }
 
-void Game::draw() {
+void Game::draw()
+{
 	if (debugShowMenu_) {
 		ImGui::Begin("Debug Menu", &debugShowMenu_, ImGuiWindowFlags_AlwaysAutoResize);
 		ImGui::Checkbox("Draw collision boxes", &debugDrawCollisionBoxes_);
@@ -34,7 +39,8 @@ void Game::draw() {
 		ImGui::Checkbox("Enable VSync", &debugEnableVSync_);
 		if (debugEnableVSync_ && !prevEnableVSync) {
 			glfwSwapInterval(1);
-		} else if (!debugEnableVSync_ && prevEnableVSync) {
+		}
+		else if (!debugEnableVSync_ && prevEnableVSync) {
 			glfwSwapInterval(0);
 		}
 
@@ -54,14 +60,16 @@ void Game::draw() {
 	world_->ui();
 }
 
-void Game::update(float dt) {
+void Game::update(float dt)
+{
 	dt *= debugTimeScale_;
 
 	// Zoom the window using the scroll wheel
 	cam_.zoom += (float)wasWheelScrolled() * 0.05f * cam_.zoom;
 	if (cam_.zoom > 1) {
 		cam_.zoom = 1;
-	} else if (cam_.zoom < 0.025) {
+	}
+	else if (cam_.zoom < 0.025) {
 		cam_.zoom = 0.025;
 	}
 
@@ -80,7 +88,8 @@ void Game::update(float dt) {
 	didReleaseButtons_.reset();
 }
 
-void Game::tick(float dt) {
+void Game::tick(float dt)
+{
 	dt *= debugTimeScale_;
 	world_->tick(dt);
 }

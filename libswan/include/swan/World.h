@@ -38,9 +38,17 @@ public:
 
 	void setCurrentPlane(WorldPlane &plane);
 	WorldPlane &addPlane(const std::string &gen);
-	WorldPlane &addPlane() { return addPlane(defaultWorldGen_); }
 
-	Tile &getTileByID(Tile::ID id) { return tiles_[id]; }
+	WorldPlane &addPlane()
+	{
+		return addPlane(defaultWorldGen_);
+	}
+
+	Tile &getTileByID(Tile::ID id)
+	{
+		return tiles_[id];
+	}
+
 	Tile::ID getTileID(const std::string &name);
 	Tile &getTile(const std::string &name);
 	Item &getItem(const std::string &name);
@@ -74,7 +82,7 @@ public:
 
 private:
 	class ChunkRenderer {
-	public:
+public:
 		void tick(WorldPlane &plane, ChunkPos abspos);
 	};
 
@@ -83,7 +91,7 @@ private:
 
 	ChunkRenderer chunkRenderer_;
 	WorldPlane::ID currentPlane_;
-	std::vector<std::unique_ptr<WorldPlane>> planes_;
+	std::vector<std::unique_ptr<WorldPlane> > planes_;
 	std::string defaultWorldGen_;
 };
 

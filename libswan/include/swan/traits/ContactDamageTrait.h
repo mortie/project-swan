@@ -3,7 +3,7 @@
 namespace Swan {
 
 struct ContactDamageTrait {
-	struct Tag{};
+	struct Tag {};
 
 	struct Damage final {
 		int damage = 1;

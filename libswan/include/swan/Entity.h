@@ -28,21 +28,31 @@ public:
 
 	Entity &operator=(Entity &&) = default;
 
-	virtual void draw(const Context &ctx, Cygnet::Renderer &rnd) {}
-	virtual void ui(const Context &ctx) {}
-	virtual void update(const Context &ctx, float dt) {}
-	virtual void tick(const Context &ctx, float dt) {}
-	virtual void onDespawn(const Context &ctx) {}
+	virtual void draw(const Context &ctx, Cygnet::Renderer &rnd)
+	{}
+	virtual void ui(const Context &ctx)
+	{}
+	virtual void update(const Context &ctx, float dt)
+	{}
+	virtual void tick(const Context &ctx, float dt)
+	{}
+	virtual void onDespawn(const Context &ctx)
+	{}
 
-	virtual void deserialize(const Swan::Context &ctx, const PackObject &obj) {}
-	virtual PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) { return {}; }
+	virtual void deserialize(const Swan::Context &ctx, const PackObject &obj)
+	{}
+	virtual PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone)
+	{
+		return {};
+	}
 
 	template<typename T>
-	auto trait() {
+	auto trait()
+	{
 		using Tag = typename T::Tag;
 		T *t = dynamic_cast<T *>(this);
 		if (!t) {
-			return (decltype(&t->get(Tag{})))nullptr;
+			return (decltype(&t->get(Tag{}))) nullptr;
 		}
 		return &t->get(Tag{});
 	}

@@ -4,7 +4,8 @@
 
 namespace Swan {
 
-void Animation::tick(float dt) {
+void Animation::tick(float dt)
+{
 	timer_ -= dt;
 	if (timer_ <= 0) {
 		timer_ += interval_;
@@ -17,7 +18,8 @@ void Animation::tick(float dt) {
 	}
 }
 
-void Animation::reset() {
+void Animation::reset()
+{
 	timer_ = interval_;
 	frame_ = 0;
 	done_ = false;

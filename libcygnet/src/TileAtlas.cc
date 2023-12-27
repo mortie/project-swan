@@ -18,8 +18,10 @@ struct AtlasState {
 	std::vector<unsigned char> data;
 };
 
-TileAtlas::TileAtlas(): state_(std::make_unique<AtlasState>()) {
+TileAtlas::TileAtlas(): state_(std::make_unique<AtlasState>())
+{
 	GLint size;
+
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size);
 	state_->tilesPerLine = std::min(size / SwanCommon::TILE_SIZE, 256);
 }
@@ -27,7 +29,8 @@ TileAtlas::TileAtlas(): state_(std::make_unique<AtlasState>()) {
 TileAtlas::TileAtlas(TileAtlas &&) = default;
 TileAtlas::~TileAtlas() = default;
 
-void TileAtlas::addTile(size_t tileId, const void *data) {
+void TileAtlas::addTile(size_t tileId, const void *data)
+{
 	const unsigned char *bytes = (const unsigned char *)data;
 	size_t x = tileId % state_->tilesPerLine;
 	size_t y = tileId / state_->tilesPerLine;
@@ -53,7 +56,8 @@ void TileAtlas::addTile(size_t tileId, const void *data) {
 	}
 }
 
-const unsigned char *TileAtlas::getImage(size_t *w, size_t *h) {
+const unsigned char *TileAtlas::getImage(size_t *w, size_t *h)
+{
 	*w = state_->tilesPerLine * SwanCommon::TILE_SIZE;
 	*h = state_->height * SwanCommon::TILE_SIZE;
 	return state_->data.data();

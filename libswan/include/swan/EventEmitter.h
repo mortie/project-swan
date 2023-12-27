@@ -20,28 +20,34 @@ protected:
 
 class EventListener: NonCopyable {
 public:
-	EventListener() {}
+	EventListener()
+	{}
 
 	EventListener(EventEmitterInterface *emitter, uint64_t id):
-		emitter_(emitter), id_(id) {}
+		emitter_(emitter), id_(id)
+	{}
 
 	EventListener(EventListener &&other) noexcept:
-			emitter_(other.emitter_), id_(other.id_) {
+		emitter_(other.emitter_), id_(other.id_)
+	{
 		other.emitter_ = nullptr;
 	}
 
-	EventListener &operator=(EventListener &&other) noexcept {
+	EventListener &operator=(EventListener &&other) noexcept
+	{
 		emitter_ = other.emitter_;
 		id_ = other.id_;
 		other.emitter_ = nullptr;
 		return *this;
 	}
 
-	~EventListener() {
+	~EventListener()
+	{
 		unsubscribe();
 	}
 
-	void unsubscribe() {
+	void unsubscribe()
+	{
 		if (emitter_) {
 			emitter_->unsubscribe(id_);
 			emitter_ = nullptr;
@@ -53,28 +59,33 @@ private:
 	uint64_t id_;
 };
 
-template<typename... Evt>
+template<typename ... Evt>
 class EventEmitter final: public EventEmitterInterface {
 public:
-	using Callback = std::function<void(Evt...)>;
+	using Callback = std::function<void (Evt...)>;
 
-	void emit(Evt... evt) {
+	void emit(Evt... evt)
+	{
 		for (auto &cb: callbacks_) {
-			cb(evt...);
+			cb(evt ...);
 		}
 	}
 
-	EventListener subscribe(Callback &&cb) {
+	EventListener subscribe(Callback &&cb)
+	{
 		uint64_t id = nextId_++;
 		size_t index = callbacks_.size();
+
 		ids_.push_back(id);
 		callbacks_.push_back(std::move(cb));
 		idToIndex_[id] = index;
 		return EventListener(this, id);
 	}
 
-	void unsubscribe(size_t id) {
+	void unsubscribe(size_t id)
+	{
 		auto indexIt = idToIndex_.find(id);
+
 		if (indexIt == idToIndex_.end()) {
 			Swan::warn << "Attempt to unsubscribe non-existent event " << id;
 			return;

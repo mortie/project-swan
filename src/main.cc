@@ -19,41 +19,46 @@
 using namespace Swan;
 
 #define errassert(expr, str, errfn) do { \
-	if (!(expr)) { \
-		panic << (str) << ": " << errfn(); \
-		return EXIT_FAILURE; \
-	} \
+			if (!(expr)) { \
+				panic << (str) << ": " << errfn(); \
+				return EXIT_FAILURE; \
+			} \
 } while (0)
 
 static Game *gameptr;
 static ImGuiIO *imguiIo;
 static double pixelRatio = 1;
 
-static void keyCallback(GLFWwindow *, int key, int scancode, int action, int) {
+static void keyCallback(GLFWwindow *, int key, int scancode, int action, int)
+{
 	if (imguiIo->WantCaptureKeyboard) {
 		return;
 	}
 
 	if (action == GLFW_PRESS) {
 		gameptr->onKeyDown(scancode, key);
-	} else if (action == GLFW_RELEASE) {
+	}
+	else if (action == GLFW_RELEASE) {
 		gameptr->onKeyUp(scancode, key);
 	}
 }
 
-static void mouseButtonCallback(GLFWwindow *, int button, int action, int) {
+static void mouseButtonCallback(GLFWwindow *, int button, int action, int)
+{
 	if (imguiIo->WantCaptureMouse) {
 		return;
 	}
 
 	if (action == GLFW_PRESS) {
 		gameptr->onMouseDown(button);
-	} else if (action == GLFW_RELEASE) {
+	}
+	else if (action == GLFW_RELEASE) {
 		gameptr->onMouseUp(button);
 	}
 }
 
-static void cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {
+static void cursorPositionCallback(GLFWwindow *, double xpos, double ypos)
+{
 	if (imguiIo->WantCaptureMouse) {
 		return;
 	}
@@ -61,7 +66,8 @@ static void cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {
 	gameptr->onMouseMove(xpos * pixelRatio, ypos * pixelRatio);
 }
 
-static void scrollCallback(GLFWwindow *, double dx, double dy) {
+static void scrollCallback(GLFWwindow *, double dx, double dy)
+{
 	if (imguiIo->WantCaptureMouse) {
 		return;
 	}
@@ -69,8 +75,10 @@ static void scrollCallback(GLFWwindow *, double dx, double dy) {
 	gameptr->onScrollWheel(dy);
 }
 
-static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh) {
+static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
+{
 	int width, height;
+
 	glfwGetWindowSize(window, &width, &height);
 	glViewport(0, 0, dw, dh);
 	Cygnet::glCheck();
@@ -89,15 +97,17 @@ static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh) {
 	}
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	backward::SignalHandling sh;
 
 	char *swanRoot = getenv("SWAN_ROOT");
+
 	if (swanRoot != nullptr && swanRoot[0] != '\0') {
 		Swan::assetBasePath = swanRoot;
 	}
 
-	glfwSetErrorCallback(+[](int error, const char* description) {
+	glfwSetErrorCallback(+[] (int error, const char *description) {
 		warn << "GLFW Error: " << error << ": " << description;
 	});
 
@@ -130,7 +140,7 @@ int main(int argc, char **argv) {
 
 	// Create a world
 	Game game;
-	std::vector<std::string> mods{ "core.mod" };
+	std::vector<std::string> mods{"core.mod"};
 	game.createWorld("core::default", mods);
 
 	gameptr = &game;
@@ -196,17 +206,21 @@ int main(int argc, char **argv) {
 
 		// We want to warn if one frame takes over 0.1 seconds...
 		if (dt > 0.1) {
-			if (slowFrames == 0)
+			if (slowFrames == 0) {
 				warn << "Delta time too high! (" << dt << "s)";
+			}
 			slowFrames += 1;
 
 			// And we never want to do physics as if our one frame is greater than
 			// 0.5 seconds.
-			if (dt > 0.5)
+			if (dt > 0.5) {
 				dt = 0.5;
-		} else if (slowFrames > 0) {
-			if (slowFrames > 1)
+			}
+		}
+		else if (slowFrames > 0) {
+			if (slowFrames > 1) {
 				warn << slowFrames << " consecutive slow frames.";
+			}
 			slowFrames = 0;
 		}
 
@@ -215,16 +229,17 @@ int main(int argc, char **argv) {
 			ZoneScopedN("game update");
 			game.update(dt);
 
-		// Complex case: run multiple steps this iteration
-		} else {
-			int count = (int)ceil(dt / (1/30.0));
+			// Complex case: run multiple steps this iteration
+		}
+		else {
+			int count = (int)ceil(dt / (1 / 30.0));
 			float delta = dt / (float)count;
 
 			// Don't be too noisy with the occasional double update
 			if (count > 2) {
 				info << "Delta time " << dt << "s. Running " << count
-					<< " updates in one frame, with a delta as if we had "
-					<< 1.0 / delta << " FPS.";
+					 << " updates in one frame, with a delta as if we had "
+					 << 1.0 / delta << " FPS.";
 			}
 			for (int i = 0; i < count; ++i) {
 				ZoneScopedN("game update");

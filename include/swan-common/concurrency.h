@@ -3,7 +3,6 @@
 namespace SwanCommon {
 
 template<typename T>
-class Lock {
-};
+class Lock {};
 
 }

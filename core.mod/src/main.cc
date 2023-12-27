@@ -10,7 +10,8 @@ namespace CoreMod {
 
 class CoreMod: public Swan::Mod {
 public:
-	CoreMod(Swan::World &world): Swan::Mod("core") {
+	CoreMod(Swan::World &world): Swan::Mod("core")
+	{
 		registerSprite("entity/player/idle");
 		registerSprite("entity/player/running");
 		registerSprite("entity/player/falling");
@@ -58,7 +59,7 @@ public:
 			.name = "torch",
 			.image = "core::tile/torch",
 			.isSolid = false,
-			.lightLevel = 80/255.0,
+			.lightLevel = 80 / 255.0,
 			.droppedItem = "core::torch",
 		});
 
@@ -90,6 +91,7 @@ public:
 
 }
 
-extern "C" Swan::Mod *mod_create(Swan::World &world) {
+extern "C" Swan::Mod *mod_create(Swan::World &world)
+{
 	return new CoreMod::CoreMod(world);
 }

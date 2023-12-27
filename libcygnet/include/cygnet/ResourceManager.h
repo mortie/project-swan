@@ -22,7 +22,8 @@ class ResourceManager;
 
 class ResourceBuilder {
 public:
-	ResourceBuilder(Renderer &rnd): rnd_(rnd) {}
+	ResourceBuilder(Renderer &rnd): rnd_(rnd)
+	{}
 
 	struct SpriteMeta {
 		int width;
@@ -59,23 +60,27 @@ public:
 };
 
 inline RenderSprite ResourceBuilder::addSprite(
-		std::string name, void *data, SpriteMeta meta) {
+	std::string name, void *data, SpriteMeta meta)
+{
 	return sprites_[std::move(name)] = rnd_.createSprite(
 		data, meta.width, meta.height, meta.frameHeight, meta.repeatFrom);
 }
 
-inline void ResourceBuilder::addTile(uint16_t id, void *data, int frames) {
+inline void ResourceBuilder::addTile(uint16_t id, void *data, int frames)
+{
 	if (frames == 0) {
 		atlas_.addTile(id, data);
-	} else {
+	}
+	else {
 		auto ptr = std::make_unique<unsigned char[]>(
-				SwanCommon::TILE_SIZE * SwanCommon::TILE_SIZE * 4 * frames);
+			SwanCommon::TILE_SIZE * SwanCommon::TILE_SIZE * 4 * frames);
 		memcpy(ptr.get(), data, SwanCommon::TILE_SIZE * SwanCommon::TILE_SIZE * 4 * frames);
 		addTile(id, std::move(ptr), frames);
 	}
 }
 
-inline void ResourceBuilder::addTile(Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames) {
+inline void ResourceBuilder::addTile(Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames)
+{
 	atlas_.addTile(id, data.get());
 	if (frames > 1) {
 		tileAnims_.push_back({

@@ -9,34 +9,43 @@
 #include <SDL_image.h>
 #include <SDL.h>
 
-double getTime() {
+double getTime()
+{
 	struct timespec tv;
+
 	clock_gettime(CLOCK_MONOTONIC, &tv);
 	return tv.tv_sec + tv.tv_nsec / 1000000000.0;
 }
 
-void addTile(Cygnet::ResourceBuilder &builder, const char *path) {
+void addTile(Cygnet::ResourceBuilder &builder, const char *path)
+{
 	static size_t id = 0;
 	SDL_Surface *surf = IMG_Load(path);
+
 	builder.addTile(id++, surf->pixels);
 	SDL_FreeSurface(surf);
 }
 
-Cygnet::RenderSprite loadSprite(Cygnet::ResourceBuilder &builder, const char *path, int fh) {
+Cygnet::RenderSprite loadSprite(Cygnet::ResourceBuilder &builder, const char *path, int fh)
+{
 	SDL_Surface *surf = IMG_Load(path);
 	auto sprite = builder.addSprite(path, surf->pixels, surf->w, surf->h, fh);
+
 	SDL_FreeSurface(surf);
 	return sprite;
 }
 
-Cygnet::RenderSprite loadSprite(Cygnet::ResourceBuilder &builder, const char *path) {
+Cygnet::RenderSprite loadSprite(Cygnet::ResourceBuilder &builder, const char *path)
+{
 	SDL_Surface *surf = IMG_Load(path);
 	auto sprite = builder.addSprite(path, surf->pixels, surf->w, surf->h);
+
 	SDL_FreeSurface(surf);
 	return sprite;
 }
 
-int main() {
+int main()
+{
 	SDL_Init(SDL_INIT_VIDEO);
 	IMG_Init(IMG_INIT_PNG);
 	Cygnet::Window win("Cygnet Test", 680, 680);
@@ -44,15 +53,17 @@ int main() {
 	Cygnet::ResourceBuilder rbuilder(rnd);
 
 	for (auto path: {
-		"core.mod/assets/tile/dirt.png",
-		"core.mod/assets/tile/grass.png",
-		"core.mod/assets/tile/leaves.png",
-		"core.mod/assets/tile/stone.png",
-		"core.mod/assets/tile/torch.png",
-		"core.mod/assets/tile/tree-trunk.png",
-	}) addTile(rbuilder, path);
+		 "core.mod/assets/tile/dirt.png",
+		 "core.mod/assets/tile/grass.png",
+		 "core.mod/assets/tile/leaves.png",
+		 "core.mod/assets/tile/stone.png",
+		 "core.mod/assets/tile/torch.png",
+		 "core.mod/assets/tile/tree-trunk.png",
+	 }) {
+		addTile(rbuilder, path);
+	}
 
-	unsigned char animTexture[32*32*4*3];
+	unsigned char animTexture[32 * 32 * 4 * 3];
 	for (size_t i = 0; i < 3; ++i) {
 		int col = 100 * i + 50;;
 		for (size_t y = 0; y < 32; ++y) {
@@ -67,13 +78,13 @@ int main() {
 	rbuilder.addTile(10, animTexture, 3);
 
 	Cygnet::RenderSprite playerSprite = loadSprite(
-			rbuilder, "core.mod/assets/entity/player-still.png", 64);
+		rbuilder, "core.mod/assets/entity/player-still.png", 64);
 
 	Cygnet::ResourceManager resources(std::move(rbuilder));
 
 	Cygnet::RenderChunk chunk;
 	{
-		uint16_t tiles[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT];
+		uint16_t tiles[SwanCommon::CHUNK_WIDTH *SwanCommon::CHUNK_HEIGHT];
 		memset(tiles, 0, sizeof(tiles));
 		tiles[0] = 1;
 		tiles[1] = 2;
@@ -88,18 +99,18 @@ int main() {
 	}
 
 	Cygnet::RenderCamera cam = {
-		.pos = { 0, 0 },
+		.pos = {0, 0},
 		.size = win.size(),
 		.zoom = 1,
 	};
 
 	float animAcc = 0;
 
-	bool keys[512] = { 0 };
+	bool keys[512] = {0};
 
 	double tileAnimAcc = 0;
 	double fpsAcc = 0;
-	double prevTime = getTime() - 1/60.0;
+	double prevTime = getTime() - 1 / 60.0;
 	int frames = 0;
 	float x = 0, y = 0;
 

@@ -9,31 +9,38 @@ namespace Swan {
 class Logger {
 public:
 	class NewlineStream {
-	public:
-		NewlineStream(std::ostream &os): os_(os) {}
-		~NewlineStream() {
+public:
+		NewlineStream(std::ostream &os): os_(os)
+		{}
+		~NewlineStream()
+		{
 			os_ << '\n' << std::flush;
 		}
 
 		template<typename T>
-		NewlineStream &operator<<(const T &val) {
+		NewlineStream &operator<<(const T &val)
+		{
 			os_ << val;
 			return *this;
 		}
 
-	private:
+private:
 		std::ostream &os_;
 	};
 
 	Logger(std::ostream &os, std::string name, bool use_color = false, std::string color = ""):
-		os_(os), name_(std::move(name)), useColor_(use_color), color_(std::move(color)) {}
+		os_(os), name_(std::move(name)), useColor_(use_color), color_(std::move(color))
+	{}
 
 	template<typename T>
-	NewlineStream operator<<(const T &val) {
-		if (useColor_)
+	NewlineStream operator<<(const T &val)
+	{
+		if (useColor_) {
 			os_ << color_ << name_ << "\033[0m: " << val;
-		else
+		}
+		else{
 			os_ << name_ << ": " << val;
+		}
 		return NewlineStream(os_);
 	}
 

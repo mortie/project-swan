@@ -17,8 +17,10 @@ struct FontFace {
 	stbtt_fontinfo info;
 };
 
-std::shared_ptr<FontFace> loadFontFace(const char *path) {
+std::shared_ptr<FontFace> loadFontFace(const char *path)
+{
 	std::ifstream f{path, std::ios::binary};
+
 	if (!f) {
 		std::cerr << "Cygnet: Failed to open font file " << path << '\n';
 		throw std::runtime_error("Can't open font file");
@@ -46,7 +48,8 @@ public:
 	using CacheIndex = uint16_t;
 	using RenderedComponent = TextCache::RenderedCodepoint;
 
-	Impl(std::shared_ptr<FontFace> face, int fontSize): face_(std::move(face)) {
+	Impl(std::shared_ptr<FontFace> face, int fontSize): face_(std::move(face))
+	{
 		scale_ = stbtt_ScaleForPixelHeight(&face_->info, fontSize);
 
 		int x0, y0, x1, y1;
@@ -70,14 +73,17 @@ public:
 		cache_.reset((CacheIndex)size_);
 	}
 
-	~Impl() {
+	~Impl()
+	{
 		if (tex_) {
 			glDeleteTextures(1, &tex_);
 		}
 	}
 
-	RenderedCodepoint &render(Codepoint codepoint) {
+	RenderedCodepoint &render(Codepoint codepoint)
+	{
 		auto it = cachedCodepoints_.find(codepoint);
+
 		if (it != cachedCodepoints_.end()) {
 			CacheIndex idx = it->second;
 			cache_.bump(idx);
@@ -92,7 +98,8 @@ public:
 				cachedCodepoints_.erase(r.codepoint);
 				cachedCodepoints_[codepoint] = idx;
 				return r;
-			} else {
+			}
+			else {
 				RenderedCodepoint &r = cache_[idx];
 				r.textureX = (idx % dims_) * charWidth_;
 				r.textureY = (idx / dims_) * charHeight_;
@@ -136,11 +143,13 @@ private:
 };
 
 TextCache::TextCache(std::shared_ptr<FontFace> face, int fontSize):
-	impl_(std::make_unique<Impl>(std::move(face), fontSize)) {}
+	impl_(std::make_unique<Impl>(std::move(face), fontSize))
+{}
 
 TextCache::~TextCache() = default;
 
-TextCache::RenderedCodepoint &TextCache::render(uint32_t codepoint) {
+TextCache::RenderedCodepoint &TextCache::render(uint32_t codepoint)
+{
 	return impl_->render(codepoint);
 }
 

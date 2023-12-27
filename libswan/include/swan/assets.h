@@ -17,7 +17,7 @@ struct ImageAsset {
 };
 
 Result<ImageAsset> loadImageAsset(
-		const std::unordered_map<std::string, std::string> &modPaths,
-		std::string path);
+	const std::unordered_map<std::string, std::string> &modPaths,
+	std::string path);
 
 }

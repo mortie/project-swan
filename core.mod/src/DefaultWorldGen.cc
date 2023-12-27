@@ -5,43 +5,51 @@
 
 namespace CoreMod {
 
-static int getGrassLevel(const siv::PerlinNoise &perlin, int x) {
+static int getGrassLevel(const siv::PerlinNoise &perlin, int x)
+{
 	return (int)(perlin.noise(x / 50.0, 0) * 13);
 }
 
-static int getStoneLevel(const siv::PerlinNoise &perlin, int x) {
+static int getStoneLevel(const siv::PerlinNoise &perlin, int x)
+{
 	return (int)(perlin.noise(x / 50.0, 10) * 10) + 10;
 }
 
-static int getPlayerX(const siv::PerlinNoise &perlin) {
+static int getPlayerX(const siv::PerlinNoise &perlin)
+{
 	return 0;
 }
 
 void DefaultWorldGen::drawBackground(
-		const Swan::Context &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos) {
+	const Swan::Context &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos)
+{
 	// TODO: Do something interesting?
 }
 
-Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos) {
+Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos)
+{
 	float y = pos.y;
+
 	return Swan::Draw::linearGradient(y, {
-		{   0, Cygnet::ByteColor{128, 220, 250}},
-		{  70, Cygnet::ByteColor{107,  87,   5}},
-		{ 100, Cygnet::ByteColor{107,  87,   5}},
-		{ 200, Cygnet::ByteColor{ 20,  20,  23}},
-		{ 300, Cygnet::ByteColor{ 20,  20,  23}},
-		{ 500, Cygnet::ByteColor{ 25,  10,  10}},
-		{1000, Cygnet::ByteColor{ 65,  10,  10}},
+		{0, Cygnet::ByteColor{128, 220, 250}},
+		{70, Cygnet::ByteColor{107, 87, 5}},
+		{100, Cygnet::ByteColor{107, 87, 5}},
+		{200, Cygnet::ByteColor{20, 20, 23}},
+		{300, Cygnet::ByteColor{20, 20, 23}},
+		{500, Cygnet::ByteColor{25, 10, 10}},
+		{1000, Cygnet::ByteColor{65, 10, 10}},
 	});
 }
 
-Swan::Tile::ID DefaultWorldGen::genTile(Swan::TilePos pos) {
+Swan::Tile::ID DefaultWorldGen::genTile(Swan::TilePos pos)
+{
 	int grassLevel = getGrassLevel(perlin_, pos.x);
 	int stoneLevel = getStoneLevel(perlin_, pos.x);
 
 	// Caves
-	if (pos.y > grassLevel + 7 && perlin_.noise(pos.x / 43.37, pos.y / 16.37) > 0.2)
+	if (pos.y > grassLevel + 7 && perlin_.noise(pos.x / 43.37, pos.y / 16.37) > 0.2) {
 		return tAir_;
+	}
 
 	// Trees
 	if (pos.y == grassLevel - 1) {
@@ -62,17 +70,22 @@ Swan::Tile::ID DefaultWorldGen::genTile(Swan::TilePos pos) {
 		}
 	}
 
-	if (pos.y > stoneLevel)
+	if (pos.y > stoneLevel) {
 		return tStone_;
-	else if (pos.y > grassLevel)
+	}
+	else if (pos.y > grassLevel) {
 		return tDirt_;
-	else if (pos.y == grassLevel)
+	}
+	else if (pos.y == grassLevel) {
 		return tGrass_;
-	else
+	}
+	else{
 		return tAir_;
+	}
 }
 
-void DefaultWorldGen::initializeTile(const Swan::Context &ctx, Swan::TilePos pos) {
+void DefaultWorldGen::initializeTile(const Swan::Context &ctx, Swan::TilePos pos)
+{
 	int grassLevel = getGrassLevel(perlin_, pos.x);
 
 	int playerX = getPlayerX(perlin_);
@@ -87,7 +100,8 @@ void DefaultWorldGen::initializeTile(const Swan::Context &ctx, Swan::TilePos pos
 	}
 }
 
-void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
+void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
+{
 	for (int cx = 0; cx < Swan::CHUNK_WIDTH; ++cx) {
 		int tilex = chunk.pos_.x * Swan::CHUNK_WIDTH + cx;
 
@@ -101,7 +115,8 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) {
 	}
 }
 
-void DefaultWorldGen::initializeChunk(const Swan::Context &ctx, Swan::Chunk &chunk) {
+void DefaultWorldGen::initializeChunk(const Swan::Context &ctx, Swan::Chunk &chunk)
+{
 	for (int cx = 0; cx < Swan::CHUNK_WIDTH; ++cx) {
 		int tilex = chunk.pos_.x * Swan::CHUNK_WIDTH + cx;
 
@@ -113,10 +128,12 @@ void DefaultWorldGen::initializeChunk(const Swan::Context &ctx, Swan::Chunk &chu
 	}
 }
 
-Swan::EntityRef DefaultWorldGen::spawnPlayer(const Swan::Context &ctx) {
+Swan::EntityRef DefaultWorldGen::spawnPlayer(const Swan::Context &ctx)
+{
 	int x = getPlayerX(perlin_);
+
 	return ctx.plane.spawnEntity<PlayerEntity>(
-		Swan::Vec2{ (float)x, (float)getGrassLevel(perlin_, x) - 2 });
+		Swan::Vec2{(float)x, (float)getGrassLevel(perlin_, x) - 2});
 }
 
 }

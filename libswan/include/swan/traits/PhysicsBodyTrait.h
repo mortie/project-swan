@@ -13,7 +13,7 @@ struct PhysicsBodyTrait: public BodyTrait {
 		virtual void addVelocity(Vec2 vel) = 0;
 		virtual Vec2 velocity() = 0;
 
-	protected:
+protected:
 		~PhysicsBody() = default;
 	};
 
@@ -31,7 +31,8 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 		float mushyness = 2;
 	};
 
-	BasicPhysicsBody(Vec2 size, Props props): body({.size = size}), props(props) {}
+	BasicPhysicsBody(Vec2 size, Props props): body({.size = size}), props(props)
+	{}
 
 	BodyTrait::Body body;
 	Props props;
@@ -42,11 +43,19 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 
 	void friction(Vec2 coef = Vec2(400, 50));
 	void gravity(Vec2 g = Vec2(0, 20));
-	void standardForces() { friction(); gravity(); }
+
+	void standardForces()
+	{
+		friction(); gravity();
+	}
 
 	void applyForce(Vec2 f) override;
 	void addVelocity(Vec2 v) override;
-	Vec2 velocity() override { return vel; }
+
+	Vec2 velocity() override
+	{
+		return vel;
+	}
 
 	void collideWith(const BodyTrait::Body &otehr);
 	void collideAll(WorldPlane &plane);
@@ -58,19 +67,23 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
  * BasicPhysics
  */
 
-inline void BasicPhysicsBody::friction(Vec2 coef) {
+inline void BasicPhysicsBody::friction(Vec2 coef)
+{
 	force += -vel * coef;
 }
 
-inline void BasicPhysicsBody::gravity(Vec2 g) {
+inline void BasicPhysicsBody::gravity(Vec2 g)
+{
 	force += g * props.mass;
 }
 
-inline void BasicPhysicsBody::applyForce(Vec2 f) {
+inline void BasicPhysicsBody::applyForce(Vec2 f)
+{
 	force += f;
 }
 
-inline void BasicPhysicsBody::addVelocity(Vec2 v) {
+inline void BasicPhysicsBody::addVelocity(Vec2 v)
+{
 	vel += v;
 }
 

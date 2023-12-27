@@ -10,14 +10,17 @@ template<typename Ent>
 class EntityCollectionImpl final: public EntityCollection {
 public:
 	struct Wrapper {
-		template<typename... Args>
-		Wrapper(Args&&... args): ent(std::forward<Args>(args)...) {}
+		template<typename ... Args>
+		Wrapper(Args && ... args): ent(std::forward<Args>(args)...)
+		{}
 
-		Wrapper(Wrapper &&other):
-			ent(std::move(other.ent)), id(other.id) {}
+		Wrapper(Wrapper && other):
+			ent(std::move(other.ent)), id(other.id)
+		{}
 		Wrapper(const Wrapper &) = delete;
 
-		Wrapper &operator=(Wrapper &&other) {
+		Wrapper &operator=(Wrapper &&other)
+		{
 			ent = std::move(other.ent);
 			id = other.id;
 			return *this;
@@ -29,19 +32,31 @@ public:
 		uint64_t id;
 	};
 
-	EntityCollectionImpl(std::string name): name_(std::move(name)) {}
+	EntityCollectionImpl(std::string name): name_(std::move(name))
+	{}
 
-	template<typename... Args>
-	EntityRef spawn(const Context &ctx, Args&&... args);
+	template<typename ... Args>
+	EntityRef spawn(const Context &ctx, Args && ... args);
 
 	EntityRef spawn(const Context &ctx, const Entity::PackObject &obj) override;
 
-	size_t size() override { return entities_.size(); }
+	size_t size() override
+	{
+		return entities_.size();
+	}
+
 	Entity *get(uint64_t id) override;
 	BodyTrait::Body *getBody(uint64_t id) override;
 
-	const std::string &name() override { return name_; }
-	std::type_index type() override { return typeid(Ent); }
+	const std::string &name() override
+	{
+		return name_;
+	}
+
+	std::type_index type() override
+	{
+		return typeid(Ent);
+	}
 
 	void update(const Context &ctx, float dt) override;
 	void tick(const Context &ctx, float dt) override;
@@ -60,23 +75,29 @@ public:
  */
 
 template<typename Func>
-inline EntityRef &EntityRef::then(Func func) {
+inline EntityRef &EntityRef::then(Func func)
+{
 	Entity *ent = coll_->get(id_);
-	if (ent != nullptr)
+
+	if (ent != nullptr) {
 		func(ent);
+	}
 
 	return *this;
 }
 
-inline Entity *EntityRef::get() {
+inline Entity *EntityRef::get()
+{
 	return coll_->get(id_);
 }
 
-inline BodyTrait::Body *EntityRef::getBody() {
+inline BodyTrait::Body *EntityRef::getBody()
+{
 	return coll_->getBody(id_);
 }
 
-inline bool EntityRef::exists() {
+inline bool EntityRef::exists()
+{
 	return get() != nullptr;
 }
 
@@ -84,13 +105,16 @@ inline bool EntityRef::exists() {
  * EntityCollection
  */
 
-template<typename Ent, typename... Args>
-inline EntityRef EntityCollection::spawn(const Context &ctx, Args&&... args) {
+template<typename Ent, typename ... Args>
+inline EntityRef EntityCollection::spawn(const Context &ctx, Args &&... args)
+{
 	auto *impl = (EntityCollectionImpl<Ent> *)this;
+
 	return impl->spawn(ctx, std::forward<Args>(args)...);
 }
 
-inline EntityRef EntityCollection::currentEntity() {
+inline EntityRef EntityCollection::currentEntity()
+{
 	return {this, currentId_};
 }
 
@@ -99,15 +123,17 @@ inline EntityRef EntityCollection::currentEntity() {
  */
 
 template<typename Ent>
-template<typename... Args>
-inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, Args&&... args) {
+template<typename ... Args>
+inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, Args &&... args)
+{
 	uint64_t id = nextId_++;
 	size_t index = entities_.size();
 	auto &w = entities_.emplace_back(ctx, std::forward<Args>(args)...);
+
 	idToIndex_[id] = index;
 	w.id = id;
 
-	if constexpr (std::is_base_of_v<BodyTrait, Ent>) {
+	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 		BodyTrait::Body &body = w.ent.get(BodyTrait::Tag{});
 		body.pos -= body.size / 2;
 		body.chunkPos = tilePosToChunkPos({(int)body.pos.x, (int)body.pos.y});
@@ -119,14 +145,16 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, Args&&... 
 }
 
 template<typename Ent>
-inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, const Entity::PackObject &obj) {
+inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, const Entity::PackObject &obj)
+{
 	uint64_t id = nextId_++;
 	size_t index = entities_.size();
 	auto &w = entities_.emplace_back(ctx, obj);
+
 	entities_.back().id = id;
 	idToIndex_[id] = index;
 
-	if constexpr (std::is_base_of_v<BodyTrait, Ent>) {
+	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 		BodyTrait::Body &body = w.ent.get(BodyTrait::Tag{});
 		body.chunkPos = tilePosToChunkPos({(int)body.pos.x, (int)body.pos.y});
 		auto &chunk = ctx.plane.getChunk(body.chunkPos);
@@ -137,8 +165,10 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, const Enti
 }
 
 template<typename Ent>
-inline Entity *EntityCollectionImpl<Ent>::get(uint64_t id) {
+inline Entity *EntityCollectionImpl<Ent>::get(uint64_t id)
+{
 	auto indexIt = idToIndex_.find(id);
+
 	if (indexIt == idToIndex_.end()) {
 		Swan::info
 			<< "Looked for non-existent '" << typeid(Ent).name()
@@ -150,8 +180,9 @@ inline Entity *EntityCollectionImpl<Ent>::get(uint64_t id) {
 }
 
 template<typename Ent>
-inline BodyTrait::Body *EntityCollectionImpl<Ent>::getBody(uint64_t id) {
-	if constexpr (std::is_base_of_v<BodyTrait, Ent>) {
+inline BodyTrait::Body *EntityCollectionImpl<Ent>::getBody(uint64_t id)
+{
+	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 		auto indexIt = idToIndex_.find(id);
 		if (indexIt == idToIndex_.end()) {
 			Swan::info
@@ -161,13 +192,15 @@ inline BodyTrait::Body *EntityCollectionImpl<Ent>::getBody(uint64_t id) {
 		}
 
 		return &entities_[indexIt->second].ent.get(BodyTrait::Tag{});
-	} else {
+	}
+	else {
 		return nullptr;
 	}
 }
 
 template<typename Ent>
-inline void EntityCollectionImpl<Ent>::update(const Context &ctx, float dt) {
+inline void EntityCollectionImpl<Ent>::update(const Context &ctx, float dt)
+{
 	ZoneScopedN(__PRETTY_FUNCTION__);
 	for (auto &w: entities_) {
 		ZoneScopedN("update");
@@ -177,14 +210,15 @@ inline void EntityCollectionImpl<Ent>::update(const Context &ctx, float dt) {
 }
 
 template<typename Ent>
-inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt) {
+inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt)
+{
 	ZoneScopedN(__PRETTY_FUNCTION__);
 	for (auto &w: entities_) {
 		ZoneScopedN("tick");
 		currentId_ = w.id;
 		w.ent.tick(ctx, dt);
 
-		if constexpr (std::is_base_of_v<BodyTrait, Ent>) {
+		if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 			BodyTrait::Body &body = w.ent.get(BodyTrait::Tag{});
 			auto newChunkPos = tilePosToChunkPos({(int)body.pos.x, (int)body.pos.y});
 			if (newChunkPos == body.chunkPos) {
@@ -200,14 +234,15 @@ inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt) {
 }
 
 template<typename Ent>
-inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Cygnet::Renderer &rnd) {
+inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Cygnet::Renderer &rnd)
+{
 	ZoneScopedN(__PRETTY_FUNCTION__);
 	for (auto &w: entities_) {
 		ZoneScopedN("draw");
 		w.ent.draw(ctx, rnd);
 	}
 
-	if constexpr (std::is_base_of_v<BodyTrait, Ent>) {
+	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 		if (ctx.game.debugDrawCollisionBoxes_) {
 			for (auto &w: entities_) {
 				auto &body = w.ent.get(BodyTrait::Tag{});
@@ -218,7 +253,8 @@ inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Cygnet::Renderer
 }
 
 template<typename Ent>
-inline void EntityCollectionImpl<Ent>::ui(const Context &ctx) {
+inline void EntityCollectionImpl<Ent>::ui(const Context &ctx)
+{
 	ZoneScopedN(__PRETTY_FUNCTION__);
 	for (auto &w: entities_) {
 		ZoneScopedN("draw");
@@ -227,7 +263,8 @@ inline void EntityCollectionImpl<Ent>::ui(const Context &ctx) {
 }
 
 template<typename Ent>
-inline void EntityCollectionImpl<Ent>::erase(const Context &ctx, uint64_t id) {
+inline void EntityCollectionImpl<Ent>::erase(const Context &ctx, uint64_t id)
+{
 	ZoneScopedN(__PRETTY_FUNCTION__);
 	auto indexIt = idToIndex_.find(id);
 	if (indexIt == idToIndex_.end()) {
@@ -239,7 +276,7 @@ inline void EntityCollectionImpl<Ent>::erase(const Context &ctx, uint64_t id) {
 
 	size_t index = indexIt->second;
 
-	if constexpr (std::is_base_of_v<BodyTrait, Ent>) {
+	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 		auto &w = entities_[index];
 		BodyTrait::Body &body = w.ent.get(BodyTrait::Tag{});
 		ctx.plane.getChunk(body.chunkPos).entities_.erase({this, w.id});

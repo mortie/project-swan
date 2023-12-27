@@ -8,9 +8,11 @@
 
 namespace Swan {
 
-void Chunk::compress(Cygnet::Renderer &rnd) {
-	if (isCompressed())
+void Chunk::compress(Cygnet::Renderer &rnd)
+{
+	if (isCompressed()) {
 		return;
+	}
 
 	// We only need a fixed-length temp buffer;
 	// if the compressed data gets too big, there's no point in compressing
@@ -32,11 +34,13 @@ void Chunk::compress(Cygnet::Renderer &rnd) {
 			<< "Compressed chunk " << pos_ << " from "
 			<< DATA_SIZE << " bytes "
 			<< "to " << destlen << " bytes";
-	} else if (ret == Z_BUF_ERROR) {
+	}
+	else if (ret == Z_BUF_ERROR) {
 		info
 			<< "Didn't compress chunk " << pos_ << " "
 			<< "because compressing it would've made it bigger";
-	} else {
+	}
+	else {
 		warn << "Chunk compression error: " << ret << " (Out of memory?)";
 	}
 
@@ -45,9 +49,11 @@ void Chunk::compress(Cygnet::Renderer &rnd) {
 	entities_.rehash(0);
 }
 
-void Chunk::decompress() {
-	if (!isCompressed())
+void Chunk::decompress()
+{
+	if (!isCompressed()) {
 		return;
+	}
 
 	auto dest = std::make_unique<uint8_t[]>(DATA_SIZE);
 	uLongf destlen = DATA_SIZE;
@@ -71,16 +77,19 @@ void Chunk::decompress() {
 	needChunkRender_ = true;
 }
 
-void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd) {
-	if (isCompressed())
+void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
+{
+	if (isCompressed()) {
 		return;
+	}
 
 	if (needChunkRender_) {
 		renderChunk_ = rnd.createChunk(getTileData());
 		renderChunkShadow_ = rnd.createChunkShadow(getLightData());
 		needChunkRender_ = false;
 		needLightRender_ = false;
-	} else {
+	}
+	else {
 		for (auto &change: changeList_) {
 			rnd.modifyChunk(renderChunk_, change.first, change.second);
 		}
@@ -96,14 +105,16 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd) {
 	rnd.drawChunkShadow({pos, renderChunkShadow_});
 }
 
-Chunk::TickAction Chunk::tick(float dt) {
+Chunk::TickAction Chunk::tick(float dt)
+{
 	assert(isActive());
 
 	deactivateTimer_ -= dt;
 	if (deactivateTimer_ <= 0 && entities_.size() == 0) {
 		if (isModified_) {
 			return TickAction::DEACTIVATE;
-		} else {
+		}
+		else {
 			return TickAction::DELETE;
 		}
 	}
@@ -111,7 +122,8 @@ Chunk::TickAction Chunk::tick(float dt) {
 	return TickAction::NOTHING;
 }
 
-void Chunk::keepActive() {
+void Chunk::keepActive()
+{
 	deactivateTimer_ = DEACTIVATE_INTERVAL;
 	decompress();
 }

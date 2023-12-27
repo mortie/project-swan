@@ -12,6 +12,8 @@ $(OUT)/swan: $(OUT)/build.ninja phony
 $(OUT)/libswan/libswan_test: $(OUT)/build.ninja phony
 	ninja -C $(OUT) libswan/libswan_test
 
+SRCS = $(shell find include src core.mod libswan libcygnet -name '*.cc' -or -name '*.h')
+
 .PHONY: run
 run: $(OUT)/swan
 	ninja -C $(OUT) install
@@ -31,6 +33,10 @@ clean:
 .PHONY: cleanall
 cleanall:
 	rm -rf $(OUT)
+
+.PHONY: format
+format:
+	uncrustify -c uncrustify.cfg --replace --no-backup $(SRCS)
 
 .PHONY: phony
 phony:

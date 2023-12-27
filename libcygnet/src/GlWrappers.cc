@@ -8,8 +8,10 @@
 
 namespace Cygnet {
 
-GlShader::GlShader(Type type, const char *source) {
+GlShader::GlShader(Type type, const char *source)
+{
 	const char *t = nullptr;
+
 	switch (type) {
 	case Type::VERTEX:
 		id_ = glCreateShader(GL_VERTEX_SHADER);
@@ -64,34 +66,40 @@ GlShader::GlShader(Type type, const char *source) {
 	}
 }
 
-GlShader::~GlShader() {
+GlShader::~GlShader()
+{
 	glDeleteShader(id_);
 	glCheck();
 }
 
-GlProgram::GlProgram(const char *name, const char *vertex, const char *fragment): GlProgram() {
+GlProgram::GlProgram(const char *name, const char *vertex, const char *fragment): GlProgram()
+{
 	std::cerr << "Cygnet: Compiling " << name << "...\n";
 	addShader(GlVxShader(vertex));
 	addShader(GlFrShader(fragment));
 	link();
 }
 
-GlProgram::GlProgram() {
+GlProgram::GlProgram()
+{
 	id_ = glCreateProgram();
 	glCheck();
 }
 
-GlProgram::~GlProgram() {
+GlProgram::~GlProgram()
+{
 	glDeleteProgram(id_);
 	glCheck();
 }
 
-void GlProgram::addShader(const GlShader &shader) {
+void GlProgram::addShader(const GlShader &shader)
+{
 	glAttachShader(id_, shader.id());
 	glCheck();
 }
 
-void GlProgram::link() {
+void GlProgram::link()
+{
 	glLinkProgram(id_);
 	glCheck();
 

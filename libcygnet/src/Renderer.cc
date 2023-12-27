@@ -17,7 +17,8 @@
 namespace Cygnet {
 
 struct BlendProg: public GlProg<Shader::Blend> {
-	void draw(GLuint tex) {
+	void draw(GLuint tex)
+	{
 		glUseProgram(id());
 
 		glUniform1i(shader.uniTex, 0);
@@ -32,8 +33,9 @@ struct BlendProg: public GlProg<Shader::Blend> {
 
 struct ChunkProg: public GlProg<Shader::Chunk> {
 	void draw(
-			const std::vector<Renderer::DrawChunk> &drawChunks, const Mat3gf &cam,
-			GLuint atlasTex, SwanCommon::Vec2 atlasTexSize) {
+		const std::vector<Renderer::DrawChunk> &drawChunks, const Mat3gf &cam,
+		GLuint atlasTex, SwanCommon::Vec2 atlasTexSize)
+	{
 		glUseProgram(id());
 
 		glUniform1i(shader.uniTileAtlas, 0);
@@ -62,7 +64,8 @@ struct ChunkProg: public GlProg<Shader::Chunk> {
 };
 
 struct ChunkShadowProg: public GlProg<Shader::ChunkShadow> {
-	void draw(const std::vector<Renderer::DrawChunkShadow> &drawChunkShadows, const Mat3gf &cam) {
+	void draw(const std::vector<Renderer::DrawChunkShadow> &drawChunkShadows, const Mat3gf &cam)
+	{
 		glUseProgram(id());
 
 		glUniform1i(shader.uniTex, 0);
@@ -80,7 +83,8 @@ struct ChunkShadowProg: public GlProg<Shader::ChunkShadow> {
 };
 
 struct RectProg: public GlProg<Shader::Rect> {
-	void draw(const std::vector<Renderer::DrawRect> &drawRects, const Mat3gf &cam) {
+	void draw(const std::vector<Renderer::DrawRect> &drawRects, const Mat3gf &cam)
+	{
 		glUseProgram(id());
 
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
@@ -97,7 +101,8 @@ struct RectProg: public GlProg<Shader::Rect> {
 };
 
 struct SpriteProg: public GlProg<Shader::Sprite> {
-	void draw(const std::vector<Renderer::DrawSprite> &drawSprites, const Mat3gf &cam) {
+	void draw(const std::vector<Renderer::DrawSprite> &drawSprites, const Mat3gf &cam)
+	{
 		glUseProgram(id());
 
 		glUniform1i(shader.uniTex, 0);
@@ -118,8 +123,9 @@ struct SpriteProg: public GlProg<Shader::Sprite> {
 
 struct TileProg: public GlProg<Shader::Tile> {
 	void draw(
-			const std::vector<Renderer::DrawTile> &drawTiles, const Mat3gf &cam,
-			GLuint atlasTex, SwanCommon::Vec2 atlasTexSize) {
+		const std::vector<Renderer::DrawTile> &drawTiles, const Mat3gf &cam,
+		GLuint atlasTex, SwanCommon::Vec2 atlasTexSize)
+	{
 		glUseProgram(id());
 
 		glUniform1i(shader.uniTileAtlas, 0);
@@ -160,7 +166,8 @@ struct RendererState {
 	SwanCommon::Vec2 atlasTexSize;
 };
 
-Renderer::Renderer(): state_(std::make_unique<RendererState>()) {
+Renderer::Renderer(): state_(std::make_unique<RendererState>())
+{
 	glGenTextures(1, &state_->atlasTex);
 	glCheck();
 
@@ -168,25 +175,28 @@ Renderer::Renderer(): state_(std::make_unique<RendererState>()) {
 	glCheck();
 }
 
-Renderer::~Renderer() {
+Renderer::~Renderer()
+{
 	glDeleteFramebuffers(1, &state_->offscreenFramebuffer);
 	glDeleteTextures(1, &state_->offscreenFramebuffer);
 	glDeleteTextures(1, &state_->atlasTex);
 	glCheck();
 }
 
-void Renderer::draw(const RenderCamera &cam) {
+void Renderer::draw(const RenderCamera &cam)
+{
 	Mat3gf camMat;
 
 	camMat.translate(-cam.pos);
 
 	if (cam.size.y > cam.size.x) {
 		float ratio = (float)cam.size.y / (float)cam.size.x;
-		winScale_ = {1/ratio, 1};
+		winScale_ = {1 / ratio, 1};
 		camMat.scale({cam.zoom * ratio, -cam.zoom});
-	} else {
+	}
+	else {
 		float ratio = (float)cam.size.x / (float)cam.size.y;
-		winScale_ = {1, 1/ratio};
+		winScale_ = {1, 1 / ratio};
 		camMat.scale({cam.zoom, -cam.zoom * ratio});
 	}
 
@@ -240,7 +250,8 @@ void Renderer::draw(const RenderCamera &cam) {
 	glCheck();
 }
 
-void Renderer::uploadTileAtlas(const void *data, int width, int height) {
+void Renderer::uploadTileAtlas(const void *data, int width, int height)
+{
 	glBindTexture(GL_TEXTURE_2D, state_->atlasTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -251,25 +262,29 @@ void Renderer::uploadTileAtlas(const void *data, int width, int height) {
 
 	state_->atlasTexSize = {
 		(float)(int)(width / SwanCommon::TILE_SIZE),
-		(float)(int)(height / SwanCommon::TILE_SIZE) };
+		(float)(int)(height / SwanCommon::TILE_SIZE)};
 }
 
-void Renderer::modifyTile(TileID id, const void *data) {
+void Renderer::modifyTile(TileID id, const void *data)
+{
 	int w = (int)state_->atlasTexSize.x;
 	int x = id % w;
 	int y = id / w;
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, state_->atlasTex);
 	glTexSubImage2D(
-			GL_TEXTURE_2D, 0, x * SwanCommon::TILE_SIZE, y * SwanCommon::TILE_SIZE,
-			SwanCommon::TILE_SIZE, SwanCommon::TILE_SIZE,
-			GL_RGBA, GL_UNSIGNED_BYTE, data);
+		GL_TEXTURE_2D, 0, x * SwanCommon::TILE_SIZE, y * SwanCommon::TILE_SIZE,
+		SwanCommon::TILE_SIZE, SwanCommon::TILE_SIZE,
+		GL_RGBA, GL_UNSIGNED_BYTE, data);
 	glCheck();
 }
 
 RenderChunk Renderer::createChunk(
-		TileID tiles[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]) {
+	TileID tiles[SwanCommon::CHUNK_WIDTH *SwanCommon::CHUNK_HEIGHT])
+{
 	RenderChunk chunk;
+
 	glGenTextures(1, &chunk.tex);
 	glCheck();
 
@@ -282,33 +297,37 @@ RenderChunk Renderer::createChunk(
 	glCheck();
 
 	glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_R16UI,
-			SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
-			0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, tiles);
+		GL_TEXTURE_2D, 0, GL_R16UI,
+		SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
+		0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, tiles);
 	glCheck();
 
 	return chunk;
 }
 
-void Renderer::modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id) {
+void Renderer::modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id)
+{
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, chunk.tex);
 	glCheck();
 
 	glTexSubImage2D(
-			GL_TEXTURE_2D, 0, pos.x, pos.y, 1, 1,
-			GL_RED_INTEGER, GL_UNSIGNED_SHORT, &id);
+		GL_TEXTURE_2D, 0, pos.x, pos.y, 1, 1,
+		GL_RED_INTEGER, GL_UNSIGNED_SHORT, &id);
 	glCheck();
 }
 
-void Renderer::destroyChunk(RenderChunk chunk) {
+void Renderer::destroyChunk(RenderChunk chunk)
+{
 	glDeleteTextures(1, &chunk.tex);
 	glCheck();
 }
 
 RenderChunkShadow Renderer::createChunkShadow(
-		uint8_t data[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]) {
+	uint8_t data[SwanCommon::CHUNK_WIDTH *SwanCommon::CHUNK_HEIGHT])
+{
 	RenderChunkShadow shadow;
+
 	glGenTextures(1, &shadow.tex);
 	glCheck();
 
@@ -321,37 +340,41 @@ RenderChunkShadow Renderer::createChunkShadow(
 	glCheck();
 
 	glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_RED,
-			SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
-			0, GL_RED, GL_UNSIGNED_BYTE, data);
+		GL_TEXTURE_2D, 0, GL_RED,
+		SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
+		0, GL_RED, GL_UNSIGNED_BYTE, data);
 	glCheck();
 
 	return shadow;
 }
 
 void Renderer::modifyChunkShadow(
-		RenderChunkShadow shadow,
-		uint8_t data[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]) {
+	RenderChunkShadow shadow,
+	uint8_t data[SwanCommon::CHUNK_WIDTH *SwanCommon::CHUNK_HEIGHT])
+{
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, shadow.tex);
 
 	glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_RED,
-			SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
-			0, GL_RED, GL_UNSIGNED_BYTE, data);
+		GL_TEXTURE_2D, 0, GL_RED,
+		SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
+		0, GL_RED, GL_UNSIGNED_BYTE, data);
 	glCheck();
 }
 
-void Renderer::destroyChunkShadow(RenderChunkShadow shadow) {
+void Renderer::destroyChunkShadow(RenderChunkShadow shadow)
+{
 	glDeleteTextures(1, &shadow.tex);
 	glCheck();
 }
 
-RenderSprite Renderer::createSprite(void *data, int width, int height, int fh, int repeatFrom) {
+RenderSprite Renderer::createSprite(void *data, int width, int height, int fh, int repeatFrom)
+{
 	RenderSprite sprite;
+
 	sprite.scale = {
 		(float)width / SwanCommon::TILE_SIZE,
-		(float)fh / SwanCommon::TILE_SIZE };
+		(float)fh / SwanCommon::TILE_SIZE};
 	sprite.frameCount = height / fh;
 	sprite.repeatFrom = repeatFrom;
 	glGenTextures(1, &sprite.tex);
@@ -366,14 +389,15 @@ RenderSprite Renderer::createSprite(void *data, int width, int height, int fh, i
 	glCheck();
 
 	glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_RGBA, width, height,
-			0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		GL_TEXTURE_2D, 0, GL_RGBA, width, height,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	glCheck();
 
 	return sprite;
 }
 
-void Renderer::destroySprite(RenderSprite sprite) {
+void Renderer::destroySprite(RenderSprite sprite)
+{
 	glDeleteTextures(1, &sprite.tex);
 	glCheck();
 }

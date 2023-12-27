@@ -17,7 +17,8 @@ class ModWrapper;
 
 class Mod {
 public:
-	Mod(std::string name): name_(std::move(name)) {}
+	Mod(std::string name): name_(std::move(name))
+	{}
 	virtual ~Mod() = default;
 
 	void registerTile(Tile::Builder &&tile);
@@ -46,23 +47,52 @@ private:
 class ModWrapper {
 public:
 	ModWrapper(std::unique_ptr<Mod> mod, std::string path, OS::Dynlib lib):
-		mod_(std::move(mod)), path_(std::move(path)), dynlib_(std::move(lib)) {}
+		mod_(std::move(mod)), path_(std::move(path)), dynlib_(std::move(lib))
+	{}
 
 	ModWrapper(ModWrapper &&other) noexcept = default;
 
-	~ModWrapper() {
+	~ModWrapper()
+	{
 		// Mod::~Mod will destroy stuff allocated by the dynlib,
 		// so we must run its destructor before deleting the dynlib
 		mod_.reset();
 	}
 
-	const std::string &name() { return mod_->name_; }
-	const std::vector<Tile::Builder> &tiles() { return mod_->tiles_; }
-	const std::vector<Item::Builder> &items() { return mod_->items_; }
-	const std::vector<Recipe::Builder> &recipes() { return mod_->recipes_; }
-	const std::vector<std::string> &sprites() { return mod_->sprites_; }
-	const std::vector<WorldGen::Factory> &worldGens() { return mod_->worldGens_; }
-	const std::vector<EntityCollection::Factory> &entities() { return mod_->entities_; }
+	const std::string &name()
+	{
+		return mod_->name_;
+	}
+
+	const std::vector<Tile::Builder> &tiles()
+	{
+		return mod_->tiles_;
+	}
+
+	const std::vector<Item::Builder> &items()
+	{
+		return mod_->items_;
+	}
+
+	const std::vector<Recipe::Builder> &recipes()
+	{
+		return mod_->recipes_;
+	}
+
+	const std::vector<std::string> &sprites()
+	{
+		return mod_->sprites_;
+	}
+
+	const std::vector<WorldGen::Factory> &worldGens()
+	{
+		return mod_->worldGens_;
+	}
+
+	const std::vector<EntityCollection::Factory> &entities()
+	{
+		return mod_->entities_;
+	}
 
 	std::unique_ptr<Mod> mod_;
 	std::string path_;

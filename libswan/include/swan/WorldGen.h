@@ -17,7 +17,7 @@ class WorldGen {
 public:
 	struct Factory {
 		const std::string name;
-		std::unique_ptr<WorldGen> (*const create)(World &world);
+		std::unique_ptr<WorldGen> (*const create)(World & world);
 	};
 
 	virtual ~WorldGen() = default;

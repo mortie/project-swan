@@ -5,8 +5,13 @@
 namespace Cygnet {
 
 struct GlCompileError: public std::exception {
-	GlCompileError(std::string message): message(std::move(message)) {}
-	const char *what() const noexcept override { return message.c_str(); }
+	GlCompileError(std::string message): message(std::move(message))
+	{}
+	const char *what() const noexcept override
+	{
+		return message.c_str();
+	}
+
 	std::string message;
 };
 
@@ -20,7 +25,10 @@ public:
 	GlShader(Type type, const char *source);
 	virtual ~GlShader();
 
-	GLuint id() const { return id_; }
+	GLuint id() const
+	{
+		return id_;
+	}
 
 private:
 	GLuint id_;
@@ -28,12 +36,14 @@ private:
 
 class GlVxShader: public GlShader {
 public:
-	explicit GlVxShader(const char *source): GlShader(Type::VERTEX, source) {}
+	explicit GlVxShader(const char *source): GlShader(Type::VERTEX, source)
+	{}
 };
 
 class GlFrShader: public GlShader {
 public:
-	explicit GlFrShader(const char *source): GlShader(Type::FRAGMENT, source) {}
+	explicit GlFrShader(const char *source): GlShader(Type::FRAGMENT, source)
+	{}
 };
 
 class GlProgram {
@@ -43,7 +53,10 @@ public:
 
 	virtual ~GlProgram();
 
-	GLuint id() const { return id_; }
+	GLuint id() const
+	{
+		return id_;
+	}
 
 private:
 	void addShader(const GlShader &shader);
@@ -55,7 +68,8 @@ private:
 template<typename T>
 class GlProg: public GlProgram {
 public:
-	GlProg(): GlProgram(T::name, T::vertex, T::fragment), shader(id()) {}
+	GlProg(): GlProgram(T::name, T::vertex, T::fragment), shader(id())
+	{}
 	T shader;
 };
 

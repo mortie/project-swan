@@ -69,11 +69,30 @@ public:
 	Renderer();
 	~Renderer();
 
-	void drawChunk(DrawChunk chunk) { drawChunks_.push_back(chunk); }
-	void drawChunkShadow(DrawChunkShadow chunkShadow) { drawChunkShadows_.push_back(chunkShadow); }
-	void drawTile(DrawTile drawTile) { drawTiles_.push_back(drawTile); }
-	void drawSprite(DrawSprite drawSprite) { drawSprites_.push_back(drawSprite); }
-	void drawRect(DrawRect drawRect) { drawRects_.push_back(drawRect); }
+	void drawChunk(DrawChunk chunk)
+	{
+		drawChunks_.push_back(chunk);
+	}
+
+	void drawChunkShadow(DrawChunkShadow chunkShadow)
+	{
+		drawChunkShadows_.push_back(chunkShadow);
+	}
+
+	void drawTile(DrawTile drawTile)
+	{
+		drawTiles_.push_back(drawTile);
+	}
+
+	void drawSprite(DrawSprite drawSprite)
+	{
+		drawSprites_.push_back(drawSprite);
+	}
+
+	void drawRect(DrawRect drawRect)
+	{
+		drawRects_.push_back(drawRect);
+	}
 
 	void draw(const RenderCamera &cam);
 
@@ -81,21 +100,24 @@ public:
 	void modifyTile(TileID id, const void *data);
 
 	RenderChunk createChunk(
-			TileID tiles[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]);
+		TileID tiles[SwanCommon::CHUNK_WIDTH *SwanCommon::CHUNK_HEIGHT]);
 	void modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id);
 	void destroyChunk(RenderChunk chunk);
 
 	RenderChunkShadow createChunkShadow(
-			uint8_t data[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]);
+		uint8_t data[SwanCommon::CHUNK_WIDTH *SwanCommon::CHUNK_HEIGHT]);
 	void modifyChunkShadow(
-			RenderChunkShadow shadow,
-			uint8_t data[SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT]);
+		RenderChunkShadow shadow,
+		uint8_t data[SwanCommon::CHUNK_WIDTH *SwanCommon::CHUNK_HEIGHT]);
 	void destroyChunkShadow(RenderChunkShadow chunk);
 
 	RenderSprite createSprite(void *data, int width, int height, int fh, int repeatFrom);
 	void destroySprite(RenderSprite sprite);
 
-	SwanCommon::Vec2 winScale() { return winScale_; }
+	SwanCommon::Vec2 winScale()
+	{
+		return winScale_;
+	}
 
 private:
 	SwanCommon::Vec2 winScale_ = {1, 1};

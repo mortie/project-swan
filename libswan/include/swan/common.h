@@ -8,7 +8,9 @@
 // to take a reference to it. It's nicer to not have to include Cygnet::Renderer
 // in every header.
 namespace Cygnet {
+
 class Renderer;
+
 }
 
 namespace Swan {
@@ -19,7 +21,8 @@ using TilePos = Vec2i;
 using ChunkPos = Vec2i;
 using ChunkRelPos = Vec2i;
 
-inline ChunkPos tilePosToChunkPos(TilePos pos) {
+inline ChunkPos tilePosToChunkPos(TilePos pos)
+{
 	// This might look weird, but it reduces an otherwise complex series of operations
 	// including conditional branches into like four x64 instructions.
 	// Basically, the problem is that we want 'floor(pos.x / CHUNK_WIDTH)', but
@@ -32,14 +35,14 @@ inline ChunkPos tilePosToChunkPos(TilePos pos) {
 		((long long)pos.y + (LLONG_MAX / 2) + 1) / CHUNK_HEIGHT - ((LLONG_MAX / 2) / CHUNK_HEIGHT) - 1);
 }
 
-inline ChunkRelPos tilePosToChunkRelPos(TilePos pos) {
+inline ChunkRelPos tilePosToChunkRelPos(TilePos pos)
+{
 	// This uses a similar trick to chunkPos to turn a mess of conditional moves
 	// and math instructions into literally one movabs and one 'and'
 	return ChunkRelPos(
 		(pos.x + (long long)CHUNK_WIDTH * ((LLONG_MAX / 2) / CHUNK_WIDTH)) % CHUNK_WIDTH,
 		(pos.y + (long long)CHUNK_HEIGHT * ((LLONG_MAX / 2) / CHUNK_HEIGHT)) % CHUNK_HEIGHT);
 }
-
 
 class Game;
 class World;

@@ -3,15 +3,18 @@
 #include <PerlinNoise/PerlinNoise.hpp>
 #include <png++/png.hpp>
 
-static int getGrassLevel(const siv::PerlinNoise &perlin, int x) {
+static int getGrassLevel(const siv::PerlinNoise &perlin, int x)
+{
 	return (int)(perlin.noise(x / 50.0, 0) * 13);
 }
 
-static int getStoneLevel(const siv::PerlinNoise &perlin, int x) {
+static int getStoneLevel(const siv::PerlinNoise &perlin, int x)
+{
 	return (int)(perlin.noise(x / 50.0, 10) * 10) + 10;
 }
 
-int main() {
+int main()
+{
 	siv::PerlinNoise perlin = siv::PerlinNoise(100);
 
 	int x1 = -1600;
@@ -20,6 +23,7 @@ int main() {
 	int y2 = 800;
 
 	png::image<png::gray_pixel> image(x2 - x1 + 1, y2 - y1 + 1);
+
 	Swan::info << "perlin-test.png: " << (x2 - x1 + 1) << "x" << (y2 - y1 + 1);
 
 	for (int x = x1; x <= x2; ++x) {
@@ -32,13 +36,17 @@ int main() {
 
 			if (y > grassLevel + 10) {
 				double l = perlin.noise(x / 41.37, y / 16.37);
-				if (l > 0.2)
+				if (l > 0.2) {
 					image[py][px] = 255;
-				else
+				}
+				else{
 					image[py][px] = 0;
-			} else if (y >= grassLevel) {
+				}
+			}
+			else if (y >= grassLevel) {
 				image[py][px] = 0;
-			} else {
+			}
+			else {
 				image[py][px] = 255;
 			}
 

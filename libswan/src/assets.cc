@@ -10,9 +10,11 @@ namespace Swan {
 std::string assetBasePath = ".";
 
 Result<ImageAsset> loadImageAsset(
-		const std::unordered_map<std::string, std::string> &modPaths,
-		std::string path) {
+	const std::unordered_map<std::string, std::string> &modPaths,
+	std::string path)
+{
 	auto sep = path.find("::");
+
 	if (sep == std::string::npos) {
 		return {Err, "No '::' mod separator"};
 	}
@@ -57,7 +59,8 @@ Result<ImageAsset> loadImageAsset(
 		} catch (cpptoml::parse_exception &exc) {
 			return {Err, cat("Failed to parse toml file ", tomlPath, ": ", exc.what())};
 		}
-	} else if (errno != ENOENT) {
+	}
+	else if (errno != ENOENT) {
 		return {Err, cat("Couldn't open ", tomlPath, ": ", strerror(errno))};
 	}
 

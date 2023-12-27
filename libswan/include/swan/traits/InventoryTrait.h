@@ -15,9 +15,12 @@ struct InventoryTrait {
 		virtual ItemStack set(int slot, ItemStack stack) = 0;
 		virtual ItemStack insert(int slot, ItemStack stack) = 0;
 
-		ItemStack insert(ItemStack stack) { return insert(0, stack); }
+		ItemStack insert(ItemStack stack)
+		{
+			return insert(0, stack);
+		}
 
-	protected:
+protected:
 		~Inventory() = default;
 	};
 
@@ -28,11 +31,16 @@ protected:
 };
 
 struct BasicInventory final: InventoryTrait::Inventory {
-	BasicInventory(int size): content(size) {}
+	BasicInventory(int size): content(size)
+	{}
 
 	std::vector<ItemStack> content;
 
-	int size() override { return content.size(); }
+	int size() override
+	{
+		return content.size();
+	}
+
 	ItemStack get(int slot) override;
 	ItemStack set(int slot, ItemStack stack) override;
 	ItemStack insert(int slot, ItemStack stack) override;

@@ -10,16 +10,19 @@
 namespace CoreMod {
 
 PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
-		PlayerEntity(ctx) {
+	PlayerEntity(ctx)
+{
 	physicsBody_.body.pos = pos;
 }
 
 PlayerEntity::PlayerEntity(const Swan::Context &ctx, const PackObject &obj):
-		PlayerEntity(ctx) {
+	PlayerEntity(ctx)
+{
 	deserialize(ctx, obj);
 }
 
-void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
+void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
+{
 	Cygnet::Mat3gf mat;
 
 	// Currently, there is no sprite for running left.
@@ -30,7 +33,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
 
 	// The running animation dips into the ground a bit
 	if (state_ == State::RUNNING) {
-		mat.translate({0, 4.0/32.0});
+		mat.translate({0, 4.0 / 32.0});
 	}
 
 	currentAnimation_->draw(rnd, mat.translate(
@@ -39,7 +42,8 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) {
 	rnd.drawRect({mouseTile_, {1, 1}});
 }
 
-void PlayerEntity::ui(const Swan::Context &ctx) {
+void PlayerEntity::ui(const Swan::Context &ctx)
+{
 	// This whole method is stupid inefficient and does a bunch of memory allocation every frame.
 	// TODO: fix.
 
@@ -47,7 +51,8 @@ void PlayerEntity::ui(const Swan::Context &ctx) {
 	auto &selectedStack = inventory_.content[selectedInventorySlot_];
 	if (selectedStack.empty()) {
 		ImGui::Text("Selected: [%d]: Empty", selectedInventorySlot_ + 1);
-	} else {
+	}
+	else {
 		ImGui::Text("Selected: [%d]: %d x %s", selectedInventorySlot_ + 1,
 			selectedStack.count(), selectedStack.item()->name.c_str());
 	}
@@ -114,8 +119,10 @@ void PlayerEntity::ui(const Swan::Context &ctx) {
 	ImGui::End();
 }
 
-void PlayerEntity::update(const Swan::Context &ctx, float dt) {
+void PlayerEntity::update(const Swan::Context &ctx, float dt)
+{
 	State oldState = state_;
+
 	state_ = State::IDLE;
 
 	mouseTile_ = ctx.game.getMouseTile();
@@ -125,23 +132,32 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	// Select item slots
 	if (ctx.game.wasKeyPressed(GLFW_KEY_1)) {
 		selectedInventorySlot_ = 0;
-	} else if (ctx.game.wasKeyPressed(GLFW_KEY_2)) {
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_2)) {
 		selectedInventorySlot_ = 1;
-	} else if (ctx.game.wasKeyPressed(GLFW_KEY_3)) {
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_3)) {
 		selectedInventorySlot_ = 2;
-	} else if (ctx.game.wasKeyPressed(GLFW_KEY_4)) {
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_4)) {
 		selectedInventorySlot_ = 3;
-	} else if (ctx.game.wasKeyPressed(GLFW_KEY_5)) {
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_5)) {
 		selectedInventorySlot_ = 4;
-	} else if (ctx.game.wasKeyPressed(GLFW_KEY_6)) {
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_6)) {
 		selectedInventorySlot_ = 5;
-	} else if (ctx.game.wasKeyPressed(GLFW_KEY_7)) {
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_7)) {
 		selectedInventorySlot_ = 6;
-	} else if (ctx.game.wasKeyPressed(GLFW_KEY_8)) {
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_8)) {
 		selectedInventorySlot_ = 7;
-	} else if (ctx.game.wasKeyPressed(GLFW_KEY_9)) {
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_9)) {
 		selectedInventorySlot_ = 8;
-	} else if (ctx.game.wasKeyPressed(GLFW_KEY_0)) {
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_0)) {
 		selectedInventorySlot_ = 9;
 	}
 
@@ -174,11 +190,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 		state_ = State::RUNNING;
 		lastDirection_ = -1;
 		physicsBody_.force += Swan::Vec2(-MOVE_FORCE, 0);
-	} else if (runDirection > 0) {
+	}
+	else if (runDirection > 0) {
 		state_ = State::RUNNING;
 		lastDirection_ = 1;
 		physicsBody_.force += Swan::Vec2(MOVE_FORCE, 0);
-	} else {
+	}
+	else {
 		state_ = State::IDLE;
 	}
 
@@ -208,7 +226,8 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	if (!physicsBody_.onGround && (state_ != State::JUMPING && state_ != State::FALLING)) {
 		if (physicsBody_.vel.y < -0.1) {
 			state_ = State::JUMPING;
-		} else {
+		}
+		else {
 			state_ = State::FALLING;
 		}
 	}
@@ -218,15 +237,19 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 		case State::IDLE:
 			currentAnimation_ = &idleAnimation_;
 			break;
+
 		case State::RUNNING:
 			currentAnimation_ = &runningAnimation_;
 			break;
+
 		case State::FALLING:
 			currentAnimation_ = &fallingAnimation_;
 			break;
+
 		case State::JUMPING:
 			currentAnimation_ = &jumpingAnimation_;
 			break;
+
 		case State::LANDING:
 			currentAnimation_ = &landingAnimation_;
 			break;
@@ -269,7 +292,8 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 			direction.y = -0.5;
 			if (physicsBody_.body.center().x < c.body.center().x) {
 				direction.x = -1;
-			} else {
+			}
+			else {
 				direction.x = 1;
 			}
 
@@ -286,24 +310,29 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	physicsBody_.update(ctx, dt);
 }
 
-void PlayerEntity::tick(const Swan::Context &ctx, float dt) {
-}
+void PlayerEntity::tick(const Swan::Context &ctx, float dt)
+{}
 
-void PlayerEntity::deserialize(const Swan::Context &ctx, const PackObject &obj) {
+void PlayerEntity::deserialize(const Swan::Context &ctx, const PackObject &obj)
+{
 	//body_.deserialize(obj["body"]);
 }
 
-Swan::Entity::PackObject PlayerEntity::serialize(const Swan::Context &ctx, msgpack::zone &zone) {
+Swan::Entity::PackObject PlayerEntity::serialize(const Swan::Context &ctx, msgpack::zone &zone)
+{
 	return {};
+
 	/*
-	return Swan::MsgPackObject{
-		{ "body", body_.serialize(w) },
-	};
-	*/
+	 * return Swan::MsgPackObject{
+	 *  { "body", body_.serialize(w) },
+	 * };
+	 */
 }
 
-void PlayerEntity::placeTile(const Swan::Context &ctx) {
+void PlayerEntity::placeTile(const Swan::Context &ctx)
+{
 	Swan::ItemStack &stack = inventory_.content[selectedInventorySlot_];
+
 	if (stack.empty()) {
 		return;
 	}
@@ -333,7 +362,8 @@ void PlayerEntity::placeTile(const Swan::Context &ctx) {
 	ctx.plane.setTileID(mouseTile_, item.tile->id);
 }
 
-void PlayerEntity::craft(const Swan::Recipe &recipe) {
+void PlayerEntity::craft(const Swan::Recipe &recipe)
+{
 	// Back up the state of the inventory,
 	// so that we can undo everything if it turns out we don't have enough items
 	Swan::BasicInventory backup = inventory_;
@@ -353,7 +383,8 @@ void PlayerEntity::craft(const Swan::Recipe &recipe) {
 		}
 
 		if (needed != 0) {
-			Swan::info << "Attempted to craft " << recipe.output.item
+			Swan::info
+				<< "Attempted to craft " << recipe.output.item
 				<< ", but missing " << needed << ' ' << input.item;
 			inventory_ = backup;
 			return;
@@ -363,14 +394,17 @@ void PlayerEntity::craft(const Swan::Recipe &recipe) {
 	Swan::ItemStack stack(recipe.output.item, recipe.output.count);
 	stack = inventory_.insert(0, stack);
 	if (!stack.empty()) {
-		Swan::info << "Attempted to craft " << recipe.output.item
+		Swan::info
+			<< "Attempted to craft " << recipe.output.item
 			<< ", but there wasn't enough space in the inventory to put the result";
 		inventory_ = backup;
 	}
 }
 
-void PlayerEntity::dropItem(const Swan::Context &ctx) {
+void PlayerEntity::dropItem(const Swan::Context &ctx)
+{
 	auto &stack = inventory_.content[selectedInventorySlot_];
+
 	if (stack.empty()) {
 		return;
 	}

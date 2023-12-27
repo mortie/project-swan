@@ -16,21 +16,35 @@ class WorldPlane;
 
 class EntityRef {
 public:
-	EntityRef(const EntityRef &other): coll_(other.coll_), id_(other.id_) {}
+	EntityRef(const EntityRef &other): coll_(other.coll_), id_(other.id_)
+	{}
 	EntityRef(EntityCollection *coll, uint64_t id):
-		coll_(coll), id_(id) {}
+		coll_(coll), id_(id)
+	{}
 
-	EntityRef &operator=(const EntityRef &other) {
+	EntityRef &operator=(const EntityRef &other)
+	{
 		coll_ = other.coll_;
 		id_ = other.id_;
 		return *this;
 	}
 
-	operator bool() { return exists(); }
-	Entity *operator->() { return get(); }
-	Entity &operator*() { return *get(); }
+	operator bool()
+	{
+		return exists();
+	}
+	Entity *operator->()
+	{
+		return get();
+	}
 
-	bool operator==(const EntityRef &other) const {
+	Entity &operator*()
+	{
+		return *get();
+	}
+
+	bool operator==(const EntityRef &other) const
+	{
 		return coll_ == other.coll_ && id_ == other.id_;
 	}
 
@@ -41,8 +55,15 @@ public:
 	Entity *get();
 	BodyTrait::Body *getBody();
 
-	uint64_t id() const { return id_; }
-	EntityCollection *collection() const { return coll_; }
+	uint64_t id() const
+	{
+		return id_;
+	}
+
+	EntityCollection *collection() const
+	{
+		return coll_;
+	}
 
 private:
 	EntityCollection *coll_;
@@ -61,8 +82,8 @@ public:
 
 	virtual ~EntityCollection() = default;
 
-	template<typename Ent, typename... Args>
-	EntityRef spawn(const Context &ctx, Args&&... args);
+	template<typename Ent, typename ... Args>
+	EntityRef spawn(const Context &ctx, Args && ... args);
 
 	EntityRef currentEntity();
 
@@ -90,7 +111,8 @@ namespace std {
 
 template<>
 struct hash<Swan::EntityRef> {
-	size_t operator()(const Swan::EntityRef &ref) const {
+	size_t operator()(const Swan::EntityRef &ref) const
+	{
 		return
 			std::hash<Swan::EntityCollection *>{}(ref.coll_) ^
 			std::hash<uint64_t>{}(ref.id_);

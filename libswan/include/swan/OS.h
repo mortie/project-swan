@@ -6,6 +6,7 @@
 #include "util.h"
 
 namespace Swan {
+
 namespace OS {
 
 bool isTTY(FILE *f);
@@ -18,7 +19,11 @@ public:
 
 	Dynlib &operator=(Dynlib &&dl) noexcept;
 
-	template<typename T> T get(const std::string &name) { return (T)getVoid(name); }
+	template<typename T> T get(const std::string &name)
+	{
+		return (T)getVoid(name);
+	}
+
 	void *getVoid(const std::string &name);
 
 private:
@@ -26,4 +31,5 @@ private:
 };
 
 }
+
 }

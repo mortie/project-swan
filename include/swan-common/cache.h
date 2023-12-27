@@ -14,18 +14,22 @@ struct LruCacheEntry {
 template<typename T, typename Size = size_t>
 class LruCache {
 public:
-	LruCache() {}
+	LruCache()
+	{}
 
-	LruCache(Size size): data_(std::make_unique<Entry[]>(size)) {
+	LruCache(Size size): data_(std::make_unique<Entry[]>(size))
+	{
 		initialize(size);
 	}
 
-	void reset(Size size) {
+	void reset(Size size)
+	{
 		data_ = std::make_unique<Entry[]>(size);
 		initialize(size);
 	}
 
-	void bump(Size idx) {
+	void bump(Size idx)
+	{
 		Entry &ent = data_[idx];
 
 		if (ent.prev != NULL_IDX) {
@@ -46,8 +50,10 @@ public:
 		first_ = idx;
 	}
 
-	Size next() {
+	Size next()
+	{
 		Size idx = nextFree();
+
 		if (idx == NULL_IDX) {
 			idx = nextUsed();
 		}
@@ -55,7 +61,8 @@ public:
 		return idx;
 	}
 
-	Size nextFree() {
+	Size nextFree()
+	{
 		if (firstFree_ == NULL_IDX) {
 			return NULL_IDX;
 		}
@@ -80,7 +87,8 @@ public:
 		return idx;
 	}
 
-	Size nextUsed() {
+	Size nextUsed()
+	{
 		if (first_ == NULL_IDX) {
 			return NULL_IDX;
 		}
@@ -101,20 +109,23 @@ public:
 		return idx;
 	}
 
-	T &operator[](Size idx) {
+	T &operator[](Size idx)
+	{
 		return data_[idx].value;
 	}
 
-	Size null() {
+	Size null()
+	{
 		return NULL_IDX;
 	}
 
 private:
 	using Entry = LruCacheEntry<T, Size>;
 
-	static constexpr Size NULL_IDX = (Size)-1;
+	static constexpr Size NULL_IDX = (Size) - 1;
 
-	void initialize(Size size) {
+	void initialize(Size size)
+	{
 		assert(size > 0);
 
 		for (Size i = 0; i < size - 1; ++i) {

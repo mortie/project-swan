@@ -18,14 +18,16 @@ static const std::string COLOR_SUCCESS = "\033[32m";
 static const std::string COLOR_FAIL = "\033[31m";
 static const std::string COLOR_ERRORMSG = "\033[95m";
 
-std::string color(const std::string &color, std::string_view str) {
+std::string color(const std::string &color, std::string_view str)
+{
 	return std::string(color) + std::string(str) + std::string(COLOR_RESET);
 }
 
 struct TestCase {
 	TestCase(TestSpec *spec):
 		func(spec->func), description(spec->description),
-		filename(spec->filename), linenum(spec->linenum), index(spec->index) {}
+		filename(spec->filename), linenum(spec->linenum), index(spec->index)
+	{}
 
 	void (*func)();
 	std::string_view description;
@@ -45,17 +47,22 @@ struct TestFile {
 // addTestCase will use the vector of test cases,
 // and if this was just a static global vector,
 // it might not have been initialized yet.
-static auto &cases() {
+static auto &cases()
+{
 	static std::vector<TestCase> cases;
+
 	return cases;
 }
 
-void addTestCase(TestSpec *testcase) {
+void addTestCase(TestSpec *testcase)
+{
 	cases().emplace_back(testcase);
 }
 
-static std::stringstream printFailure(const std::string &msg) {
+static std::stringstream printFailure(const std::string &msg)
+{
 	std::stringstream str;
+
 	str
 		<< "\r" << color(COLOR_HIGHLIGHT + COLOR_FAIL, "✕ ")
 		<< color(COLOR_FAIL, "Failed:  ") << "\n"
@@ -63,8 +70,10 @@ static std::stringstream printFailure(const std::string &msg) {
 	return str;
 }
 
-static std::stringstream printFailure(const TestFailure &failure) {
+static std::stringstream printFailure(const TestFailure &failure)
+{
 	std::stringstream str;
+
 	str
 		<< printFailure(failure.message).str()
 		<< "    at " << failure.filename << ":" << failure.linenum << "\n";
@@ -73,12 +82,14 @@ static std::stringstream printFailure(const TestFailure &failure) {
 
 }
 
-int main() {
+int main()
+{
 	using namespace testlib;
 
 	std::sort(begin(cases()), end(cases()), [](TestCase &a, TestCase &b) {
-		if (a.filename != b.filename)
+		if (a.filename != b.filename) {
 			return a.filename < b.filename;
+		}
 		return a.index < b.index;
 	});
 
@@ -126,16 +137,18 @@ int main() {
 			std::cout << printFailure("Unknown error.").str();
 		}
 
-		if (casefailed)
+		if (casefailed) {
 			failed = true;
+		}
 	}
 
 	std::cout << '\n';
 
 	std::cout << "Total: " << totalsuccess << '/' << totaltests << "\n\n";
 
-	if (failed)
+	if (failed) {
 		return EXIT_FAILURE;
+	}
 
 	return EXIT_SUCCESS;
 }

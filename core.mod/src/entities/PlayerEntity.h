@@ -5,14 +5,25 @@
 namespace CoreMod {
 
 class PlayerEntity final: public Swan::Entity,
-		public Swan::PhysicsBodyTrait, public Swan::InventoryTrait {
+	public Swan::PhysicsBodyTrait, public Swan::InventoryTrait {
 public:
 	PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos);
 	PlayerEntity(const Swan::Context &ctx, const PackObject &obj);
 
-	Body &get(BodyTrait::Tag) override { return physicsBody_.body; }
-	PhysicsBody &get(PhysicsBodyTrait::Tag) override { return physicsBody_; }
-	Inventory &get(InventoryTrait::Tag) override { return inventory_; }
+	Body &get(BodyTrait::Tag) override
+	{
+		return physicsBody_.body;
+	}
+
+	PhysicsBody &get(PhysicsBodyTrait::Tag) override
+	{
+		return physicsBody_;
+	}
+
+	Inventory &get(InventoryTrait::Tag) override
+	{
+		return inventory_;
+	}
 
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
 	void ui(const Swan::Context &ctx) override;
@@ -47,7 +58,8 @@ private:
 		runningAnimation_(ctx.world.getSprite("core::entity/player/running"), 0.1),
 		fallingAnimation_(ctx.world.getSprite("core::entity/player/falling"), 0.1),
 		jumpingAnimation_(ctx.world.getSprite("core::entity/player/jumping"), 0.1),
-		landingAnimation_(ctx.world.getSprite("core::entity/player/landing"), 0.1) {}
+		landingAnimation_(ctx.world.getSprite("core::entity/player/landing"), 0.1)
+	{}
 
 	State state_ = State::IDLE;
 	Swan::Animation idleAnimation_;

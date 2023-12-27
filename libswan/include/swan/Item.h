@@ -21,7 +21,8 @@ public:
 	const Tile *tile;
 
 	Item(Tile::ID id, std::string name, const Builder &builder):
-		id(id), name(name), maxStack(builder.maxStack), tile(nullptr) {}
+		id(id), name(name), maxStack(builder.maxStack), tile(nullptr)
+	{}
 };
 
 }

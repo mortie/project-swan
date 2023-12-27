@@ -7,7 +7,8 @@
 
 namespace Cygnet {
 
-inline const char *glErrorString(int err) {
+inline const char *glErrorString(int err)
+{
 #define errcase(x) case x: return #x
 	switch (err) {
 	errcase(GL_NO_ERROR);
@@ -16,13 +17,16 @@ inline const char *glErrorString(int err) {
 	errcase(GL_INVALID_OPERATION);
 	errcase(GL_INVALID_FRAMEBUFFER_OPERATION);
 	errcase(GL_OUT_OF_MEMORY);
+
 	default: return "(unknown)";
 	}
 #undef errcase
 }
 
-void glCheck() {
+void glCheck()
+{
 	GLenum err = glGetError();
+
 	if (err != GL_NO_ERROR) {
 		static bool throwError = [] {
 			char *str = getenv("SWAN_IGNORE_GL_ERROR");
@@ -31,7 +35,8 @@ void glCheck() {
 
 		if (throwError) {
 			throw GlError(glErrorString(err));
-		} else {
+		}
+		else {
 			std::cerr << "GL error: " << glErrorString(err) << '\n';
 		}
 	}

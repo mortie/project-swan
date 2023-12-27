@@ -8,15 +8,18 @@
 
 namespace Swan {
 
-static void chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &dir) {
+static void chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &dir)
+{
 	for (int i = 0; i < l; ++i) {
 		plane.slowGetChunk(abspos).keepActive();
 		abspos += dir;
 	}
 }
 
-std::vector<ModWrapper> World::loadMods(std::vector<std::string> paths) {
+std::vector<ModWrapper> World::loadMods(std::vector<std::string> paths)
+{
 	std::vector<ModWrapper> mods;
+
 	mods.reserve(paths.size());
 
 	for (auto &path: paths) {
@@ -34,7 +37,8 @@ std::vector<ModWrapper> World::loadMods(std::vector<std::string> paths) {
 	return mods;
 }
 
-Cygnet::ResourceManager World::buildResources() {
+Cygnet::ResourceManager World::buildResources()
+{
 	Cygnet::ResourceBuilder builder(game_->renderer_);
 
 	auto fillTileImage = [&](unsigned char *data, int r, int g, int b, int a) {
@@ -53,12 +57,13 @@ Cygnet::ResourceManager World::buildResources() {
 		.repeatFrom = 0,
 		.data = std::make_unique<unsigned char[]>(TILE_SIZE * TILE_SIZE * 4),
 	};
+
 	fillTileImage(fallbackImage.data.get(),
-			PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE, 255);
+		PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE, 255);
 
 	auto airImage = std::make_unique<unsigned char[]>(TILE_SIZE * TILE_SIZE * 4);
 	fillTileImage(airImage.get(),
-			PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE, 255);
+		PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE, 255);
 
 	// Let tile ID 0 be the invalid tile
 	builder.addTile(INVALID_TILE_ID, fallbackImage.data.get());
@@ -109,10 +114,12 @@ Cygnet::ResourceManager World::buildResources() {
 		if (!image) {
 			warn << '\'' << path << "': " << image.err();
 			return {Err, cat("'", path, "': ", image.err())};
-		} else if (image->width != TILE_SIZE) {
+		}
+		else if (image->width != TILE_SIZE) {
 			warn << '\'' << path << "': Width must be " << TILE_SIZE << " pixels";
 			return {Err, cat("'", path, "': Width must be ", std::to_string(TILE_SIZE), " pixels")};
-		} else {
+		}
+		else {
 			return image;
 		}
 	};
@@ -130,7 +137,8 @@ Cygnet::ResourceManager World::buildResources() {
 
 			if (image) {
 				builder.addTile(tileId, std::move(image->data));
-			} else {
+			}
+			else {
 				warn << image.err();
 				builder.addTile(tileId, fallbackImage.data.get());
 			}
@@ -159,7 +167,8 @@ Cygnet::ResourceManager World::buildResources() {
 
 			if (image) {
 				builder.addTile(itemId, std::move(image->data));
-			} else {
+			}
+			else {
 				warn << image.err();
 				builder.addTile(itemId, fallbackImage.data.get());
 			}
@@ -204,7 +213,8 @@ Cygnet::ResourceManager World::buildResources() {
 
 			if (imageResult) {
 				image = &imageResult.value();
-			} else {
+			}
+			else {
 				warn << '\'' << path << "': " << imageResult.err();
 				image = &fallbackImage;
 			}
@@ -235,10 +245,12 @@ Cygnet::ResourceManager World::buildResources() {
 }
 
 World::World(Game *game, unsigned long randSeed, std::vector<std::string> modPaths):
-		game_(game), random_(randSeed), mods_(loadMods(std::move(modPaths))),
-		resources_(buildResources()) {}
+	game_(game), random_(randSeed), mods_(loadMods(std::move(modPaths))),
+	resources_(buildResources())
+{}
 
-World::~World() {
+World::~World()
+{
 	// All the datastructures which get filled when loading mods must have been
 	// constructed before the mods are loaded.
 	// However, those datastructures must be destroyed *before* unloading the mods,
@@ -254,7 +266,8 @@ World::~World() {
 	entCollFactories_.clear();
 }
 
-void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
+void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos)
+{
 	ZoneScopedN("World::ChunkRenderer tick");
 	int l = 0;
 
@@ -269,28 +282,33 @@ void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
 	}
 }
 
-void World::setWorldGen(std::string gen) {
+void World::setWorldGen(std::string gen)
+{
 	defaultWorldGen_ = std::move(gen);
 }
 
-void World::spawnPlayer() {
+void World::spawnPlayer()
+{
 	player_ = &((dynamic_cast<BodyTrait *>(
 		planes_[currentPlane_]->spawnPlayer().get()))->get(BodyTrait::Tag{}));
 }
 
-void World::setCurrentPlane(WorldPlane &plane) {
+void World::setCurrentPlane(WorldPlane &plane)
+{
 	currentPlane_ = plane.id_;
 }
 
-WorldPlane &World::addPlane(const std::string &gen) {
+WorldPlane &World::addPlane(const std::string &gen)
+{
 	WorldPlane::ID id = planes_.size();
 	auto it = worldGenFactories_.find(gen);
+
 	if (it == worldGenFactories_.end()) {
 		panic << "Tried to add plane with non-existent world gen " << gen << "!";
 		abort();
 	}
 
-	std::vector<std::unique_ptr<EntityCollection>> colls;
+	std::vector<std::unique_ptr<EntityCollection> > colls;
 	colls.reserve(entCollFactories_.size());
 	for (auto &fact: entCollFactories_) {
 		colls.emplace_back(fact.second.create(fact.second.name));
@@ -299,12 +317,14 @@ WorldPlane &World::addPlane(const std::string &gen) {
 	WorldGen::Factory &factory = it->second;
 	std::unique_ptr<WorldGen> g = factory.create(*this);
 	planes_.push_back(std::make_unique<WorldPlane>(
-			id, this, std::move(g), std::move(colls)));
+		id, this, std::move(g), std::move(colls)));
 	return *planes_[id];
 }
 
-Tile::ID World::getTileID(const std::string &name) {
+Tile::ID World::getTileID(const std::string &name)
+{
 	auto iter = tilesMap_.find(name);
+
 	if (iter == tilesMap_.end()) {
 		warn << "Tried to get non-existent item " << name << "!";
 		return INVALID_TILE_ID;
@@ -313,13 +333,17 @@ Tile::ID World::getTileID(const std::string &name) {
 	return iter->second;
 }
 
-Tile &World::getTile(const std::string &name) {
+Tile &World::getTile(const std::string &name)
+{
 	Tile::ID id = getTileID(name);
+
 	return getTileByID(id);
 }
 
-Item &World::getItem(const std::string &name) {
+Item &World::getItem(const std::string &name)
+{
 	auto iter = items_.find(name);
+
 	if (iter == items_.end()) {
 		warn << "Tried to get non-existent item " << name << "!";
 		return items_.at(INVALID_TILE_NAME);
@@ -328,8 +352,10 @@ Item &World::getItem(const std::string &name) {
 	return iter->second;
 }
 
-Cygnet::RenderSprite &World::getSprite(const std::string &name) {
+Cygnet::RenderSprite &World::getSprite(const std::string &name)
+{
 	auto iter = resources_.sprites_.find(name);
+
 	if (iter == resources_.sprites_.end()) {
 		warn << "Tried to get non-existent sprite " << name << "!";
 		return resources_.sprites_.at(INVALID_TILE_NAME);
@@ -338,32 +364,39 @@ Cygnet::RenderSprite &World::getSprite(const std::string &name) {
 	return iter->second;
 }
 
-Cygnet::Color World::backgroundColor() {
+Cygnet::Color World::backgroundColor()
+{
 	return planes_[currentPlane_]->backgroundColor();
 }
 
-void World::draw(Cygnet::Renderer &rnd) {
+void World::draw(Cygnet::Renderer &rnd)
+{
 	ZoneScopedN("World draw");
 	planes_[currentPlane_]->draw(rnd);
 }
 
-void World::ui() {
+void World::ui()
+{
 	ZoneScopedN("World UI");
 	planes_[currentPlane_]->ui();
 }
 
-void World::update(float dt) {
+void World::update(float dt)
+{
 	ZoneScopedN("World update");
-	for (auto &plane: planes_)
+	for (auto &plane: planes_) {
 		plane->update(dt);
+	}
 
 	game_->cam_.pos = player_->pos + player_->size / 2;
 }
 
-void World::tick(float dt) {
+void World::tick(float dt)
+{
 	ZoneScopedN("World tick");
-	for (auto &plane: planes_)
+	for (auto &plane: planes_) {
 		plane->tick(dt);
+	}
 
 	chunkRenderer_.tick(
 		*planes_[currentPlane_],

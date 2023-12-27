@@ -5,10 +5,12 @@
 
 namespace CoreMod {
 
-void spawnTree(const Swan::Context &ctx, Swan::TilePos pos) {
+void spawnTree(const Swan::Context &ctx, Swan::TilePos pos)
+{
 	Swan::Tile::ID logID = ctx.world.getTileID("core::tree-trunk");
 	Swan::Tile::ID leavesID = ctx.world.getTileID("core::tree-leaves");
 	int height = 4 + Swan::random(pos.x) % 3;
+
 	for (int y = pos.y; y >= pos.y - height; --y) {
 		ctx.plane.setTileID({pos.x, y}, logID);
 	}
@@ -24,8 +26,8 @@ void spawnTree(const Swan::Context &ctx, Swan::TilePos pos) {
 			}
 
 			int d2 = std::max(
-					ry * ry + rx * rx,
-					(ry + 1) * (ry + 1) + rx * rx);
+				ry * ry + rx * rx,
+				(ry + 1) * (ry + 1) + rx * rx);
 			if (d2 <= radius2) {
 				ctx.plane.setTileID(top - Swan::Vec2i{rx, ry}, leavesID);
 			}
@@ -33,7 +35,8 @@ void spawnTree(const Swan::Context &ctx, Swan::TilePos pos) {
 	}
 }
 
-void breakTree(const Swan::Context &ctx, Swan::TilePos pos) {
+void breakTree(const Swan::Context &ctx, Swan::TilePos pos)
+{
 	ctx.plane.nextTick([pos](const Swan::Context &ctx) {
 		auto check = [&](Swan::TilePos pos) {
 			auto &tile = ctx.plane.getTile(pos);

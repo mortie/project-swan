@@ -34,14 +34,15 @@ public:
 	};
 
 	WorldPlane(
-			ID id, World *world, std::unique_ptr<WorldGen> gen,
-			std::vector<std::unique_ptr<EntityCollection>> &&colls);
+		ID id, World *world, std::unique_ptr<WorldGen> gen,
+		std::vector<std::unique_ptr<EntityCollection> > &&colls);
 
 	Context getContext();
 
 	EntityRef spawnEntity(const std::string &name, const Entity::PackObject &params);
-	template<typename Ent, typename... Args>
-	EntityRef spawnEntity(Args&&... args);
+
+	template<typename Ent, typename ... Args>
+	EntityRef spawnEntity(Args && ... args);
 
 	void despawnEntity(EntityRef ref);
 
@@ -89,8 +90,8 @@ private:
 
 	std::map<std::pair<int, int>, Chunk> chunks_;
 	std::vector<Chunk *> activeChunks_;
-	std::vector<std::pair<ChunkPos, Chunk *>> tickChunks_;
-	std::vector<std::unique_ptr<EntityCollection>> entColls_;
+	std::vector<std::pair<ChunkPos, Chunk *> > tickChunks_;
+	std::vector<std::unique_ptr<EntityCollection> > entColls_;
 	std::unordered_map<std::type_index, EntityCollection *> entCollsByType_;
 	std::unordered_map<std::string, EntityCollection *> entCollsByName_;
 	EntityCollection *currentEntCol_;
@@ -107,43 +108,49 @@ private:
 	std::unique_ptr<LightServer> lighting_;
 
 	// Callbacks to run on next tick
-	std::vector<std::function<void(const Context &)>> nextTick_;
+	std::vector<std::function<void(const Context &)> > nextTick_;
 };
 
 /*
  * WorldPlane
  */
 
-template<typename Ent, typename... Args>
-inline EntityRef WorldPlane::spawnEntity(Args&&... args) {
+template<typename Ent, typename ... Args>
+inline EntityRef WorldPlane::spawnEntity(Args &&... args)
+{
 	return getCollectionOf(typeid(Ent)).spawn<Ent, Args...>(
 		getContext(), std::forward<Args>(args)...);
 }
 
-inline EntityRef WorldPlane::currentEntity() {
+inline EntityRef WorldPlane::currentEntity()
+{
 	return currentEntCol_->currentEntity();
 }
 
-inline void WorldPlane::despawnEntity(EntityRef ref) {
+inline void WorldPlane::despawnEntity(EntityRef ref)
+{
 	entDespawnList_.push_back(ref);
 }
 
 template<typename Ent>
-inline EntityCollection &WorldPlane::getCollectionOf() {
+inline EntityCollection &WorldPlane::getCollectionOf()
+{
 	return *entCollsByType_.at(typeid(Ent));
 }
 
-inline EntityCollection &WorldPlane::getCollectionOf(std::string name) {
+inline EntityCollection &WorldPlane::getCollectionOf(std::string name)
+{
 	return *entCollsByName_.at(name);
 }
 
-inline EntityCollection &WorldPlane::getCollectionOf(std::type_index type) {
+inline EntityCollection &WorldPlane::getCollectionOf(std::type_index type)
+{
 	return *entCollsByType_.at(type);
 }
 
-inline void WorldPlane::nextTick(std::function<void(const Context &)> cb) {
+inline void WorldPlane::nextTick(std::function<void(const Context &)> cb)
+{
 	nextTick_.push_back(std::move(cb));
 }
-
 
 }

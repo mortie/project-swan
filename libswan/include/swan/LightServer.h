@@ -12,23 +12,26 @@
 namespace Swan {
 
 struct NewLightChunk {
-	std::bitset<CHUNK_WIDTH * CHUNK_HEIGHT> blocks;
+	std::bitset<CHUNK_WIDTH *CHUNK_HEIGHT> blocks;
 	std::map<std::pair<int, int>, float> lightSources;
 };
 
 struct LightChunk {
 	LightChunk() = default;
-	LightChunk(NewLightChunk &&ch);
+	LightChunk(NewLightChunk && ch);
 
-	std::bitset<CHUNK_WIDTH * CHUNK_HEIGHT> blocks;
-	uint8_t lightLevels[CHUNK_WIDTH * CHUNK_HEIGHT] = { 0 };
-	float lightBuffers[CHUNK_WIDTH * CHUNK_HEIGHT * 2] = { 0 };
+	std::bitset<CHUNK_WIDTH *CHUNK_HEIGHT> blocks;
+	uint8_t lightLevels[CHUNK_WIDTH * CHUNK_HEIGHT] = {0};
+	float lightBuffers[CHUNK_WIDTH * CHUNK_HEIGHT * 2] = {0};
 	int buffer = 0;
-	uint8_t blocksLine[CHUNK_WIDTH] = { 0 };
+	uint8_t blocksLine[CHUNK_WIDTH] = {0};
 	std::map<std::pair<int, int>, float> lightSources;
-	std::vector<std::pair<TilePos, float>> bounces;
+	std::vector<std::pair<TilePos, float> > bounces;
 
-	float *lightBuffer() { return lightBuffers + CHUNK_WIDTH * CHUNK_HEIGHT * buffer; }
+	float *lightBuffer()
+	{
+		return lightBuffers + CHUNK_WIDTH * CHUNK_HEIGHT * buffer;
+	}
 
 	bool wasUpdated = false;
 };
@@ -74,8 +77,8 @@ private:
 	LightChunk *getChunk(ChunkPos cpos);
 
 	float recalcTile(
-			LightChunk &chunk, ChunkPos cpos, Vec2i rpos, TilePos base,
-			std::vector<std::pair<TilePos, float>> &lights);
+		LightChunk &chunk, ChunkPos cpos, Vec2i rpos, TilePos base,
+		std::vector<std::pair<TilePos, float> > &lights);
 	void processChunkSun(LightChunk &chunk, ChunkPos cpos);
 	void processChunkLights(LightChunk &chunk, ChunkPos cpos);
 	void processChunkBounces(LightChunk &chunk, ChunkPos cpos);
@@ -86,13 +89,13 @@ private:
 
 	bool running_ = true;
 	std::map<std::pair<int, int>, LightChunk> chunks_;
-	std::set<std::pair<int, int>> updatedChunks_;
+	std::set<std::pair<int, int> > updatedChunks_;
 	LightChunk *cachedChunk_ = nullptr;
 	Vec2i cachedChunkPos_;
 
 	int buffer_ = 0;
-	std::vector<Event> buffers_[2] = { {}, {} };
-	std::vector<NewLightChunk> newChunkBuffers_[2] = { {}, {} };
+	std::vector<Event> buffers_[2] = {{}, {}};
+	std::vector<NewLightChunk> newChunkBuffers_[2] = {{}, {}};
 	std::condition_variable cond_;
 	std::mutex mut_;
 
@@ -100,39 +103,52 @@ private:
 	std::thread thread_;
 };
 
-inline void LightServer::onSolidBlockAdded(TilePos pos) {
+inline void LightServer::onSolidBlockAdded(TilePos pos)
+{
 	std::lock_guard<std::mutex> lock(mut_);
-	buffers_[buffer_].push_back({ Event::Tag::BLOCK_ADDED, pos, { .i = 0 } });
+
+	buffers_[buffer_].push_back({Event::Tag::BLOCK_ADDED, pos, {.i = 0}});
 }
 
-inline void LightServer::onSolidBlockRemoved(TilePos pos) {
+inline void LightServer::onSolidBlockRemoved(TilePos pos)
+{
 	std::lock_guard<std::mutex> lock(mut_);
-	buffers_[buffer_].push_back({ Event::Tag::BLOCK_REMOVED, pos, { .i = 0 } });
+
+	buffers_[buffer_].push_back({Event::Tag::BLOCK_REMOVED, pos, {.i = 0}});
 }
 
-inline void LightServer::onLightAdded(TilePos pos, float level) {
+inline void LightServer::onLightAdded(TilePos pos, float level)
+{
 	std::lock_guard<std::mutex> lock(mut_);
-	buffers_[buffer_].push_back({ Event::Tag::LIGHT_ADDED, pos, { .f = level } });
+
+	buffers_[buffer_].push_back({Event::Tag::LIGHT_ADDED, pos, {.f = level}});
 }
 
-inline void LightServer::onLightRemoved(TilePos pos, float level) {
+inline void LightServer::onLightRemoved(TilePos pos, float level)
+{
 	std::lock_guard<std::mutex> lock(mut_);
-	buffers_[buffer_].push_back({ Event::Tag::LIGHT_REMOVED, pos, { .f = level  } });
+
+	buffers_[buffer_].push_back({Event::Tag::LIGHT_REMOVED, pos, {.f = level}});
 }
 
-inline void LightServer::onChunkAdded(Vec2i pos, NewLightChunk &&chunk) {
+inline void LightServer::onChunkAdded(Vec2i pos, NewLightChunk &&chunk)
+{
 	std::lock_guard<std::mutex> lock(mut_);
-	buffers_[buffer_].push_back({ Event::Tag::CHUNK_ADDED, pos,
-			{ .i = (int)newChunkBuffers_[buffer_].size() } });
+
+	buffers_[buffer_].push_back({Event::Tag::CHUNK_ADDED, pos,
+								 {.i = (int)newChunkBuffers_[buffer_].size()}});
 	newChunkBuffers_[buffer_].push_back(std::move(chunk));
 }
 
-inline void LightServer::onChunkRemoved(Vec2i pos) {
+inline void LightServer::onChunkRemoved(Vec2i pos)
+{
 	std::lock_guard<std::mutex> lock(mut_);
-	buffers_[buffer_].push_back({ Event::Tag::CHUNK_REMOVED, pos, { .i = 0 } });
+
+	buffers_[buffer_].push_back({Event::Tag::CHUNK_REMOVED, pos, {.i = 0}});
 }
 
-inline void LightServer::flip() {
+inline void LightServer::flip()
+{
 	cond_.notify_one();
 }
 

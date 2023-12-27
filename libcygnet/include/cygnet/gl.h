@@ -11,5 +11,7 @@
 // IWYU pragma: end_exports
 
 namespace Cygnet {
+
 extern const char *GLSL_PRELUDE;
+
 }

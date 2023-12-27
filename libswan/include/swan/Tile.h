@@ -37,8 +37,8 @@ struct Tile {
 	const float lightLevel;
 	const std::optional<std::string> droppedItem;
 
-	void (*const onSpawn)(const Context &ctx, TilePos pos);
-	void (*const onBreak)(const Context &ctx, TilePos pos);
+	void(*const onSpawn)(const Context & ctx, TilePos pos);
+	void(*const onBreak)(const Context & ctx, TilePos pos);
 
 	std::shared_ptr<Traits> traits;
 
@@ -48,7 +48,8 @@ struct Tile {
 		lightLevel(builder.lightLevel),
 		droppedItem(builder.droppedItem),
 		onSpawn(builder.onSpawn), onBreak(builder.onBreak),
-		traits(builder.traits) {}
+		traits(builder.traits)
+	{}
 };
 
 }
