@@ -238,6 +238,22 @@ World::World(Game *game, unsigned long randSeed, std::vector<std::string> modPat
 		game_(game), random_(randSeed), mods_(loadMods(std::move(modPaths))),
 		resources_(buildResources()) {}
 
+World::~World() {
+	// All the datastructures which get filled when loading mods must have been
+	// constructed before the mods are loaded.
+	// However, those datastructures must be destroyed *before* unloading the mods,
+	// because the datastructures will contain owning pointers to objects which
+	// were instantiated by the mods, and where the destructor functions are.
+	// provided by the mods.
+	// Unloading the mods before destructing the objects causes a segfault.
+	tiles_.clear();
+	tilesMap_.clear();
+	items_.clear();
+	recipes_.clear();
+	worldGenFactories_.clear();
+	entCollFactories_.clear();
+}
+
 void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos) {
 	ZoneScopedN("World::ChunkRenderer tick");
 	int l = 0;

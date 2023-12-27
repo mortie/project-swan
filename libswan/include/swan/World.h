@@ -31,6 +31,7 @@ public:
 	static constexpr char AIR_TILE_NAME[] = "@::air";
 
 	World(Game *game, unsigned long randSeed, std::vector<std::string> modPaths);
+	~World();
 
 	void setWorldGen(std::string gen);
 	void spawnPlayer();
@@ -62,10 +63,10 @@ public:
 	std::unordered_map<std::string, WorldGen::Factory> worldGenFactories_;
 	std::unordered_map<std::string, EntityCollection::Factory> entCollFactories_;
 
-	// These things get initialized in the ctor.
-	// the above members must be initialized before these.
 	Game *game_;
 	std::mt19937 random_;
+
+	// Mods must be loaded before resources.
 	std::vector<ModWrapper> mods_;
 	Cygnet::ResourceManager resources_;
 
