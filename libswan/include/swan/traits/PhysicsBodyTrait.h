@@ -46,7 +46,13 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 
 	void standardForces()
 	{
-		friction(); gravity();
+		if (onGround) {
+			friction(Vec2{400, 100});
+		} else {
+			friction(Vec2{100, 100});
+		}
+
+		gravity();
 	}
 
 	void applyForce(Vec2 f) override;

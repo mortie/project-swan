@@ -36,7 +36,8 @@ private:
 	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.6, 1.9);
 	static constexpr float MASS = 80;
 	static constexpr int INVENTORY_SIZE = 18;
-	static constexpr float MOVE_FORCE = 34 * MASS;
+	static constexpr float MOVE_FORCE_GROUND = 34 * MASS;
+	static constexpr float MOVE_FORCE_AIR = 10 * MASS;
 	static constexpr float JUMP_VEL = 11;
 	static constexpr float DOWN_FORCE = 20 * MASS;
 	static constexpr float LIGHT_LEVEL = 0.2;

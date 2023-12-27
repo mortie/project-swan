@@ -186,15 +186,16 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 
 	// Act on run direction
+	float moveForce = physicsBody_.onGround ? MOVE_FORCE_GROUND : MOVE_FORCE_AIR;
 	if (runDirection < 0) {
 		state_ = State::RUNNING;
 		lastDirection_ = -1;
-		physicsBody_.force += Swan::Vec2(-MOVE_FORCE, 0);
+		physicsBody_.force += Swan::Vec2(-moveForce, 0);
 	}
 	else if (runDirection > 0) {
 		state_ = State::RUNNING;
 		lastDirection_ = 1;
-		physicsBody_.force += Swan::Vec2(MOVE_FORCE, 0);
+		physicsBody_.force += Swan::Vec2(moveForce, 0);
 	}
 	else {
 		state_ = State::IDLE;
@@ -411,7 +412,7 @@ void PlayerEntity::dropItem(const Swan::Context &ctx)
 
 	auto pos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.5};
 	auto direction = (Swan::Vec2{float(mouseTile_.x), float(mouseTile_.y)} - pos).norm();
-	auto vel = direction * 20.0;
+	auto vel = direction * 10.0;
 
 	auto removed = stack.remove(1);
 	ctx.plane.spawnEntity<ItemStackEntity>(pos, vel, removed.item());
