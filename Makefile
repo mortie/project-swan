@@ -15,7 +15,7 @@ $(OUT)/libswan/libswan_test: $(OUT)/build.ninja phony
 .PHONY: run
 run: $(OUT)/swan
 	ninja -C $(OUT) install
-	cd $(PREFIX) && ./bin/swan
+	cd $(PREFIX) && $(CMD) ./bin/swan
 
 .PHONY: setup
 setup: $(OUT)/build.ninja
