@@ -29,3 +29,20 @@ void spawnTree(const Swan::Context &ctx, Swan::TilePos pos) {
 		}
 	}
 }
+
+void breakTree(const Swan::Context &ctx, Swan::TilePos pos) {
+	ctx.plane.nextTick([pos](const Swan::Context &ctx) {
+		auto check = [&](Swan::TilePos pos) {
+			auto &tile = ctx.plane.getTile(pos);
+			if (!dynamic_cast<TreeTrait *>(tile.traits.get())) {
+				return;
+			}
+
+			ctx.plane.breakTile(pos);
+		};
+
+		check(pos + Swan::TilePos{-1, 0});
+		check(pos + Swan::TilePos{0, -1});
+		check(pos + Swan::TilePos{1, 0});
+	});
+}

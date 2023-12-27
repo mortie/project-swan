@@ -42,11 +42,15 @@ public:
 			.image = "core::tile/tree-trunk",
 			.isSolid = false,
 			.droppedItem = "core::tree-trunk",
+			.onBreak = &breakTree,
+			.traits = std::make_shared<TreeTrait>(),
 		});
 		registerTile({
 			.name = "tree-leaves",
 			.image = "core::tile/leaves",
 			.isSolid = false,
+			.onBreak = &breakTree,
+			.traits = std::make_shared<TreeTrait>(),
 		});
 		registerTile({
 			.name = "tree-seeder",

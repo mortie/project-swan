@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <stdint.h>
 #include <string>
 #include <optional>
@@ -11,6 +12,10 @@ namespace Swan {
 struct Tile {
 	using ID = uint16_t;
 
+	struct Traits {
+		virtual ~Traits() = default;
+	};
+
 	struct Builder {
 		std::string name;
 		std::string image;
@@ -20,6 +25,9 @@ struct Tile {
 		std::optional<std::string> droppedItem = std::nullopt;
 
 		void (*onSpawn)(const Context &ctx, TilePos pos) = nullptr;
+		void (*onBreak)(const Context &ctx, TilePos pos) = nullptr;
+
+		std::shared_ptr<Traits> traits = nullptr;
 	};
 
 	const ID id;
@@ -30,12 +38,17 @@ struct Tile {
 	const std::optional<std::string> droppedItem;
 
 	void (*const onSpawn)(const Context &ctx, TilePos pos);
+	void (*const onBreak)(const Context &ctx, TilePos pos);
+
+	std::shared_ptr<Traits> traits;
 
 	Tile(ID id, std::string name, const Builder &builder):
 		id(id), name(name),
 		isSolid(builder.isSolid), isOpaque(builder.isOpaque),
 		lightLevel(builder.lightLevel),
-		droppedItem(builder.droppedItem), onSpawn(builder.onSpawn) {}
+		droppedItem(builder.droppedItem),
+		onSpawn(builder.onSpawn), onBreak(builder.onBreak),
+		traits(builder.traits) {}
 };
 
 }

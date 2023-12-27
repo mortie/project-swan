@@ -210,6 +210,13 @@ void WorldPlane::breakTile(TilePos pos) {
 	if (id == air)
 		return;
 
+	Context ctx = getContext();
+	Tile &tile = world_->getTileByID(id);
+
+	if (tile.onBreak) {
+		tile.onBreak(ctx, pos);
+	}
+
 	// Change tile to air and emit event
 	setTileID(pos, air);
 	world_->evtTileBreak_.emit(getContext(), pos, world_->getTileByID(id));
@@ -337,6 +344,13 @@ void WorldPlane::tick(float dt) {
 			++iter;
 			break;
 		}
+	}
+
+	// Run next tick callbacks
+	auto nextTick = nextTick_;
+	nextTick_.clear();
+	for (auto &cb: nextTick) {
+		cb(ctx);
 	}
 }
 

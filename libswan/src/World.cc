@@ -136,7 +136,7 @@ Cygnet::ResourceManager World::buildResources() {
 			}
 
 			tilesMap_[tileName] = tileId;
-			tiles_.push_back(Tile(tileId, tileName, tileBuilder));
+			tiles_.push_back(Tile(tileId, tileName, std::move(tileBuilder)));
 		}
 	}
 

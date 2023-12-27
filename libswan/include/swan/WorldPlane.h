@@ -7,6 +7,7 @@
 #include <map>
 #include <typeindex>
 #include <mutex>
+#include <functional>
 
 #include "common.h"
 #include "traits/BodyTrait.h"
@@ -61,6 +62,8 @@ public:
 	EntityRef spawnPlayer();
 	void breakTile(TilePos pos);
 
+	void nextTick(std::function<void(const Context &)> cb);
+
 	Cygnet::Color backgroundColor();
 	void draw(Cygnet::Renderer &rnd);
 	void ui();
@@ -102,6 +105,9 @@ private:
 	// members have destructed, we have a problem.
 	// TODO: Rewrite this to not use a callback-based interface.
 	std::unique_ptr<LightServer> lighting_;
+
+	// Callbacks to run on next tick
+	std::vector<std::function<void(const Context &)>> nextTick_;
 };
 
 /*
@@ -134,5 +140,10 @@ inline EntityCollection &WorldPlane::getCollectionOf(std::string name) {
 inline EntityCollection &WorldPlane::getCollectionOf(std::type_index type) {
 	return *entCollsByType_.at(type);
 }
+
+inline void WorldPlane::nextTick(std::function<void(const Context &)> cb) {
+	nextTick_.push_back(std::move(cb));
+}
+
 
 }
