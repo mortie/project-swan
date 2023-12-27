@@ -1,18 +1,10 @@
 #include "Renderer.h"
 
-#include <iostream>
 #include <stdio.h>
 #include <swan-common/constants.h>
 #include <string.h>
 
-// std::endian was originally in type_traits, was moved to bit
-#include <type_traits>
-#include <bit>
-
-#include "gl.h"
-#include "shaders.h"
 #include "GlWrappers.h"
-#include "TileAtlas.h"
 #include "util.h"
 
 #include "Blend.glsl.h"

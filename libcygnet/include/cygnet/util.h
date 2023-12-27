@@ -1,6 +1,5 @@
 #pragma once
 
-#include <stdexcept>
 #include <stdint.h>
 
 #include "swan-common/Matrix3.h"

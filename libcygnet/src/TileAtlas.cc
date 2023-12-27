@@ -1,6 +1,5 @@
 #include "TileAtlas.h"
 
-#include <iostream>
 #include <vector>
 #include <algorithm>
 #include <stdio.h>

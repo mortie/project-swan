@@ -6,8 +6,6 @@
 #include "entities/SpiderEntity.h"
 #include "world/tree.h"
 
-#include <functional>
-
 class CoreMod: public Swan::Mod {
 public:
 	CoreMod(Swan::World &world): Swan::Mod("core") {
@@ -60,9 +58,9 @@ public:
 		registerTile({
 			.name = "torch",
 			.image = "core::tile/torch",
-			.droppedItem = "core::torch",
 			.isSolid = false,
 			.lightLevel = 80/255.0,
+			.droppedItem = "core::torch",
 		});
 
 		registerItem({

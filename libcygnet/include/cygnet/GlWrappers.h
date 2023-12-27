@@ -1,8 +1,5 @@
 #pragma once
 
-#include <stdint.h>
-#include <stdexcept>
-
 #include "util.h"
 
 namespace Cygnet {

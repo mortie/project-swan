@@ -1,13 +1,11 @@
 #include "TextCache.h"
 
-#include <vector>
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
 #include <stb/stb_truetype.h>
 #include <swan-common/cache.h>
-#include <assert.h>
 
 #include "gl.h"
 #include "util.h"
