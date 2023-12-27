@@ -1,4 +1,5 @@
 #include "tree.h"
+#include "world/util.h"
 
 #include <algorithm>
 
@@ -40,7 +41,7 @@ void breakTree(const Swan::Context &ctx, Swan::TilePos pos) {
 				return;
 			}
 
-			ctx.plane.breakTile(pos);
+			breakTileAndDropItem(ctx, pos);
 		};
 
 		check(pos + Swan::TilePos{-1, 0});

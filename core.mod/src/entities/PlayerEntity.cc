@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 #include "ItemStackEntity.h"
+#include "world/util.h"
 #include "swan-common/Vector2.h"
 
 namespace CoreMod {
@@ -145,8 +146,9 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt) {
 	}
 
 	// Break block
-	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_LEFT))
-		ctx.plane.breakTile(mouseTile_);
+	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+		breakTileAndDropItem(ctx, mouseTile_);
+	}
 
 	// Place block
 	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_RIGHT)) {

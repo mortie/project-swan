@@ -11,9 +11,6 @@ namespace CoreMod {
 class CoreMod: public Swan::Mod {
 public:
 	CoreMod(Swan::World &world): Swan::Mod("core") {
-		breakListener_ = world.evtTileBreak_.subscribe(
-			[&](auto ...args) { return onTileBreak(args...); });
-
 		registerSprite("entity/player/idle");
 		registerSprite("entity/player/running");
 		registerSprite("entity/player/falling");
@@ -86,13 +83,6 @@ public:
 		registerEntity<PlayerEntity>("player");
 		registerEntity<ItemStackEntity>("item-stack");
 		registerEntity<SpiderEntity>("spider");
-	}
-
-	void onTileBreak(const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile &tile) {
-		if (tile.droppedItem) {
-			ctx.plane.spawnEntity<ItemStackEntity>(
-				(Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, *tile.droppedItem);
-		}
 	}
 
 	Swan::EventListener breakListener_;
