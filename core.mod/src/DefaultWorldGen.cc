@@ -1,10 +1,9 @@
 #include "DefaultWorldGen.h"
 
-#include <algorithm>
-#include <cstdint>
-
 #include "entities/PlayerEntity.h"
 #include "entities/SpiderEntity.h"
+
+namespace CoreMod {
 
 static int getGrassLevel(const siv::PerlinNoise &perlin, int x) {
 	return (int)(perlin.noise(x / 50.0, 0) * 13);
@@ -118,4 +117,6 @@ Swan::EntityRef DefaultWorldGen::spawnPlayer(const Swan::Context &ctx) {
 	int x = getPlayerX(perlin_);
 	return ctx.plane.spawnEntity<PlayerEntity>(
 		Swan::Vec2{ (float)x, (float)getGrassLevel(perlin_, x) - 2 });
+}
+
 }

@@ -6,6 +6,8 @@
 #include "entities/SpiderEntity.h"
 #include "world/tree.h"
 
+namespace CoreMod {
+
 class CoreMod: public Swan::Mod {
 public:
 	CoreMod(Swan::World &world): Swan::Mod("core") {
@@ -96,6 +98,8 @@ public:
 	Swan::EventListener breakListener_;
 };
 
+}
+
 extern "C" Swan::Mod *mod_create(Swan::World &world) {
-	return new CoreMod(world);
+	return new CoreMod::CoreMod(world);
 }

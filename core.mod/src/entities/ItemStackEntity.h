@@ -2,6 +2,8 @@
 
 #include <swan/swan.h>
 
+namespace CoreMod {
+
 class ItemStackEntity final: public Swan::Entity,
 		public Swan::PhysicsBodyTrait {
 public:
@@ -32,3 +34,5 @@ private:
 
 	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS, .bounciness = BOUNCINESS}};
 };
+
+}

@@ -1,7 +1,8 @@
 #pragma once
 
 #include <swan/swan.h>
-#include <array>
+
+namespace CoreMod {
 
 class PlayerEntity final: public Swan::Entity,
 		public Swan::PhysicsBodyTrait, public Swan::InventoryTrait {
@@ -66,3 +67,5 @@ private:
 	Swan::BasicInventory inventory_{INVENTORY_SIZE};
 	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS}};
 };
+
+}

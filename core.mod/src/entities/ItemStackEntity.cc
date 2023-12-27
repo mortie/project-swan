@@ -2,6 +2,8 @@
 
 #include <random>
 
+namespace CoreMod {
+
 ItemStackEntity::ItemStackEntity(
 		const Swan::Context &ctx, Swan::Vec2 pos, const std::string &item) {
 	static std::uniform_real_distribution vx(-2.3f, 2.3f);
@@ -52,4 +54,6 @@ Swan::Entity::PackObject ItemStackEntity::serialize(const Swan::Context &ctx, ms
 		{ "pos", msgpack::object(physicsBody_.body.pos, zone) },
 		{ "tile", msgpack::object(item_->name, zone) },
 	};
+}
+
 }

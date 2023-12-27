@@ -4,6 +4,8 @@
 
 #include <PerlinNoise.hpp>
 
+namespace CoreMod {
+
 class DefaultWorldGen: public Swan::WorldGen {
 public:
 	DefaultWorldGen(Swan::World &world):
@@ -30,3 +32,5 @@ private:
 	Cygnet::RenderSprite bgCave_;
 	siv::PerlinNoise perlin_{seed_};
 };
+
+}

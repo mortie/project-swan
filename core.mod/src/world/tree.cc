@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+namespace CoreMod {
+
 void spawnTree(const Swan::Context &ctx, Swan::TilePos pos) {
 	Swan::Tile::ID logID = ctx.world.getTileID("core::tree-trunk");
 	Swan::Tile::ID leavesID = ctx.world.getTileID("core::tree-leaves");
@@ -45,4 +47,6 @@ void breakTree(const Swan::Context &ctx, Swan::TilePos pos) {
 		check(pos + Swan::TilePos{0, -1});
 		check(pos + Swan::TilePos{1, 0});
 	});
+}
+
 }

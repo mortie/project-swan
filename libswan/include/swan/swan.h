@@ -1,5 +1,6 @@
 #pragma once
 
+// IWYU pragma: begin_exports
 #include <swan/traits/BodyTrait.h>
 #include <swan/traits/ContactDamageTrait.h>
 #include <swan/traits/InventoryTrait.h>
@@ -26,3 +27,4 @@
 
 #include <swan/EntityCollectionImpl.h>
 #include <swan/ModImpl.h>
+// IWYU pragma: end_exports

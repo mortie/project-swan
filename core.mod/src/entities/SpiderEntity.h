@@ -2,6 +2,8 @@
 
 #include <swan/swan.h>
 
+namespace CoreMod {
+
 class SpiderEntity final: public Swan::Entity,
 		public Swan::PhysicsBodyTrait, public Swan::ContactDamageTrait {
 public:
@@ -35,3 +37,5 @@ private:
 	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS}};
 	Damage damage_{};
 };
+
+}

@@ -2,6 +2,8 @@
 
 #include <stdlib.h>
 
+namespace CoreMod {
+
 SpiderEntity::SpiderEntity(const Swan::Context &ctx, Swan::Vec2 pos):
 		SpiderEntity(ctx) {
 	physicsBody_.body.pos = pos;
@@ -68,4 +70,6 @@ void SpiderEntity::deserialize(const Swan::Context &ctx, const PackObject &obj) 
 
 Swan::Entity::PackObject SpiderEntity::serialize(const Swan::Context &ctx, msgpack::zone &zone) {
 	return {};
+}
+
 }

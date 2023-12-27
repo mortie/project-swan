@@ -6,6 +6,8 @@
 #include "ItemStackEntity.h"
 #include "swan-common/Vector2.h"
 
+namespace CoreMod {
+
 PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
 		PlayerEntity(ctx) {
 	physicsBody_.body.pos = pos;
@@ -377,4 +379,6 @@ void PlayerEntity::dropItem(const Swan::Context &ctx) {
 
 	auto removed = stack.remove(1);
 	ctx.plane.spawnEntity<ItemStackEntity>(pos, vel, removed.item());
+}
+
 }
