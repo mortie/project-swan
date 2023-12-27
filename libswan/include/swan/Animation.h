@@ -21,6 +21,11 @@ public:
 		return done_;
 	}
 
+	void setInterval(float interval)
+	{
+		interval_ = interval;
+	}
+
 private:
 	Cygnet::RenderSprite sprite_;
 	float interval_;

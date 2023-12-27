@@ -176,6 +176,11 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		dropItem(ctx);
 	}
 
+	// Handle sprint press
+	if (ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+		sprinting_ = true;
+	}
+
 	// Handle left/right key press
 	int runDirection = 0;
 	if (ctx.game.isKeyPressed(GLFW_KEY_A) || ctx.game.isKeyPressed(GLFW_KEY_LEFT)) {
@@ -185,8 +190,16 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		runDirection += 1;
 	}
 
+	float moveForce;
+	if (physicsBody_.onGround && sprinting_) {
+		moveForce = SPRINT_FORCE_GROUND;
+	} else if (physicsBody_.onGround) {
+		moveForce = MOVE_FORCE_GROUND;
+	} else {
+		moveForce = MOVE_FORCE_AIR;
+	}
+
 	// Act on run direction
-	float moveForce = physicsBody_.onGround ? MOVE_FORCE_GROUND : MOVE_FORCE_AIR;
 	if (runDirection < 0) {
 		state_ = State::RUNNING;
 		lastDirection_ = -1;
@@ -199,7 +212,11 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 	else {
 		state_ = State::IDLE;
+		sprinting_ = false;
 	}
+
+	// Adjust running speed based on sprinting
+	runningAnimation_.setInterval(sprinting_ ? 0.07 : 0.1);
 
 	// If we hit the ground, override the desired state to be landing
 	if (physicsBody_.onGround && (oldState == State::FALLING || oldState == State::JUMPING)) {

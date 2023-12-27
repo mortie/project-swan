@@ -36,6 +36,7 @@ private:
 	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.6, 1.9);
 	static constexpr float MASS = 80;
 	static constexpr int INVENTORY_SIZE = 18;
+	static constexpr float SPRINT_FORCE_GROUND = 50 * MASS;
 	static constexpr float MOVE_FORCE_GROUND = 34 * MASS;
 	static constexpr float MOVE_FORCE_AIR = 10 * MASS;
 	static constexpr float JUMP_VEL = 11;
@@ -56,7 +57,7 @@ private:
 
 	PlayerEntity(const Swan::Context &ctx):
 		idleAnimation_(ctx.world.getSprite("core::entity/player/idle"), 0.2),
-		runningAnimation_(ctx.world.getSprite("core::entity/player/running"), 0.1),
+		runningAnimation_(ctx.world.getSprite("core::entity/player/running"), 0),
 		fallingAnimation_(ctx.world.getSprite("core::entity/player/falling"), 0.1),
 		jumpingAnimation_(ctx.world.getSprite("core::entity/player/jumping"), 0.1),
 		landingAnimation_(ctx.world.getSprite("core::entity/player/landing"), 0.1)
@@ -76,6 +77,7 @@ private:
 	Swan::TilePos mouseTile_;
 	int selectedInventorySlot_ = 0;
 	int lastDirection_ = 1;
+	bool sprinting_ = false;
 
 	Swan::BasicInventory inventory_{INVENTORY_SIZE};
 	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS}};
