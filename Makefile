@@ -38,5 +38,9 @@ cleanall:
 format:
 	uncrustify -c uncrustify.cfg --replace --no-backup $(SRCS)
 
+.PHONY: clock
+cloc:
+	cloc $(SRCS)
+
 .PHONY: phony
 phony:
