@@ -427,8 +427,9 @@ void PlayerEntity::dropItem(const Swan::Context &ctx)
 		return;
 	}
 
+	auto mousePos = ctx.game.getMousePos();
 	auto pos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.5};
-	auto direction = (Swan::Vec2{float(mouseTile_.x), float(mouseTile_.y)} - pos).norm();
+	auto direction = (mousePos - pos).norm();
 	auto vel = direction * 10.0;
 
 	auto removed = stack.remove(1);

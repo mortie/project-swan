@@ -87,7 +87,7 @@ public:
 		return didReleaseLiteralKeys_[key];
 	}
 
-	Vec2 getMousePos()
+	Vec2 getMouseScreenPos()
 	{
 		return mousePos_;
 	}
@@ -112,6 +112,7 @@ public:
 		return didScroll_;
 	}
 
+	Vec2 getMousePos();
 	TilePos getMouseTile();
 
 	Cygnet::Color backgroundColor();

@@ -16,9 +16,14 @@ void Game::createWorld(const std::string &worldgen, const std::vector<std::strin
 	world_->spawnPlayer();
 }
 
+Vec2 Game::getMousePos()
+{
+	return (getMouseScreenPos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;
+}
+
 TilePos Game::getMouseTile()
 {
-	auto pos = (getMousePos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;
+	auto pos = (getMouseScreenPos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;
 
 	return TilePos{(int)floor(pos.x), (int)floor(pos.y)};
 }
