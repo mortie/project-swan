@@ -56,11 +56,11 @@ private:
 	void dropItem(const Swan::Context &ctx);
 
 	PlayerEntity(const Swan::Context &ctx):
-		idleAnimation_(ctx.world.getSprite("core::entity/player/idle"), 0.2),
-		runningAnimation_(ctx.world.getSprite("core::entity/player/running"), 0),
-		fallingAnimation_(ctx.world.getSprite("core::entity/player/falling"), 0.1),
-		jumpingAnimation_(ctx.world.getSprite("core::entity/player/jumping"), 0.1),
-		landingAnimation_(ctx.world.getSprite("core::entity/player/landing"), 0.1)
+		idleAnimation_(ctx.world.getSprite("core::entities/player/idle"), 0.2),
+		runningAnimation_(ctx.world.getSprite("core::entities/player/running"), 0),
+		fallingAnimation_(ctx.world.getSprite("core::entities/player/falling"), 0.1),
+		jumpingAnimation_(ctx.world.getSprite("core::entities/player/jumping"), 0.1),
+		landingAnimation_(ctx.world.getSprite("core::entities/player/landing"), 0.1)
 	{}
 
 	State state_ = State::IDLE;

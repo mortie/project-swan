@@ -13,32 +13,32 @@ class CoreMod: public Swan::Mod {
 public:
 	CoreMod(Swan::World &world): Swan::Mod("core")
 	{
-		registerSprite("entity/player/idle");
-		registerSprite("entity/player/running");
-		registerSprite("entity/player/falling");
-		registerSprite("entity/player/jumping");
-		registerSprite("entity/player/landing");
-		registerSprite("entity/spider/idle");
+		registerSprite("entities/player/idle");
+		registerSprite("entities/player/running");
+		registerSprite("entities/player/falling");
+		registerSprite("entities/player/jumping");
+		registerSprite("entities/player/landing");
+		registerSprite("entities/spider/idle");
 		registerSprite("misc/background-cave");
 
 		registerTile({
 			.name = "stone",
-			.image = "core::tile/stone",
+			.image = "core::tiles/stone",
 			.droppedItem = "core::stone",
 		});
 		registerTile({
 			.name = "dirt",
-			.image = "core::tile/dirt",
+			.image = "core::tiles/dirt",
 			.droppedItem = "core::dirt",
 		});
 		registerTile({
 			.name = "grass",
-			.image = "core::tile/grass",
+			.image = "core::tiles/grass",
 			.droppedItem = "core::dirt",
 		});
 		registerTile({
 			.name = "tree-trunk",
-			.image = "core::tile/tree-trunk",
+			.image = "core::tiles/tree-trunk",
 			.isSolid = false,
 			.droppedItem = "core::tree-trunk",
 			.onBreak = &breakTree,
@@ -46,26 +46,26 @@ public:
 		});
 		registerTile({
 			.name = "tree-leaves",
-			.image = "core::tile/leaves",
+			.image = "core::tiles/leaves",
 			.isSolid = false,
 			.onBreak = &breakTree,
 			.traits = std::make_shared<TreeTrait>(),
 		});
 		registerTile({
 			.name = "tree-seeder",
-			.image = "core::tile/leaves",
+			.image = "core::tiles/leaves",
 			.onSpawn = spawnTree,
 		});
 		registerTile({
 			.name = "torch",
-			.image = "core::tile/torch",
+			.image = "core::tiles/torch",
 			.isSolid = false,
 			.lightLevel = 80 / 255.0,
 			.droppedItem = "core::torch",
 		});
 		registerTile({
 			.name = "tall-grass",
-			.image = "core::tile/tall-grass",
+			.image = "core::tiles/tall-grass",
 			.isSolid = false,
 			.onBreak = +[](const Swan::Context &ctx, Swan::TilePos pos) {
 				if (Swan::randfloat() > 0.5) {
@@ -76,15 +76,15 @@ public:
 
 		registerItem({
 			.name = "wood-pole",
-			.image = "core::item/wood-pole",
+			.image = "core::items/wood-pole",
 		});
 		registerItem({
 			.name = "straw",
-			.image = "core::item/straw",
+			.image = "core::items/straw",
 		});
 		registerItem({
 			.name = "rope",
-			.image = "core::item/rope",
+			.image = "core::items/rope",
 		});
 
 		registerRecipe({
