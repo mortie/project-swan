@@ -26,6 +26,7 @@ struct Tile {
 
 		void (*onSpawn)(const Context &ctx, TilePos pos) = nullptr;
 		void (*onBreak)(const Context &ctx, TilePos pos) = nullptr;
+		void (*onTileUpdate)(const Context &ctx, TilePos pos) = nullptr;
 
 		std::shared_ptr<Traits> traits = nullptr;
 	};
@@ -39,6 +40,7 @@ struct Tile {
 
 	void(*const onSpawn)(const Context & ctx, TilePos pos);
 	void(*const onBreak)(const Context & ctx, TilePos pos);
+	void (*onTileUpdate)(const Context &ctx, TilePos pos) = nullptr;
 
 	std::shared_ptr<Traits> traits;
 
@@ -47,7 +49,7 @@ struct Tile {
 		isSolid(builder.isSolid), isOpaque(builder.isOpaque),
 		lightLevel(builder.lightLevel),
 		droppedItem(builder.droppedItem),
-		onSpawn(builder.onSpawn), onBreak(builder.onBreak),
+		onSpawn(builder.onSpawn), onBreak(builder.onBreak), onTileUpdate(builder.onTileUpdate),
 		traits(builder.traits)
 	{}
 };

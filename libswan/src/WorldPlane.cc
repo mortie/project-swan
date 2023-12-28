@@ -166,36 +166,49 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos)
 
 void WorldPlane::setTileID(TilePos pos, Tile::ID id)
 {
+	setTileIDWithoutUpdate(pos, id);
+
+	// Schedule tile updates
+	scheduledTileUpdates_.push_back(pos + TilePos{-1, 0});
+	scheduledTileUpdates_.push_back(pos + TilePos{0, -1});
+	scheduledTileUpdates_.push_back(pos + TilePos{1, 0});
+	scheduledTileUpdates_.push_back(pos + TilePos{0, 1});
+}
+
+void WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
+{
 	Chunk &chunk = getChunk(tilePosToChunkPos(pos));
 	ChunkRelPos rp = tilePosToChunkRelPos(pos);
 
 	Tile::ID old = chunk.getTileID(rp);
 
-	if (id != old) {
-		Tile &newTile = world_->getTileByID(id);
-		Tile &oldTile = world_->getTileByID(old);
-		chunk.setTileID(rp, id);
+	if (id == old) {
+		return;
+	}
 
-		if (!oldTile.isOpaque && newTile.isOpaque) {
-			lighting_->onSolidBlockAdded(pos);
-		}
-		else if (oldTile.isOpaque && !newTile.isOpaque) {
-			lighting_->onSolidBlockRemoved(pos);
-		}
+	Tile &newTile = world_->getTileByID(id);
+	Tile &oldTile = world_->getTileByID(old);
+	chunk.setTileID(rp, id);
 
-		if (newTile.lightLevel != oldTile.lightLevel) {
-			if (oldTile.lightLevel > 0) {
-				removeLight(pos, oldTile.lightLevel);
-			}
+	if (!oldTile.isOpaque && newTile.isOpaque) {
+		lighting_->onSolidBlockAdded(pos);
+	}
+	else if (oldTile.isOpaque && !newTile.isOpaque) {
+		lighting_->onSolidBlockRemoved(pos);
+	}
 
-			if (newTile.lightLevel > 0) {
-				addLight(pos, newTile.lightLevel);
-			}
+	if (newTile.lightLevel != oldTile.lightLevel) {
+		if (oldTile.lightLevel > 0) {
+			removeLight(pos, oldTile.lightLevel);
 		}
 
-		if (newTile.onSpawn) {
-			newTile.onSpawn(getContext(), pos);
+		if (newTile.lightLevel > 0) {
+			addLight(pos, newTile.lightLevel);
 		}
+	}
+
+	if (newTile.onSpawn) {
+		newTile.onSpawn(getContext(), pos);
 	}
 }
 
@@ -239,6 +252,12 @@ void WorldPlane::breakTile(TilePos pos)
 	// Change tile to air and emit event
 	setTileID(pos, air);
 	world_->evtTileBreak_.emit(getContext(), pos, world_->getTileByID(id));
+
+	// Schedule tile updates
+	scheduledTileUpdates_.push_back(pos + TilePos{-1, 0});
+	scheduledTileUpdates_.push_back(pos + TilePos{0, -1});
+	scheduledTileUpdates_.push_back(pos + TilePos{1, 0});
+	scheduledTileUpdates_.push_back(pos + TilePos{0, 1});
 }
 
 Cygnet::Color WorldPlane::backgroundColor()
@@ -373,11 +392,24 @@ void WorldPlane::tick(float dt)
 		}
 	}
 
-	// Run next tick callbacks
+	// Tick callbacks and tile updates which end up scheduling more callbacks/updates
+	// shouldn't have their callbacks/updates executed until next tick
 	auto nextTick = nextTick_;
 	nextTick_.clear();
+	auto scheduledTileUpdates = scheduledTileUpdates_;
+	scheduledTileUpdates_.clear();
+
+	// Run next tick callbacks
 	for (auto &cb: nextTick) {
 		cb(ctx);
+	}
+
+	// Run tile updates
+	for (auto &pos: scheduledTileUpdates) {
+		auto &tile = getTile(pos);
+		if (tile.onTileUpdate) {
+			tile.onTileUpdate(ctx, pos);
+		}
 	}
 }
 

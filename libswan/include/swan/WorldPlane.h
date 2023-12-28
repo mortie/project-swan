@@ -56,6 +56,7 @@ public:
 	Chunk &slowGetChunk(ChunkPos pos);
 	void setTileID(TilePos pos, Tile::ID id);
 	void setTile(TilePos pos, const std::string &name);
+	void setTileIDWithoutUpdate(TilePos pos, Tile::ID id);
 
 	Tile::ID getTileID(TilePos pos);
 	Tile &getTile(TilePos pos);
@@ -100,6 +101,9 @@ private:
 
 	std::vector<EntityRef> entDespawnList_;
 	std::deque<Chunk *> chunkInitList_;
+
+	// Tiles to update the next tick
+	std::vector<TilePos> scheduledTileUpdates_;
 
 	// The lighting server must destruct first. Until it has been destructed,
 	// it might call onLightChunkUpdated. If that happens after some other

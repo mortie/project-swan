@@ -4,9 +4,11 @@
 
 namespace CoreMod {
 
-struct TreeTrait: Swan::Tile::Traits {};
+struct TreeLeavesTrait: public Swan::Tile::Traits {};
+struct TreeTrunkTrait: public Swan::Tile::Traits {};
 
 void spawnTree(const Swan::Context &ctx, Swan::TilePos pos);
-void breakTree(const Swan::Context &ctx, Swan::TilePos pos);
+
+void breakTreeLeavesIfFloating(const Swan::Context &ctx, Swan::TilePos pos);
 
 }

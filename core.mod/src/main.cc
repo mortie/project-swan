@@ -41,15 +41,15 @@ public:
 			.image = "core::tiles/tree-trunk",
 			.isSolid = false,
 			.droppedItem = "core::tree-trunk",
-			.onBreak = &breakTree,
-			.traits = std::make_shared<TreeTrait>(),
+			.onTileUpdate = breakIfFloating,
+			.traits = std::make_shared<TreeTrunkTrait>(),
 		});
 		registerTile({
 			.name = "tree-leaves",
 			.image = "core::tiles/leaves",
 			.isSolid = false,
-			.onBreak = &breakTree,
-			.traits = std::make_shared<TreeTrait>(),
+			.onTileUpdate = breakTreeLeavesIfFloating,
+			.traits = std::make_shared<TreeLeavesTrait>(),
 		});
 		registerTile({
 			.name = "tree-seeder",
@@ -68,10 +68,13 @@ public:
 			.image = "core::tiles/tall-grass",
 			.isSolid = false,
 			.onBreak = +[](const Swan::Context &ctx, Swan::TilePos pos) {
-				if (Swan::randfloat() > 0.5) {
-					dropItem(ctx, pos, "core::straw");
+				for (int i = 0; i < 3; ++i) {
+					if (Swan::randfloat() > 0.25) {
+						dropItem(ctx, pos, "core::straw");
+					}
 				}
 			},
+			.onTileUpdate = breakIfFloating,
 		});
 
 		registerItem({
@@ -109,8 +112,6 @@ public:
 		registerEntity<ItemStackEntity>("item-stack");
 		registerEntity<SpiderEntity>("spider");
 	}
-
-	Swan::EventListener breakListener_;
 };
 
 }

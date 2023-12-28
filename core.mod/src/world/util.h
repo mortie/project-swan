@@ -22,4 +22,12 @@ inline void breakTileAndDropItem(const Swan::Context &ctx, Swan::TilePos pos)
 	ctx.plane.breakTile(pos);
 }
 
+inline void breakIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
+{
+	auto below = pos + Swan::TilePos{0, 1};
+	if (ctx.plane.getTile(below).name == "@::air") {
+		breakTileAndDropItem(ctx, pos);
+	}
+}
+
 }
