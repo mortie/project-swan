@@ -21,6 +21,7 @@ inline uint32_t random(uint32_t x)
 inline uint32_t random()
 {
 	static uint32_t seed = 0;
+
 	seed = random(seed);
 	return seed;
 }

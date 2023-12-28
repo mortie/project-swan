@@ -15,6 +15,7 @@ inline void dropItem(const Swan::Context &ctx, Swan::TilePos pos, const std::str
 inline void breakTileAndDropItem(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	auto &droppedItem = ctx.plane.getTile(pos).droppedItem;
+
 	if (droppedItem) {
 		dropItem(ctx, pos, *droppedItem);
 	}
@@ -25,6 +26,7 @@ inline void breakTileAndDropItem(const Swan::Context &ctx, Swan::TilePos pos)
 inline void breakIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	auto below = pos + Swan::TilePos{0, 1};
+
 	if (ctx.plane.getTile(below).name == "@::air") {
 		breakTileAndDropItem(ctx, pos);
 	}

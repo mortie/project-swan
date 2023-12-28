@@ -52,7 +52,7 @@ void breakTreeLeavesIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 	};
 
 	bool foundTrunk = false;
-	std::set<std::pair<int, int>> searched;
+	std::set<std::pair<int, int> > searched;
 	std::queue<SearchTile> queue;
 
 	auto searchStep = [&](SearchTile searchTile) {

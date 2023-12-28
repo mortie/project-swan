@@ -44,7 +44,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 
 void PlayerEntity::ui(const Swan::Context &ctx)
 {
-	if (!showInventory_ ){
+	if (!showInventory_) {
 		return;
 	}
 
@@ -202,9 +202,11 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	float moveForce;
 	if (physicsBody_.onGround && sprinting_) {
 		moveForce = SPRINT_FORCE_GROUND;
-	} else if (physicsBody_.onGround) {
+	}
+	else if (physicsBody_.onGround) {
 		moveForce = MOVE_FORCE_GROUND;
-	} else {
+	}
+	else {
 		moveForce = MOVE_FORCE_AIR;
 	}
 

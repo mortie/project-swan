@@ -48,7 +48,8 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 	{
 		if (onGround) {
 			friction(Vec2{400, 100});
-		} else {
+		}
+		else {
 			friction(Vec2{100, 100});
 		}
 
