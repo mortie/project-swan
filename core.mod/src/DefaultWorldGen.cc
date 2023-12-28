@@ -79,6 +79,9 @@ Swan::Tile::ID DefaultWorldGen::genTile(Swan::TilePos pos)
 	else if (pos.y == grassLevel) {
 		return tGrass_;
 	}
+	else if (pos.y == grassLevel - 1 && perlin_.noise(pos.x / 20.6, 0) > 0.2) {
+		return tTallGrass_;
+	}
 	else{
 		return tAir_;
 	}

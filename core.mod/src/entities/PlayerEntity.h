@@ -78,6 +78,7 @@ private:
 	int selectedInventorySlot_ = 0;
 	int lastDirection_ = 1;
 	bool sprinting_ = false;
+	bool showInventory_ = false;
 
 	Swan::BasicInventory inventory_{INVENTORY_SIZE};
 	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS}};

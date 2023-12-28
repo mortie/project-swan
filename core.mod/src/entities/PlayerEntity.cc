@@ -44,6 +44,10 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 
 void PlayerEntity::ui(const Swan::Context &ctx)
 {
+	if (!showInventory_ ){
+		return;
+	}
+
 	// This whole method is stupid inefficient and does a bunch of memory allocation every frame.
 	// TODO: fix.
 
@@ -159,6 +163,11 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 	else if (ctx.game.wasKeyPressed(GLFW_KEY_0)) {
 		selectedInventorySlot_ = 9;
+	}
+
+	// Toggle inventory
+	if (ctx.game.wasKeyPressed(GLFW_KEY_E)) {
+		showInventory_ = !showInventory_;
 	}
 
 	// Break block

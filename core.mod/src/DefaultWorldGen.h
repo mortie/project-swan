@@ -13,6 +13,7 @@ public:
 		tDirt_(world.getTileID("core::dirt")),
 		tStone_(world.getTileID("core::stone")),
 		tTreeSeeder_(world.getTileID("core::tree-seeder")),
+		tTallGrass_(world.getTileID("core::tall-grass")),
 		tAir_(world.getTileID("@::air")),
 		bgCave_(world.getSprite("core::misc/background-cave"))
 	{}
@@ -29,7 +30,7 @@ private:
 	void initializeTile(const Swan::Context &ctx, Swan::TilePos pos);
 
 	const uint32_t seed_ = 100;
-	Swan::Tile::ID tGrass_, tDirt_, tStone_, tTreeSeeder_, tAir_;
+	Swan::Tile::ID tGrass_, tDirt_, tStone_, tTreeSeeder_, tTallGrass_, tAir_;
 	Cygnet::RenderSprite bgCave_;
 	siv::PerlinNoise perlin_{seed_};
 };

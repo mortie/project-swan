@@ -5,6 +5,7 @@
 #include "entities/ItemStackEntity.h"
 #include "entities/SpiderEntity.h"
 #include "world/tree.h"
+#include "world/util.h"
 
 namespace CoreMod {
 
@@ -62,10 +63,28 @@ public:
 			.lightLevel = 80 / 255.0,
 			.droppedItem = "core::torch",
 		});
+		registerTile({
+			.name = "tall-grass",
+			.image = "core::tile/tall-grass",
+			.isSolid = false,
+			.onBreak = +[](const Swan::Context &ctx, Swan::TilePos pos) {
+				if (Swan::randfloat() > 0.5) {
+					dropItem(ctx, pos, "core::straw");
+				}
+			},
+		});
 
 		registerItem({
 			.name = "wood-pole",
-			.image = "core::tile/wood-pole",
+			.image = "core::item/wood-pole",
+		});
+		registerItem({
+			.name = "straw",
+			.image = "core::item/straw",
+		});
+		registerItem({
+			.name = "rope",
+			.image = "core::item/rope",
 		});
 
 		registerRecipe({
@@ -76,6 +95,11 @@ public:
 		registerRecipe({
 			.inputs = {{1, "core::wood-pole"}},
 			.output = {1, "core::torch"},
+			.kind = "crafting",
+		});
+		registerRecipe({
+			.inputs = {{2, "core::straw"}},
+			.output = {8, "core::rope"},
 			.kind = "crafting",
 		});
 

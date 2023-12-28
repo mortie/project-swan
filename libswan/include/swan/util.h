@@ -18,6 +18,18 @@ inline uint32_t random(uint32_t x)
 	return x;
 }
 
+inline uint32_t random()
+{
+	static uint32_t seed = 0;
+	seed = random(seed);
+	return seed;
+}
+
+inline float randfloat()
+{
+	return (random() & 0xffff) / (float)0xffff;
+}
+
 // Inherit from this class to make a class non-copyable
 class NonCopyable {
 public:
