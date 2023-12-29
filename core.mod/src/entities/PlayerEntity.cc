@@ -70,7 +70,12 @@ void PlayerEntity::ui(const Swan::Context &ctx)
 		}
 
 		itemCounts[stack.item()] += stack.count();
-		ImGui::Text("%zu: %d x %s", i + 1, stack.count(), stack.item()->name.c_str());
+		char sel = ' ';
+		if (i == selectedInventorySlot_) {
+			sel = 'x';
+		}
+
+		ImGui::Text("%c %zu: %d x %s", sel, i + 1, stack.count(), stack.item()->name.c_str());
 	}
 	ImGui::End();
 
