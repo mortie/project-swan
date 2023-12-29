@@ -4,6 +4,7 @@
 #include "entities/PlayerEntity.h"
 #include "entities/ItemStackEntity.h"
 #include "entities/SpiderEntity.h"
+#include "world/ladder.h"
 #include "world/tree.h"
 #include "world/util.h"
 
@@ -76,6 +77,28 @@ public:
 			},
 			.onTileUpdate = breakIfFloating,
 		});
+		registerTile({
+			.name = "rope-ladder-anchor",
+			.image = "core::tiles/rope-ladder-anchor",
+			.isSolid = false,
+			.droppedItem = "core::rope-ladder-anchor",
+			.onTileUpdate = cascadeRopeLadder,
+			.traits = std::make_shared<RopeLadderTileTrait>(true),
+		});
+		registerTile({
+			.name = "rope-ladder-middle",
+			.image = "core::tiles/rope-ladder-middle",
+			.isSolid = false,
+			.onTileUpdate = cascadeRopeLadder,
+			.traits = std::make_shared<RopeLadderTileTrait>(false),
+		});
+		registerTile({
+			.name = "rope-ladder-bottom",
+			.image = "core::tiles/rope-ladder-bottom",
+			.isSolid = false,
+			.onTileUpdate = cascadeRopeLadder,
+			.traits = std::make_shared<RopeLadderTileTrait>(false),
+		});
 
 		registerItem({
 			.name = "wood-pole",
@@ -103,6 +126,11 @@ public:
 		registerRecipe({
 			.inputs = {{2, "core::straw"}},
 			.output = {8, "core::rope"},
+			.kind = "crafting",
+		});
+		registerRecipe({
+			.inputs = {{2, "core::rope"}, {2, "core::wood-pole"}},
+			.output = {1, "core::rope-ladder-anchor"},
 			.kind = "crafting",
 		});
 

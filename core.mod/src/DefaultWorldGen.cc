@@ -2,6 +2,7 @@
 
 #include "entities/PlayerEntity.h"
 #include "entities/SpiderEntity.h"
+#include "world/util.h"
 
 namespace CoreMod {
 

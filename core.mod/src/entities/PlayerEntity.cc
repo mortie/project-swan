@@ -5,6 +5,7 @@
 
 #include "ItemStackEntity.h"
 #include "world/util.h"
+#include "world/ladder.h"
 #include "swan-common/Vector2.h"
 
 namespace CoreMod {
@@ -133,6 +134,15 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	jumpTimer_.tick(dt);
 	placeTimer_.tick(dt);
 
+	// Figure out what tile we're in
+	auto midTilePos = Swan::TilePos{
+		(int)floor(physicsBody_.body.midX()),
+		(int)floor(physicsBody_.body.bottom() - 0.1),
+	};
+	auto &midTile = ctx.plane.getTile(midTilePos);
+
+	bool inLadder = dynamic_cast<LadderTileTrait *>(midTile.traits.get());
+
 	// Select item slots
 	if (ctx.game.wasKeyPressed(GLFW_KEY_1)) {
 		selectedInventorySlot_ = 0;
@@ -197,6 +207,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 	if (ctx.game.isKeyPressed(GLFW_KEY_D) || ctx.game.isKeyPressed(GLFW_KEY_RIGHT)) {
 		runDirection += 1;
+	}
+
+	// Handle ladder climb
+	if (ctx.game.isKeyPressed(GLFW_KEY_W) || ctx.game.isKeyPressed(GLFW_KEY_UP)) {
+		if (inLadder) {
+			physicsBody_.force += Swan::Vec2{0, -LADDER_CLIMB_FORCE};
+		}
 	}
 
 	float moveForce;
