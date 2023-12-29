@@ -14,11 +14,7 @@ struct InventoryTrait {
 		virtual ItemStack get(int slot) = 0;
 		virtual ItemStack set(int slot, ItemStack stack) = 0;
 		virtual ItemStack insert(int slot, ItemStack stack) = 0;
-
-		ItemStack insert(ItemStack stack)
-		{
-			return insert(0, stack);
-		}
+		virtual ItemStack insert(ItemStack stack) = 0;
 
 protected:
 		~Inventory() = default;
@@ -44,6 +40,7 @@ struct BasicInventory final: InventoryTrait::Inventory {
 	ItemStack get(int slot) override;
 	ItemStack set(int slot, ItemStack stack) override;
 	ItemStack insert(int slot, ItemStack stack) override;
+	ItemStack insert(ItemStack stack) override;
 };
 
 }

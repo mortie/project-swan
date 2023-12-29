@@ -304,7 +304,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 			}
 
 			Swan::ItemStack stack{itemStackEnt->item(), 1};
-			stack = inventory_.insert(0, stack);
+			stack = inventory_.insert(stack);
 			if (stack.empty()) {
 				ctx.plane.despawnEntity(c.ref);
 			}
@@ -413,7 +413,7 @@ void PlayerEntity::craft(const Swan::Recipe &recipe)
 
 		if (needed != 0) {
 			Swan::info
-				<< "Attempted to craft " << recipe.output.item
+				<< "Attempted to craft " << recipe.output.item->name
 				<< ", but missing " << needed << ' ' << input.item;
 			inventory_ = backup;
 			return;
@@ -421,10 +421,10 @@ void PlayerEntity::craft(const Swan::Recipe &recipe)
 	}
 
 	Swan::ItemStack stack(recipe.output.item, recipe.output.count);
-	stack = inventory_.insert(0, stack);
+	stack = inventory_.insert(stack);
 	if (!stack.empty()) {
 		Swan::info
-			<< "Attempted to craft " << recipe.output.item
+			<< "Attempted to craft " << recipe.output.item->name
 			<< ", but there wasn't enough space in the inventory to put the result";
 		inventory_ = backup;
 	}
