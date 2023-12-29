@@ -210,9 +210,16 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 
 	// Handle ladder climb
-	if (ctx.game.isKeyPressed(GLFW_KEY_W) || ctx.game.isKeyPressed(GLFW_KEY_UP)) {
-		if (inLadder) {
+	if (inLadder) {
+		if (ctx.game.isKeyPressed(GLFW_KEY_W) || ctx.game.isKeyPressed(GLFW_KEY_UP)) {
 			physicsBody_.force += Swan::Vec2{0, -LADDER_CLIMB_FORCE};
+		}
+
+		if (physicsBody_.vel.y > LADDER_MAX_VEL) {
+			physicsBody_.vel.y = LADDER_MAX_VEL;
+		}
+		else if (physicsBody_.vel.y < -LADDER_MAX_VEL) {
+			physicsBody_.vel.y = -LADDER_MAX_VEL;
 		}
 	}
 

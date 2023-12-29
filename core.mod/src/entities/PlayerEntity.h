@@ -42,6 +42,7 @@ private:
 	static constexpr float JUMP_VEL = 11;
 	static constexpr float DOWN_FORCE = 20 * MASS;
 	static constexpr float LADDER_CLIMB_FORCE = 50 * MASS;
+	static constexpr float LADDER_MAX_VEL = 5;
 
 	enum class State {
 		IDLE,
