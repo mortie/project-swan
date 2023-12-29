@@ -24,7 +24,8 @@ void cascadeRopeLadder(const Swan::Context &ctx, Swan::TilePos pos)
 			breakTileAndDropItem(ctx, pos);
 			return;
 		}
-	} else {
+	}
+	else {
 		bool foundAnchor = false;
 		Swan::TilePos abovePos = pos;
 		while (remainingLength > 0) {
