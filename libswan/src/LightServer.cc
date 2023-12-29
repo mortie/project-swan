@@ -669,21 +669,21 @@ void LightServer::run()
 		for (auto &pos: updatedChunks_) {
 			auto ch = chunks_.find(pos);
 			if (ch != chunks_.end()) {
-				processChunkSun(ch->second, ChunkPos(pos.first, pos.second));
+				processChunkSun(ch->second, pos);
 			}
 		}
 
 		for (auto &pos: updatedChunks_) {
 			auto ch = chunks_.find(pos);
 			if (ch != chunks_.end()) {
-				processChunkLights(ch->second, ChunkPos(pos.first, pos.second));
+				processChunkLights(ch->second, pos);
 			}
 		}
 
 		for (auto &pos: updatedChunks_) {
 			auto ch = chunks_.find(pos);
 			if (ch != chunks_.end()) {
-				processChunkBounces(ch->second, ChunkPos(pos.first, pos.second));
+				processChunkBounces(ch->second, pos);
 			}
 		}
 
@@ -691,7 +691,7 @@ void LightServer::run()
 			for (auto &pos: updatedChunks_) {
 				auto ch = chunks_.find(pos);
 				if (ch != chunks_.end()) {
-					processChunkSmoothing(ch->second, ChunkPos(pos.first, pos.second));
+					processChunkSmoothing(ch->second, pos);
 					ch->second.buffer = (ch->second.buffer + 1) % 2;
 				}
 			}

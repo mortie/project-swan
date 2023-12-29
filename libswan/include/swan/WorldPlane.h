@@ -4,7 +4,7 @@
 #include <deque>
 #include <utility>
 #include <memory>
-#include <map>
+#include <unordered_map>
 #include <typeindex>
 #include <mutex>
 #include <functional>
@@ -89,7 +89,7 @@ private:
 	EntityCollection &getCollectionOf(std::string name);
 	EntityCollection &getCollectionOf(std::type_index type);
 
-	std::map<std::pair<int, int>, Chunk> chunks_;
+	std::unordered_map<ChunkPos, Chunk> chunks_;
 	std::vector<Chunk *> activeChunks_;
 	std::vector<std::pair<ChunkPos, Chunk *> > tickChunks_;
 	std::vector<std::unique_ptr<EntityCollection> > entColls_;

@@ -6,6 +6,8 @@
 #include <condition_variable>
 #include <utility>
 #include <bitset>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "common.h"
 
@@ -13,7 +15,7 @@ namespace Swan {
 
 struct NewLightChunk {
 	std::bitset<CHUNK_WIDTH *CHUNK_HEIGHT> blocks;
-	std::map<std::pair<int, int>, float> lightSources;
+	std::unordered_map<ChunkPos, float> lightSources;
 };
 
 struct LightChunk {
@@ -25,7 +27,7 @@ struct LightChunk {
 	float lightBuffers[CHUNK_WIDTH * CHUNK_HEIGHT * 2] = {0};
 	int buffer = 0;
 	uint8_t blocksLine[CHUNK_WIDTH] = {0};
-	std::map<std::pair<int, int>, float> lightSources;
+	std::unordered_map<ChunkPos, float> lightSources;
 	std::vector<std::pair<TilePos, float> > bounces;
 
 	float *lightBuffer()
@@ -88,8 +90,8 @@ private:
 	void run();
 
 	bool running_ = true;
-	std::map<std::pair<int, int>, LightChunk> chunks_;
-	std::set<std::pair<int, int> > updatedChunks_;
+	std::unordered_map<ChunkPos, LightChunk> chunks_;
+	std::unordered_set<ChunkPos> updatedChunks_;
 	LightChunk *cachedChunk_ = nullptr;
 	Vec2i cachedChunkPos_;
 

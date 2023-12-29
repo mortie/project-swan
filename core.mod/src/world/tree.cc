@@ -52,15 +52,15 @@ void breakTreeLeavesIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 	};
 
 	bool foundTrunk = false;
-	std::set<std::pair<int, int> > searched;
+	std::unordered_set<Swan::TilePos> searched;
 	std::queue<SearchTile> queue;
 
 	auto searchStep = [&](SearchTile searchTile) {
-		if (searchTile.dist > 4 || searched.contains(std::pair<int, int>(searchTile.pos))) {
+		if (searchTile.dist > 4 || searched.contains(searchTile.pos)) {
 			return;
 		}
 
-		searched.insert(std::pair<int, int>(searchTile.pos));
+		searched.insert(searchTile.pos);
 
 		// If this is a trunk, we've found our trunk!
 		auto &tile = ctx.plane.getTile(searchTile.pos);

@@ -16,8 +16,6 @@ struct Vector2 {
 
 	constexpr Vector2(T x = 0, T y = 0): x(x), y(y)
 	{}
-	constexpr Vector2(std::pair<T, T> p): x(p.first), y(p.second)
-	{}
 
 	constexpr Vector2<T> &set(T x, T y)
 	{
@@ -59,11 +57,6 @@ struct Vector2 {
 	constexpr T dot(const Vector2<T> &vec) const
 	{
 		return x * vec.x + y * vec.y;
-	}
-
-	constexpr operator std::pair<T, T>() const
-	{
-		return std::pair<T, T>(x, y);
 	}
 
 	constexpr operator Vector2<float>() const {
@@ -177,3 +170,10 @@ using Vec2 = Vector2<float>;
 using Vec2i = Vector2<int>;
 
 }
+
+template<typename T>
+struct ::std::hash<SwanCommon::Vector2<T>> {
+	std::size_t operator()(const SwanCommon::Vector2<T> &vec) const {
+		return std::hash<T>{}(vec.x) ^ std::hash<T>{}(vec.y);
+	}
+};
