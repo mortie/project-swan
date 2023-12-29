@@ -40,7 +40,7 @@ void cascadeRopeLadder(const Swan::Context &ctx, Swan::TilePos pos)
 			adjacentPos = pos.add(1, 0);
 		}
 
-		if (ctx.plane.getTile(adjacentPos).name == "@::air") {
+		if (!ctx.plane.getTile(adjacentPos).isOpaque) {
 			breakTileAndDropItem(ctx, pos);
 			return;
 		}
