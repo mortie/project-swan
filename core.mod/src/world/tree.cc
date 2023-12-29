@@ -70,10 +70,10 @@ void breakTreeLeavesIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 
 		// If it's leaves, continue our search
 		else if (dynamic_cast<TreeLeavesTrait *>(tile.traits.get())) {
-			queue.push({searchTile.pos + Swan::TilePos{-1, 0}, searchTile.dist + 1});
-			queue.push({searchTile.pos + Swan::TilePos{1, 0}, searchTile.dist + 1});
-			queue.push({searchTile.pos + Swan::TilePos{0, 1}, searchTile.dist + 1});
-			queue.push({searchTile.pos + Swan::TilePos{0, -1}, searchTile.dist + 1});
+			queue.push({searchTile.pos.add(-1, 0), searchTile.dist + 1});
+			queue.push({searchTile.pos.add(1, 0), searchTile.dist + 1});
+			queue.push({searchTile.pos.add(0, 1), searchTile.dist + 1});
+			queue.push({searchTile.pos.add(0, -1), searchTile.dist + 1});
 		}
 	};
 

@@ -169,10 +169,10 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id)
 	setTileIDWithoutUpdate(pos, id);
 
 	// Schedule tile updates
-	scheduledTileUpdates_.push_back(pos + TilePos{-1, 0});
-	scheduledTileUpdates_.push_back(pos + TilePos{0, -1});
-	scheduledTileUpdates_.push_back(pos + TilePos{1, 0});
-	scheduledTileUpdates_.push_back(pos + TilePos{0, 1});
+	scheduledTileUpdates_.push_back(pos.add(-1, 0));
+	scheduledTileUpdates_.push_back(pos.add(0, -1));
+	scheduledTileUpdates_.push_back(pos.add(1, 0));
+	scheduledTileUpdates_.push_back(pos.add(0, 1));
 }
 
 void WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
@@ -254,10 +254,10 @@ void WorldPlane::breakTile(TilePos pos)
 	world_->evtTileBreak_.emit(getContext(), pos, world_->getTileByID(id));
 
 	// Schedule tile updates
-	scheduledTileUpdates_.push_back(pos + TilePos{-1, 0});
-	scheduledTileUpdates_.push_back(pos + TilePos{0, -1});
-	scheduledTileUpdates_.push_back(pos + TilePos{1, 0});
-	scheduledTileUpdates_.push_back(pos + TilePos{0, 1});
+	scheduledTileUpdates_.push_back(pos.add(-1, 0));
+	scheduledTileUpdates_.push_back(pos.add(0, -1));
+	scheduledTileUpdates_.push_back(pos.add(1, 0));
+	scheduledTileUpdates_.push_back(pos.add(0, 1));
 }
 
 Cygnet::Color WorldPlane::backgroundColor()

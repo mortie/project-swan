@@ -39,6 +39,11 @@ struct Vector2 {
 		return Vector2<T>(x > 0 ? 1 : -1, y > 0 ? 1 : -1);
 	}
 
+	constexpr Vector2<T> add(T ax, T ay)
+	{
+		return {x + ax, y + ay};
+	}
+
 	constexpr Vector2<T> scale(T sx, T sy) const
 	{
 		return Vector2<T>(x * sx, y * sy);
