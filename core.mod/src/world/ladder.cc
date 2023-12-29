@@ -4,6 +4,19 @@
 
 namespace CoreMod {
 
+void spawnRopeLadderAnchor(const Swan::Context &ctx, Swan::TilePos pos)
+{
+	if (ctx.plane.getTile(pos.add(-1, 0)).isOpaque) {
+		ctx.plane.setTile(pos, "core::rope-ladder-anchor::left");
+	}
+	else if (ctx.plane.getTile(pos.add(1, 0)).isOpaque) {
+		ctx.plane.setTile(pos, "core::rope-ladder-anchor::right");
+	}
+	else {
+		breakTileAndDropItem(ctx, pos);
+	}
+}
+
 void cascadeRopeLadder(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	auto &tile = ctx.plane.getTile(pos);
@@ -19,8 +32,15 @@ void cascadeRopeLadder(const Swan::Context &ctx, Swan::TilePos pos)
 	// Break if appropriate
 	int remainingLength = 15;
 	if (ropeLadderTrait->isAnchor) {
-		Swan::TilePos leftPos = pos.add(-1, 0);
-		if (ctx.plane.getTile(leftPos).name == "@::air") {
+		Swan::TilePos adjacentPos;
+		if (ropeLadderTrait->direction == "left") {
+			adjacentPos = pos.add(-1, 0);
+		}
+		else {
+			adjacentPos = pos.add(1, 0);
+		}
+
+		if (ctx.plane.getTile(adjacentPos).name == "@::air") {
 			breakTileAndDropItem(ctx, pos);
 			return;
 		}
@@ -54,10 +74,10 @@ void cascadeRopeLadder(const Swan::Context &ctx, Swan::TilePos pos)
 	Swan::TilePos belowPos = pos.add(0, 1);
 	if (remainingLength > 0 && ctx.plane.getTile(belowPos).name == "@::air") {
 		if (remainingLength == 1) {
-			ctx.plane.setTile(belowPos, "core::rope-ladder-bottom");
+			ctx.plane.setTile(belowPos, "core::rope-ladder-bottom::" + ropeLadderTrait->direction);
 		}
 		else {
-			ctx.plane.setTile(belowPos, "core::rope-ladder-middle");
+			ctx.plane.setTile(belowPos, "core::rope-ladder-middle::" + ropeLadderTrait->direction);
 		}
 	}
 }

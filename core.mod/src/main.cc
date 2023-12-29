@@ -41,6 +41,7 @@ public:
 			.name = "tree-trunk",
 			.image = "core::tiles/tree-trunk",
 			.isSolid = false,
+			.isOpaque = true,
 			.droppedItem = "core::tree-trunk",
 			.onTileUpdate = breakIfFloating,
 			.traits = std::make_shared<TreeTrunkTrait>(),
@@ -77,27 +78,56 @@ public:
 			},
 			.onTileUpdate = breakIfFloating,
 		});
+
 		registerTile({
 			.name = "rope-ladder-anchor",
-			.image = "core::tiles/rope-ladder-anchor",
+			.image = "core::tiles/rope-ladder/anchor-left",
+			.droppedItem = "core::rope-ladder-anchor",
+			.onSpawn = spawnRopeLadderAnchor,
+		});
+		registerTile({
+			.name = "rope-ladder-anchor::left",
+			.image = "core::tiles/rope-ladder/anchor-left",
 			.isSolid = false,
 			.droppedItem = "core::rope-ladder-anchor",
 			.onTileUpdate = cascadeRopeLadder,
-			.traits = std::make_shared<RopeLadderTileTrait>(true),
+			.traits = std::make_shared<RopeLadderTileTrait>(true, "left"),
 		});
 		registerTile({
-			.name = "rope-ladder-middle",
-			.image = "core::tiles/rope-ladder-middle",
+			.name = "rope-ladder-anchor::right",
+			.image = "core::tiles/rope-ladder/anchor-right",
 			.isSolid = false,
+			.droppedItem = "core::rope-ladder-anchor",
 			.onTileUpdate = cascadeRopeLadder,
-			.traits = std::make_shared<RopeLadderTileTrait>(false),
+			.traits = std::make_shared<RopeLadderTileTrait>(true, "right"),
 		});
 		registerTile({
-			.name = "rope-ladder-bottom",
-			.image = "core::tiles/rope-ladder-bottom",
+			.name = "rope-ladder-middle::left",
+			.image = "core::tiles/rope-ladder/middle-left",
 			.isSolid = false,
 			.onTileUpdate = cascadeRopeLadder,
-			.traits = std::make_shared<RopeLadderTileTrait>(false),
+			.traits = std::make_shared<RopeLadderTileTrait>(false, "left"),
+		});
+		registerTile({
+			.name = "rope-ladder-middle::right",
+			.image = "core::tiles/rope-ladder/middle-right",
+			.isSolid = false,
+			.onTileUpdate = cascadeRopeLadder,
+			.traits = std::make_shared<RopeLadderTileTrait>(false, "right"),
+		});
+		registerTile({
+			.name = "rope-ladder-bottom::left",
+			.image = "core::tiles/rope-ladder/bottom-left",
+			.isSolid = false,
+			.onTileUpdate = cascadeRopeLadder,
+			.traits = std::make_shared<RopeLadderTileTrait>(false, "left"),
+		});
+		registerTile({
+			.name = "rope-ladder-bottom::right",
+			.image = "core::tiles/rope-ladder/bottom-right",
+			.isSolid = false,
+			.onTileUpdate = cascadeRopeLadder,
+			.traits = std::make_shared<RopeLadderTileTrait>(false, "right"),
 		});
 
 		registerItem({
