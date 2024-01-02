@@ -137,7 +137,6 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 
 	mouseTile_ = ctx.game.getMouseTile();
 	jumpTimer_.tick(dt);
-	placeTimer_.tick(dt);
 
 	// Figure out what tile we're in
 	auto midTilePos = Swan::TilePos{
@@ -281,8 +280,11 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 
 	// Show falling or jumping animation depending on whether we're going up or down
-	if (!physicsBody_.onGround && (state_ != State::JUMPING && state_ != State::FALLING)) {
-		if (physicsBody_.vel.y < -0.1) {
+	if (!physicsBody_.onGround) {
+		if (oldState == State::JUMPING || oldState == State::FALLING) {
+			state_ = oldState;
+		}
+		else if (physicsBody_.vel.y < -0.1) {
 			state_ = State::JUMPING;
 		}
 		else {
@@ -406,10 +408,6 @@ void PlayerEntity::placeTile(const Swan::Context &ctx)
 	}
 
 	if (item.tile->isSolid && !ctx.plane.getEntitiesInTile(mouseTile_).empty()) {
-		return;
-	}
-
-	if (!placeTimer_.periodic(0.50)) {
 		return;
 	}
 

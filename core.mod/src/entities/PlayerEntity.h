@@ -41,7 +41,7 @@ private:
 	static constexpr float MOVE_FORCE_AIR = 10 * MASS;
 	static constexpr float JUMP_VEL = 11;
 	static constexpr float DOWN_FORCE = 20 * MASS;
-	static constexpr float LADDER_CLIMB_FORCE = 50 * MASS;
+	static constexpr float LADDER_CLIMB_FORCE = 70 * MASS;
 	static constexpr float LADDER_MAX_VEL = 5;
 
 	enum class State {
@@ -73,7 +73,6 @@ private:
 	Swan::Animation *currentAnimation_ = &idleAnimation_;
 
 	Swan::Clock jumpTimer_;
-	Swan::Clock placeTimer_;
 	float invincibleTimer_ = 0;
 	Swan::TilePos mouseTile_;
 	int selectedInventorySlot_ = 0;
