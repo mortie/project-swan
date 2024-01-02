@@ -41,13 +41,13 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 	Vec2 force{};
 	bool onGround = false;
 
-	void friction(Vec2 coef = Vec2(400, 50));
+	void friction(Vec2 coef);
 	void gravity(Vec2 g = Vec2(0, 20));
 
 	void standardForces()
 	{
 		if (onGround) {
-			friction(Vec2{400, 100});
+			friction(Vec2{1000, 100});
 		}
 		else {
 			friction(Vec2{100, 100});

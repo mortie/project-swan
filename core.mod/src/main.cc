@@ -82,8 +82,8 @@ public:
 		registerTile({
 			.name = "rope-ladder-anchor",
 			.image = "core::tiles/rope-ladder/anchor-left",
-			.droppedItem = "core::rope-ladder-anchor",
 			.isSolid = false,
+			.droppedItem = "core::rope-ladder-anchor",
 			.onSpawn = spawnRopeLadderAnchor,
 		});
 		registerTile({
