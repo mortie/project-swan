@@ -112,7 +112,8 @@ Chunk::TickAction Chunk::tick(float dt)
 	assert(isActive());
 
 	deactivateTimer_ -= dt;
-	if (deactivateTimer_ <= 0 && entities_.size() == 0) {
+	if (deactivateTimer_ <= 0) {
+		assert(entities_.size() == 0);
 		if (isModified_) {
 			return TickAction::DEACTIVATE;
 		}

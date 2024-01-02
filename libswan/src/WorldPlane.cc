@@ -365,30 +365,29 @@ void WorldPlane::tick(float dt)
 	}
 
 	// Tick all chunks, figure out if any of them should be deleted or compressed
-	auto iter = activeChunks_.begin();
-	auto last = activeChunks_.end();
-	while (iter != last) {
-		auto &chunk = *iter;
+	size_t activeChunkIndex = 0;
+	while (activeChunkIndex < activeChunks_.size()) {
+		auto &chunk = activeChunks_[activeChunkIndex];
 		auto action = chunk->tick(dt);
 
 		switch (action) {
 		case Chunk::TickAction::DEACTIVATE:
 			info << "Compressing inactive modified chunk " << chunk->pos_;
 			chunk->compress(world_->game_->renderer_);
-			iter = activeChunks_.erase(iter);
-			last = activeChunks_.end();
+			activeChunks_[activeChunkIndex] = activeChunks_.back();
+			activeChunks_.pop_back();
 			break;
 
 		case Chunk::TickAction::DELETE:
 			info << "Deleting inactive unmodified chunk " << chunk->pos_;
 			chunk->destroy(world_->game_->renderer_);
 			chunks_.erase(chunk->pos_);
-			iter = activeChunks_.erase(iter);
-			last = activeChunks_.end();
+			activeChunks_[activeChunkIndex] = activeChunks_.back();
+			activeChunks_.pop_back();
 			break;
 
 		case Chunk::TickAction::NOTHING:
-			++iter;
+			activeChunkIndex += 1;
 			break;
 		}
 	}
