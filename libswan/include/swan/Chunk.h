@@ -86,7 +86,9 @@ public:
 
 	void destroy(Cygnet::Renderer &rnd)
 	{
-		rnd.destroyChunk(renderChunk_);
+		if (isRendered_) {
+			rnd.destroyChunk(renderChunk_);
+		}
 	}
 
 	void draw(const Context &ctx, Cygnet::Renderer &rnd);
@@ -118,6 +120,7 @@ private:
 	bool needLightRender_ = false;
 	float deactivateTimer_ = DEACTIVATE_INTERVAL;
 	bool isModified_ = false;
+	bool isRendered_ = false;
 };
 
 }

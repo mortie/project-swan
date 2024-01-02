@@ -46,6 +46,7 @@ void Chunk::compress(Cygnet::Renderer &rnd)
 
 	rnd.destroyChunk(renderChunk_);
 	rnd.destroyChunkShadow(renderChunkShadow_);
+	isRendered_ = false;
 	entities_.rehash(0);
 }
 
@@ -88,6 +89,7 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
 		renderChunkShadow_ = rnd.createChunkShadow(getLightData());
 		needChunkRender_ = false;
 		needLightRender_ = false;
+		isRendered_ = true;
 	}
 	else {
 		for (auto &change: changeList_) {
