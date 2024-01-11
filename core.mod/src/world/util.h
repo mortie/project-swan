@@ -42,7 +42,7 @@ inline void fallIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	auto below = pos + Swan::TilePos{0, 1};
 
-	if (ctx.plane.getTile(below).name == "@::air") {
+	if (!ctx.plane.getTile(below).isSolid) {
 		auto &tile = ctx.plane.getTile(pos);
 		ctx.plane.breakTile(pos);
 		ctx.plane.spawnEntity<FallingTileEntity>(
