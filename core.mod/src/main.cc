@@ -4,6 +4,7 @@
 #include "entities/PlayerEntity.h"
 #include "entities/ItemStackEntity.h"
 #include "entities/SpiderEntity.h"
+#include "entities/FallingTileEntity.h"
 #include "world/ladder.h"
 #include "world/tree.h"
 #include "world/util.h"
@@ -31,6 +32,12 @@ public:
 			.name = "dirt",
 			.image = "core::tiles/dirt",
 			.droppedItem = "core::dirt",
+		});
+		registerTile({
+			.name = "sand",
+			.image = "core::tiles/sand",
+			.droppedItem = "core::sand",
+			.onTileUpdate = fallIfFloating,
 		});
 		registerTile({
 			.name = "grass",
@@ -150,6 +157,7 @@ public:
 		registerEntity<PlayerEntity>("player");
 		registerEntity<ItemStackEntity>("item-stack");
 		registerEntity<SpiderEntity>("spider");
+		registerEntity<FallingTileEntity>("falling-tile");
 	}
 };
 

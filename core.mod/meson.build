@@ -1,6 +1,7 @@
 core_mod = shared_library('mod',
   'src/main.cc',
   'src/DefaultWorldGen.cc',
+  'src/entities/FallingTileEntity.cc',
   'src/entities/PlayerEntity.cc',
   'src/entities/ItemStackEntity.cc',
   'src/entities/SpiderEntity.cc',

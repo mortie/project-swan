@@ -3,16 +3,16 @@
 #include <random>
 
 namespace CoreMod {
-
+ 
 ItemStackEntity::ItemStackEntity(
-	const Swan::Context &ctx, Swan::Vec2 pos, const std::string &item)
+	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Item *item)
 {
 	static std::uniform_real_distribution vx(-2.3f, 2.3f);
 	static std::uniform_real_distribution vy(-2.3f, -1.2f);
 
 	physicsBody_.body.pos = pos;
 	physicsBody_.vel += Swan::Vec2{vx(ctx.world.random_), vy(ctx.world.random_)};
-	item_ = &ctx.world.getItem(item);
+	item_ = item;
 }
 
 ItemStackEntity::ItemStackEntity(
@@ -60,7 +60,7 @@ Swan::Entity::PackObject ItemStackEntity::serialize(const Swan::Context &ctx, ms
 {
 	return {
 		{"pos", msgpack::object(physicsBody_.body.pos, zone)},
-		{"tile", msgpack::object(item_->name, zone)},
+		{"item", msgpack::object(item_->name, zone)},
 	};
 }
 
