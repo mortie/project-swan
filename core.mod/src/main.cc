@@ -80,56 +80,36 @@ public:
 		});
 
 		registerTile({
-			.name = "rope-ladder-anchor",
-			.image = "core::tiles/rope-ladder/anchor-left",
+			.name = "rope-ladder",
+			.image = "core::tiles/rope-ladder/anchor::left",
 			.isSolid = false,
 			.droppedItem = "core::rope-ladder-anchor",
 			.onSpawn = spawnRopeLadderAnchor,
 		});
-		registerTile({
-			.name = "rope-ladder-anchor::left",
-			.image = "core::tiles/rope-ladder/anchor-left",
-			.isSolid = false,
-			.droppedItem = "core::rope-ladder-anchor",
-			.onTileUpdate = cascadeRopeLadder,
-			.traits = std::make_shared<RopeLadderTileTrait>(true, "left"),
-		});
-		registerTile({
-			.name = "rope-ladder-anchor::right",
-			.image = "core::tiles/rope-ladder/anchor-right",
-			.isSolid = false,
-			.droppedItem = "core::rope-ladder-anchor",
-			.onTileUpdate = cascadeRopeLadder,
-			.traits = std::make_shared<RopeLadderTileTrait>(true, "right"),
-		});
-		registerTile({
-			.name = "rope-ladder-middle::left",
-			.image = "core::tiles/rope-ladder/middle-left",
-			.isSolid = false,
-			.onTileUpdate = cascadeRopeLadder,
-			.traits = std::make_shared<RopeLadderTileTrait>(false, "left"),
-		});
-		registerTile({
-			.name = "rope-ladder-middle::right",
-			.image = "core::tiles/rope-ladder/middle-right",
-			.isSolid = false,
-			.onTileUpdate = cascadeRopeLadder,
-			.traits = std::make_shared<RopeLadderTileTrait>(false, "right"),
-		});
-		registerTile({
-			.name = "rope-ladder-bottom::left",
-			.image = "core::tiles/rope-ladder/bottom-left",
-			.isSolid = false,
-			.onTileUpdate = cascadeRopeLadder,
-			.traits = std::make_shared<RopeLadderTileTrait>(false, "left"),
-		});
-		registerTile({
-			.name = "rope-ladder-bottom::right",
-			.image = "core::tiles/rope-ladder/bottom-right",
-			.isSolid = false,
-			.onTileUpdate = cascadeRopeLadder,
-			.traits = std::make_shared<RopeLadderTileTrait>(false, "right"),
-		});
+		for (auto direction: {"left", "right"}) {
+			registerTile({
+				.name = Swan::cat("rope-ladder-anchor::", direction),
+				.image = Swan::cat("core::tiles/rope-ladder/anchor::", direction),
+				.isSolid = false,
+				.droppedItem = "core::rope-ladder",
+				.onTileUpdate = cascadeRopeLadder,
+				.traits = std::make_shared<RopeLadderTileTrait>(true, direction),
+			});
+			registerTile({
+				.name = Swan::cat("rope-ladder-middle::", direction),
+				.image = Swan::cat("core::tiles/rope-ladder/middle::", direction),
+				.isSolid = false,
+				.onTileUpdate = cascadeRopeLadder,
+				.traits = std::make_shared<RopeLadderTileTrait>(false, direction),
+			});
+			registerTile({
+				.name = Swan::cat("rope-ladder-bottom::", direction),
+				.image = Swan::cat("core::tiles/rope-ladder/bottom::", direction),
+				.isSolid = false,
+				.onTileUpdate = cascadeRopeLadder,
+				.traits = std::make_shared<RopeLadderTileTrait>(false, direction),
+			});
+		}
 
 		registerItem({
 			.name = "wood-pole",
@@ -161,7 +141,7 @@ public:
 		});
 		registerRecipe({
 			.inputs = {{2, "core::rope"}, {2, "core::wood-pole"}},
-			.output = {1, "core::rope-ladder-anchor"},
+			.output = {1, "core::rope-ladder"},
 			.kind = "crafting",
 		});
 

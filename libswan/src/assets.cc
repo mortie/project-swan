@@ -1,5 +1,7 @@
 #include "assets.h"
 
+#include "log.h"
+
 #include <limits> // IWYU pragma: keep -- needed for cpptoml.h
 #include <stb/stb_image.h>
 #include <cpptoml.h>
@@ -9,18 +11,80 @@ namespace Swan {
 
 std::string assetBasePath = ".";
 
+void applyHflip(ImageAsset &asset)
+{
+	unsigned char pix[4];
+	for (int y = 0; y < asset.frameHeight * asset.frameCount; ++y) {
+		for (int x = 0; x < asset.width / 2; ++x) {
+			unsigned char *src =
+				asset.data.get() + y * asset.width * 4 + x * 4;
+			unsigned char *dest =
+				asset.data.get() + y * asset.width * 4 + (asset.width - x - 1) * 4;
+			memcpy(pix, src, 4);
+			memcpy(src, dest, 4);
+			memcpy(dest, pix, 4);
+		}
+	}
+}
+
+static void makeVariant(
+	ImageAsset &asset, std::shared_ptr<cpptoml::table> toml, const std::string &name)
+{
+	if (!toml) {
+		warn << "Variant '" << name << "' requested but there's no TOML file";
+		return;
+	}
+
+	auto variants = toml->get_table("variants");
+	if (!variants) {
+		warn
+			<< "Variant '" << name << "' but "
+			<< "there's no variants in the TOML";
+		return;
+	}
+
+	auto ops = variants->get_array(name);
+	if (!ops) {
+		warn
+			<< "Variant '" << name << "' requested but"
+			<< "there's no such variant in the TOML";
+		return;
+	}
+
+	for (const auto &op: *ops) {
+		auto val = op->as<std::string>();
+		if (!val) {
+			warn << "Operation for variant '" << name << "' is not a string";
+			continue;
+		}
+
+		auto &str = val->get();
+		if (str == "hflip") {
+			applyHflip(asset);
+		} else {
+			warn << "Unknown operation '" << str << "' for variant '" << name << "'";
+		}
+	}
+}
+
 Result<ImageAsset> loadImageAsset(
 	const std::unordered_map<std::string, std::string> &modPaths,
 	std::string path)
 {
 	auto sep = path.find("::");
-
 	if (sep == std::string::npos) {
 		return {Err, "No '::' mod separator"};
 	}
 
 	auto modPart = path.substr(0, sep);
 	auto pathPart = path.substr(sep + 2, path.size() - sep - 2);
+
+	std::optional<std::string> variantPart;
+	sep = pathPart.find("::");
+	if (sep != std::string::npos) {
+		variantPart = pathPart.substr(sep + 2, pathPart.size() - sep - 2);
+		pathPart = pathPart.substr(0, sep);
+	}
 
 	auto modPath = modPaths.find(modPart);
 	if (modPath == modPaths.end()) {
@@ -47,21 +111,25 @@ Result<ImageAsset> loadImageAsset(
 
 	int frameHeight = h;
 	int repeatFrom = 0;
+	std::shared_ptr<cpptoml::table> toml;
 
 	// Load TOML if it exists
 	std::ifstream tomlFile(tomlPath);
 	if (tomlFile) {
 		cpptoml::parser parser(tomlFile);
 		try {
-			auto toml = parser.parse();
-			frameHeight = toml->get_as<int>("height").value_or(frameHeight);
-			repeatFrom = toml->get_as<int>("repeatFrom").value_or(repeatFrom);
+			toml = parser.parse();
 		} catch (cpptoml::parse_exception &exc) {
 			return {Err, cat("Failed to parse toml file ", tomlPath, ": ", exc.what())};
 		}
 	}
 	else if (errno != ENOENT) {
 		return {Err, cat("Couldn't open ", tomlPath, ": ", strerror(errno))};
+	}
+
+	if (toml) {
+		frameHeight = toml->get_as<int>("height").value_or(frameHeight);
+		repeatFrom = toml->get_as<int>("repeatFrom").value_or(repeatFrom);
 	}
 
 	ImageAsset asset{
@@ -71,6 +139,10 @@ Result<ImageAsset> loadImageAsset(
 		.repeatFrom = repeatFrom,
 		.data = std::move(bufferCopy),
 	};
+
+	if (variantPart) {
+		makeVariant(asset, toml, variantPart.value());
+	}
 
 	return {Ok, std::move(asset)};
 }
