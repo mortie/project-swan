@@ -17,16 +17,17 @@ std::string assetBasePath = ".";
 
 void applyHflip(ImageAsset &asset)
 {
+	size_t rowWidth = asset.width * 4;
 	unsigned char tmp[4];
 	for (int y = 0; y < asset.frameHeight * asset.frameCount; ++y) {
 		for (int x = 0; x < asset.width / 2; ++x) {
-			unsigned char *src =
-				asset.data.get() + y * asset.width * 4 + x * 4;
-			unsigned char *dest =
-				asset.data.get() + y * asset.width * 4 + (asset.width - x - 1) * 4;
-			memcpy(tmp, src, 4);
-			memcpy(src, dest, 4);
-			memcpy(dest, tmp, 4);
+			unsigned char *a =
+				asset.data.get() + y * rowWidth + x * 4;
+			unsigned char *b =
+				asset.data.get() + y * rowWidth + (asset.width - x - 1) * 4;
+			memcpy(tmp, a, 4);
+			memcpy(a, b, 4);
+			memcpy(b, tmp, 4);
 		}
 	}
 }
@@ -34,16 +35,46 @@ void applyHflip(ImageAsset &asset)
 void applyVflip(ImageAsset &asset)
 {
 	size_t rowWidth = asset.width * 4;
-	auto tmp = std::make_unique<unsigned char[]>(rowWidth);
+	unsigned char tmp[4];
 	for (int frameIdx = 0; frameIdx < asset.frameCount; ++frameIdx) {
 		unsigned char *frame =
 			asset.data.get() + (rowWidth * asset.frameHeight * frameIdx);
 		for (int y = 0; y < asset.frameHeight * asset.frameCount; ++y) {
-			unsigned char *src = frame + (asset.width * y);
-			unsigned char *dest = frame + (asset.width * 4 * (asset.frameHeight - y - 1));
-			memcpy(tmp.get(), src, rowWidth);
-			memcpy(src, dest, rowWidth);
-			memcpy(dest, tmp.get(), rowWidth);
+			for (int x = 0; x < asset.width; ++x) {
+				unsigned char *a =
+					frame + y * rowWidth + x * 4;
+				unsigned char *b =
+					frame + (asset.frameHeight - y - 1) * rowWidth + x * 4;
+				memcpy(tmp, a, 4);
+				memcpy(a, b, 4);
+				memcpy(b, tmp, 4);
+			}
+		}
+	}
+}
+
+void applyTranspose(ImageAsset &asset)
+{
+	if (asset.width != asset.frameHeight) {
+		warn << "Can't transpose non-square frames";
+		return;
+	}
+
+	size_t rowWidth = asset.width * 4;
+	char tmp[4];
+	for (int frameIdx = 0; frameIdx < asset.frameCount; ++frameIdx) {
+		unsigned char *frame =
+			asset.data.get() + (rowWidth * asset.frameHeight * frameIdx);
+		for (int y = 0; y < asset.frameHeight; ++y) {
+			for (int x = y + 1; x < asset.width; ++x) {
+				unsigned char *a =
+					frame + y * rowWidth + x * 4;
+				unsigned char *b =
+					frame + x * rowWidth + y * 4;
+				memcpy(tmp, a, 4);
+				memcpy(a, b, 4);
+				memcpy(b, tmp, 4);
+			}
 		}
 	}
 }
@@ -85,6 +116,9 @@ static void makeVariant(
 		}
 		else if (str == "vflip") {
 			applyVflip(asset);
+		}
+		else if (str == "transpose") {
+			applyTranspose(asset);
 		}
 		else {
 			warn << "Unknown operation '" << str << "' for variant '" << name << "'";
