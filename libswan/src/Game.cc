@@ -57,6 +57,9 @@ void Game::draw()
 			ImGui::EndPopup();
 		}
 
+		auto &tile = world_->currentPlane().getTile(getMouseTile());
+		ImGui::Text("Tile: %s\n", tile.name.c_str());
+
 		ImGui::End();
 	}
 

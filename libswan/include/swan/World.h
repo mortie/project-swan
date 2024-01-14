@@ -37,6 +37,11 @@ public:
 	void spawnPlayer();
 
 	void setCurrentPlane(WorldPlane &plane);
+	WorldPlane &currentPlane()
+	{
+		return *planes_[currentPlane_];
+	}
+
 	WorldPlane &addPlane(const std::string &gen);
 
 	WorldPlane &addPlane()
