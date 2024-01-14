@@ -3,6 +3,10 @@
 #include "log.h"
 
 #include <limits> // IWYU pragma: keep -- needed for cpptoml.h
+#include <memory>
+#include <optional>
+#include <string>
+#include <filesystem>
 #include <stb/stb_image.h>
 #include <cpptoml.h>
 #include <string.h>
@@ -13,16 +17,33 @@ std::string assetBasePath = ".";
 
 void applyHflip(ImageAsset &asset)
 {
-	unsigned char pix[4];
+	unsigned char tmp[4];
 	for (int y = 0; y < asset.frameHeight * asset.frameCount; ++y) {
 		for (int x = 0; x < asset.width / 2; ++x) {
 			unsigned char *src =
 				asset.data.get() + y * asset.width * 4 + x * 4;
 			unsigned char *dest =
 				asset.data.get() + y * asset.width * 4 + (asset.width - x - 1) * 4;
-			memcpy(pix, src, 4);
+			memcpy(tmp, src, 4);
 			memcpy(src, dest, 4);
-			memcpy(dest, pix, 4);
+			memcpy(dest, tmp, 4);
+		}
+	}
+}
+
+void applyVflip(ImageAsset &asset)
+{
+	size_t rowWidth = asset.width * 4;
+	auto tmp = std::make_unique<unsigned char[]>(rowWidth);
+	for (int frameIdx = 0; frameIdx < asset.frameCount; ++frameIdx) {
+		unsigned char *frame =
+			asset.data.get() + (rowWidth * asset.frameHeight * frameIdx);
+		for (int y = 0; y < asset.frameHeight * asset.frameCount; ++y) {
+			unsigned char *src = frame + (asset.width * y);
+			unsigned char *dest = frame + (asset.width * 4 * (asset.frameHeight - y - 1));
+			memcpy(tmp.get(), src, rowWidth);
+			memcpy(src, dest, rowWidth);
+			memcpy(dest, tmp.get(), rowWidth);
 		}
 	}
 }
@@ -61,7 +82,11 @@ static void makeVariant(
 		auto &str = val->get();
 		if (str == "hflip") {
 			applyHflip(asset);
-		} else {
+		}
+		else if (str == "vflip") {
+			applyVflip(asset);
+		}
+		else {
 			warn << "Unknown operation '" << str << "' for variant '" << name << "'";
 		}
 	}
@@ -95,10 +120,23 @@ Result<ImageAsset> loadImageAsset(
 	std::string pngPath = cat(assetPath, ".png");
 	std::string tomlPath = cat(assetPath, ".toml");
 
+	std::optional<std::string> variantPngPath;
+	if (variantPart) {
+		variantPngPath = cat(assetPath, "/", variantPart.value(), ".png");
+	}
+
 	int w, h;
-	MallocedPtr<unsigned char> buffer{stbi_load(pngPath.c_str(), &w, &h, nullptr, 4)};
-	if (!buffer) {
-		return {Err, cat("Loading image ", pngPath, " failed")};
+	MallocedPtr<unsigned char> buffer;
+	if (variantPngPath && std::filesystem::exists(variantPngPath.value())) {
+		buffer.reset(stbi_load(pngPath.c_str(), &w, &h, nullptr, 4));
+		if (!buffer) {
+			return {Err, cat("Loading image ", variantPngPath.value(), " failed")};
+		}
+	} else {
+		buffer.reset(stbi_load(pngPath.c_str(), &w, &h, nullptr, 4));
+		if (!buffer) {
+			return {Err, cat("Loading image ", pngPath, " failed")};
+		}
 	}
 
 	// Need to make a new buffer in order to be able to use a plain unique_ptr
