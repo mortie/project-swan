@@ -50,7 +50,7 @@ endif
 libstb_truetype = declare_dependency(
   include_directories: '.',
   link_with: static_library('stb_truetype',
-    'stb_impls/stb_truetype.cc',
+    'stb-support/stb_truetype.cc',
     include_directories: '.',
   ),
 )
@@ -58,7 +58,14 @@ libstb_truetype = declare_dependency(
 libstb_image = declare_dependency(
   include_directories: '.',
   link_with: static_library('stb_image',
-    'stb_impls/stb_image.cc',
+    'stb-support/stb_image.cc',
     include_directories: '.',
+  ),
+)
+
+libstb_vorbis = declare_dependency(
+  include_directories: 'stb-support/include',
+  link_with: static_library('stb_vorbis',
+    'stb-support/stb_vorbis.cc',
   ),
 )

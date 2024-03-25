@@ -17,6 +17,7 @@ libz = meson.get_compiler('cpp').find_library('z')
 
 libglfw3 = dependency('glfw3')
 libgl = dependency('OpenGL')
+libportaudio = dependency('portaudio-2.0')
 libdw = dependency('libdw', required: false)
 
 libthreads = dependency('threads')

@@ -1,6 +1,7 @@
 #include "assets.h"
 
 #include "log.h"
+#include "util.h"
 
 #include <limits> // IWYU pragma: keep -- needed for cpptoml.h
 #include <memory>
@@ -8,6 +9,7 @@
 #include <string>
 #include <filesystem>
 #include <stb/stb_image.h>
+#include <stb/stb_vorbis.h>
 #include <cpptoml.h>
 #include <string.h>
 
@@ -150,7 +152,8 @@ Result<ImageAsset> loadImageAsset(
 		return {Err, cat("No mod named '", modPart, "'")};
 	}
 
-	std::string assetPath = cat(assetBasePath, "/", modPath->second, "/assets/", pathPart);
+	std::string assetPath = cat(
+		assetBasePath, "/", modPath->second, "/assets/", pathPart);
 	std::string pngPath = cat(assetPath, ".png");
 	std::string tomlPath = cat(assetPath, ".toml");
 
@@ -214,6 +217,66 @@ Result<ImageAsset> loadImageAsset(
 
 	if (variantPart) {
 		makeVariant(asset, toml, variantPart.value());
+	}
+
+	return {Ok, std::move(asset)};
+}
+
+Result<SoundAsset> loadSoundAsset(
+	const std::unordered_map<std::string, std::string> &modPaths,
+	std::string path)
+{
+	auto sep = path.find("::");
+	if (sep == std::string::npos) {
+		return {Err, "No '::' mod separator"};
+	}
+
+	auto modPart = path.substr(0, sep);
+	auto pathPart = path.substr(sep + 2, path.size() - sep - 2);
+
+	auto modPath = modPaths.find(modPart);
+	if (modPath == modPaths.end()) {
+		return {Err, cat("No mod named '", modPart, "'")};
+	}
+
+	std::string assetPath = cat(
+		assetBasePath, "/", modPath->second, "/assets/", pathPart);
+	std::string oggPath = cat(assetPath, ".ogg");
+
+	int err;
+	stb_vorbis *vorbis = stb_vorbis_open_filename(
+		oggPath.c_str(), &err, nullptr);
+	if (!vorbis) {
+		return {Err, cat(
+			"Couldn't open ", oggPath, ": ", std::to_string(err))};
+	}
+
+	defer(stb_vorbis_close(vorbis));
+
+	stb_vorbis_info info = stb_vorbis_get_info(vorbis);
+	unsigned int samples = stb_vorbis_stream_length_in_samples(vorbis);
+
+	SoundAsset asset;
+	asset.length = samples;
+	if (info.channels == 1) {
+		asset.data = std::make_unique<float[]>(samples);
+		asset.l = asset.data.get();
+		asset.r = asset.data.get();
+	} else if (info.channels == 2) {
+		asset.data = std::make_unique<float[]>(samples * 2);
+		asset.l = asset.data.get();
+		asset.r = asset.data.get() + samples;
+	} else {
+		return {Err, cat(
+			"Invalid channel count: ", std::to_string(info.channels))};
+	}
+
+	float *bufs[] = {asset.l, asset.r};
+	int n = stb_vorbis_get_samples_float(vorbis, info.channels, bufs, samples);
+	if (n != samples) {
+		return {Err, cat(
+			"Invalid sample count: ", std::to_string(n),
+			", expected ", std::to_string(samples))};
 	}
 
 	return {Ok, std::move(asset)};
