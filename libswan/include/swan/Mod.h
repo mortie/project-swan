@@ -32,6 +32,9 @@ public:
 	template<typename Ent>
 	void registerEntity(const std::string name);
 
+	virtual void start(World &)
+	{}
+
 private:
 	const std::string name_;
 	std::vector<Tile::Builder> tiles_;

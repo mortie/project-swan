@@ -9,11 +9,36 @@
 #include "world/tree.h"
 #include "world/util.h"
 
+#include <thread>
+#include <atomic>
+#include <chrono>
+
 namespace CoreMod {
+
+static void musicThread(std::atomic<bool> *stop, Swan::World *world)
+{
+	using namespace std::chrono_literals;
+
+	auto handle = Swan::SoundPlayer::makeHandle();
+
+	while (!*stop) {
+		auto asset = Swan::loadSoundAsset(world->modPaths_, "core::music/calm");
+		if (!asset) {
+			Swan::warn << "Failed to load core::music/calm: " << asset.err();
+			return;
+		}
+
+		handle->done = false;
+		world->game_->playSound(&asset.value(), handle);
+		while (!*stop && !handle->done) {
+			std::this_thread::sleep_for(100ms);
+		}
+	}
+}
 
 class CoreMod: public Swan::Mod {
 public:
-	CoreMod(Swan::World &world): Swan::Mod("core")
+	CoreMod(): Swan::Mod("core")
 	{
 		registerSprite("entities/player/idle");
 		registerSprite("entities/player/running");
@@ -159,11 +184,27 @@ public:
 		registerEntity<SpiderEntity>("spider");
 		registerEntity<FallingTileEntity>("falling-tile");
 	}
+
+	~CoreMod()
+	{
+		stop_ = true;
+		if (musicThread_.joinable()) {
+			musicThread_.join();
+		}
+	}
+
+	void start(Swan::World &world) override
+	{
+		musicThread_ = std::thread(musicThread, &stop_, &world);
+	}
+
+	std::atomic<bool> stop_;
+	std::thread musicThread_;
 };
 
 }
 
-extern "C" Swan::Mod *mod_create(Swan::World &world)
+extern "C" Swan::Mod *mod_create()
 {
-	return new CoreMod::CoreMod(world);
+	return new CoreMod::CoreMod();
 }

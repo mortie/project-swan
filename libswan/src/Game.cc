@@ -11,6 +11,10 @@ void Game::createWorld(const std::string &worldgen, const std::vector<std::strin
 {
 	world_.reset(new World(this, time(NULL), modPaths));
 
+	for (auto &mod: world_->mods_) {
+		mod.mod_->start(*world_);
+	}
+
 	world_->setWorldGen(worldgen);
 	world_->setCurrentPlane(world_->addPlane());
 	world_->spawnPlayer();

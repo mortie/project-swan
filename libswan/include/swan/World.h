@@ -66,6 +66,8 @@ public:
 	void update(float dt);
 	void tick(float dt);
 
+	std::unordered_map<std::string, std::string> modPaths_;
+
 	// These things can be used by the mods as they get initialized in the ctor.
 	EventEmitter<const Context &, TilePos, Tile &> evtTileBreak_;
 
@@ -88,7 +90,7 @@ public:
 
 private:
 	class ChunkRenderer {
-public:
+	public:
 		void tick(WorldPlane &plane, ChunkPos abspos);
 	};
 

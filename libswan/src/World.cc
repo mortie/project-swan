@@ -24,13 +24,13 @@ std::vector<ModWrapper> World::loadMods(std::vector<std::string> paths)
 
 	for (auto &path: paths) {
 		OS::Dynlib dl(path + "/mod");
-		auto create = dl.get<Mod *(*)(World &)>("mod_create");
+		auto create = dl.get<Mod *(*)()>("mod_create");
 		if (create == NULL) {
 			warn << path << ": No 'mod_create' function!";
 			continue;
 		}
 
-		std::unique_ptr<Mod> mod(create(*this));
+		std::unique_ptr<Mod> mod(create());
 		mods.push_back(ModWrapper(std::move(mod), std::move(path), std::move(dl)));
 	}
 
@@ -89,9 +89,8 @@ Cygnet::ResourceManager World::buildResources()
 
 	// Assets are namespaced on the mod, so if something references, say,
 	// "core::stone", we need to know which directory the "core" mod is in
-	std::unordered_map<std::string, std::string> modPaths;
 	for (auto &mod: mods_) {
-		modPaths[mod.name()] = mod.path_;
+		modPaths_[mod.name()] = mod.path_;
 	}
 
 	auto loadTileImage = [&](std::string path) -> Result<ImageAsset> {
@@ -110,7 +109,7 @@ Cygnet::ResourceManager World::buildResources()
 			return {Ok, std::move(asset)};
 		}
 
-		auto image = loadImageAsset(modPaths, path);
+		auto image = loadImageAsset(modPaths_, path);
 		if (!image) {
 			warn << '\'' << path << "': " << image.err();
 			return {Err, cat("'", path, "': ", image.err())};
@@ -208,7 +207,7 @@ Cygnet::ResourceManager World::buildResources()
 	for (auto &mod: mods_) {
 		for (auto spritePath: mod.sprites()) {
 			std::string path = cat(mod.name(), "::", spritePath);
-			auto imageResult = loadImageAsset(modPaths, path);
+			auto imageResult = loadImageAsset(modPaths_, path);
 			ImageAsset *image;
 
 			if (imageResult) {

@@ -16,6 +16,9 @@
 #include <swan/ItemStack.h>
 #include <swan/Mod.h>
 #include <swan/OS.h>
+#include <swan/Recipe.h>
+#include <swan/RingBuffer.h>
+#include <swan/SoundPlayer.h>
 #include <swan/Tile.h>
 #include <swan/World.h>
 #include <swan/WorldGen.h>

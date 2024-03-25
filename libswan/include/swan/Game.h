@@ -10,6 +10,7 @@
 
 #include "common.h"
 #include "World.h"
+#include "SoundPlayer.h"
 
 namespace Swan {
 
@@ -112,6 +113,16 @@ public:
 		return didScroll_;
 	}
 
+	void playSound(SoundAsset *asset)
+	{
+		soundPlayer_.play(asset);
+	}
+
+	void playSound(SoundAsset *asset, std::shared_ptr<SoundPlayer::Handle> h)
+	{
+		soundPlayer_.play(asset, h);
+	}
+
 	Vec2 getMousePos();
 	TilePos getMouseTile();
 
@@ -149,6 +160,8 @@ private:
 	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> pressedButtons_;
 	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> didPressButtons_;
 	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> didReleaseButtons_;
+
+	SoundPlayer soundPlayer_;
 
 	double didScroll_ = 0;
 };

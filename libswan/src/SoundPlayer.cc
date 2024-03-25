@@ -1,6 +1,8 @@
 #include "SoundPlayer.h"
 
 #include <portaudio.h>
+#include <chrono>
+#include <thread>
 
 #include "log.h"
 #include "RingBuffer.h"
@@ -19,7 +21,10 @@ struct Playback {
 struct SoundPlayer::Context {
 	Playback playbacks[MAX_PLAYBACKS];
 	size_t playbackCount = 0;
+	bool ended;
+
 	AtomicRingBuffer<Playback, MAX_NEW_PLAYBACKS> newPlaybacks;
+	std::atomic<bool> end;
 };
 
 static int callback(
@@ -37,6 +42,10 @@ static int callback(
 	float *output = (float *)outputBuffer;
 
 	memset(outputBuffer, 0, samples * CHANNELS * sizeof(*output));
+
+	if (ctx->ended) {
+		return paComplete;
+	}
 
 	// Add all new playbacks
 	while (ctx->newPlaybacks.canRead()) {
@@ -77,7 +86,21 @@ static int callback(
 		}
 	}
 
-	return 0;
+	// End smoothly
+	if (ctx->end) {
+		float *dest = output;
+		float delta = 1.0 / samples;
+		float scale = 1;
+		for (size_t i = 0; i < samples; ++i) {
+			*(dest++) *= scale;
+			*(dest++) *= scale;
+			scale -= delta;
+		}
+
+		ctx->ended = true;
+	}
+
+	return paContinue;
 }
 
 SoundPlayer::SoundPlayer()
@@ -117,7 +140,16 @@ SoundPlayer::SoundPlayer()
 
 SoundPlayer::~SoundPlayer()
 {
+	using namespace std::chrono_literals;
 	if (ok_) {
+		// Ending abruptly causes sound glitches.
+		// By setting end=true, we will cause the callback
+		// to fade out smoothly the next time it's called.
+		context_->end = true;
+
+		// Give it some time to fade out.
+		std::this_thread::sleep_for(50ms);
+
 		Pa_StopStream(stream_);
 		Pa_CloseStream(stream_);
 
