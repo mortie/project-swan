@@ -21,6 +21,7 @@ void applyHflip(ImageAsset &asset)
 {
 	size_t rowWidth = asset.width * 4;
 	unsigned char tmp[4];
+
 	for (int y = 0; y < asset.frameHeight * asset.frameCount; ++y) {
 		for (int x = 0; x < asset.width / 2; ++x) {
 			unsigned char *a =
@@ -38,6 +39,7 @@ void applyVflip(ImageAsset &asset)
 {
 	size_t rowWidth = asset.width * 4;
 	unsigned char tmp[4];
+
 	for (int frameIdx = 0; frameIdx < asset.frameCount; ++frameIdx) {
 		unsigned char *frame =
 			asset.data.get() + (rowWidth * asset.frameHeight * frameIdx);
@@ -133,6 +135,7 @@ Result<ImageAsset> loadImageAsset(
 	std::string path)
 {
 	auto sep = path.find("::");
+
 	if (sep == std::string::npos) {
 		return {Err, "No '::' mod separator"};
 	}
@@ -169,7 +172,8 @@ Result<ImageAsset> loadImageAsset(
 		if (!buffer) {
 			return {Err, cat("Loading image ", variantPngPath.value(), " failed")};
 		}
-	} else {
+	}
+	else {
 		buffer.reset(stbi_load(pngPath.c_str(), &w, &h, nullptr, 4));
 		if (!buffer) {
 			return {Err, cat("Loading image ", pngPath, " failed")};
@@ -227,6 +231,7 @@ Result<SoundAsset> loadSoundAsset(
 	std::string path)
 {
 	auto sep = path.find("::");
+
 	if (sep == std::string::npos) {
 		return {Err, "No '::' mod separator"};
 	}
@@ -262,11 +267,13 @@ Result<SoundAsset> loadSoundAsset(
 		asset.data = std::make_unique<float[]>(samples);
 		asset.l = asset.data.get();
 		asset.r = asset.data.get();
-	} else if (info.channels == 2) {
+	}
+	else if (info.channels == 2) {
 		asset.data = std::make_unique<float[]>(samples * 2);
 		asset.l = asset.data.get();
 		asset.r = asset.data.get() + samples;
-	} else {
+	}
+	else {
 		return {Err, cat(
 			"Invalid channel count: ", std::to_string(info.channels))};
 	}

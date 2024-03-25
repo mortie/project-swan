@@ -3,7 +3,7 @@
 #include <random>
 
 namespace CoreMod {
- 
+
 ItemStackEntity::ItemStackEntity(
 	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Item *item)
 {

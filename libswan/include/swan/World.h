@@ -37,6 +37,7 @@ public:
 	void spawnPlayer();
 
 	void setCurrentPlane(WorldPlane &plane);
+
 	WorldPlane &currentPlane()
 	{
 		return *planes_[currentPlane_];

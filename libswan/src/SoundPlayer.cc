@@ -23,11 +23,11 @@ struct SoundPlayer::Context {
 };
 
 static int callback(
-		const void * /*inputBuffer*/, void *outputBuffer,
-		unsigned long samples,
-		const PaStreamCallbackTimeInfo * /*timeInfo*/,
-		PaStreamCallbackFlags /*statusFlags*/,
-		void *userData)
+	const void * /*inputBuffer*/, void *outputBuffer,
+	unsigned long samples,
+	const PaStreamCallbackTimeInfo * /*timeInfo*/,
+	PaStreamCallbackFlags /*statusFlags*/,
+	void *userData)
 {
 	constexpr int CHANNELS = 2;
 
@@ -35,6 +35,7 @@ static int callback(
 
 	// Zero out the playback buffer
 	float *output = (float *)outputBuffer;
+
 	memset(outputBuffer, 0, samples * CHANNELS * sizeof(*output));
 
 	// Add all new playbacks
@@ -69,7 +70,8 @@ static int callback(
 		if (done) {
 			ctx->playbacks[idx].handle->done = true;
 			ctx->playbacks[idx] = ctx->playbacks[--ctx->playbackCount];
-		} else {
+		}
+		else {
 			playback.position += samples;
 			idx += 1;
 		}

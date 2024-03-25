@@ -22,19 +22,21 @@ public:
 	void write(const T &val)
 	{
 		auto idx = w_.fetch_add(1);
+
 		buffer_[idx % Size] = val;
 	}
 
 	void write(T &&val)
 	{
-
 		auto idx = w_.fetch_add(1);
+
 		buffer_[idx % Size] = std::move(val);
 	}
 
 	T &read()
 	{
 		auto idx = r_.fetch_add(1);
+
 		return buffer_[idx % Size];
 	}
 
