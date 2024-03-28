@@ -18,7 +18,8 @@ static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
 			float dist = sqrt(y * y + x * x);
 			if (dist <= R1) {
 				breakTileAndDropItem(ctx, tp);
-			} else if (dist <= R2) {
+			}
+			else if (dist <= R2) {
 				auto id = ctx.plane.getTileID(tp);
 				ctx.plane.breakTile(tp);
 				ctx.plane.spawnEntity<FallingTileEntity>(
@@ -66,8 +67,7 @@ void DynamiteEntity::update(const Swan::Context &ctx, float dt)
 }
 
 void DynamiteEntity::deserialize(const Swan::Context &ctx, const PackObject &obj)
-{
-}
+{}
 
 Swan::Entity::PackObject DynamiteEntity::serialize(
 	const Swan::Context &ctx, msgpack::zone &zone)

@@ -21,7 +21,7 @@ struct InventoryTrait {
 
 		InventorySlot slot(int slot);
 
-protected:
+	protected:
 		~Inventory() = default;
 	};
 
@@ -76,7 +76,8 @@ struct BasicInventory final: InventoryTrait::Inventory {
 	ItemStack insert(ItemStack stack) override;
 };
 
-inline InventorySlot InventoryTrait::Inventory::slot(int slot) {
+inline InventorySlot InventoryTrait::Inventory::slot(int slot)
+{
 	return {this, slot};
 }
 

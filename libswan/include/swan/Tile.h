@@ -31,16 +31,16 @@ struct Tile {
 		std::shared_ptr<Traits> traits = nullptr;
 	};
 
-	const ID id;
-	const std::string name;
-	const bool isSolid;
-	const bool isOpaque;
-	const float lightLevel;
-	const std::optional<std::string> droppedItem;
+	ID id;
+	std::string name;
+	bool isSolid;
+	bool isOpaque;
+	float lightLevel;
+	std::optional<std::string> droppedItem;
 
-	void (*const onSpawn)(const Context &ctx, TilePos pos);
-	void (*const onBreak)(const Context &ctx, TilePos pos);
-	void (*const onTileUpdate)(const Context &ctx, TilePos pos);
+	void (*onSpawn)(const Context &ctx, TilePos pos);
+	void (*onBreak)(const Context &ctx, TilePos pos);
+	void (*onTileUpdate)(const Context &ctx, TilePos pos);
 
 	std::shared_ptr<Traits> traits;
 

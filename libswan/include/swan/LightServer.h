@@ -20,7 +20,7 @@ struct NewLightChunk {
 
 struct LightChunk {
 	LightChunk() = default;
-	LightChunk(NewLightChunk && ch);
+	LightChunk(NewLightChunk &&ch);
 
 	std::bitset<CHUNK_WIDTH *CHUNK_HEIGHT> blocks;
 	uint8_t lightLevels[CHUNK_WIDTH * CHUNK_HEIGHT] = {0};

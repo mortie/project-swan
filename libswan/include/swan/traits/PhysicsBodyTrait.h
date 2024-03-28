@@ -13,7 +13,7 @@ struct PhysicsBodyTrait: public BodyTrait {
 		virtual void addVelocity(Vec2 vel) = 0;
 		virtual Vec2 velocity() = 0;
 
-protected:
+	protected:
 		~PhysicsBody() = default;
 	};
 

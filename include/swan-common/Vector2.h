@@ -64,7 +64,8 @@ struct Vector2 {
 		return x * vec.x + y * vec.y;
 	}
 
-	constexpr operator Vector2<float>() const {
+	constexpr operator Vector2<float>() const
+	{
 		return Vector2<float>(x, y);
 	}
 

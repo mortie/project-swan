@@ -9,7 +9,7 @@ namespace Swan {
 class Logger {
 public:
 	class NewlineStream {
-public:
+	public:
 		NewlineStream(std::ostream &os): os_(os)
 		{}
 		~NewlineStream()
@@ -24,7 +24,7 @@ public:
 			return *this;
 		}
 
-private:
+	private:
 		std::ostream &os_;
 	};
 

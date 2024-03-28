@@ -14,7 +14,7 @@ public:
 		Wrapper(Args && ... args): ent(std::forward<Args>(args)...)
 		{}
 
-		Wrapper(Wrapper && other):
+		Wrapper(Wrapper &&other):
 			ent(std::move(other.ent)), id(other.id)
 		{}
 		Wrapper(const Wrapper &) = delete;
@@ -110,7 +110,7 @@ inline auto *EntityRef::trait()
 	using Tag = Trait::Tag;
 	auto *t = dynamic_cast<Trait *>(get());
 	if (!t) {
-		return (decltype(&t->get(Tag{})))nullptr;
+		return (decltype(&t->get(Tag{}))) nullptr;
 	}
 
 	return &t->get(Tag{});
@@ -120,6 +120,7 @@ template<typename Trait, typename Func>
 inline void EntityRef::traitThen(Func func)
 {
 	auto *t = trait<Trait>();
+
 	if (t) {
 		func(*t);
 	}

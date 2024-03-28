@@ -36,7 +36,7 @@ cleanall:
 
 .PHONY: format
 format:
-	uncrustify -c uncrustify.cfg --replace --no-backup $(SRCS)
+	uncrustify -c uncrustify.cfg -l cpp --replace --no-backup $(SRCS)
 
 .PHONY: clock
 cloc:

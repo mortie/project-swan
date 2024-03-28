@@ -23,14 +23,13 @@ public:
 			const Context &ctx, InventorySlot slot, Vec2 pos, Vec2 dir);
 	};
 
-	const Tile::ID id;
-	const std::string name;
-	const int maxStack;
-	const Tile *tile;
+	Tile::ID id;
+	std::string name;
+	int maxStack;
+	Tile *tile;
 
-	void (*const onActivate)(
+	void (*onActivate)(
 		const Context &ctx, InventorySlot slot, Vec2 pos, Vec2 dir);
-
 
 	Item(Tile::ID id, std::string name, const Builder &builder):
 		id(id), name(name), maxStack(builder.maxStack), tile(nullptr),

@@ -16,7 +16,7 @@ struct TestSpec;
 void addTestCase(TestSpec *testcase);
 
 struct TestSpec {
-	TestSpec(void (*f)(), const char *desc, const char *file, int line, int idx):
+	TestSpec(void(*f)(), const char *desc, const char *file, int line, int idx):
 		func(f), description(desc), filename(file), linenum(line), index(idx)
 	{
 		addTestCase(this);
