@@ -5,6 +5,9 @@
 #include <memory>
 #include <imgui/imgui.h>
 
+#include "traits/InventoryTrait.h"
+#include "EntityCollectionImpl.h"
+
 namespace Swan {
 
 void Game::createWorld(const std::string &worldgen, const std::vector<std::string> &modPaths)
@@ -63,6 +66,16 @@ void Game::draw()
 
 		auto &tile = world_->currentPlane().getTile(getMouseTile());
 		ImGui::Text("Tile: %s\n", tile.name.c_str());
+
+		ImGui::Text("Give Item:");
+		for (auto &[name, item]: world_->items_) {
+			if (ImGui::Button(name.c_str())) {
+				auto *inventory = world_->playerRef_.trait<InventoryTrait>();
+				info << "Giving player " << name;
+				ItemStack stack(&item, 1);
+				inventory->insert(stack);
+			}
+		}
 
 		ImGui::End();
 	}

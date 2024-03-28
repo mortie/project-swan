@@ -288,8 +288,8 @@ void World::setWorldGen(std::string gen)
 
 void World::spawnPlayer()
 {
-	player_ = &((dynamic_cast<BodyTrait *>(
-		planes_[currentPlane_]->spawnPlayer().get()))->get(BodyTrait::Tag{}));
+	playerRef_ = planes_[currentPlane_]->spawnPlayer();
+	player_ = playerRef_.trait<BodyTrait>();
 }
 
 void World::setCurrentPlane(WorldPlane &plane)

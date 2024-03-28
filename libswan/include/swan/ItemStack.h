@@ -34,10 +34,10 @@ public:
 	}
 
 	// Insert as much of 'st' as possible, returning the leftovers
-	ItemStack insert(ItemStack st);
+	[[nodiscard]] ItemStack insert(ItemStack st);
 
 	// Remove 'count' items from the stack, returning the resulting stack
-	ItemStack remove(int count);
+	[[nodiscard]] ItemStack remove(int count);
 
 private:
 	Item *item_;

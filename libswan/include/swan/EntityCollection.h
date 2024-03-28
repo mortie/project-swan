@@ -16,6 +16,8 @@ class WorldPlane;
 
 class EntityRef {
 public:
+	EntityRef(): coll_(nullptr), id_(0)
+	{}
 	EntityRef(const EntityRef &other): coll_(other.coll_), id_(other.id_)
 	{}
 	EntityRef(EntityCollection *coll, uint64_t id):
@@ -54,6 +56,12 @@ public:
 	bool exists();
 	Entity *get();
 	BodyTrait::Body *getBody();
+
+	template<typename Trait>
+	auto *trait();
+
+	template<typename Trait, typename Func>
+	void traitThen(Func func);
 
 	uint64_t id() const
 	{

@@ -86,6 +86,7 @@ public:
 	std::vector<ModWrapper> mods_;
 	Cygnet::ResourceManager resources_;
 
+	EntityRef playerRef_;
 	BodyTrait::Body *player_;
 
 private:

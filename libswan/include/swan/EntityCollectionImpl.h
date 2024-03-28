@@ -88,12 +88,41 @@ inline EntityRef &EntityRef::then(Func func)
 
 inline Entity *EntityRef::get()
 {
+	if (!coll_) {
+		return nullptr;
+	}
+
 	return coll_->get(id_);
 }
 
 inline BodyTrait::Body *EntityRef::getBody()
 {
+	if (!coll_) {
+		return nullptr;
+	}
+
 	return coll_->getBody(id_);
+}
+
+template<typename Trait>
+inline auto *EntityRef::trait()
+{
+	using Tag = Trait::Tag;
+	auto *t = dynamic_cast<Trait *>(get());
+	if (!t) {
+		return (decltype(&t->get(Tag{})))nullptr;
+	}
+
+	return &t->get(Tag{});
+}
+
+template<typename Trait, typename Func>
+inline void EntityRef::traitThen(Func func)
+{
+	auto *t = trait<Trait>();
+	if (t) {
+		func(*t);
+	}
 }
 
 inline bool EntityRef::exists()
