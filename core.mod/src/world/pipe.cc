@@ -2,6 +2,12 @@
 
 namespace CoreMod {
 
+struct PipeTileTrait: PipeConnectableTileTrait {
+	PipeTileTrait(std::string p): prefix(std::move(p))
+	{}
+	std::string prefix;
+};
+
 static void onPipeUpdate(const Swan::Context &ctx, Swan:: TilePos pos)
 {
 	auto &tile = ctx.plane.getTile(pos);
@@ -14,9 +20,9 @@ static void onPipeUpdate(const Swan::Context &ctx, Swan:: TilePos pos)
 
 	int key =
 		(check(-1, 0) << 3) | // left
-		(check(1, 0)  << 2) | // right
-		(check(0, -1) << 1) | // up
-		(check(0, 1)  << 0);  // down
+			(check(1, 0) << 2) | // right
+			(check(0, -1) << 1) | // up
+			(check(0, 1) << 0); // down
 
 	constexpr const char *lut[] = {
 		[0b0000] = "lone",
@@ -38,6 +44,7 @@ static void onPipeUpdate(const Swan::Context &ctx, Swan:: TilePos pos)
 	};
 
 	std::string name = Swan::cat(prefix, "::", lut[key]);
+
 	if (name != tile.name) {
 		Swan::info << "Update: " << tile.name << " -> " << name;
 		ctx.plane.setTile(pos, name);

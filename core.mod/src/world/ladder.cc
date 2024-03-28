@@ -4,6 +4,15 @@
 
 namespace CoreMod {
 
+struct RopeLadderTileTrait: LadderTileTrait {
+	RopeLadderTileTrait(bool isAnchor, std::string d):
+		isAnchor(isAnchor), direction(std::move(d))
+	{}
+
+	bool isAnchor;
+	std::string direction;
+};
+
 static void spawnRopeLadderAnchor(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	if (ctx.plane.getTile(pos.add(-1, 0)).isOpaque) {
