@@ -3,8 +3,11 @@
 #include <vector>
 
 #include "../ItemStack.h"
+#include "../log.h"
 
 namespace Swan {
+
+struct InventorySlot;
 
 struct InventoryTrait {
 	struct Tag {};
@@ -16,6 +19,8 @@ struct InventoryTrait {
 		virtual ItemStack insert(int slot, ItemStack stack) = 0;
 		virtual ItemStack insert(ItemStack stack) = 0;
 
+		InventorySlot slot(int slot);
+
 protected:
 		~Inventory() = default;
 	};
@@ -24,6 +29,34 @@ protected:
 
 protected:
 	~InventoryTrait() = default;
+};
+
+struct InventorySlot {
+	InventoryTrait::Inventory *inventory;
+	const int slot;
+
+	ItemStack get()
+	{
+		return inventory->get(slot);
+	}
+
+	ItemStack set(ItemStack stack)
+	{
+		return inventory->set(slot, stack);
+	}
+
+	ItemStack insert(ItemStack stack)
+	{
+		return inventory->insert(slot, stack);
+	}
+
+	ItemStack remove(int n)
+	{
+		auto stack = get();
+		auto ret = stack.remove(1);
+		set(stack);
+		return ret;
+	}
 };
 
 struct BasicInventory final: InventoryTrait::Inventory {
@@ -42,5 +75,9 @@ struct BasicInventory final: InventoryTrait::Inventory {
 	ItemStack insert(int slot, ItemStack stack) override;
 	ItemStack insert(ItemStack stack) override;
 };
+
+inline InventorySlot InventoryTrait::Inventory::slot(int slot) {
+	return {this, slot};
+}
 
 }

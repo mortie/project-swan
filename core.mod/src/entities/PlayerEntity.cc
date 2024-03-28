@@ -189,9 +189,9 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		breakTileAndDropItem(ctx, mouseTile_);
 	}
 
-	// Place block
+	// Place block, or activate item
 	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_RIGHT)) {
-		placeTile(ctx);
+		onRightClick(ctx);
 	}
 
 	// Drop item
@@ -389,15 +389,24 @@ Swan::Entity::PackObject PlayerEntity::serialize(const Swan::Context &ctx, msgpa
 	 */
 }
 
-void PlayerEntity::placeTile(const Swan::Context &ctx)
+void PlayerEntity::onRightClick(const Swan::Context &ctx)
 {
-	Swan::ItemStack &stack = inventory_.content[selectedInventorySlot_];
+	Swan::InventorySlot slot = inventory_.slot(selectedInventorySlot_);
+	Swan::ItemStack stack = slot.get();
 
 	if (stack.empty()) {
 		return;
 	}
 
 	Swan::Item &item = *stack.item();
+
+	if (item.onActivate) {
+		Swan::Vec2 origin = physicsBody_.body.topMid().add(0, 0.25);
+		Swan::Vec2 mouse = ctx.game.getMousePos();
+		item.onActivate(ctx, slot, origin, (mouse - origin).norm());
+		return;
+	}
+
 	if (!item.tile) {
 		return;
 	}

@@ -52,7 +52,7 @@ private:
 		LANDING,
 	};
 
-	void placeTile(const Swan::Context &ctx);
+	void onRightClick(const Swan::Context &ctx);
 	void craft(const Swan::Recipe &recipe);
 	void dropItem(const Swan::Context &ctx);
 

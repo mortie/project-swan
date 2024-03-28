@@ -1,6 +1,7 @@
 #include <swan/swan.h>
 
 #include "DefaultWorldGen.h"
+#include "entities/DynamiteEntity.h"
 #include "entities/PlayerEntity.h"
 #include "entities/ItemStackEntity.h"
 #include "entities/SpiderEntity.h"
@@ -155,6 +156,17 @@ public:
 			.name = "rope",
 			.image = "core::items/rope",
 		});
+		registerItem({
+			.name = "dynamite",
+			.image = "core::items/dynamite",
+			.onActivate = [](
+				const Swan::Context &ctx, Swan::InventorySlot slot,
+				Swan::Vec2 pos, Swan::Vec2 dir)
+			{
+				slot.remove(1);
+				ctx.plane.spawnEntity<DynamiteEntity>(pos, dir * 10);
+			},
+		});
 
 		registerRecipe({
 			.inputs = {{1, "core::tree-trunk"}},
@@ -183,6 +195,7 @@ public:
 		registerEntity<ItemStackEntity>("item-stack");
 		registerEntity<SpiderEntity>("spider");
 		registerEntity<FallingTileEntity>("falling-tile");
+		registerEntity<DynamiteEntity>("dynamite");
 	}
 
 	~CoreMod()

@@ -325,7 +325,8 @@ Tile::ID World::getTileID(const std::string &name)
 	auto iter = tilesMap_.find(name);
 
 	if (iter == tilesMap_.end()) {
-		warn << "Tried to get non-existent item " << name << "!";
+		warn << "Tried to get non-existent tile " << name << "!";
+		abort();
 		return INVALID_TILE_ID;
 	}
 
@@ -344,7 +345,6 @@ Item &World::getItem(const std::string &name)
 	auto iter = items_.find(name);
 
 	if (iter == items_.end()) {
-		warn << "Tried to get non-existent item " << name << "!";
 		return items_.at(INVALID_TILE_NAME);
 	}
 
