@@ -7,6 +7,7 @@
 #include "entities/SpiderEntity.h"
 #include "entities/FallingTileEntity.h"
 #include "world/ladder.h"
+#include "world/pipe.h"
 #include "world/tree.h"
 #include "world/util.h"
 
@@ -112,37 +113,8 @@ public:
 			.onTileUpdate = breakIfFloating,
 		});
 
-		registerTile({
-			.name = "rope-ladder",
-			.image = "core::tiles/rope-ladder/anchor::left",
-			.isSolid = false,
-			.droppedItem = "core::rope-ladder-anchor",
-			.onSpawn = spawnRopeLadderAnchor,
-		});
-		for (auto direction: {"left", "right"}) {
-			registerTile({
-				.name = Swan::cat("rope-ladder-anchor::", direction),
-				.image = Swan::cat("core::tiles/rope-ladder/anchor::", direction),
-				.isSolid = false,
-				.droppedItem = "core::rope-ladder",
-				.onTileUpdate = cascadeRopeLadder,
-				.traits = std::make_shared<RopeLadderTileTrait>(true, direction),
-			});
-			registerTile({
-				.name = Swan::cat("rope-ladder-middle::", direction),
-				.image = Swan::cat("core::tiles/rope-ladder/middle::", direction),
-				.isSolid = false,
-				.onTileUpdate = cascadeRopeLadder,
-				.traits = std::make_shared<RopeLadderTileTrait>(false, direction),
-			});
-			registerTile({
-				.name = Swan::cat("rope-ladder-bottom::", direction),
-				.image = Swan::cat("core::tiles/rope-ladder/bottom::", direction),
-				.isSolid = false,
-				.onTileUpdate = cascadeRopeLadder,
-				.traits = std::make_shared<RopeLadderTileTrait>(false, direction),
-			});
-		}
+		registerRopeLadder(*this);
+		registerGlassPipe(*this);
 
 		registerItem({
 			.name = "wood-pole",

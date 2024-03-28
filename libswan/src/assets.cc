@@ -43,7 +43,7 @@ void applyVflip(ImageAsset &asset)
 	for (int frameIdx = 0; frameIdx < asset.frameCount; ++frameIdx) {
 		unsigned char *frame =
 			asset.data.get() + (rowWidth * asset.frameHeight * frameIdx);
-		for (int y = 0; y < asset.frameHeight * asset.frameCount; ++y) {
+		for (int y = 0; y < asset.frameHeight / 2; ++y) {
 			for (int x = 0; x < asset.width; ++x) {
 				unsigned char *a =
 					frame + y * rowWidth + x * 4;
@@ -123,6 +123,18 @@ static void makeVariant(
 		}
 		else if (str == "transpose") {
 			applyTranspose(asset);
+		}
+		else if (str == "rotate90") {
+			applyTranspose(asset);
+			applyVflip(asset);
+		}
+		else if (str == "rotate180") {
+			applyHflip(asset);
+			applyVflip(asset);
+		}
+		else if (str == "rotate270") {
+			applyTranspose(asset);
+			applyHflip(asset);
 		}
 		else {
 			warn << "Unknown operation '" << str << "' for variant '" << name << "'";

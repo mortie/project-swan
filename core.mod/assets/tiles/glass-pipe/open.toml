@@ -1,0 +1,5 @@
+[variants]
+l = ["rotate180"]
+r = []
+u = ["rotate90"]
+d = ["rotate270"]

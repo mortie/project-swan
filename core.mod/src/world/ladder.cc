@@ -4,20 +4,20 @@
 
 namespace CoreMod {
 
-void spawnRopeLadderAnchor(const Swan::Context &ctx, Swan::TilePos pos)
+static void spawnRopeLadderAnchor(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	if (ctx.plane.getTile(pos.add(-1, 0)).isOpaque) {
-		ctx.plane.setTile(pos, "core::rope-ladder-anchor::left");
+		ctx.plane.setTile(pos, "core::rope-ladder::anchor::left");
 	}
 	else if (ctx.plane.getTile(pos.add(1, 0)).isOpaque) {
-		ctx.plane.setTile(pos, "core::rope-ladder-anchor::right");
+		ctx.plane.setTile(pos, "core::rope-ladder::anchor::right");
 	}
 	else {
 		breakTileAndDropItem(ctx, pos);
 	}
 }
 
-void cascadeRopeLadder(const Swan::Context &ctx, Swan::TilePos pos)
+static void cascadeRopeLadder(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	auto &tile = ctx.plane.getTile(pos);
 	auto *ropeLadderTrait = dynamic_cast<RopeLadderTileTrait *>(tile.traits.get());
@@ -79,6 +79,42 @@ void cascadeRopeLadder(const Swan::Context &ctx, Swan::TilePos pos)
 		else {
 			ctx.plane.setTile(belowPos, "core::rope-ladder-middle::" + ropeLadderTrait->direction);
 		}
+	}
+}
+
+void registerRopeLadder(Swan::Mod &mod)
+{
+	mod.registerTile({
+		.name = "rope-ladder",
+		.image = "core::tiles/rope-ladder/anchor::left",
+		.isSolid = false,
+		.droppedItem = "core::rope-ladder",
+		.onSpawn = spawnRopeLadderAnchor,
+	});
+
+	for (auto direction: {"left", "right"}) {
+		mod.registerTile({
+			.name = Swan::cat("rope-ladder::anchor::", direction),
+			.image = Swan::cat("core::tiles/rope-ladder/anchor::", direction),
+			.isSolid = false,
+			.droppedItem = "core::rope-ladder",
+			.onTileUpdate = cascadeRopeLadder,
+			.traits = std::make_shared<RopeLadderTileTrait>(true, direction),
+		});
+		mod.registerTile({
+			.name = Swan::cat("rope-ladder::middle::", direction),
+			.image = Swan::cat("core::tiles/rope-ladder/middle::", direction),
+			.isSolid = false,
+			.onTileUpdate = cascadeRopeLadder,
+			.traits = std::make_shared<RopeLadderTileTrait>(false, direction),
+		});
+		mod.registerTile({
+			.name = Swan::cat("rope-ladder::bottom::", direction),
+			.image = Swan::cat("core::tiles/rope-ladder/bottom::", direction),
+			.isSolid = false,
+			.onTileUpdate = cascadeRopeLadder,
+			.traits = std::make_shared<RopeLadderTileTrait>(false, direction),
+		});
 	}
 }
 

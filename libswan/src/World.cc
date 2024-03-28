@@ -326,7 +326,6 @@ Tile::ID World::getTileID(const std::string &name)
 
 	if (iter == tilesMap_.end()) {
 		warn << "Tried to get non-existent tile " << name << "!";
-		abort();
 		return INVALID_TILE_ID;
 	}
 

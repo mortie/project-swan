@@ -420,7 +420,7 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 		return;
 	}
 
-	if (stack.remove(1).empty()) {
+	if (slot.remove(1).empty()) {
 		Swan::info << "Not placing tile because stack.remove(1) is empty";
 	}
 
