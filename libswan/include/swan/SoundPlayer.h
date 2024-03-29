@@ -23,6 +23,9 @@ public:
 		return std::make_shared<Handle>();
 	}
 
+	void volume(float volume);
+	float volume();
+
 	void play(SoundAsset *asset)
 	{
 		play(asset, nullHandle_);

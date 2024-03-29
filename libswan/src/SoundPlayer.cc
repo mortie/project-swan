@@ -20,10 +20,11 @@ struct Playback {
 struct SoundPlayer::Context {
 	Playback playbacks[MAX_PLAYBACKS];
 	size_t playbackCount = 0;
-	bool ended;
+	bool ended = false;
 
 	AtomicRingBuffer<Playback, MAX_NEW_PLAYBACKS> newPlaybacks;
-	std::atomic<bool> end;
+	std::atomic<bool> end = false;
+	std::atomic<float> volume = 1.0;
 };
 
 static int callback(
@@ -37,9 +38,10 @@ static int callback(
 
 	SoundPlayer::Context *ctx = (SoundPlayer::Context *)userData;
 
-	// Zero out the playback buffer
 	float *output = (float *)outputBuffer;
+	float volume = ctx->volume;
 
+	// Zero out the playback buffer
 	memset(outputBuffer, 0, samples * CHANNELS * sizeof(*output));
 
 	if (ctx->ended) {
@@ -85,6 +87,12 @@ static int callback(
 		}
 	}
 
+	// Scale by volume
+	float *dest = output;
+	for (unsigned long i = 0; i < samples * 2; ++i) {
+		*(dest)++ *= volume;
+	}
+
 	// End smoothly
 	if (ctx->end) {
 		float *dest = output;
@@ -107,9 +115,9 @@ SoundPlayer::SoundPlayer()
 	nullHandle_ = std::make_shared<Handle>();
 	nullHandle_->done = true;
 
-	PaError err;
-
 	context_ = std::make_unique<Context>();
+
+	PaError err;
 
 	err = Pa_Initialize();
 	if (err) {
@@ -157,6 +165,16 @@ SoundPlayer::~SoundPlayer()
 		// multiple SoundPlayer instances
 		Pa_Terminate();
 	}
+}
+
+void SoundPlayer::volume(float volume)
+{
+	context_->volume = volume;
+}
+
+float SoundPlayer::volume()
+{
+	return context_->volume;
 }
 
 void SoundPlayer::play(SoundAsset *asset, std::shared_ptr<Handle> handle)

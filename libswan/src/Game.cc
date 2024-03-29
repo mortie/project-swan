@@ -56,18 +56,37 @@ void Game::draw()
 			glfwSwapInterval(0);
 		}
 
-		ImGui::SliderFloat("Time scale", &debugTimeScale_, 0, 3.0, "%.03f", ImGuiSliderFlags_Logarithmic);
-		if (ImGui::BeginPopupContextItem("Timer scale")) {
+		ImGui::SliderFloat(
+			"Time scale", &debugTimeScale_, 0, 3.0, "%.03f",
+			ImGuiSliderFlags_Logarithmic);
+		if (ImGui::BeginPopupContextItem("Time scale menu")) {
 			if (ImGui::MenuItem("Reset")) {
 				debugTimeScale_ = 1.0;
 			}
 			ImGui::EndPopup();
 		}
 
+		float oldVolume = soundPlayer_.volume();
+		float volume = oldVolume;
+		ImGui::SliderFloat(
+			"Volume", &volume, 0, 1.0, "%.03f",
+			ImGuiSliderFlags_Logarithmic);
+		if (ImGui::BeginPopupContextItem("Volume menu")) {
+			if (ImGui::MenuItem("Reset")) {
+				volume = 1.0;
+			}
+			ImGui::EndPopup();
+		}
+
+		if (volume != oldVolume) {
+			soundPlayer_.volume(volume);
+		}
+
 		auto &tile = world_->currentPlane().getTile(getMouseTile());
 		ImGui::Text("Tile: %s\n", tile.name.c_str());
 
 		ImGui::Text("Give Item:");
+		ImGui::BeginChild("Give Item", {0, 200});
 		for (auto &[name, item]: world_->items_) {
 			if (item.hidden) {
 				continue;
@@ -80,6 +99,7 @@ void Game::draw()
 				inventory->insert(stack);
 			}
 		}
+		ImGui::EndChild();
 
 		ImGui::End();
 	}
