@@ -32,9 +32,11 @@ public:
 	}
 
 private:
-	static constexpr Swan::Vec2 SIZE = Swan::Vec2(1, 0.65);
-	static constexpr float MASS = 30;
-	static constexpr float MOVE_FORCE = 50 * MASS;
+	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
+		.size = {1, 0.65},
+		.mass = 30,
+	};
+	static constexpr float MOVE_FORCE = 50 * PROPS.mass;
 	static constexpr float JUMP_VEL = 9;
 
 	SpiderEntity(const Swan::Context &ctx):
@@ -46,7 +48,7 @@ private:
 	float jumpTimer_ = 0;
 	Body *target_ = nullptr;
 
-	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS}};
+	Swan::BasicPhysicsBody physicsBody_{PROPS};
 	Damage damage_{};
 };
 

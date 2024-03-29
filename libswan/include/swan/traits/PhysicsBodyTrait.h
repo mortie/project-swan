@@ -26,16 +26,23 @@ protected:
 
 struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 	struct Props {
+		Vec2 size;
 		float mass;
-		float bounciness = 0;
+		float bounciness = 0.6;
 		float mushyness = 2;
 	};
 
-	BasicPhysicsBody(Vec2 size, Props props): body({.size = size}), props(props)
+	BasicPhysicsBody(Props props):
+		body({.size = props.size}),
+		mass(props.mass),
+		bounciness(props.bounciness),
+		mushyness(props.mushyness)
 	{}
 
 	BodyTrait::Body body;
-	Props props;
+	float mass;
+	float bounciness;
+	float mushyness;
 
 	Vec2 vel{};
 	Vec2 force{};
@@ -81,7 +88,7 @@ inline void BasicPhysicsBody::friction(Vec2 coef)
 
 inline void BasicPhysicsBody::gravity(Vec2 g)
 {
-	force += g * props.mass;
+	force += g * mass;
 }
 
 inline void BasicPhysicsBody::applyForce(Vec2 f)

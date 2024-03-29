@@ -33,8 +33,8 @@ static void collideX(BasicPhysicsBody &phys, WorldPlane &plane)
 	}
 
 	if (collided) {
-		phys.vel.x *= -phys.props.bounciness;
-		if (abs(phys.vel.x) < phys.props.mushyness) {
+		phys.vel.x *= -phys.bounciness;
+		if (abs(phys.vel.x) < phys.mushyness) {
 			phys.vel.x = 0;
 		}
 	}
@@ -68,8 +68,8 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane)
 	}
 
 	if (collided) {
-		phys.vel.y *= -phys.props.bounciness;
-		if (abs(phys.vel.y) < phys.props.mushyness) {
+		phys.vel.y *= -phys.bounciness;
+		if (abs(phys.vel.y) < phys.mushyness) {
 			phys.vel.y = 0;
 		}
 	}
@@ -97,7 +97,7 @@ void BasicPhysicsBody::collideAll(WorldPlane &plane)
 
 void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 {
-	vel += (force / props.mass) * dt;
+	vel += (force / mass) * dt;
 	force = {0, 0};
 
 	Vec2 dist = vel * dt;

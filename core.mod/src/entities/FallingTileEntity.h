@@ -27,14 +27,14 @@ public:
 	PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) override;
 
 private:
-	static constexpr float MASS = 80;
-	static constexpr Swan::Vec2 SIZE = Swan::Vec2(1, 1);
+	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
+		.mass = 80,
+		.size = {1, 1},
+	};
 	static constexpr float DESPAWN_TIME = 5 * 60;
-	static constexpr float BOUNCINESS = 0.6;
 
 	Swan::Tile::ID tile_;
-
-	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS, .bounciness = BOUNCINESS}};
+	Swan::BasicPhysicsBody physicsBody_{PROPS};
 };
 
 }

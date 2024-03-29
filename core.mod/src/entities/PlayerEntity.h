@@ -33,15 +33,19 @@ public:
 	PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) override;
 
 private:
-	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.6, 1.9);
-	static constexpr float MASS = 80;
+	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
+		.size = {0.6, 1.9},
+		.mass = 80,
+		.bounciness = 0,
+	};
+
 	static constexpr int INVENTORY_SIZE = 18;
-	static constexpr float SPRINT_FORCE_GROUND = 125 * MASS;
-	static constexpr float MOVE_FORCE_GROUND = 75 * MASS;
-	static constexpr float MOVE_FORCE_AIR = 10 * MASS;
+	static constexpr float SPRINT_FORCE_GROUND = 125 * PROPS.mass;
+	static constexpr float MOVE_FORCE_GROUND = 75 * PROPS.mass;
+	static constexpr float MOVE_FORCE_AIR = 10 * PROPS.mass;
 	static constexpr float JUMP_VEL = 11;
-	static constexpr float DOWN_FORCE = 20 * MASS;
-	static constexpr float LADDER_CLIMB_FORCE = 70 * MASS;
+	static constexpr float DOWN_FORCE = 20 * PROPS.mass;
+	static constexpr float LADDER_CLIMB_FORCE = 70 * PROPS.mass;
 	static constexpr float LADDER_MAX_VEL = 5;
 
 	enum class State {
@@ -81,7 +85,7 @@ private:
 	bool showInventory_ = false;
 
 	Swan::BasicInventory inventory_{INVENTORY_SIZE};
-	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS}};
+	Swan::BasicPhysicsBody physicsBody_{PROPS};
 };
 
 }

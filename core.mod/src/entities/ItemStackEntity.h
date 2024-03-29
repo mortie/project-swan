@@ -35,14 +35,15 @@ public:
 	float lifetime_ = 0;
 
 private:
-	static constexpr float MASS = 80;
-	static constexpr Swan::Vec2 SIZE = Swan::Vec2(0.5, 0.5);
+	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
+		.mass = 80,
+		.size = {0.5, 0.5},
+	};
 	static constexpr float DESPAWN_TIME = 5 * 60;
 	static constexpr float BOUNCINESS = 0.6;
 
 	Swan::Item *item_;
-
-	Swan::BasicPhysicsBody physicsBody_{SIZE, {.mass = MASS, .bounciness = BOUNCINESS}};
+	Swan::BasicPhysicsBody physicsBody_{PROPS};
 };
 
 }
