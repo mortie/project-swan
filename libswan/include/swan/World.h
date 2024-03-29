@@ -18,6 +18,7 @@
 #include "Mod.h"
 #include "EventEmitter.h"
 #include "Recipe.h"
+#include "assets.h"
 
 namespace Swan {
 
@@ -29,6 +30,11 @@ public:
 	static constexpr char INVALID_TILE_NAME[] = "@::invalid";
 	static constexpr Tile::ID AIR_TILE_ID = 1;
 	static constexpr char AIR_TILE_NAME[] = "@::air";
+
+	static constexpr char INVALID_SPRITE_NAME[] = "@::invalid";
+
+	static constexpr char INVALID_SOUND_NAME[] = "@::invalid";
+	static constexpr char THUD_SOUND_NAME[] = "@::thud";
 
 	World(Game *game, unsigned long randSeed, std::vector<std::string> modPaths);
 	~World();
@@ -59,6 +65,7 @@ public:
 	Tile &getTile(const std::string &name);
 	Item &getItem(const std::string &name);
 	Cygnet::RenderSprite &getSprite(const std::string &name);
+	SoundAsset *getSound(const std::string &name);
 
 	Cygnet::Color backgroundColor();
 	void draw(Cygnet::Renderer &rnd);
@@ -85,6 +92,7 @@ public:
 	// Mods must be loaded before resources.
 	std::vector<ModWrapper> mods_;
 	Cygnet::ResourceManager resources_;
+	std::unordered_map<std::string, SoundAsset> sounds_;
 
 	EntityRef playerRef_;
 	BodyTrait::Body *player_;
@@ -96,7 +104,7 @@ private:
 	};
 
 	std::vector<ModWrapper> loadMods(std::vector<std::string> paths);
-	Cygnet::ResourceManager buildResources();
+	void buildResources();
 
 	ChunkRenderer chunkRenderer_;
 	WorldPlane::ID currentPlane_;

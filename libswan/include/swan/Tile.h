@@ -6,8 +6,11 @@
 #include <optional>
 
 #include "common.h"
+#include "assets.h"
 
 namespace Swan {
+
+struct Item;
 
 struct Tile {
 	using ID = uint16_t;
@@ -23,6 +26,8 @@ struct Tile {
 		bool isOpaque = isSolid;
 		float lightLevel = 0;
 		std::optional<std::string> droppedItem = std::nullopt;
+		std::optional<std::string> stepSound = std::nullopt;
+		std::optional<std::string> breakSound = std::nullopt;
 
 		void (*onSpawn)(const Context &ctx, TilePos pos) = nullptr;
 		void (*onBreak)(const Context &ctx, TilePos pos) = nullptr;
@@ -36,7 +41,9 @@ struct Tile {
 	bool isSolid;
 	bool isOpaque;
 	float lightLevel;
-	std::optional<std::string> droppedItem;
+	Item *droppedItem = nullptr;
+	SoundAsset *stepSounds[2] = {nullptr, nullptr};
+	SoundAsset *breakSound = nullptr;
 
 	void (*onSpawn)(const Context &ctx, TilePos pos);
 	void (*onBreak)(const Context &ctx, TilePos pos);
@@ -48,7 +55,6 @@ struct Tile {
 		id(id), name(name),
 		isSolid(builder.isSolid), isOpaque(builder.isOpaque),
 		lightLevel(builder.lightLevel),
-		droppedItem(builder.droppedItem),
 		onSpawn(builder.onSpawn), onBreak(builder.onBreak),
 		onTileUpdate(builder.onTileUpdate),
 		traits(builder.traits)

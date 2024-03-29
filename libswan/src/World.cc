@@ -37,9 +37,9 @@ std::vector<ModWrapper> World::loadMods(std::vector<std::string> paths)
 	return mods;
 }
 
-Cygnet::ResourceManager World::buildResources()
+void World::buildResources()
 {
-	Cygnet::ResourceBuilder builder(game_->renderer_);
+	Cygnet::ResourceBuilder builder(&game_->renderer_);
 
 	auto fillTileImage = [&](unsigned char *data, int r, int g, int b, int a) {
 		for (size_t i = 0; i < TILE_SIZE * TILE_SIZE; ++i) {
@@ -49,6 +49,48 @@ Cygnet::ResourceManager World::buildResources()
 			data[i * 4 + 2] = a;
 		}
 	};
+
+	// Assets are namespaced on the mod, so if something references, say,
+	// "core::stone", we need to know which directory the "core" mod is in
+	for (auto &mod: mods_) {
+		modPaths_[mod.name()] = mod.path_;
+	}
+
+	modPaths_["@"] = ".";
+
+	// Load built-in sounds.
+	sounds_[INVALID_SOUND_NAME] = SoundAsset{};
+	if (auto thud = loadSoundAsset(modPaths_, "@::sounds/thud")) {
+		sounds_[THUD_SOUND_NAME] = std::move(thud.value());
+	}
+	else {
+		warn
+			<< "Failed to load built-in sound " << THUD_SOUND_NAME
+			<< ": " << thud.err();
+		sounds_[THUD_SOUND_NAME] = SoundAsset{};
+	}
+
+	// Load sounds.
+	for (auto &mod: mods_) {
+		for (auto soundPath: mod.sounds()) {
+			std::string name = cat(mod.name(), "::", soundPath);
+			auto soundResult = loadSoundAsset(modPaths_, name);
+			SoundAsset sound;
+
+			if (soundResult) {
+				sounds_[name] = std::move(soundResult.value());
+			}
+			else {
+				warn << '\'' << name << ": " << soundResult.err();
+				sounds_[name] = SoundAsset{};
+			}
+		}
+	}
+
+	// After this point, 'sounds_' *must* be unchanged.
+	// We rely on pointers to be stable from now on.
+	SoundAsset *fallbackSound = &sounds_[INVALID_SOUND_NAME];
+	SoundAsset *thudSound = &sounds_[THUD_SOUND_NAME];
 
 	struct ImageAsset fallbackImage = {
 		.width = 32,
@@ -87,10 +129,11 @@ Cygnet::ResourceManager World::buildResources()
 		.name = "", .image = "", // Not used in this case
 	}));
 
-	// Assets are namespaced on the mod, so if something references, say,
-	// "core::stone", we need to know which directory the "core" mod is in
-	for (auto &mod: mods_) {
-		modPaths_[mod.name()] = mod.path_;
+	// Set sounds for all built-in tiles
+	for (auto &tile: tiles_) {
+		tile.stepSounds[0] = fallbackSound;
+		tile.stepSounds[1] = fallbackSound;
+		tile.breakSound = fallbackSound;
 	}
 
 	auto loadTileImage = [&](std::string path) -> Result<ImageAsset> {
@@ -144,6 +187,28 @@ Cygnet::ResourceManager World::buildResources()
 
 			tilesMap_[tileName] = tileId;
 			tiles_.push_back(Tile(tileId, tileName, std::move(tileBuilder)));
+			auto &tile = tiles_.back();
+
+			if (tileBuilder.breakSound) {
+				tile.breakSound = getSound(tileBuilder.breakSound.value());
+			}
+			else {
+				tile.breakSound = thudSound;
+			}
+
+			if (tileBuilder.stepSound) {
+				auto &s = tileBuilder.stepSound.value();
+				tile.stepSounds[0] = getSound(cat(s, "1"));
+				tile.stepSounds[1] = getSound(cat(s, "2"));
+			}
+			else if (tile.isSolid) {
+				tile.stepSounds[0] = thudSound;
+				tile.stepSounds[1] = thudSound;
+			}
+			else {
+				tile.stepSounds[0] = fallbackSound;
+				tile.stepSounds[1] = fallbackSound;
+			}
 		}
 	}
 
@@ -180,7 +245,7 @@ Cygnet::ResourceManager World::buildResources()
 		}
 	}
 
-	// Load recipes
+	// Load recipes.
 	std::vector<Recipe::Items> recipeInputs;
 	for (auto &mod: mods_) {
 		for (auto &recipeBuilder: mod.recipes()) {
@@ -203,22 +268,30 @@ Cygnet::ResourceManager World::buildResources()
 		}
 	}
 
-	// Load sprites
+	// Load built-in sprites.
+	builder.addSprite(INVALID_SPRITE_NAME, fallbackImage.data.get(), {
+		.width = fallbackImage.width,
+		.height = fallbackImage.frameHeight * fallbackImage.frameCount,
+		.frameHeight = fallbackImage.frameHeight,
+		.repeatFrom = fallbackImage.repeatFrom,
+	});
+
+	// Load sprites.
 	for (auto &mod: mods_) {
 		for (auto spritePath: mod.sprites()) {
-			std::string path = cat(mod.name(), "::", spritePath);
-			auto imageResult = loadImageAsset(modPaths_, path);
+			std::string name = cat(mod.name(), "::", spritePath);
+			auto imageResult = loadImageAsset(modPaths_, name);
 			ImageAsset *image;
 
 			if (imageResult) {
 				image = &imageResult.value();
 			}
 			else {
-				warn << '\'' << path << "': " << imageResult.err();
+				warn << '\'' << name << "': " << imageResult.err();
 				image = &fallbackImage;
 			}
 
-			builder.addSprite(path, image->data.get(), {
+			builder.addSprite(name, image->data.get(), {
 				.width = image->width,
 				.height = image->frameHeight * image->frameCount,
 				.frameHeight = image->frameHeight,
@@ -227,7 +300,18 @@ Cygnet::ResourceManager World::buildResources()
 		}
 	}
 
-	// Load world gens and entities
+	// Fix up tiles.
+	for (auto &mod: mods_) {
+		for (auto &tileBuilder: mod.tiles()) {
+			std::string name = cat(mod.name(), "::", tileBuilder.name);
+			Tile &tile = tiles_[tilesMap_[name]];
+			if (tileBuilder.droppedItem) {
+				tile.droppedItem = &getItem(tileBuilder.droppedItem.value());
+			}
+		}
+	}
+
+	// Load world gens and entities.
 	for (auto &mod: mods_) {
 		for (auto &worldGenFactory: mod.worldGens()) {
 			std::string name = cat(mod.name(), "::", worldGenFactory.name);
@@ -240,13 +324,15 @@ Cygnet::ResourceManager World::buildResources()
 		}
 	}
 
-	return Cygnet::ResourceManager(std::move(builder));
+	resources_ = Cygnet::ResourceManager(std::move(builder));
 }
 
 World::World(Game *game, unsigned long randSeed, std::vector<std::string> modPaths):
-	game_(game), random_(randSeed), mods_(loadMods(std::move(modPaths))),
-	resources_(buildResources())
-{}
+	game_(game), random_(randSeed)
+{
+	mods_ = loadMods(std::move(modPaths));
+	buildResources();
+}
 
 World::~World()
 {
@@ -356,10 +442,22 @@ Cygnet::RenderSprite &World::getSprite(const std::string &name)
 
 	if (iter == resources_.sprites_.end()) {
 		warn << "Tried to get non-existent sprite " << name << "!";
-		return resources_.sprites_.at(INVALID_TILE_NAME);
+		return resources_.sprites_.at(INVALID_SPRITE_NAME);
 	}
 
 	return iter->second;
+}
+
+SoundAsset *World::getSound(const std::string &name)
+{
+	auto iter = sounds_.find(name);
+
+	if (iter == sounds_.end()) {
+		warn << "Tried to get non-existent sound " << name << "!";
+		return &sounds_.at(INVALID_SOUND_NAME);
+	}
+
+	return &iter->second;
 }
 
 Cygnet::Color World::backgroundColor()

@@ -162,6 +162,11 @@ SoundPlayer::~SoundPlayer()
 
 void SoundPlayer::play(SoundAsset *asset, std::shared_ptr<Handle> handle)
 {
+	if (!asset) {
+		warn << "Attempt to play null asset";
+		return;
+	}
+
 	if (!ok_) {
 		handle->done = true;
 		return;

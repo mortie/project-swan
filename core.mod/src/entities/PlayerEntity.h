@@ -33,6 +33,14 @@ public:
 	PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) override;
 
 private:
+	enum class State {
+		IDLE,
+		RUNNING,
+		JUMPING,
+		FALLING,
+		LANDING,
+	};
+
 	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
 		.size = {0.6, 1.9},
 		.mass = 80,
@@ -48,25 +56,18 @@ private:
 	static constexpr float LADDER_CLIMB_FORCE = 70 * PROPS.mass;
 	static constexpr float LADDER_MAX_VEL = 5;
 
-	enum class State {
-		IDLE,
-		RUNNING,
-		JUMPING,
-		FALLING,
-		LANDING,
-	};
-
-	void onRightClick(const Swan::Context &ctx);
-	void craft(const Swan::Recipe &recipe);
-	void dropItem(const Swan::Context &ctx);
-
 	PlayerEntity(const Swan::Context &ctx):
 		idleAnimation_(ctx.world.getSprite("core::entities/player/idle"), 0.2),
 		runningAnimation_(ctx.world.getSprite("core::entities/player/running"), 0),
 		fallingAnimation_(ctx.world.getSprite("core::entities/player/falling"), 0.1),
 		jumpingAnimation_(ctx.world.getSprite("core::entities/player/jumping"), 0.1),
-		landingAnimation_(ctx.world.getSprite("core::entities/player/landing"), 0.1)
+		landingAnimation_(ctx.world.getSprite("core::entities/player/landing"), 0.1),
+		snapSound_(ctx.world.getSound("core::sounds/snap"))
 	{}
+
+	void onRightClick(const Swan::Context &ctx);
+	void craft(const Swan::Recipe &recipe);
+	void dropItem(const Swan::Context &ctx);
 
 	State state_ = State::IDLE;
 	Swan::Animation idleAnimation_;
@@ -76,6 +77,8 @@ private:
 	Swan::Animation landingAnimation_;
 	Swan::Animation *currentAnimation_ = &idleAnimation_;
 
+	Swan::SoundAsset *snapSound_;
+
 	Swan::Clock jumpTimer_;
 	float invincibleTimer_ = 0;
 	Swan::TilePos mouseTile_;
@@ -83,6 +86,8 @@ private:
 	int lastDirection_ = 1;
 	bool sprinting_ = false;
 	bool showInventory_ = false;
+	float stepTimer_ = 0;
+	int stepIndex_ = 0;
 
 	Swan::BasicInventory inventory_{INVENTORY_SIZE};
 	Swan::BasicPhysicsBody physicsBody_{PROPS};

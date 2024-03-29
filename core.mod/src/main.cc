@@ -29,6 +29,12 @@ public:
 		registerSprite("entities/spider/idle");
 		registerSprite("misc/background-cave");
 
+		registerSound("sounds/step/grass1");
+		registerSound("sounds/step/grass2");
+		registerSound("sounds/break/dirt");
+		registerSound("sounds/break/leaves");
+		registerSound("sounds/snap");
+
 		registerTile({
 			.name = "stone",
 			.image = "core::tiles/stone",
@@ -37,6 +43,8 @@ public:
 		registerTile({
 			.name = "dirt",
 			.image = "core::tiles/dirt",
+			.stepSound = "core::sounds/step/grass",
+			.breakSound = "core::sounds/break/dirt",
 			.droppedItem = "core::dirt",
 		});
 		registerTile({
@@ -47,7 +55,9 @@ public:
 		});
 		registerTile({
 			.name = "grass",
+			.stepSound = "core::sounds/step/grass",
 			.image = "core::tiles/grass",
+			.breakSound = "core::sounds/break/dirt",
 			.droppedItem = "core::dirt",
 		});
 		registerTile({
@@ -63,6 +73,8 @@ public:
 			.name = "tree-leaves",
 			.image = "core::tiles/leaves",
 			.isSolid = false,
+			.stepSound = "core::sounds/step/grass",
+			.breakSound = "core::sounds/break/leaves",
 			.onTileUpdate = breakTreeLeavesIfFloating,
 			.traits = std::make_shared<TreeLeavesTrait>(),
 		});
@@ -82,6 +94,7 @@ public:
 			.name = "tall-grass",
 			.image = "core::tiles/tall-grass",
 			.isSolid = false,
+			.breakSound = "core::sounds/break/leaves",
 			.onBreak = +[] (const Swan::Context &ctx, Swan::TilePos pos) {
 				for (int i = 0; i < 3; ++i) {
 					if (Swan::randfloat() > 0.25) {

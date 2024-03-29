@@ -22,7 +22,12 @@ inline void Mod::registerRecipe(Recipe::Builder &&recipe)
 
 inline void Mod::registerSprite(std::string &&sprite)
 {
-	sprites_.push_back(sprite);
+	sprites_.push_back(std::move(sprite));
+}
+
+inline void Mod::registerSound(std::string &&sound)
+{
+	sounds_.push_back(std::move(sound));
 }
 
 template<typename WG>

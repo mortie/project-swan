@@ -80,15 +80,19 @@ static void cascadeRopeLadder(const Swan::Context &ctx, Swan::TilePos pos)
 	}
 
 	// Spawn tile below
-	Swan::TilePos belowPos = pos.add(0, 1);
-	if (remainingLength > 0 && ctx.plane.getTile(belowPos).name == "@::air") {
-		if (remainingLength == 1) {
-			ctx.plane.setTile(belowPos, "core::rope-ladder-bottom::" + ropeLadderTrait->direction);
+	ctx.plane.nextTick([=](const Swan::Context &ctx) {
+		Swan::TilePos belowPos = pos.add(0, 1);
+		if (remainingLength > 0 && ctx.plane.getTile(belowPos).name == "@::air") {
+			if (remainingLength == 1) {
+				ctx.plane.setTile(belowPos, Swan::cat(
+					"core::rope-ladder::bottom::", ropeLadderTrait->direction));
+			}
+			else {
+				ctx.plane.setTile(belowPos, Swan::cat(
+					"core::rope-ladder::middle::", ropeLadderTrait->direction));
+			}
 		}
-		else {
-			ctx.plane.setTile(belowPos, "core::rope-ladder-middle::" + ropeLadderTrait->direction);
-		}
-	}
+	});
 }
 
 void registerRopeLadder(Swan::Mod &mod)

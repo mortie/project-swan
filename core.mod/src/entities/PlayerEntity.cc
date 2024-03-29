@@ -145,6 +145,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	};
 	auto &midTile = ctx.plane.getTile(midTilePos);
 
+	// Figure out what tile is below us
+	auto belowTilePos = Swan::TilePos{
+		(int)floor(physicsBody_.body.midX()),
+		(int)floor(physicsBody_.body.bottom() + 0.1),
+	};
+	auto &belowTile = ctx.plane.getTile(belowTilePos);
+
 	bool inLadder = dynamic_cast<LadderTileTrait *>(midTile.traits.get());
 
 	// Select item slots
@@ -243,6 +250,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		state_ = State::RUNNING;
 		lastDirection_ = -1;
 		physicsBody_.force += Swan::Vec2(-moveForce, 0);
+
 	}
 	else if (runDirection > 0) {
 		state_ = State::RUNNING;
@@ -322,6 +330,26 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		invincibleTimer_ -= dt;
 	}
 
+	if (state_ == State::RUNNING) {
+		stepTimer_ -= dt;
+		if (stepTimer_ <= 0) {
+			auto *sound = belowTile.stepSounds[stepIndex_];
+			ctx.game.playSound(sound);
+
+			stepIndex_ = (stepIndex_ + 1) % 2;
+			stepTimer_ += sprinting_ ? 0.28 : 0.4;
+		}
+	}
+	else if (state_ == State::LANDING && oldState != State::LANDING) {
+		auto *sound = belowTile.stepSounds[stepIndex_];
+		ctx.game.playSound(sound);
+		stepIndex_ = (stepIndex_ + 1) % 2;
+		stepTimer_ = 0.2;
+	}
+	else {
+		stepTimer_ = 0.2;
+	}
+
 	// Collide with stuff
 	for (auto &c: ctx.plane.getCollidingEntities(physicsBody_.body)) {
 		auto *entity = c.ref.get();
@@ -338,6 +366,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 			stack = inventory_.insert(stack);
 			if (stack.empty()) {
 				ctx.plane.despawnEntity(c.ref);
+				ctx.game.playSound(snapSound_);
 			}
 			continue;
 		}

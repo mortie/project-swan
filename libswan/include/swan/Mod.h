@@ -25,6 +25,7 @@ public:
 	void registerItem(Item::Builder &&item);
 	void registerRecipe(Recipe::Builder &&recipe);
 	void registerSprite(std::string &&sprite);
+	void registerSound(std::string &&sprite);
 
 	template<typename WG>
 	void registerWorldGen(std::string name);
@@ -41,6 +42,7 @@ private:
 	std::vector<Item::Builder> items_;
 	std::vector<Recipe::Builder> recipes_;
 	std::vector<std::string> sprites_;
+	std::vector<std::string> sounds_;
 	std::vector<WorldGen::Factory> worldGens_;
 	std::vector<EntityCollection::Factory> entities_;
 
@@ -85,6 +87,11 @@ public:
 	const std::vector<std::string> &sprites()
 	{
 		return mod_->sprites_;
+	}
+
+	const std::vector<std::string> &sounds()
+	{
+		return mod_->sounds_;
 	}
 
 	const std::vector<WorldGen::Factory> &worldGens()

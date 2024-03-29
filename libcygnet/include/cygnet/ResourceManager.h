@@ -22,7 +22,7 @@ class ResourceManager;
 
 class ResourceBuilder {
 public:
-	ResourceBuilder(Renderer &rnd): rnd_(rnd)
+	ResourceBuilder(Renderer *rnd): rnd_(rnd)
 	{}
 
 	struct SpriteMeta {
@@ -38,7 +38,7 @@ public:
 	void addTile(Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames = 1);
 
 private:
-	Renderer &rnd_;
+	Renderer *rnd_;
 	std::unordered_map<std::string, RenderSprite> sprites_;
 	std::vector<ResourceTileAnimation> tileAnims_;
 	TileAtlas atlas_;
@@ -48,12 +48,16 @@ private:
 
 class ResourceManager {
 public:
-	ResourceManager(ResourceBuilder &&builder);
+	ResourceManager() = default;
+	ResourceManager(ResourceBuilder &&);
+	ResourceManager(ResourceManager &&) = default;
 	~ResourceManager();
+
+	ResourceManager &operator=(ResourceManager &&) = default;
 
 	void tick();
 
-	Renderer &rnd_;
+	Renderer *rnd_ = nullptr;
 	std::unordered_map<std::string, RenderSprite> sprites_;
 	std::unordered_map<std::string, Renderer::TileID> tiles_;
 	std::vector<ResourceTileAnimation> tileAnims_;
@@ -62,7 +66,7 @@ public:
 inline RenderSprite ResourceBuilder::addSprite(
 	std::string name, void *data, SpriteMeta meta)
 {
-	return sprites_[std::move(name)] = rnd_.createSprite(
+	return sprites_[std::move(name)] = rnd_->createSprite(
 		data, meta.width, meta.height, meta.frameHeight, meta.repeatFrom);
 }
 

@@ -168,8 +168,15 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id)
 {
 	setTileIDWithoutUpdate(pos, id);
 
-	// Schedule tile updates
-	scheduledTileUpdates_.push_back(pos);
+	// Update the new tile immediately
+	auto &tile = world_->getTileByID(id);
+	if (tile.onTileUpdate) {
+		tile.onTileUpdate(getContext(), pos);
+	}
+
+	world_->game_->playSound(tile.breakSound);
+
+	// Schedule surrounding tile updates for later
 	scheduledTileUpdates_.push_back(pos.add(-1, 0));
 	scheduledTileUpdates_.push_back(pos.add(0, -1));
 	scheduledTileUpdates_.push_back(pos.add(1, 0));
@@ -237,9 +244,8 @@ void WorldPlane::breakTile(TilePos pos)
 {
 	// If the block is already air, do nothing
 	Tile::ID id = getTileID(pos);
-	Tile::ID air = world_->getTileID("@::air");
 
-	if (id == air) {
+	if (id == World::AIR_TILE_ID) {
 		return;
 	}
 
@@ -250,8 +256,15 @@ void WorldPlane::breakTile(TilePos pos)
 		tile.onBreak(ctx, pos);
 	}
 
+	if (tile.breakSound) {
+		world_->game_->playSound(tile.breakSound);
+	}
+	else {
+		world_->game_->playSound(world_->getSound(World::THUD_SOUND_NAME));
+	}
+
 	// Change tile to air and emit event
-	setTileID(pos, air);
+	setTileIDWithoutUpdate(pos, World::AIR_TILE_ID);
 	world_->evtTileBreak_.emit(getContext(), pos, world_->getTileByID(id));
 
 	// Schedule tile updates

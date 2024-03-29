@@ -9,13 +9,13 @@ ResourceManager::ResourceManager(ResourceBuilder &&builder):
 	size_t width, height;
 	const unsigned char *data = builder.atlas_.getImage(&width, &height);
 
-	rnd_.uploadTileAtlas(data, width, height);
+	rnd_->uploadTileAtlas(data, width, height);
 }
 
 ResourceManager::~ResourceManager()
 {
 	for (auto &[name, sprite]: sprites_) {
-		rnd_.destroySprite(sprite);
+		rnd_->destroySprite(sprite);
 	}
 }
 
@@ -26,7 +26,7 @@ void ResourceManager::tick()
 		anim.index = (anim.index + 1) % anim.frames;
 		unsigned char *data = anim.data.get() +
 			SwanCommon::TILE_SIZE * SwanCommon::TILE_SIZE * 4 * anim.index;
-		rnd_.modifyTile(anim.id, data);
+		rnd_->modifyTile(anim.id, data);
 	}
 }
 
