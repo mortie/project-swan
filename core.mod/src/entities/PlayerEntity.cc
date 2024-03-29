@@ -71,7 +71,7 @@ void PlayerEntity::ui(const Swan::Context &ctx)
 
 		itemCounts[stack.item()] += stack.count();
 		char sel = ' ';
-		if (i == selectedInventorySlot_) {
+		if (i == (size_t)selectedInventorySlot_) {
 			sel = 'x';
 		}
 

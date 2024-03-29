@@ -1,7 +1,6 @@
 #include "SoundPlayer.h"
 
 #include <portaudio.h>
-#include <chrono>
 #include <thread>
 
 #include "log.h"

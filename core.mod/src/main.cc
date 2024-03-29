@@ -11,10 +11,6 @@
 #include "world/tree.h"
 #include "world/util.h"
 
-#include <thread>
-#include <atomic>
-#include <chrono>
-
 namespace CoreMod {
 
 class CoreMod: public Swan::Mod {
@@ -55,8 +51,8 @@ public:
 		});
 		registerTile({
 			.name = "grass",
-			.stepSound = "core::sounds/step/grass",
 			.image = "core::tiles/grass",
+			.stepSound = "core::sounds/step/grass",
 			.breakSound = "core::sounds/break/dirt",
 			.droppedItem = "core::dirt",
 		});

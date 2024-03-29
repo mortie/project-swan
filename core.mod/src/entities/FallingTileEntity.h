@@ -28,8 +28,8 @@ public:
 
 private:
 	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
-		.mass = 80,
 		.size = {1, 1},
+		.mass = 80,
 	};
 	static constexpr float DESPAWN_TIME = 5 * 60;
 

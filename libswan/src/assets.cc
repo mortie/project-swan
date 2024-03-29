@@ -292,7 +292,7 @@ Result<SoundAsset> loadSoundAsset(
 
 	float *bufs[] = {asset.l, asset.r};
 	int n = stb_vorbis_get_samples_float(vorbis, info.channels, bufs, samples);
-	if (n != samples) {
+	if (n != (int)samples) {
 		return {Err, cat(
 			"Invalid sample count: ", std::to_string(n),
 			", expected ", std::to_string(samples))};

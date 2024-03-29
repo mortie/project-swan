@@ -25,9 +25,9 @@ struct Tile {
 		bool isSolid = true;
 		bool isOpaque = isSolid;
 		float lightLevel = 0;
-		std::optional<std::string> droppedItem = std::nullopt;
 		std::optional<std::string> stepSound = std::nullopt;
 		std::optional<std::string> breakSound = std::nullopt;
+		std::optional<std::string> droppedItem = std::nullopt;
 
 		void (*onSpawn)(const Context &ctx, TilePos pos) = nullptr;
 		void (*onBreak)(const Context &ctx, TilePos pos) = nullptr;
@@ -41,9 +41,9 @@ struct Tile {
 	bool isSolid;
 	bool isOpaque;
 	float lightLevel;
-	Item *droppedItem = nullptr;
 	SoundAsset *stepSounds[2] = {nullptr, nullptr};
 	SoundAsset *breakSound = nullptr;
+	Item *droppedItem = nullptr;
 
 	void (*onSpawn)(const Context &ctx, TilePos pos);
 	void (*onBreak)(const Context &ctx, TilePos pos);

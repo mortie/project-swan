@@ -29,8 +29,8 @@ public:
 
 private:
 	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
-		.mass = 20,
 		.size = {0.8, 0.2},
+		.mass = 20,
 	};
 	static constexpr float FUSE_TIME = 5;
 

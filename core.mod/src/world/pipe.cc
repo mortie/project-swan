@@ -1,5 +1,7 @@
 #include "pipe.h"
 
+#include <array>
+
 namespace CoreMod {
 
 struct PipeTileTrait: PipeConnectableTileTrait {
@@ -7,6 +9,28 @@ struct PipeTileTrait: PipeConnectableTileTrait {
 	{}
 	std::string prefix;
 };
+
+constexpr std::array<const char *, 16> DIRECTION_LUT = []() {
+	// LEFT | RIGHT | UP | DOWN
+	std::array<const char *, 16> lut;
+	lut[0b0000] = "lone";
+	lut[0b1000] = "open::l";
+	lut[0b0100] = "open::r";
+	lut[0b0010] = "open::u";
+	lut[0b0001] = "open::d";
+	lut[0b1100] = "line::h";
+	lut[0b0011] = "line::v";
+	lut[0b1010] = "elbow::lu";
+	lut[0b1001] = "elbow::ld";
+	lut[0b0110] = "elbow::ru";
+	lut[0b0101] = "elbow::rd";
+	lut[0b1110] = "tee::lru";
+	lut[0b1101] = "tee::lrd";
+	lut[0b1011] = "tee::udl";
+	lut[0b0111] = "tee::udr";
+	lut[0b1111] = "cross";
+	return lut;
+}();
 
 static void onPipeUpdate(const Swan::Context &ctx, Swan:: TilePos pos)
 {
@@ -24,26 +48,7 @@ static void onPipeUpdate(const Swan::Context &ctx, Swan:: TilePos pos)
 			(check(0, -1) << 1) | // up
 			(check(0, 1) << 0); // down
 
-	constexpr const char *lut[] = {
-		[0b0000] = "lone",
-		[0b1000] = "open::l",
-		[0b0100] = "open::r",
-		[0b0010] = "open::u",
-		[0b0001] = "open::d",
-		[0b1100] = "line::h",
-		[0b0011] = "line::v",
-		[0b1010] = "elbow::lu",
-		[0b1001] = "elbow::ld",
-		[0b0110] = "elbow::ru",
-		[0b0101] = "elbow::rd",
-		[0b1110] = "tee::lru",
-		[0b1101] = "tee::lrd",
-		[0b1011] = "tee::udl",
-		[0b0111] = "tee::udr",
-		[0b1111] = "cross",
-	};
-
-	std::string name = Swan::cat(prefix, "::", lut[key]);
+	std::string name = Swan::cat(prefix, "::", DIRECTION_LUT[key]);
 
 	if (name != tile.name) {
 		Swan::info << "Update: " << tile.name << " -> " << name;
