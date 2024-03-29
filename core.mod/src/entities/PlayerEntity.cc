@@ -250,7 +250,6 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		state_ = State::RUNNING;
 		lastDirection_ = -1;
 		physicsBody_.force += Swan::Vec2(-moveForce, 0);
-
 	}
 	else if (runDirection > 0) {
 		state_ = State::RUNNING;
