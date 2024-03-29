@@ -286,7 +286,10 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 	auto ctx = getContext();
 	auto &pbody = *(world_->player_);
 
-	gen_->drawBackground(ctx, rnd, pbody.pos);
+	{
+		ZoneScopedN("Draw background");
+		gen_->drawBackground(ctx, rnd, pbody.pos);
+	}
 
 	ChunkPos pcpos = ChunkPos(
 		(int)floor(pbody.pos.x / CHUNK_WIDTH),
@@ -296,6 +299,7 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 		for (int y = -1; y <= 1; ++y) {
 			auto iter = chunks_.find(pcpos + ChunkPos(x, y));
 			if (iter != chunks_.end()) {
+				ZoneScopedN("Chunk");
 				Chunk &chunk = iter->second;
 				chunk.draw(ctx, rnd);
 
@@ -311,7 +315,10 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 		coll->draw(ctx, rnd);
 	}
 
-	lighting_->flip();
+	{
+		ZoneScopedN("Lighting flip");
+		lighting_->flip();
+	}
 }
 
 void WorldPlane::ui()

@@ -95,6 +95,7 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
 		for (auto &change: changeList_) {
 			rnd.modifyChunk(renderChunk_, change.first, change.second);
 		}
+		changeList_.clear();
 	}
 
 	if (needLightRender_) {
