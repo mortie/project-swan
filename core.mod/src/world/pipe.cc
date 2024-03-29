@@ -51,7 +51,6 @@ static void onPipeUpdate(const Swan::Context &ctx, Swan:: TilePos pos)
 	std::string name = Swan::cat(prefix, "::", DIRECTION_LUT[key]);
 
 	if (name != tile.name) {
-		Swan::info << "Update: " << tile.name << " -> " << name;
 		ctx.plane.setTile(pos, name);
 	}
 }

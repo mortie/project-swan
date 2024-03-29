@@ -51,6 +51,7 @@ struct Tile {
 
 	std::shared_ptr<Traits> traits;
 
+	Tile() = default;
 	Tile(ID id, std::string name, const Builder &builder):
 		id(id), name(name),
 		isSolid(builder.isSolid), isOpaque(builder.isOpaque),

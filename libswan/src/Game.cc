@@ -69,6 +69,10 @@ void Game::draw()
 
 		ImGui::Text("Give Item:");
 		for (auto &[name, item]: world_->items_) {
+			if (item.hidden) {
+				continue;
+			}
+
 			if (ImGui::Button(name.c_str())) {
 				auto *inventory = world_->playerRef_.trait<InventoryTrait>();
 				info << "Giving player " << name;

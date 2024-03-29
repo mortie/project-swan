@@ -166,6 +166,8 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos)
 
 void WorldPlane::setTileID(TilePos pos, Tile::ID id)
 {
+	Tile::ID oldTileID = getTileID(pos);
+
 	setTileIDWithoutUpdate(pos, id);
 
 	// Update the new tile immediately
@@ -174,7 +176,9 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id)
 		tile.onTileUpdate(getContext(), pos);
 	}
 
-	world_->game_->playSound(tile.breakSound);
+	if (oldTileID == World::AIR_TILE_ID) {
+		world_->game_->playSound(tile.breakSound);
+	}
 
 	// Schedule surrounding tile updates for later
 	scheduledTileUpdates_.push_back(pos.add(-1, 0));

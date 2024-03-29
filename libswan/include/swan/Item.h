@@ -28,9 +28,12 @@ public:
 	int maxStack;
 	Tile *tile;
 
+	bool hidden = true;
+
 	void (*onActivate)(
 		const Context &ctx, InventorySlot slot, Vec2 pos, Vec2 dir);
 
+	Item() = default;
 	Item(Tile::ID id, std::string name, const Builder &builder):
 		id(id), name(name), maxStack(builder.maxStack), tile(nullptr),
 		onActivate(builder.onActivate)

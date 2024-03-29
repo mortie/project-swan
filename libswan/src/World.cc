@@ -114,9 +114,9 @@ void World::buildResources()
 		.name = "", .image = "", // Not used in this case
 		.isSolid = false,
 	}));
-	items_.emplace(INVALID_TILE_NAME, Item(INVALID_TILE_ID, INVALID_TILE_NAME, {
+	items_[INVALID_TILE_NAME] = Item(INVALID_TILE_ID, INVALID_TILE_NAME, {
 		.name = "", .image = "", // Not used in this case
-	}));
+	});
 
 	// ...And tile ID 1 be the air tile
 	builder.addTile(AIR_TILE_ID, std::move(airImage));
@@ -125,9 +125,9 @@ void World::buildResources()
 		.name = "", .image = "", // Not used in this case
 		.isSolid = false,
 	}));
-	items_.emplace(AIR_TILE_NAME, Item(AIR_TILE_ID, AIR_TILE_NAME, {
+	items_[AIR_TILE_NAME] = Item(AIR_TILE_ID, AIR_TILE_NAME, {
 		.name = "", .image = "", // Not used in this case
-	}));
+	});
 
 	// Set sounds for all built-in tiles
 	for (auto &tile: tiles_) {
@@ -212,10 +212,19 @@ void World::buildResources()
 		}
 	}
 
-	// Create a dummy item for each tile.
-	for (auto &tile: tiles_) {
-		items_.emplace(tile.name, Item(tile.id, tile.name, {}));
-		items_.at(tile.name).tile = &tile;
+	// Create items representing tiles.
+	for (auto &mod: mods_) {
+		for (auto &tileBuilder: mod.tiles()) {
+			auto &tile = tiles_[tilesMap_[cat(mod.name(), "::", tileBuilder.name)]];
+			auto &item = items_[tile.name] = Item(tile.id, tile.name, {});
+
+			item.tile = &tile;
+
+			// Tiles whose names contain '::' are "variants".
+			// Convention is to have one tile without a '::' which represents
+			// the "logical" tile, and then make variants with '::' in the name.
+			item.hidden = tileBuilder.name.find("::") != std::string::npos;
+		}
 	}
 
 	// Put all items after all the tiles
@@ -237,10 +246,10 @@ void World::buildResources()
 				builder.addTile(itemId, fallbackImage.data.get());
 			}
 
-			items_.erase(itemName);
-			items_.emplace(itemName, Item(itemId, itemName, itemBuilder));
+			auto &item = items_[itemName] = Item(itemId, itemName, itemBuilder);
+			item.hidden = false;
 			if (itemBuilder.tile) {
-				items_.at(itemName).tile = &getTile(itemBuilder.tile.value());
+				item.tile = &getTile(itemBuilder.tile.value());
 			}
 		}
 	}
