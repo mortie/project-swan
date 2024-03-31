@@ -8,12 +8,12 @@ namespace CoreMod {
 
 static int getGrassLevel(const siv::PerlinNoise &perlin, int x)
 {
-	return (int)(perlin.noise(x / 50.0, 0) * 13);
+	return (int)(perlin.noise2D(x / 50.0, 0) * 13);
 }
 
 static int getStoneLevel(const siv::PerlinNoise &perlin, int x)
 {
-	return (int)(perlin.noise(x / 50.0, 10) * 10) + 10;
+	return (int)(perlin.noise2D(x / 50.0, 10) * 10) + 10;
 }
 
 static int getPlayerX(const siv::PerlinNoise &perlin)
@@ -48,7 +48,7 @@ Swan::Tile::ID DefaultWorldGen::genTile(Swan::TilePos pos)
 	int stoneLevel = getStoneLevel(perlin_, pos.x);
 
 	// Caves
-	if (pos.y > grassLevel + 7 && perlin_.noise(pos.x / 43.37, pos.y / 16.37) > 0.2) {
+	if (pos.y > grassLevel + 7 && perlin_.noise2D(pos.x / 43.37, pos.y / 16.37) > 0.2) {
 		return tAir_;
 	}
 
@@ -80,7 +80,7 @@ Swan::Tile::ID DefaultWorldGen::genTile(Swan::TilePos pos)
 	else if (pos.y == grassLevel) {
 		return tGrass_;
 	}
-	else if (pos.y == grassLevel - 1 && perlin_.noise(pos.x / 20.6, 0) > 0.2) {
+	else if (pos.y == grassLevel - 1 && perlin_.noise2D(pos.x / 20.6, 0) > 0.2) {
 		return tTallGrass_;
 	}
 	else{
@@ -97,7 +97,7 @@ void DefaultWorldGen::initializeTile(const Swan::Context &ctx, Swan::TilePos pos
 
 	// Spawn mobs
 	if (pos.y == grassLevel - 1 && playerDist > 20) {
-		double r = perlin_.noise(pos.x * 87.411, 10);
+		double r = perlin_.noise2D(pos.x * 87.411, 10);
 		if (r < -0.75) {
 			ctx.plane.spawnEntity<SpiderEntity>(pos);
 		}

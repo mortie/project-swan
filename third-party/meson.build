@@ -28,11 +28,11 @@ libimgui = declare_dependency(
 )
 
 libmsgpack = declare_dependency(
-  include_directories: 'msgpack-c/include'
+  include_directories: 'msgpack-c/include',
 )
 
 libperlinnoise = declare_dependency(
-  include_directories: 'PerlinNoise'
+  include_directories: 'PerlinNoise',
 )
 
 if libdw.found()
