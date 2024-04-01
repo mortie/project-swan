@@ -232,6 +232,11 @@ int main(int argc, char **argv)
 			slowFrames = 0;
 		}
 
+		// Scale delta time by time scale.
+		// Everything after this will use a scaled delta time
+		// rather than the real delta time.
+		dt *= game.timeScale_;
+
 		// Simple case: we can keep up, only need one physics update
 		if (dt <= 1 / 25.0) {
 			ZoneScopedN("game update");

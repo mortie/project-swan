@@ -62,12 +62,12 @@ void Game::draw()
 		ImGui::Checkbox("Draw collision boxes", &debugDrawCollisionBoxes_);
 		ImGui::Checkbox("Draw chunk boundaries", &debugDrawChunkBoundaries_);
 
-		bool prevEnableVSync = debugEnableVSync_;
-		ImGui::Checkbox("Enable VSync", &debugEnableVSync_);
-		if (debugEnableVSync_ && !prevEnableVSync) {
+		bool prevEnableVSync = enableVSync_;
+		ImGui::Checkbox("Enable VSync", &enableVSync_);
+		if (enableVSync_ && !prevEnableVSync) {
 			glfwSwapInterval(1);
 		}
-		else if (!debugEnableVSync_ && prevEnableVSync) {
+		else if (!enableVSync_ && prevEnableVSync) {
 			glfwSwapInterval(0);
 		}
 
@@ -84,11 +84,11 @@ void Game::draw()
 		}
 
 		ImGui::SliderFloat(
-			"Time scale", &debugTimeScale_, 0, 3.0, "%.03f",
+			"Time scale", &timeScale_, 0, 3.0, "%.03f",
 			ImGuiSliderFlags_Logarithmic);
 		if (ImGui::BeginPopupContextItem("Time scale menu")) {
 			if (ImGui::MenuItem("Reset")) {
-				debugTimeScale_ = 1.0;
+				timeScale_ = 1.0;
 			}
 			ImGui::EndPopup();
 		}
@@ -138,8 +138,6 @@ void Game::draw()
 
 void Game::update(float dt)
 {
-	dt *= debugTimeScale_;
-
 	// Zoom the window using the scroll wheel
 	cam_.zoom += (float)wasWheelScrolled() * 0.05f * cam_.zoom;
 	if (cam_.zoom > 1) {
@@ -166,7 +164,6 @@ void Game::update(float dt)
 
 void Game::tick(float dt)
 {
-	dt *= debugTimeScale_;
 	world_->tick(dt);
 }
 
