@@ -3,13 +3,22 @@
 #include <cygnet/Renderer.h>
 
 #include "common.h"
+#include "World.h"
 
 namespace Swan {
 
 class Animation {
 public:
-	Animation(Cygnet::RenderSprite sprite, float interval, int loopFrom = 0, Cygnet::Mat3gf mat = {}):
+	Animation(
+		Cygnet::RenderSprite sprite,
+		float interval, int loopFrom = 0, Cygnet::Mat3gf mat = {}):
 		sprite_(sprite), interval_(interval), timer_(interval)
+	{}
+
+	Animation(
+		const Context &ctx, const std::string &name,
+		float interval, int loopFrom = 0, Cygnet::Mat3gf mat = {}):
+		Animation(ctx.world.getSprite(name), interval, loopFrom, mat)
 	{}
 
 	void tick(float dt);

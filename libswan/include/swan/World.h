@@ -73,6 +73,12 @@ public:
 	void update(float dt);
 	void tick(float dt);
 
+	Tile &invalidTile() { return *invalidTile_; }
+	Item &invalidItem() { return *invalidItem_; }
+
+	void serialize(MsgStream::Serializer &w);
+	void deserialize(MsgStream::Serializer &w);
+
 	std::unordered_map<std::string, std::string> modPaths_;
 
 	// These things can be used by the mods as they get initialized in the ctor.
@@ -108,8 +114,11 @@ private:
 
 	ChunkRenderer chunkRenderer_;
 	WorldPlane::ID currentPlane_;
-	std::vector<std::unique_ptr<WorldPlane> > planes_;
+	std::vector<std::unique_ptr<WorldPlane>> planes_;
 	std::string defaultWorldGen_;
+
+	Tile *invalidTile_;
+	Item *invalidItem_;
 };
 
 }

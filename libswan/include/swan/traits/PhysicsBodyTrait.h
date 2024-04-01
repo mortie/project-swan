@@ -3,6 +3,8 @@
 #include "../traits/BodyTrait.h"
 #include "../common.h"
 
+#include <msgstream/msgstream.h>
+
 namespace Swan {
 
 struct PhysicsBodyTrait: public BodyTrait {
@@ -75,6 +77,9 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 	void collideAll(WorldPlane &plane);
 
 	void update(const Context &ctx, float dt);
+
+	void deserialize(MsgStream::Parser &r);
+	void serialize(MsgStream::Serializer &w);
 };
 
 /*

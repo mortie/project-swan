@@ -64,6 +64,9 @@ public:
 	void ui(const Context &ctx) override;
 	void erase(const Context &ctx, uint64_t id) override;
 
+	void serialize(const Context &ctx, MsgStream::Serializer &w) override;
+	void deserialize(const Context &ctx, MsgStream::Parser &r) override;
+
 	const std::string name_;
 	uint64_t nextId_ = 0;
 	std::vector<Wrapper> entities_;
@@ -180,7 +183,8 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(
 {
 	uint64_t id = nextId_++;
 	size_t index = entities_.size();
-	auto &w = entities_.emplace_back(ctx, r);
+	auto &w = entities_.emplace_back(ctx);
+	w.ent.deserialize(ctx, r);
 
 	entities_.back().id = id;
 	idToIndex_[id] = index;
@@ -322,6 +326,90 @@ inline void EntityCollectionImpl<Ent>::erase(const Context &ctx, uint64_t id)
 	entities_.pop_back();
 	idToIndex_.erase(id);
 	idToIndex_[entities_[index].id] = index;
+}
+
+template<typename Ent>
+inline void EntityCollectionImpl<Ent>::serialize(
+	const Context &ctx, MsgStream::Serializer &w)
+{
+	MsgStream::Serializer arr = w.beginArray(entities_.size());
+
+	MsgStream::MapBuilder mb;
+	for (auto &wrapper: entities_) {
+		try {
+			mb.clear();
+
+			mb.writeString("$id");
+			mb.writeUInt(wrapper.id);
+			wrapper.ent.serialize(ctx, mb);
+			arr.writeMap(mb);
+		} catch (std::exception &ex) {
+			warn << "Failed to serialize " << name_ << " entity: " << ex.what();
+			arr.writeNil();
+		}
+	}
+
+	w.endArray(arr);
+}
+
+template<typename Ent>
+inline void EntityCollectionImpl<Ent>::deserialize(
+	const Context &ctx, MsgStream::Parser &r)
+{
+	entities_.clear();
+	idToIndex_.clear();
+	nextId_ = 0;
+
+	if (r.nextType() != MsgStream::Type::ARRAY) {
+		warn << "Failed to deserialize " << name_ << " entities: value not array";
+		r.skipNext();
+		return;
+	}
+
+	MsgStream::ArrayParser arr = r.nextArray();
+	entities_.reserve(arr.arraySize());
+	std::string key;
+	while (arr.hasNext()) {
+		MsgStream::Type nextType = arr.nextType();
+		if (nextType == MsgStream::Type::NIL) {
+			warn << "Missing entity while deserializing " << name_;
+			arr.skipNil();
+			continue;
+		} else if (nextType != MsgStream::Type::MAP) {
+			warn << "Non-map array value while deserializing " << name_;
+			arr.skipNext();
+			continue;
+		}
+
+		uint64_t id;
+		MsgStream::MapParser mr = arr.nextMap();
+		while (mr.hasNext()) {
+			mr.nextString(key);
+			if (key == "$id") {
+				id = mr.nextUInt();
+				break;
+			} else {
+				warn
+					<< "Skipped unknown key '" << key
+					<< "' while deserializing " << name_;
+				mr.skipNext();
+			}
+		}
+
+		if (!mr.hasNext()) {
+			warn << "Failed to deserialize " << name_ << " entity: Missing $id";
+			continue;
+		}
+
+		auto &w = entities_.emplace_back(ctx);
+		w.id = id;
+		try {
+			w.ent.deserialize(ctx, mr);
+		} catch (std::exception &ex) {
+			warn << "Failed to deserialize " << name_ << " entity: " << ex.what();
+			entities_.pop_back();
+		}
+	}
 }
 
 }

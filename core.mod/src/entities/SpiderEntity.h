@@ -8,13 +8,9 @@ class SpiderEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait, public Swan::ContactDamageTrait {
 public:
 	SpiderEntity(const Swan::Context &ctx, Swan::Vec2 pos);
-	SpiderEntity(const Swan::Context &ctx, MsgStream::MapParser &r);
-
-	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
-	void update(const Swan::Context &ctx, float dt) override;
-	void tick(const Swan::Context &ctx, float dt) override;
-	void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r) override;
-	void serialize(const Swan::Context &ctx, MsgStream::MapBuilder &w) override;
+	SpiderEntity(const Swan::Context &ctx):
+		idleAnimation_(ctx, "core::entities/spider/idle", 0.8)
+	{}
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -31,6 +27,13 @@ public:
 		return damage_;
 	}
 
+	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
+	void update(const Swan::Context &ctx, float dt) override;
+	void tick(const Swan::Context &ctx, float dt) override;
+
+	void serialize(const Swan::Context &ctx, MsgStream::MapBuilder &w) override;
+	void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r) override;
+
 private:
 	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
 		.size = {1, 0.65},
@@ -38,10 +41,6 @@ private:
 	};
 	static constexpr float MOVE_FORCE = 50 * PROPS.mass;
 	static constexpr float JUMP_VEL = 9;
-
-	SpiderEntity(const Swan::Context &ctx):
-		idleAnimation_(ctx.world.getSprite("core::entities/spider/idle"), 0.8)
-	{}
 
 	Swan::Animation idleAnimation_;
 

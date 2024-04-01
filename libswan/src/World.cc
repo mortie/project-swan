@@ -333,6 +333,9 @@ void World::buildResources()
 		}
 	}
 
+	invalidTile_ = &tiles_[INVALID_TILE_ID];
+	invalidItem_ = &items_.at(INVALID_TILE_NAME);
+
 	resources_ = Cygnet::ResourceManager(std::move(builder));
 }
 
@@ -439,7 +442,8 @@ Item &World::getItem(const std::string &name)
 	auto iter = items_.find(name);
 
 	if (iter == items_.end()) {
-		return items_.at(INVALID_TILE_NAME);
+		warn << "Tried to get non-existent item " << name << "!";
+		return invalidItem();
 	}
 
 	return iter->second;
@@ -506,6 +510,20 @@ void World::tick(float dt)
 	chunkRenderer_.tick(
 		*planes_[currentPlane_],
 		ChunkPos((int)player_->pos.x / CHUNK_WIDTH, (int)player_->pos.y / CHUNK_HEIGHT));
+}
+
+void World::serialize(MsgStream::Serializer &w)
+{
+	auto map = w.beginMap(1);
+
+	map.writeString("planes");
+	auto planes = map.beginArray(planes_.size());
+	for (auto &plane: planes_) {
+		plane->serialize(planes);
+	}
+	map.endArray(planes);
+
+	w.endMap(map);
 }
 
 }

@@ -16,13 +16,6 @@ PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
 	physicsBody_.body.pos = pos;
 }
 
-PlayerEntity::PlayerEntity(
-	const Swan::Context &ctx, MsgStream::MapParser &r):
-	PlayerEntity(ctx)
-{
-	deserialize(ctx, r);
-}
-
 void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 {
 	Cygnet::Mat3gf mat;

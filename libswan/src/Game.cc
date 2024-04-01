@@ -1,5 +1,6 @@
 #include "Game.h"
 
+#include <fstream>
 #include <math.h>
 #include <time.h>
 #include <memory>
@@ -54,6 +55,18 @@ void Game::draw()
 		}
 		else if (!debugEnableVSync_ && prevEnableVSync) {
 			glfwSwapInterval(0);
+		}
+
+		if (ImGui::Button("Save")) {
+			std::fstream f("world.mp", std::ios_base::out);
+			if (f) {
+				info << "Serializing to world.mp...";
+				MsgStream::Serializer w(f);
+				world_->serialize(w);
+				info << "Done.";
+			} else {
+				warn << "Failed to open world.mp!";
+			}
 		}
 
 		ImGui::SliderFloat(

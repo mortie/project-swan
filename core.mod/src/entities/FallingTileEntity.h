@@ -8,7 +8,8 @@ class FallingTileEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait {
 public:
 	FallingTileEntity(const Swan::Context &ctx, Swan::Vec2 pos, Swan::Tile::ID tile);
-	FallingTileEntity(const Swan::Context &ctx, MsgStream::MapParser &r);
+	FallingTileEntity(const Swan::Context &ctx)
+	{}
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -23,8 +24,8 @@ public:
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
 	void update(const Swan::Context &ctx, float dt) override;
 
-	void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r) override;
 	void serialize(const Swan::Context &ctx, MsgStream::MapBuilder &w) override;
+	void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r) override;
 
 private:
 	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
@@ -33,7 +34,7 @@ private:
 	};
 	static constexpr float DESPAWN_TIME = 5 * 60;
 
-	Swan::Tile::ID tile_;
+	Swan::Tile::ID tile_ = Swan::World::INVALID_TILE_ID;
 	Swan::BasicPhysicsBody physicsBody_{PROPS};
 };
 

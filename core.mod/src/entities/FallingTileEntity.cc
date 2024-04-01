@@ -11,12 +11,6 @@ FallingTileEntity::FallingTileEntity(
 	tile_ = tile;
 }
 
-FallingTileEntity::FallingTileEntity(
-	const Swan::Context &ctx, MsgStream::MapParser &r)
-{
-	deserialize(ctx, r);
-}
-
 void FallingTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 {
 	rnd.drawTile({
@@ -42,12 +36,30 @@ void FallingTileEntity::update(const Swan::Context &ctx, float dt)
 	}
 }
 
-void FallingTileEntity::deserialize(
-	const Swan::Context &ctx, MsgStream::MapParser &r)
-{}
-
 void FallingTileEntity::serialize(
 	const Swan::Context &ctx, MsgStream::MapBuilder &w)
-{}
+{
+	w.writeString("body");
+	physicsBody_.serialize(w);
+	w.writeString("tile");
+	w.writeString(ctx.world.getTileByID(tile_).name);
+}
+
+void FallingTileEntity::deserialize(
+	const Swan::Context &ctx, MsgStream::MapParser &r)
+{
+	std::string key;
+	while (r.hasNext()) {
+		r.nextString(key);
+
+		if (key == "body") {
+			physicsBody_.deserialize(r);
+		} else if (key == "tile") {
+			tile_ = ctx.world.getTileID(r.nextString());
+		} else {
+			r.skipNext();
+		}
+	}
+}
 
 }

@@ -109,6 +109,9 @@ public:
 	virtual void ui(const Context &ctx) = 0;
 	virtual void erase(const Context &ctx, uint64_t id) = 0;
 
+	virtual void serialize(const Context &ctx, MsgStream::Serializer &w) = 0;
+	virtual void deserialize(const Context &ctx, MsgStream::Parser &r) = 0;
+
 protected:
 	uint64_t currentId_;
 };

@@ -23,12 +23,6 @@ ItemStackEntity::ItemStackEntity(
 	item_ = item;
 }
 
-ItemStackEntity::ItemStackEntity(
-	const Swan::Context &ctx, MsgStream::MapParser &r)
-{
-	deserialize(ctx, r);
-}
-
 void ItemStackEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 {
 	rnd.drawTile({
@@ -51,12 +45,34 @@ void ItemStackEntity::tick(const Swan::Context &ctx, float dt)
 	}
 }
 
-void ItemStackEntity::deserialize(
-	const Swan::Context &ctx, MsgStream::MapParser &r)
-{}
-
 void ItemStackEntity::serialize(
 	const Swan::Context &ctx, MsgStream::MapBuilder &w)
-{}
+{
+	w.writeString("body");
+	physicsBody_.serialize(w);
+	w.writeString("lifetime");
+	w.writeFloat32(lifetime_);
+	w.writeString("item");
+	w.writeString(item_->name);
+}
+
+void ItemStackEntity::deserialize(
+	const Swan::Context &ctx, MsgStream::MapParser &r)
+{
+	std::string key;
+	while (r.hasNext()) {
+		r.nextString(key);
+
+		if (key == "body") {
+			physicsBody_.deserialize(r);
+		} else if (key == "lifetime") {
+			lifetime_ = r.nextFloat32();
+		} else if (key == "item") {
+			item_ = &ctx.world.getItem(r.nextString());
+		} else {
+			r.skipNext();
+		}
+	}
+}
 
 }

@@ -8,6 +8,7 @@
 #include <typeindex>
 #include <mutex>
 #include <functional>
+#include <msgstream/msgstream.h>
 
 #include "common.h"
 #include "traits/BodyTrait.h"
@@ -77,6 +78,9 @@ public:
 
 	// LightingCallback implementation
 	void onLightChunkUpdated(const LightChunk &chunk, Vec2i pos) final;
+
+	void serialize(MsgStream::Serializer &w);
+	void deserialize(MsgStream::Parser &r);
 
 	ID id_;
 	World *world_;

@@ -11,13 +11,6 @@ SpiderEntity::SpiderEntity(
 	physicsBody_.body.pos = pos;
 }
 
-SpiderEntity::SpiderEntity(
-	const Swan::Context &ctx, MsgStream::MapParser &r):
-	SpiderEntity(ctx)
-{
-	deserialize(ctx, r);
-}
-
 void SpiderEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 {
 	idleAnimation_.draw(rnd, Cygnet::Mat3gf{}.translate(
@@ -72,12 +65,30 @@ void SpiderEntity::tick(const Swan::Context &ctx, float dt)
 	}
 }
 
-void SpiderEntity::deserialize(
-	const Swan::Context &ctx, MsgStream::MapParser &r)
-{}
-
 void SpiderEntity::serialize(
 	const Swan::Context &ctx, MsgStream::MapBuilder &w)
-{}
+{
+	w.writeString("body");
+	physicsBody_.serialize(w);
+	w.writeString("jumpTimer");
+	w.writeFloat32(jumpTimer_);
+}
+
+void SpiderEntity::deserialize(
+	const Swan::Context &ctx, MsgStream::MapParser &r)
+{
+	std::string key;
+	while (r.hasNext()) {
+		r.nextString(key);
+
+		if (key == "body") {
+			physicsBody_.deserialize(r);
+		} else if (key == "jumpTimer") {
+			jumpTimer_ = r.nextFloat32();
+		} else {
+			r.skipNext();
+		}
+	}
+}
 
 }

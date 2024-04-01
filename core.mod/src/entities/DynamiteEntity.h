@@ -9,7 +9,10 @@ class DynamiteEntity final: public Swan::Entity,
 public:
 	DynamiteEntity(
 		const Swan::Context &ctx, Swan::Vec2 pos, Swan::Vec2 vel = {0, 0});
-	DynamiteEntity(const Swan::Context &ctx, MsgStream::MapParser &r);
+
+	DynamiteEntity(const Swan::Context &ctx):
+		tile_(ctx.world.getItem("core::dynamite").id)
+	{}
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -24,8 +27,8 @@ public:
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
 	void update(const Swan::Context &ctx, float dt) override;
 
-	void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r) override;
 	void serialize(const Swan::Context &ctx, MsgStream::MapBuilder &w) override;
+	void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r) override;
 
 private:
 	static constexpr Swan::BasicPhysicsBody::Props PROPS = {

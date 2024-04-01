@@ -38,9 +38,9 @@ public:
 	virtual void onDespawn(const Context &ctx)
 	{}
 
-	virtual void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r)
-	{}
 	virtual void serialize(const Swan::Context &ctx, MsgStream::MapBuilder &w)
+	{}
+	virtual void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r)
 	{}
 
 	template<typename T>

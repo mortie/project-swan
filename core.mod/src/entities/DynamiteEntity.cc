@@ -37,13 +37,6 @@ DynamiteEntity::DynamiteEntity(
 	tile_ = ctx.world.getItem("core::dynamite").id;
 }
 
-DynamiteEntity::DynamiteEntity(
-	const Swan::Context &ctx, MsgStream::MapParser &r)
-{
-	deserialize(ctx, r);
-	tile_ = ctx.world.getTileID("core::dynamite");
-}
-
 void DynamiteEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 {
 	rnd.drawTile({
@@ -67,12 +60,30 @@ void DynamiteEntity::update(const Swan::Context &ctx, float dt)
 	}
 }
 
-void DynamiteEntity::deserialize(
-	const Swan::Context &ctx, MsgStream::MapParser &r)
-{}
-
 void DynamiteEntity::serialize(
 	const Swan::Context &ctx, MsgStream::MapBuilder &w)
-{}
+{
+	w.writeString("body");
+	physicsBody_.serialize(w);
+	w.writeString("fuse");
+	w.writeFloat32(fuse_);
+}
+
+void DynamiteEntity::deserialize(
+	const Swan::Context &ctx, MsgStream::MapParser &r)
+{
+	std::string key;
+	while (r.hasNext()) {
+		r.nextString(key);
+
+		if (key == "body") {
+			physicsBody_.deserialize(r);
+		} else if (key == "fuse") {
+			fuse_ = r.nextFloat32();
+		} else {
+			r.skipNext();
+		}
+	}
+}
 
 }

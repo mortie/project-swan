@@ -458,4 +458,23 @@ void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos)
 	realChunk.setLightData(chunk.lightLevels);
 }
 
+void WorldPlane::serialize(MsgStream::Serializer &w) {
+	auto ctx = getContext();
+	auto map = w.beginMap(1);
+
+	map.writeString("entityCollections");
+	auto colls = map.beginMap(entColls_.size());
+	for (auto &coll: entColls_) {
+		colls.writeString(coll->name());
+		coll->serialize(ctx, colls);
+	}
+	map.endMap(colls);
+
+	w.endMap(map);
+}
+
+void WorldPlane::deserialize(MsgStream::Parser &p) {
+	// TODO
+}
+
 }

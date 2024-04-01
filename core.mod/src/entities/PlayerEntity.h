@@ -8,7 +8,14 @@ class PlayerEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait, public Swan::InventoryTrait {
 public:
 	PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos);
-	PlayerEntity(const Swan::Context &ctx, MsgStream::MapParser &r);
+	PlayerEntity(const Swan::Context &ctx):
+		idleAnimation_(ctx, "core::entities/player/idle", 0.2),
+		runningAnimation_(ctx, "core::entities/player/running", 0),
+		fallingAnimation_(ctx, "core::entities/player/falling", 0.1),
+		jumpingAnimation_(ctx, "core::entities/player/jumping", 0.1),
+		landingAnimation_(ctx, "core::entities/player/landing", 0.1),
+		snapSound_(ctx.world.getSound("core::sounds/snap"))
+	{}
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -29,8 +36,9 @@ public:
 	void ui(const Swan::Context &ctx) override;
 	void update(const Swan::Context &ctx, float dt) override;
 	void tick(const Swan::Context &ctx, float dt) override;
-	void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r) override;
+
 	void serialize(const Swan::Context &ctx, MsgStream::MapBuilder &w) override;
+	void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r) override;
 
 private:
 	enum class State {
@@ -55,15 +63,6 @@ private:
 	static constexpr float DOWN_FORCE = 20 * PROPS.mass;
 	static constexpr float LADDER_CLIMB_FORCE = 70 * PROPS.mass;
 	static constexpr float LADDER_MAX_VEL = 5;
-
-	PlayerEntity(const Swan::Context &ctx):
-		idleAnimation_(ctx.world.getSprite("core::entities/player/idle"), 0.2),
-		runningAnimation_(ctx.world.getSprite("core::entities/player/running"), 0),
-		fallingAnimation_(ctx.world.getSprite("core::entities/player/falling"), 0.1),
-		jumpingAnimation_(ctx.world.getSprite("core::entities/player/jumping"), 0.1),
-		landingAnimation_(ctx.world.getSprite("core::entities/player/landing"), 0.1),
-		snapSound_(ctx.world.getSound("core::sounds/snap"))
-	{}
 
 	void onRightClick(const Swan::Context &ctx);
 	void craft(const Swan::Recipe &recipe);
