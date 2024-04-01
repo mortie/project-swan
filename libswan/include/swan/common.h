@@ -3,6 +3,7 @@
 #include <swan-common/trace.h>
 #include <swan-common/Vector2.h>
 #include <swan-common/constants.h>
+#include <limits.h>
 
 // Forward declare the Cygnet::Renderer, because lots of functions will need
 // to take a reference to it. It's nicer to not have to include Cygnet::Renderer
