@@ -31,3 +31,6 @@
 [submodule "third-party/msgstream"]
 	path = third-party/msgstream
 	url = https://github.com/mortie/msgstream.git
+[submodule "subprojects/glfw"]
+	path = subprojects/glfw
+	url = https://github.com/glfw/glfw.git
