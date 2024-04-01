@@ -1,9 +1,11 @@
 #pragma once
 
 #include <bitset>
+#include <istream>
 #include <string>
 #include <cygnet/Renderer.h>
 #include <cygnet/util.h>
+#include <msgstream/msgstream.h>
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -16,7 +18,11 @@ namespace Swan {
 
 class Game {
 public:
-	void createWorld(const std::string &worldgen, const std::vector<std::string> &modPaths);
+	void createWorld(
+		const std::string &worldgen, const std::vector<std::string> &modPaths);
+
+	void loadWorld(
+		std::istream &is, const std::vector<std::string> &modPaths);
 
 	void onKeyDown(int scancode, int key)
 	{

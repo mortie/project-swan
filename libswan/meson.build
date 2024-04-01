@@ -1,7 +1,7 @@
 libswan = declare_dependency(
   include_directories: 'include',
   dependencies: [
-    common, libcygnet, libglfw3,
+    common, libcygnet, libglfw3, libmsgstream,
   ] + maybe_libtracy,
   link_with: library('swan',
     'src/traits/InventoryTrait.cc',
@@ -11,6 +11,7 @@ libswan = declare_dependency(
     'src/Chunk.cc',
     'src/Clock.cc',
     'src/drawutil.cc',
+    'src/EntityCollection.cc',
     'src/Game.cc',
     'src/ItemStack.cc',
     'src/LightServer.cc',

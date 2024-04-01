@@ -70,8 +70,6 @@ void SpiderEntity::serialize(
 {
 	w.writeString("body");
 	physicsBody_.serialize(w);
-	w.writeString("jumpTimer");
-	w.writeFloat32(jumpTimer_);
 }
 
 void SpiderEntity::deserialize(
@@ -83,8 +81,6 @@ void SpiderEntity::deserialize(
 
 		if (key == "body") {
 			physicsBody_.deserialize(r);
-		} else if (key == "jumpTimer") {
-			jumpTimer_ = r.nextFloat32();
 		} else {
 			r.skipNext();
 		}

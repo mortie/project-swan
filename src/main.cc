@@ -138,10 +138,17 @@ int main(int argc, char **argv)
 	glfwSwapInterval(1);
 	Cygnet::glCheck();
 
-	// Create a world
+	// Create the game and mod list
 	Game game;
 	std::vector<std::string> mods{"core.mod"};
-	game.createWorld("core::default", mods);
+
+	// Load or create world
+	std::ifstream worldFile("world.mp");
+	if (worldFile) {
+		game.loadWorld(worldFile, mods);
+	} else {
+		game.createWorld("core::default", mods);
+	}
 
 	gameptr = &game;
 	glfwSetKeyCallback(window, keyCallback);

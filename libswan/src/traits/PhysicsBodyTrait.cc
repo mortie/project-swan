@@ -123,6 +123,15 @@ void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 	collideY(*this, ctx.plane);
 }
 
+void BasicPhysicsBody::serialize(MsgStream::Serializer &w) {
+	auto arr = w.beginArray(4);
+	arr.writeFloat32(body.pos.x);
+	arr.writeFloat32(body.pos.y);
+	arr.writeFloat32(vel.x);
+	arr.writeFloat32(vel.y);
+	w.endArray(arr);
+}
+
 void BasicPhysicsBody::deserialize(MsgStream::Parser &r)
 {
 	auto arr = r.nextArray();
@@ -130,17 +139,7 @@ void BasicPhysicsBody::deserialize(MsgStream::Parser &r)
 	body.pos.y = arr.nextFloat32();
 	vel.x = arr.nextFloat32();
 	vel.y = arr.nextFloat32();
-	onGround = arr.nextBool();
-}
-
-void BasicPhysicsBody::serialize(MsgStream::Serializer &w) {
-	auto arr = w.beginArray(5);
-	arr.writeFloat32(body.pos.x);
-	arr.writeFloat32(body.pos.y);
-	arr.writeFloat32(vel.x);
-	arr.writeFloat32(vel.y);
-	arr.writeBool(onGround);
-	w.endArray(arr);
+	onGround = false;
 }
 
 }

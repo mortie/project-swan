@@ -4,6 +4,7 @@
 #include <typeindex>
 #include <functional>
 #include <stdint.h>
+#include <msgstream/msgstream.h>
 
 #include "common.h"
 #include "Entity.h"
@@ -72,6 +73,9 @@ public:
 	{
 		return coll_;
 	}
+
+	void serialize(MsgStream::Serializer &w);
+	void deserialize(const Context &ctx, MsgStream::Parser &r);
 
 private:
 	EntityCollection *coll_;

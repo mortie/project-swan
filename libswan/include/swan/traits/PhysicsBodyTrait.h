@@ -1,9 +1,9 @@
 #pragma once
 
+#include <msgstream/msgstream.h>
+
 #include "../traits/BodyTrait.h"
 #include "../common.h"
-
-#include <msgstream/msgstream.h>
 
 namespace Swan {
 
@@ -78,8 +78,8 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 
 	void update(const Context &ctx, float dt);
 
-	void deserialize(MsgStream::Parser &r);
 	void serialize(MsgStream::Serializer &w);
+	void deserialize(MsgStream::Parser &r);
 };
 
 /*

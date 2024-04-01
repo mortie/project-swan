@@ -46,7 +46,7 @@ public:
 
 	WorldPlane &currentPlane()
 	{
-		return *planes_[currentPlane_];
+		return *planes_[currentPlane_].plane;
 	}
 
 	WorldPlane &addPlane(const std::string &gen);
@@ -77,7 +77,7 @@ public:
 	Item &invalidItem() { return *invalidItem_; }
 
 	void serialize(MsgStream::Serializer &w);
-	void deserialize(MsgStream::Serializer &w);
+	void deserialize(MsgStream::Parser &r);
 
 	std::unordered_map<std::string, std::string> modPaths_;
 
@@ -109,12 +109,17 @@ private:
 		void tick(WorldPlane &plane, ChunkPos abspos);
 	};
 
+	struct PlaneWrapper {
+		std::string worldGen;
+		std::unique_ptr<WorldPlane> plane;
+	};
+
 	std::vector<ModWrapper> loadMods(std::vector<std::string> paths);
 	void buildResources();
 
 	ChunkRenderer chunkRenderer_;
-	WorldPlane::ID currentPlane_;
-	std::vector<std::unique_ptr<WorldPlane>> planes_;
+	WorldPlane::ID currentPlane_ = 0;
+	std::vector<PlaneWrapper> planes_;
 	std::string defaultWorldGen_;
 
 	Tile *invalidTile_;

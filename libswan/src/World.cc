@@ -384,7 +384,7 @@ void World::setWorldGen(std::string gen)
 
 void World::spawnPlayer()
 {
-	playerRef_ = planes_[currentPlane_]->spawnPlayer();
+	playerRef_ = planes_[currentPlane_].plane->spawnPlayer();
 	player_ = playerRef_.trait<BodyTrait>();
 }
 
@@ -411,9 +411,12 @@ WorldPlane &World::addPlane(const std::string &gen)
 
 	WorldGen::Factory &factory = it->second;
 	std::unique_ptr<WorldGen> g = factory.create(*this);
-	planes_.push_back(std::make_unique<WorldPlane>(
-		id, this, std::move(g), std::move(colls)));
-	return *planes_[id];
+	planes_.push_back({
+		.worldGen = gen,
+		.plane = std::make_unique<WorldPlane>(
+			id, this, std::move(g), std::move(colls)),
+	});
+	return *planes_[id].plane;
 }
 
 Tile::ID World::getTileID(const std::string &name)
@@ -473,26 +476,26 @@ SoundAsset *World::getSound(const std::string &name)
 
 Cygnet::Color World::backgroundColor()
 {
-	return planes_[currentPlane_]->backgroundColor();
+	return planes_[currentPlane_].plane->backgroundColor();
 }
 
 void World::draw(Cygnet::Renderer &rnd)
 {
 	ZoneScopedN("World draw");
-	planes_[currentPlane_]->draw(rnd);
+	planes_[currentPlane_].plane->draw(rnd);
 }
 
 void World::ui()
 {
 	ZoneScopedN("World UI");
-	planes_[currentPlane_]->ui();
+	planes_[currentPlane_].plane->ui();
 }
 
 void World::update(float dt)
 {
 	ZoneScopedN("World update");
 	for (auto &plane: planes_) {
-		plane->update(dt);
+		plane.plane->update(dt);
 	}
 
 	game_->cam_.pos = player_->pos + player_->size / 2;
@@ -502,26 +505,77 @@ void World::tick(float dt)
 {
 	ZoneScopedN("World tick");
 	for (auto &plane: planes_) {
-		plane->tick(dt);
+		plane.plane->tick(dt);
 	}
 
 	chunkRenderer_.tick(
-		*planes_[currentPlane_],
+		*planes_[currentPlane_].plane,
 		ChunkPos((int)player_->pos.x / CHUNK_WIDTH, (int)player_->pos.y / CHUNK_HEIGHT));
 }
 
 void World::serialize(MsgStream::Serializer &w)
 {
-	auto map = w.beginMap(1);
+	auto map = w.beginMap(2);
 
 	map.writeString("planes");
 	auto planes = map.beginArray(planes_.size());
 	for (auto &plane: planes_) {
-		plane->serialize(planes);
+		auto planeMap = planes.beginMap(2);
+		planeMap.writeString("world-gen");
+		planeMap.writeString(plane.worldGen);
+		planeMap.writeString("plane");
+		plane.plane->serialize(planeMap);
+		planes.endMap(planeMap);
 	}
 	map.endArray(planes);
 
+	map.writeString("player");
+	playerRef_.serialize(map);
+
 	w.endMap(map);
+}
+
+void World::deserialize(MsgStream::Parser &r)
+{
+	auto deserializePlane = [&](MsgStream::MapParser r) {
+		WorldPlane *plane = nullptr;
+
+		std::string key;
+		while (r.nextKey(key)) {
+			if (key == "world-gen") {
+				plane = &addPlane(r.nextString());
+			} else if (key == "plane") {
+				if (!plane) {
+					throw std::runtime_error("Missing data for world plane");
+				}
+
+				plane->deserialize(r);
+			} else {
+				r.skipNext();
+			}
+		}
+	};
+
+	auto map = r.nextMap();
+	std::string key;
+	while (map.nextKey(key)) {
+		if (key == "planes") {
+			planes_.clear();
+			auto planes = map.nextArray();
+			while (planes.hasNext()) {
+				deserializePlane(planes.nextMap());
+			}
+		} else if (key == "player") {
+			if (planes_.size() == 0) {
+				throw std::runtime_error("Missing data for player");
+			}
+
+			playerRef_.deserialize(planes_[0].plane->getContext(), map);
+			player_ = playerRef_.trait<BodyTrait>();
+		} else {
+			map.skipNext();
+		}
+	}
 }
 
 }

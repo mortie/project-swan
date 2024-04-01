@@ -11,9 +11,10 @@
 
 namespace Swan {
 
-void Game::createWorld(const std::string &worldgen, const std::vector<std::string> &modPaths)
+void Game::createWorld(
+	const std::string &worldgen, const std::vector<std::string> &modPaths)
 {
-	world_.reset(new World(this, time(NULL), modPaths));
+	world_ = std::make_unique<World>(this, time(NULL), modPaths);
 
 	for (auto &mod: world_->mods_) {
 		mod.mod_->start(*world_);
@@ -22,6 +23,19 @@ void Game::createWorld(const std::string &worldgen, const std::vector<std::strin
 	world_->setWorldGen(worldgen);
 	world_->setCurrentPlane(world_->addPlane());
 	world_->spawnPlayer();
+}
+
+void Game::loadWorld(
+	std::istream &is, const std::vector<std::string> &modPaths)
+{
+	world_ = std::make_unique<World>(this, time(NULL), modPaths);
+
+	for (auto &mod: world_->mods_) {
+		mod.mod_->start(*world_);
+	}
+
+	MsgStream::Parser parser(is);
+	world_->deserialize(parser);
 }
 
 Vec2 Game::getMousePos()

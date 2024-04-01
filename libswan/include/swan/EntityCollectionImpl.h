@@ -332,7 +332,9 @@ template<typename Ent>
 inline void EntityCollectionImpl<Ent>::serialize(
 	const Context &ctx, MsgStream::Serializer &w)
 {
-	MsgStream::Serializer arr = w.beginArray(entities_.size());
+	MsgStream::Serializer arr = w.beginArray(entities_.size() + 1);
+
+	arr.writeUInt(nextId_);
 
 	MsgStream::MapBuilder mb;
 	for (auto &wrapper: entities_) {
@@ -367,6 +369,9 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 	}
 
 	MsgStream::ArrayParser arr = r.nextArray();
+
+	nextId_ = arr.nextUInt();
+
 	entities_.reserve(arr.arraySize());
 	std::string key;
 	while (arr.hasNext()) {
@@ -401,10 +406,12 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 			continue;
 		}
 
+		size_t index = entities_.size();
 		auto &w = entities_.emplace_back(ctx);
 		w.id = id;
 		try {
 			w.ent.deserialize(ctx, mr);
+			idToIndex_[id] = index;
 		} catch (std::exception &ex) {
 			warn << "Failed to deserialize " << name_ << " entity: " << ex.what();
 			entities_.pop_back();

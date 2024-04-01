@@ -395,13 +395,29 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 void PlayerEntity::tick(const Swan::Context &ctx, float dt)
 {}
 
-void PlayerEntity::deserialize(
-	const Swan::Context &ctx, MsgStream::MapParser &r)
-{}
-
 void PlayerEntity::serialize(
 	const Swan::Context &ctx, MsgStream::MapBuilder &w)
-{}
+{
+	w.writeString("body");
+	physicsBody_.serialize(w);
+	w.writeString("inventory");
+	inventory_.serialize(w);
+}
+
+void PlayerEntity::deserialize(
+	const Swan::Context &ctx, MsgStream::MapParser &r)
+{
+	std::string key;
+	while (r.nextKey(key)) {
+		if (key == "body") {
+			physicsBody_.deserialize(r);
+		} else if (key == "inventory") {
+			inventory_.deserialize(ctx, r);
+		} else {
+			r.skipNext();
+		}
+	}
+}
 
 void PlayerEntity::onRightClick(const Swan::Context &ctx)
 {

@@ -84,7 +84,7 @@ public:
 
 	ID id_;
 	World *world_;
-	std::unique_ptr<WorldGen> gen_;
+	std::unique_ptr<WorldGen> worldGen_;
 	std::mutex mut_;
 
 private:
@@ -117,6 +117,8 @@ private:
 
 	// Callbacks to run on next tick
 	std::vector<std::function<void(const Context &)> > nextTick_;
+
+	friend EntityRef;
 };
 
 /*

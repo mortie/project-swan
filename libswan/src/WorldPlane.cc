@@ -10,9 +10,9 @@
 namespace Swan {
 
 WorldPlane::WorldPlane(
-	ID id, World *world, std::unique_ptr<WorldGen> gen,
+	ID id, World *world, std::unique_ptr<WorldGen> worldGen,
 	std::vector<std::unique_ptr<EntityCollection> > &&colls):
-	id_(id), world_(world), gen_(std::move(gen)),
+	id_(id), world_(world), worldGen_(std::move(worldGen)),
 	entColls_(std::move(colls)),
 	lighting_(std::make_unique<LightServer>(*this))
 {
@@ -133,7 +133,7 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos)
 		iter = chunks_.emplace(pos, Chunk(pos)).first;
 		Chunk &chunk = iter->second;
 
-		gen_->genChunk(*this, chunk);
+		worldGen_->genChunk(*this, chunk);
 		activeChunks_.push_back(&chunk);
 		chunkInitList_.push_back(&chunk);
 
@@ -242,7 +242,7 @@ Tile &WorldPlane::getTile(TilePos pos)
 
 EntityRef WorldPlane::spawnPlayer()
 {
-	return gen_->spawnPlayer(getContext());
+	return worldGen_->spawnPlayer(getContext());
 }
 
 void WorldPlane::breakTile(TilePos pos)
@@ -281,7 +281,7 @@ void WorldPlane::breakTile(TilePos pos)
 
 Cygnet::Color WorldPlane::backgroundColor()
 {
-	return gen_->backgroundColor(world_->player_->pos);
+	return worldGen_->backgroundColor(world_->player_->pos);
 }
 
 void WorldPlane::draw(Cygnet::Renderer &rnd)
@@ -293,7 +293,7 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 
 	{
 		ZoneScopedN("Draw background");
-		gen_->drawBackground(ctx, rnd, pbody.pos);
+		worldGen_->drawBackground(ctx, rnd, pbody.pos);
 	}
 
 	ChunkPos pcpos = ChunkPos(
@@ -358,7 +358,7 @@ void WorldPlane::update(float dt)
 			}
 		}
 
-		gen_->initializeChunk(ctx, *chunk);
+		worldGen_->initializeChunk(ctx, *chunk);
 	}
 
 	for (auto &coll: entColls_) {
@@ -462,7 +462,7 @@ void WorldPlane::serialize(MsgStream::Serializer &w) {
 	auto ctx = getContext();
 	auto map = w.beginMap(1);
 
-	map.writeString("entityCollections");
+	map.writeString("entity-collections");
 	auto colls = map.beginMap(entColls_.size());
 	for (auto &coll: entColls_) {
 		colls.writeString(coll->name());
@@ -473,8 +473,28 @@ void WorldPlane::serialize(MsgStream::Serializer &w) {
 	w.endMap(map);
 }
 
-void WorldPlane::deserialize(MsgStream::Parser &p) {
-	// TODO
+void WorldPlane::deserialize(MsgStream::Parser &r) {
+	auto ctx = getContext();
+	auto map = r.nextMap();
+
+	std::string key;
+	while (map.nextKey(key)) {
+		if (key == "entity-collections") {
+			auto colls = map.nextMap();
+			while (colls.nextKey(key)) {
+				auto it = entCollsByName_.find(key);
+				if (it == entCollsByName_.end()) {
+					warn << "Deserialize unknown entity collection: " << key;
+					map.skipNext();
+					continue;
+				}
+
+				it->second->deserialize(ctx, colls);
+			}
+		} else {
+			map.skipNext();
+		}
+	}
 }
 
 }

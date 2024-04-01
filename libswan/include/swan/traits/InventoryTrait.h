@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <msgstream/msgstream.h>
 
 #include "../ItemStack.h"
 #include "../log.h"
@@ -8,6 +9,7 @@
 namespace Swan {
 
 struct InventorySlot;
+struct Context;
 
 struct InventoryTrait {
 	struct Tag {};
@@ -74,6 +76,9 @@ struct BasicInventory final: InventoryTrait::Inventory {
 	ItemStack set(int slot, ItemStack stack) override;
 	ItemStack insert(int slot, ItemStack stack) override;
 	ItemStack insert(ItemStack stack) override;
+
+	void serialize(MsgStream::Serializer &w);
+	void deserialize(const Swan::Context &ctx, MsgStream::Parser &r);
 };
 
 inline InventorySlot InventoryTrait::Inventory::slot(int slot)
