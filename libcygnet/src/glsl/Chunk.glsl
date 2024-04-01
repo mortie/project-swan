@@ -27,8 +27,11 @@ void main() {
 	gl_Position = vec4(p.xy, 0, 1);
 
 	uint tileID = texture(tiles,
-		(vec2(tilePos) + vec2(0.5, 0.5)) / vec2(SWAN_CHUNK_WIDTH, SWAN_CHUNK_HEIGHT)).r;
-	vec2 atlasPos = vec2(tileID % tileAtlasSize.x, tileID / tileAtlasSize.x) + relPos;
+		(vec2(tilePos) + vec2(0.5, 0.5)) /
+		vec2(SWAN_CHUNK_WIDTH, SWAN_CHUNK_HEIGHT)).r;
+	vec2 atlasPos =
+		vec2(tileID % tileAtlasSize.x, tileID / tileAtlasSize.x) +
+		(relPos * 0.99 + vec2(0.005, 0.005));
 	v_texCoord = atlasPos / tileAtlasSize;
 }
 
