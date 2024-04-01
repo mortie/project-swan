@@ -84,7 +84,7 @@ private:
 class EntityCollection {
 public:
 	struct Factory {
-		const std::string name;
+		std::string name;
 		std::unique_ptr<EntityCollection> (*const create)(std::string name);
 	};
 

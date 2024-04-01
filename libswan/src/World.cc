@@ -323,13 +323,11 @@ void World::buildResources()
 	// Load world gens and entities.
 	for (auto &mod: mods_) {
 		for (auto &worldGenFactory: mod.worldGens()) {
-			std::string name = cat(mod.name(), "::", worldGenFactory.name);
-			worldGenFactories_.emplace(name, worldGenFactory);
+			worldGenFactories_.emplace(worldGenFactory.name, worldGenFactory);
 		}
 
 		for (auto &entCollFactory: mod.entities()) {
-			std::string name = cat(mod.name(), "::", entCollFactory.name);
-			entCollFactories_.emplace(name, entCollFactory);
+			entCollFactories_.emplace(entCollFactory.name, entCollFactory);
 		}
 	}
 
@@ -405,7 +403,7 @@ WorldPlane &World::addPlane(const std::string &gen)
 		abort();
 	}
 
-	std::vector<std::unique_ptr<EntityCollection> > colls;
+	std::vector<std::unique_ptr<EntityCollection>> colls;
 	colls.reserve(entCollFactories_.size());
 	for (auto &fact: entCollFactories_) {
 		colls.emplace_back(fact.second.create(fact.second.name));

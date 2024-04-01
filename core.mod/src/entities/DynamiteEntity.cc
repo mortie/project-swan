@@ -3,9 +3,27 @@
 #include <math.h>
 
 #include "FallingTileEntity.h"
+#include "swan/common.h"
 #include "world/util.h"
 
 namespace CoreMod {
+
+static void explodeTile(const Swan::Context &ctx, Swan::TilePos tp, int x, int y)
+{
+	auto id = ctx.plane.getTileID(tp);
+	if (id == Swan::World::AIR_TILE_ID) {
+		return;
+	}
+
+	float vx = 1.0 / x;
+	float vy = abs(x) * -6;
+
+	ctx.plane.breakTile(tp);
+	auto ref = ctx.plane.spawnEntity<FallingTileEntity>(
+		(Swan::Vec2)tp + Swan::Vec2{0.5, 0.5}, id);
+	auto *body = ref.trait<Swan::PhysicsBodyTrait>();
+	body->addVelocity({vx, vy});
+}
 
 static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
 {
@@ -20,10 +38,7 @@ static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
 				breakTileAndDropItem(ctx, tp);
 			}
 			else if (dist <= R2) {
-				auto id = ctx.plane.getTileID(tp);
-				ctx.plane.breakTile(tp);
-				ctx.plane.spawnEntity<FallingTileEntity>(
-					(Swan::Vec2)tp + Swan::Vec2{0.5, 0.5}, id);
+				explodeTile(ctx, tp, x, y);
 			}
 		}
 	}
