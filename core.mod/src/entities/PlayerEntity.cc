@@ -16,10 +16,11 @@ PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
 	physicsBody_.body.pos = pos;
 }
 
-PlayerEntity::PlayerEntity(const Swan::Context &ctx, const PackObject &obj):
+PlayerEntity::PlayerEntity(
+	const Swan::Context &ctx, MsgStream::MapParser &r):
 	PlayerEntity(ctx)
 {
-	deserialize(ctx, obj);
+	deserialize(ctx, r);
 }
 
 void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
@@ -401,21 +402,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 void PlayerEntity::tick(const Swan::Context &ctx, float dt)
 {}
 
-void PlayerEntity::deserialize(const Swan::Context &ctx, const PackObject &obj)
-{
-	//body_.deserialize(obj["body"]);
-}
+void PlayerEntity::deserialize(
+	const Swan::Context &ctx, MsgStream::MapParser &r)
+{}
 
-Swan::Entity::PackObject PlayerEntity::serialize(const Swan::Context &ctx, msgpack::zone &zone)
-{
-	return {};
-
-	/*
-	 * return Swan::MsgPackObject{
-	 *  { "body", body_.serialize(w) },
-	 * };
-	 */
-}
+void PlayerEntity::serialize(
+	const Swan::Context &ctx, MsgStream::MapBuilder &w)
+{}
 
 void PlayerEntity::onRightClick(const Swan::Context &ctx)
 {

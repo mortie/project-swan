@@ -39,7 +39,7 @@ public:
 
 	Context getContext();
 
-	EntityRef spawnEntity(const std::string &name, const Entity::PackObject &params);
+	EntityRef spawnEntity(const std::string &name, MsgStream::MapParser &r);
 
 	template<typename Ent, typename ... Args>
 	EntityRef spawnEntity(Args && ... args);

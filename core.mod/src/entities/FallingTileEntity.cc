@@ -11,9 +11,10 @@ FallingTileEntity::FallingTileEntity(
 	tile_ = tile;
 }
 
-FallingTileEntity::FallingTileEntity(const Swan::Context &ctx, const PackObject &obj)
+FallingTileEntity::FallingTileEntity(
+	const Swan::Context &ctx, MsgStream::MapParser &r)
 {
-	deserialize(ctx, obj);
+	deserialize(ctx, r);
 }
 
 void FallingTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
@@ -41,18 +42,12 @@ void FallingTileEntity::update(const Swan::Context &ctx, float dt)
 	}
 }
 
-void FallingTileEntity::deserialize(const Swan::Context &ctx, const PackObject &obj)
-{
-	physicsBody_.body.pos = obj.at("pos").as<Swan::Vec2>();
-	tile_ = obj.at("tile").as<int>();
-}
+void FallingTileEntity::deserialize(
+	const Swan::Context &ctx, MsgStream::MapParser &r)
+{}
 
-Swan::Entity::PackObject FallingTileEntity::serialize(const Swan::Context &ctx, msgpack::zone &zone)
-{
-	return {
-		{"pos", msgpack::object(physicsBody_.body.pos, zone)},
-		{"tile", msgpack::object(tile_, zone)},
-	};
-}
+void FallingTileEntity::serialize(
+	const Swan::Context &ctx, MsgStream::MapBuilder &w)
+{}
 
 }

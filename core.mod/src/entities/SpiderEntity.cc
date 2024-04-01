@@ -4,16 +4,18 @@
 
 namespace CoreMod {
 
-SpiderEntity::SpiderEntity(const Swan::Context &ctx, Swan::Vec2 pos):
+SpiderEntity::SpiderEntity(
+	const Swan::Context &ctx, Swan::Vec2 pos):
 	SpiderEntity(ctx)
 {
 	physicsBody_.body.pos = pos;
 }
 
-SpiderEntity::SpiderEntity(const Swan::Context &ctx, const PackObject &obj):
+SpiderEntity::SpiderEntity(
+	const Swan::Context &ctx, MsgStream::MapParser &r):
 	SpiderEntity(ctx)
 {
-	deserialize(ctx, obj);
+	deserialize(ctx, r);
 }
 
 void SpiderEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
@@ -70,12 +72,12 @@ void SpiderEntity::tick(const Swan::Context &ctx, float dt)
 	}
 }
 
-void SpiderEntity::deserialize(const Swan::Context &ctx, const PackObject &obj)
+void SpiderEntity::deserialize(
+	const Swan::Context &ctx, MsgStream::MapParser &r)
 {}
 
-Swan::Entity::PackObject SpiderEntity::serialize(const Swan::Context &ctx, msgpack::zone &zone)
-{
-	return {};
-}
+void SpiderEntity::serialize(
+	const Swan::Context &ctx, MsgStream::MapBuilder &w)
+{}
 
 }

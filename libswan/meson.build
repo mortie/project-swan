@@ -21,7 +21,7 @@ libswan = declare_dependency(
     dependencies: [
       common, libcygnet, libthreads, libstb_image,
       libstb_vorbis, libcpptoml, libdl, libz, libglfw3,
-      libimgui, libportaudio,
+      libimgui, libportaudio, libmsgstream,
     ] + maybe_libtracy,
     install: true,
     include_directories: 'include/swan',

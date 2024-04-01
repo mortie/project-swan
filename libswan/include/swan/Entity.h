@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <msgpack.hpp>
+#include <msgstream/msgstream.h>
 
 #include "common.h"
 #include "util.h"
@@ -14,11 +14,10 @@ class Game;
 
 class Entity: NonCopyable {
 public:
-	using PackObject = std::unordered_map<std::string_view, msgpack::object>;
-
 	struct Factory {
 		const std::string name;
-		std::unique_ptr<Entity> (*create)(const Context &ctx, const PackObject &obj);
+		std::unique_ptr<Entity> (*create)(
+			const Context &ctx, MsgStream::MapParser &parser);
 	};
 
 	Entity() = default;
@@ -39,12 +38,10 @@ public:
 	virtual void onDespawn(const Context &ctx)
 	{}
 
-	virtual void deserialize(const Swan::Context &ctx, const PackObject &obj)
+	virtual void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r)
 	{}
-	virtual PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone)
-	{
-		return {};
-	}
+	virtual void serialize(const Swan::Context &ctx, MsgStream::MapBuilder &w)
+	{}
 
 	template<typename T>
 	auto trait()

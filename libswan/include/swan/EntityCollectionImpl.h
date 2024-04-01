@@ -38,7 +38,7 @@ public:
 	template<typename ... Args>
 	EntityRef spawn(const Context &ctx, Args && ... args);
 
-	EntityRef spawn(const Context &ctx, const Entity::PackObject &obj) override;
+	EntityRef spawn(const Context &ctx, MsgStream::MapParser &r) override;
 
 	size_t size() override
 	{
@@ -175,11 +175,12 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, Args &&...
 }
 
 template<typename Ent>
-inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, const Entity::PackObject &obj)
+inline EntityRef EntityCollectionImpl<Ent>::spawn(
+	const Context &ctx, MsgStream::MapParser &r)
 {
 	uint64_t id = nextId_++;
 	size_t index = entities_.size();
-	auto &w = entities_.emplace_back(ctx, obj);
+	auto &w = entities_.emplace_back(ctx, r);
 
 	entities_.back().id = id;
 	idToIndex_[id] = index;

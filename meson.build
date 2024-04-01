@@ -26,7 +26,6 @@ subdir('third-party')
 
 common = declare_dependency(
   include_directories: 'include',
-  dependencies: libmsgpack,
 )
 
 subdir('libcygnet')

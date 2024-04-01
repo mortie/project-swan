@@ -31,12 +31,13 @@ Context WorldPlane::getContext()
 	};
 }
 
-EntityRef WorldPlane::spawnEntity(const std::string &name, const Entity::PackObject &obj)
+EntityRef WorldPlane::spawnEntity(const std::string &name, MsgStream::MapParser &r)
 {
-	return entCollsByName_.at(name)->spawn(getContext(), obj);
+	return entCollsByName_.at(name)->spawn(getContext(), r);
 }
 
-std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(BodyTrait::Body &body)
+std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(
+	BodyTrait::Body &body)
 {
 	constexpr float PADDING = 10;
 	auto topLeft = body.topLeft() - Vec2{PADDING, PADDING};

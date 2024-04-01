@@ -37,9 +37,10 @@ DynamiteEntity::DynamiteEntity(
 	tile_ = ctx.world.getItem("core::dynamite").id;
 }
 
-DynamiteEntity::DynamiteEntity(const Swan::Context &ctx, const PackObject &obj)
+DynamiteEntity::DynamiteEntity(
+	const Swan::Context &ctx, MsgStream::MapParser &r)
 {
-	deserialize(ctx, obj);
+	deserialize(ctx, r);
 	tile_ = ctx.world.getTileID("core::dynamite");
 }
 
@@ -66,13 +67,12 @@ void DynamiteEntity::update(const Swan::Context &ctx, float dt)
 	}
 }
 
-void DynamiteEntity::deserialize(const Swan::Context &ctx, const PackObject &obj)
+void DynamiteEntity::deserialize(
+	const Swan::Context &ctx, MsgStream::MapParser &r)
 {}
 
-Swan::Entity::PackObject DynamiteEntity::serialize(
-	const Swan::Context &ctx, msgpack::zone &zone)
-{
-	return {};
-}
+void DynamiteEntity::serialize(
+	const Swan::Context &ctx, MsgStream::MapBuilder &w)
+{}
 
 }

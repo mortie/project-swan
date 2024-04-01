@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <unordered_map>
 #include <stb/stb_truetype.h>
 #include <swan-common/cache.h>
 

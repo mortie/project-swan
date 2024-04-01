@@ -27,8 +27,8 @@ libimgui = declare_dependency(
   ),
 )
 
-libmsgpack = declare_dependency(
-  include_directories: 'msgpack-c/include',
+libmsgstream = declare_dependency(
+  include_directories: '.',
 )
 
 libperlinnoise = declare_dependency(

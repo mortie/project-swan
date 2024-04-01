@@ -3,7 +3,9 @@
 #include <string.h>
 #include <stdint.h>
 #include <memory>
+#include <unordered_set>
 #include <cygnet/Renderer.h>
+#include <assert.h>
 
 #include "common.h"
 #include "Tile.h"

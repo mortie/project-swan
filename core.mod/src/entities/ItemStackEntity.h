@@ -9,7 +9,7 @@ class ItemStackEntity final: public Swan::Entity,
 public:
 	ItemStackEntity(const Swan::Context &ctx, Swan::Vec2 pos, Swan::Item *item);
 	ItemStackEntity(const Swan::Context &ctx, Swan::Vec2 pos, Swan::Vec2 vel, Swan::Item *item);
-	ItemStackEntity(const Swan::Context &ctx, const PackObject &obj);
+	ItemStackEntity(const Swan::Context &ctx, MsgStream::MapParser &r);
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -24,8 +24,8 @@ public:
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
 	void update(const Swan::Context &ctx, float dt) override;
 	void tick(const Swan::Context &ctx, float dt) override;
-	void deserialize(const Swan::Context &ctx, const PackObject &obj) override;
-	PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) override;
+	void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r) override;
+	void serialize(const Swan::Context &ctx, MsgStream::MapBuilder &w) override;
 
 	Swan::Item *item()
 	{

@@ -23,9 +23,10 @@ ItemStackEntity::ItemStackEntity(
 	item_ = item;
 }
 
-ItemStackEntity::ItemStackEntity(const Swan::Context &ctx, const PackObject &obj)
+ItemStackEntity::ItemStackEntity(
+	const Swan::Context &ctx, MsgStream::MapParser &r)
 {
-	deserialize(ctx, obj);
+	deserialize(ctx, r);
 }
 
 void ItemStackEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
@@ -50,18 +51,12 @@ void ItemStackEntity::tick(const Swan::Context &ctx, float dt)
 	}
 }
 
-void ItemStackEntity::deserialize(const Swan::Context &ctx, const PackObject &obj)
-{
-	physicsBody_.body.pos = obj.at("pos").as<Swan::Vec2>();
-	item_ = &ctx.world.getItem(obj.at("item").as<std::string>());
-}
+void ItemStackEntity::deserialize(
+	const Swan::Context &ctx, MsgStream::MapParser &r)
+{}
 
-Swan::Entity::PackObject ItemStackEntity::serialize(const Swan::Context &ctx, msgpack::zone &zone)
-{
-	return {
-		{"pos", msgpack::object(physicsBody_.body.pos, zone)},
-		{"item", msgpack::object(item_->name, zone)},
-	};
-}
+void ItemStackEntity::serialize(
+	const Swan::Context &ctx, MsgStream::MapBuilder &w)
+{}
 
 }

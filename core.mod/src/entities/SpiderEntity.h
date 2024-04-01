@@ -8,13 +8,13 @@ class SpiderEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait, public Swan::ContactDamageTrait {
 public:
 	SpiderEntity(const Swan::Context &ctx, Swan::Vec2 pos);
-	SpiderEntity(const Swan::Context &ctx, const PackObject &obj);
+	SpiderEntity(const Swan::Context &ctx, MsgStream::MapParser &r);
 
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
 	void update(const Swan::Context &ctx, float dt) override;
 	void tick(const Swan::Context &ctx, float dt) override;
-	void deserialize(const Swan::Context &ctx, const PackObject &obj) override;
-	PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) override;
+	void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r) override;
+	void serialize(const Swan::Context &ctx, MsgStream::MapBuilder &w) override;
 
 	Body &get(BodyTrait::Tag) override
 	{

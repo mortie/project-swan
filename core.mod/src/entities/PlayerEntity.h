@@ -8,7 +8,7 @@ class PlayerEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait, public Swan::InventoryTrait {
 public:
 	PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos);
-	PlayerEntity(const Swan::Context &ctx, const PackObject &obj);
+	PlayerEntity(const Swan::Context &ctx, MsgStream::MapParser &r);
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -29,8 +29,8 @@ public:
 	void ui(const Swan::Context &ctx) override;
 	void update(const Swan::Context &ctx, float dt) override;
 	void tick(const Swan::Context &ctx, float dt) override;
-	void deserialize(const Swan::Context &ctx, const PackObject &obj) override;
-	PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) override;
+	void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r) override;
+	void serialize(const Swan::Context &ctx, MsgStream::MapBuilder &w) override;
 
 private:
 	enum class State {

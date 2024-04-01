@@ -8,7 +8,7 @@ class FallingTileEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait {
 public:
 	FallingTileEntity(const Swan::Context &ctx, Swan::Vec2 pos, Swan::Tile::ID tile);
-	FallingTileEntity(const Swan::Context &ctx, const PackObject &obj);
+	FallingTileEntity(const Swan::Context &ctx, MsgStream::MapParser &r);
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -23,8 +23,8 @@ public:
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
 	void update(const Swan::Context &ctx, float dt) override;
 
-	void deserialize(const Swan::Context &ctx, const PackObject &obj) override;
-	PackObject serialize(const Swan::Context &ctx, msgpack::zone &zone) override;
+	void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r) override;
+	void serialize(const Swan::Context &ctx, MsgStream::MapBuilder &w) override;
 
 private:
 	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
