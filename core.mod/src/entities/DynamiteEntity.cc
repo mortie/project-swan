@@ -15,7 +15,11 @@ static void explodeTile(const Swan::Context &ctx, Swan::TilePos tp, int x, int y
 		return;
 	}
 
-	float vx = 1.0 / x;
+	float vx = 0;
+	if (x != 0) {
+		vx = 1.0 / x;
+	}
+
 	float vy = abs(x) * -6;
 
 	ctx.plane.breakTile(tp);
