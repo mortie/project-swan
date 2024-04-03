@@ -73,7 +73,7 @@ void BasicInventory::deserialize(const Swan::Context &ctx, MsgStream::Parser &r)
 	auto arr = r.nextArray();
 
 	content.clear();
-	content.resize(arr.arraySize());
+	content.reserve(arr.arraySize());
 	while (arr.hasNext()) {
 		auto nextType = arr.nextType();
 		if (nextType == MsgStream::Type::NIL) {

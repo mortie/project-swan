@@ -7,13 +7,15 @@
 
 namespace CoreMod {
 
-inline void dropItem(const Swan::Context &ctx, Swan::TilePos pos, Swan::Item &item)
+inline void dropItem(
+	const Swan::Context &ctx, Swan::TilePos pos, Swan::Item &item)
 {
 	ctx.plane.spawnEntity<ItemStackEntity>(
 		(Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, &item);
 }
 
-inline void dropItem(const Swan::Context &ctx, Swan::TilePos pos, const std::string &item)
+inline void dropItem(
+	const Swan::Context &ctx, Swan::TilePos pos, const std::string &item)
 {
 	dropItem(ctx, pos, ctx.world.getItem(item));
 }
