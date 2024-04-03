@@ -21,7 +21,7 @@ struct Tile {
 
 	struct Builder {
 		std::string name;
-		std::string image;
+		std::string image = "@::invalid";
 		bool isSolid = true;
 		bool isOpaque = isSolid;
 		float lightLevel = 0;

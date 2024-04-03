@@ -4,12 +4,15 @@ project(
     'cpp_std=c++2a',
     'libdir=lib',
     'bindir=bin',
+    'warning_level=3',
   ],
 )
 
 cmake = import('cmake')
 
 shaderpp_prog = find_program('./scripts/shaderpp.py')
+
+add_project_arguments('-Wno-unused-parameter', language: 'cpp')
 
 maybe_libtracy = []
 if get_option('trace')
@@ -19,6 +22,7 @@ if get_option('trace')
 endif
 
 glfw_options = cmake.subproject_options()
+glfw_options.append_compile_args('c', '-w') # Disable warnings
 glfw_options.add_cmake_defines({
   'BUILD_SHARED_LIBS': true,
   'GLFW_BUILD_EXAMPLES': false,
@@ -30,6 +34,7 @@ glfw_sub = cmake.subproject('glfw', options: glfw_options)
 libglfw3 = glfw_sub.dependency('glfw')
 
 portaudio_options = cmake.subproject_options()
+portaudio_options.append_compile_args('c', '-w') # Disable warnings
 portaudio_options.add_cmake_defines({
   'PA_BUILD_SHARED': true,
   'PA_BUILD_STATIC': false,

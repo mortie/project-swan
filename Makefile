@@ -5,10 +5,10 @@ MESON ?= $(abspath ./meson/meson.py)
 all: $(OUT)/swan
 
 $(OUT)/build.ninja: $(MESON)
-	$(MESON) setup $(OUT) -Dprefix=$(PREFIX) -Dbuildtype=debugoptimized
+	$(MESON) setup $(OUT) -Dprefix=$(PREFIX) -Dbuildtype=debug -Ddebug=true -Doptimization=1
 
 $(OUT)/swan: $(OUT)/build.ninja phony
-	ninja -C $(OUT) swan
+	ninja -C $(OUT) swan core.mod/mod.so
 
 $(OUT)/libswan/libswan_test: $(OUT)/build.ninja phony
 	ninja -C $(OUT) libswan/libswan_test

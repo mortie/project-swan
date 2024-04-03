@@ -15,12 +15,12 @@ public:
 
 	struct Builder {
 		std::string name;
-		std::string image;
+		std::string image = "@::invalid";
 		int maxStack = 64;
-		std::optional<std::string> tile;
+		std::optional<std::string> tile = std::nullopt;
 
 		void (*onActivate)(
-			const Context &ctx, InventorySlot slot, Vec2 pos, Vec2 dir);
+			const Context &ctx, InventorySlot slot, Vec2 pos, Vec2 dir) = nullptr;
 	};
 
 	Tile::ID id;

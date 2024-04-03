@@ -1,5 +1,7 @@
 #include "traits/PhysicsBodyTrait.h"
 
+#include <cmath>
+
 #include "WorldPlane.h"
 #include "util.h"
 
@@ -34,7 +36,7 @@ static void collideX(BasicPhysicsBody &phys, WorldPlane &plane)
 
 	if (collided) {
 		phys.vel.x *= -phys.bounciness;
-		if (abs(phys.vel.x) < phys.mushyness) {
+		if (std::abs(phys.vel.x) < phys.mushyness) {
 			phys.vel.x = 0;
 		}
 	}
@@ -69,7 +71,7 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane)
 
 	if (collided) {
 		phys.vel.y *= -phys.bounciness;
-		if (abs(phys.vel.y) < phys.mushyness) {
+		if (std::abs(phys.vel.y) < phys.mushyness) {
 			phys.vel.y = 0;
 		}
 	}
@@ -105,7 +107,7 @@ void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 	Vec2 step = dir * 0.4;
 
 	// Move in increments of at most 'step', on the X axis
-	while (abs(dist.x) > abs(step.x)) {
+	while (std::abs(dist.x) > std::abs(step.x)) {
 		body.pos.x += step.x;
 		collideX(*this, ctx.plane);
 		dist.x -= step.x;
@@ -114,7 +116,7 @@ void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 	collideX(*this, ctx.plane);
 
 	// Move in increments of at most 'step', on the Y axis
-	while (abs(dist.y) > abs(step.y)) {
+	while (std::abs(dist.y) > std::abs(step.y)) {
 		body.pos.y += step.y;
 		collideY(*this, ctx.plane);
 		dist.y -= step.y;
