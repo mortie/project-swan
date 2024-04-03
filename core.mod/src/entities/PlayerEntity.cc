@@ -352,7 +352,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		stepTimer_ = 0.2;
 	}
 	else {
-		stepTimer_ = 0.2;
+		stepTimer_ = 0.1;
 	}
 
 	// Collide with stuff

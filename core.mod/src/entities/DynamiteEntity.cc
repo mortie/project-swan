@@ -23,7 +23,7 @@ static void explodeTile(const Swan::Context &ctx, Swan::TilePos tp, int x, int y
 
 	float vy = abs(x) * -6;
 
-	ctx.plane.breakTile(tp);
+	ctx.plane.setTileID(tp, Swan::World::AIR_TILE_ID);
 	auto ref = ctx.plane.spawnEntity<FallingTileEntity>(
 		(Swan::Vec2)tp + Swan::Vec2{0.5, 0.5}, id);
 	auto *body = ref.trait<Swan::PhysicsBodyTrait>();

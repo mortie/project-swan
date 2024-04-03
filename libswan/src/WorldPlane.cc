@@ -155,18 +155,12 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos)
 
 void WorldPlane::setTileID(TilePos pos, Tile::ID id)
 {
-	Tile::ID oldTileID = getTileID(pos);
-
 	setTileIDWithoutUpdate(pos, id);
 
 	// Update the new tile immediately
 	auto &tile = getTile(pos);
 	if (tile.onTileUpdate) {
 		tile.onTileUpdate(getContext(), pos);
-	}
-
-	if (oldTileID == World::AIR_TILE_ID) {
-		world_->game_->playSound(tile.breakSound);
 	}
 
 	// Schedule surrounding tile updates for later
@@ -189,6 +183,16 @@ void WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 
 	Tile &newTile = world_->getTileByID(id);
 	Tile &oldTile = world_->getTileByID(old);
+
+	if (old == World::AIR_TILE_ID) {
+		// TODO: Play a eparate place sound
+		world_->game_->playSound(newTile.breakSound);
+	}
+
+	if (oldTile.onBreak) {
+		oldTile.onBreak(getContext(), pos);
+	}
+
 	if (oldTile.tileEntity) {
 		auto it = tileEntities_.find(pos);
 		if (it == tileEntities_.end()) {
@@ -285,12 +289,7 @@ void WorldPlane::breakTile(TilePos pos)
 		return;
 	}
 
-	Context ctx = getContext();
 	Tile &tile = world_->getTileByID(id);
-
-	if (tile.onBreak) {
-		tile.onBreak(ctx, pos);
-	}
 
 	if (tile.breakSound) {
 		world_->game_->playSound(tile.breakSound);
@@ -299,15 +298,8 @@ void WorldPlane::breakTile(TilePos pos)
 		world_->game_->playSound(world_->getSound(World::THUD_SOUND_NAME));
 	}
 
-	// Change tile to air and emit event
-	setTileIDWithoutUpdate(pos, World::AIR_TILE_ID);
-	world_->evtTileBreak_.emit(getContext(), pos, world_->getTileByID(id));
-
-	// Schedule tile updates
-	scheduledTileUpdates_.push_back(pos.add(-1, 0));
-	scheduledTileUpdates_.push_back(pos.add(0, -1));
-	scheduledTileUpdates_.push_back(pos.add(1, 0));
-	scheduledTileUpdates_.push_back(pos.add(0, 1));
+	// Change tile to air
+	setTileID(pos, World::AIR_TILE_ID);
 }
 
 WorldPlane::Raycast WorldPlane::raycast(

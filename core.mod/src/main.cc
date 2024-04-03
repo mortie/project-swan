@@ -28,6 +28,10 @@ public:
 
 		registerSound("sounds/step/grass1");
 		registerSound("sounds/step/grass2");
+		registerSound("sounds/step/stone1");
+		registerSound("sounds/step/stone2");
+		registerSound("sounds/step/sand1");
+		registerSound("sounds/step/sand2");
 		registerSound("sounds/break/dirt");
 		registerSound("sounds/break/leaves");
 		registerSound("sounds/snap");
@@ -35,6 +39,7 @@ public:
 		registerTile({
 			.name = "stone",
 			.image = "core::tiles/stone",
+			.stepSound = "core::sounds/step/stone",
 			.droppedItem = "core::stone",
 		});
 		registerTile({
@@ -47,6 +52,7 @@ public:
 		registerTile({
 			.name = "sand",
 			.image = "core::tiles/sand",
+			.stepSound = "core::sounds/step/sand",
 			.droppedItem = "core::sand",
 			.onTileUpdate = fallIfFloating,
 		});
