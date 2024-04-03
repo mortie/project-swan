@@ -78,6 +78,7 @@ void BasicInventory::deserialize(const Swan::Context &ctx, MsgStream::Parser &r)
 		auto nextType = arr.nextType();
 		if (nextType == MsgStream::Type::NIL) {
 			arr.skipNil();
+			content.emplace_back();
 		}
 		else {
 			auto stackArr = arr.nextArray();
