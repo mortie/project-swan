@@ -67,6 +67,15 @@ public:
 
 	void nextTick(std::function<void(const Context &)> cb);
 
+	struct Raycast {
+		bool hit;
+		Tile &tile;
+		TilePos pos;
+		Vec2i face;
+	};
+
+	Raycast raycast(Vec2 pos, Vec2 direction, float distance);
+
 	Cygnet::Color backgroundColor();
 	void draw(Cygnet::Renderer &rnd);
 	void ui();

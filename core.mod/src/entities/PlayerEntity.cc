@@ -1,12 +1,12 @@
 #include "PlayerEntity.h"
 
+#include <algorithm>
 #include <imgui/imgui.h>
 #include <unordered_map>
 
 #include "ItemStackEntity.h"
 #include "world/util.h"
 #include "world/ladder.h"
-#include "swan-common/Vector2.h"
 
 namespace CoreMod {
 
@@ -34,7 +34,8 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	currentAnimation_->draw(rnd, mat.translate(
 		physicsBody_.body.pos - Swan::Vec2{0.6, 0.1}));
 
-	rnd.drawRect({mouseTile_, {1, 1}});
+	rnd.drawRect({Swan::Vec2(placePos_).add(0.1, 0.1), {0.8, 0.8}});
+	rnd.drawRect({breakPos_, {1, 1}});
 }
 
 void PlayerEntity::ui(const Swan::Context &ctx)
@@ -125,11 +126,22 @@ void PlayerEntity::ui(const Swan::Context &ctx)
 
 void PlayerEntity::update(const Swan::Context &ctx, float dt)
 {
+	if (interactTimer_ >= 0) {
+		interactTimer_ -= dt;
+	}
+
 	State oldState = state_;
 
 	state_ = State::IDLE;
 
-	mouseTile_ = ctx.game.getMouseTile();
+	Swan::Vec2 facePos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.3};
+	Swan::Vec2 mousePos = ctx.game.getMousePos();
+	auto lookVector = mousePos - facePos;
+	auto raycast = ctx.plane.raycast(
+		facePos, lookVector, std::min(lookVector.length(), 6.0f));
+	breakPos_ = raycast.pos;
+	placePos_ = raycast.pos + raycast.face;
+
 	jumpTimer_.tick(dt);
 
 	// Figure out what tile we're in
@@ -187,7 +199,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 
 	// Break block
 	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
-		breakTileAndDropItem(ctx, mouseTile_);
+		onLeftClick(ctx);
 	}
 
 	// Place block, or activate item
@@ -422,8 +434,22 @@ void PlayerEntity::deserialize(
 	}
 }
 
+void PlayerEntity::onLeftClick(const Swan::Context &ctx)
+{
+	if (interactTimer_ > 0) {
+		return;
+	}
+
+	breakTileAndDropItem(ctx, breakPos_);
+	interactTimer_ = 0.2;
+}
+
 void PlayerEntity::onRightClick(const Swan::Context &ctx)
 {
+	if (interactTimer_ > 0) {
+		return;
+	}
+
 	Swan::InventorySlot slot = inventory_.slot(selectedInventorySlot_);
 	Swan::ItemStack stack = slot.get();
 
@@ -444,20 +470,24 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 		return;
 	}
 
-	Swan::Tile &tileAtMouse = ctx.plane.getTile(mouseTile_);
-	if (tileAtMouse.name != "@::air") {
+	Swan::Tile &placeTile = ctx.plane.getTile(placePos_);
+	if (placeTile.name != "@::air") {
 		return;
 	}
 
-	if (item.tile->isSolid && !ctx.plane.getEntitiesInTile(mouseTile_).empty()) {
+	if (
+			item.tile->isSolid &&
+			!ctx.plane.getEntitiesInTile(placePos_).empty()) {
 		return;
 	}
+
+	interactTimer_ = 0.2;
 
 	if (slot.remove(1).empty()) {
 		Swan::info << "Not placing tile because stack.remove(1) is empty";
 	}
 
-	ctx.plane.setTileID(mouseTile_, item.tile->id);
+	ctx.plane.setTileID(placePos_, item.tile->id);
 }
 
 void PlayerEntity::craft(const Swan::Recipe &recipe)

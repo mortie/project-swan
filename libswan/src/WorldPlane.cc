@@ -1,5 +1,6 @@
 #include "WorldPlane.h"
 
+#include <limits>
 #include <math.h>
 
 #include "log.h"
@@ -263,6 +264,66 @@ void WorldPlane::breakTile(TilePos pos)
 	scheduledTileUpdates_.push_back(pos.add(0, -1));
 	scheduledTileUpdates_.push_back(pos.add(1, 0));
 	scheduledTileUpdates_.push_back(pos.add(0, 1));
+}
+
+WorldPlane::Raycast WorldPlane::raycast(
+	Vec2 start, Vec2 direction, float distance)
+{
+	float squareDist = distance * distance;
+	Vec2 step = direction.norm() * 0.1;
+	Vec2 pos = start;
+	Vec2 prevPos = start;
+
+	TilePos prevTP = {0, std::numeric_limits<int>::max()};
+	TilePos tp = {(int)floor(pos.x), (int)floor(pos.y)};
+	Tile *tile;
+
+	while (true) {
+		do {
+			prevPos = pos;
+			pos += step;
+			if ((pos - start).squareLength() > squareDist) {
+				return {
+					.hit = false,
+					.tile = *tile,
+					.pos = tp,
+					.face = Vec2i::ZERO,
+				};
+			}
+
+			tp = {(int)floor(pos.x), (int)floor(pos.y)};
+		} while (tp == prevTP);
+		prevTP = tp;
+
+		tile = &getTile(tp);
+		if (!tile->isSolid) {
+			continue;
+		}
+
+		Vec2i face = Vec2i::ZERO;
+		Vec2 rel = pos - tp;
+		Vec2 prevRel = prevPos - tp;
+
+		if (rel.y > 0 && prevRel.y < 0) {
+			face = {0, -1};
+		}
+		else if (rel.y < 1 && prevRel.y > 1) {
+			face = {0, 1};
+		}
+		else if (rel.x > 0 && prevRel.x < 0) {
+			face = {-1, 0};
+		}
+		else if (rel.x < 1 && prevRel.x > 1) {
+			face = {1, 0};
+		}
+
+		return {
+			.hit = false,
+			.tile = *tile,
+			.pos = tp,
+			.face = face,
+		};
+	}
 }
 
 Cygnet::Color WorldPlane::backgroundColor()

@@ -65,6 +65,7 @@ private:
 	static constexpr float LADDER_MAX_VEL = 5;
 
 	void onRightClick(const Swan::Context &ctx);
+	void onLeftClick(const Swan::Context &ctx);
 	void craft(const Swan::Recipe &recipe);
 	void dropItem(const Swan::Context &ctx);
 
@@ -80,13 +81,16 @@ private:
 
 	Swan::Clock jumpTimer_;
 	float invincibleTimer_ = 0;
-	Swan::TilePos mouseTile_;
 	int selectedInventorySlot_ = 0;
 	int lastDirection_ = 1;
 	bool sprinting_ = false;
 	bool showInventory_ = false;
 	float stepTimer_ = 0;
 	int stepIndex_ = 0;
+	float interactTimer_ = 0;
+
+	Swan::TilePos breakPos_;
+	Swan::TilePos placePos_;
 
 	Swan::BasicInventory inventory_{INVENTORY_SIZE};
 	Swan::BasicPhysicsBody physicsBody_{PROPS};
