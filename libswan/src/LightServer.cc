@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include "log.h"
+
 namespace Swan {
 
 static ChunkPos lightChunkPos(TilePos pos)
@@ -160,6 +162,13 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 	};
 
 	if (evt.tag == Event::Tag::CHUNK_ADDED) {
+		if (chunks_.contains(evt.pos)) {
+			warn
+				<< "LightServer: CHUNK_ADDED added an existing chunk "
+				<< evt.pos;
+			chunks_.erase(evt.pos);
+		}
+
 		chunks_.emplace(std::piecewise_construct,
 			std::forward_as_tuple(evt.pos),
 			std::forward_as_tuple(std::move(newChunks[evt.i])));
@@ -167,6 +176,13 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 		return;
 	}
 	else if (evt.tag == Event::Tag::CHUNK_REMOVED) {
+		if (!chunks_.contains(evt.pos)) {
+			warn
+				<< "LightServer: CHUNK_REMOVED removed a non-existent chunk "
+				<< evt.pos;
+			chunks_.erase(evt.pos);
+		}
+
 		chunks_.erase(evt.pos);
 		markAdjacentChunksModified(evt.pos);
 		return;

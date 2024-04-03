@@ -93,6 +93,8 @@ private:
 	EntityCollection &getCollectionOf(std::string name);
 	EntityCollection &getCollectionOf(std::type_index type);
 
+	NewLightChunk computeLightChunk(const Chunk &chunk);
+
 	std::unordered_map<ChunkPos, Chunk> chunks_;
 	std::vector<Chunk *> activeChunks_;
 	std::vector<std::pair<ChunkPos, Chunk *> > tickChunks_;

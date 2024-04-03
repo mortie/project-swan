@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <cygnet/Renderer.h>
 #include <assert.h>
+#include <msgstream/msgstream.h>
 
 #include "common.h"
 #include "Tile.h"
@@ -19,9 +20,13 @@ class Game;
 
 class Chunk {
 public:
+	static constexpr size_t TILE_DATA_SIZE =
+		CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID);
+	static constexpr size_t LIGHT_DATA_SIZE =
+		CHUNK_WIDTH * CHUNK_HEIGHT;
+
 	static constexpr size_t DATA_SIZE =
-		CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID) + // Tiles
-		CHUNK_WIDTH * CHUNK_HEIGHT; // Light levels
+		TILE_DATA_SIZE + LIGHT_DATA_SIZE;
 
 	// What does this chunk want the world gen to do after a tick?
 	enum class TickAction {
@@ -42,13 +47,19 @@ public:
 		return (Tile::ID *)data_.get();
 	}
 
+	const Tile::ID *getTileData() const
+	{
+		assert(isActive());
+		return (Tile::ID *)data_.get();
+	}
+
 	uint8_t *getLightData()
 	{
 		assert(isActive());
 		return data_.get() + CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID);
 	}
 
-	Tile::ID getTileID(ChunkRelPos pos)
+	Tile::ID getTileID(ChunkRelPos pos) const
 	{
 		return getTileData()[pos.y * CHUNK_WIDTH + pos.x];
 	}
@@ -76,7 +87,7 @@ public:
 		needLightRender_ = true;
 	}
 
-	TilePos topLeft()
+	TilePos topLeft() const
 	{
 		return pos_ * TilePos{CHUNK_WIDTH, CHUNK_HEIGHT};
 	}
@@ -96,10 +107,18 @@ public:
 	void draw(const Context &ctx, Cygnet::Renderer &rnd);
 	TickAction tick(float dt);
 
-	bool isActive()
+	bool isActive() const
 	{
 		return deactivateTimer_ > 0;
 	}
+
+	bool isModified() const
+	{
+		return isModified_;
+	}
+
+	void serialize(MsgStream::Serializer &w);
+	void deserialize(MsgStream::Parser &r);
 
 	const ChunkPos pos_;
 	std::unordered_set<EntityRef> entities_;

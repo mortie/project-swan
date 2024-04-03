@@ -3,6 +3,8 @@
 #include <zlib.h>
 #include <stdint.h>
 #include <assert.h>
+#include <bit>
+#include <string.h>
 
 #include "log.h"
 
@@ -16,12 +18,12 @@ void Chunk::compress(Cygnet::Renderer &rnd)
 
 	// We only need a fixed-length temp buffer;
 	// if the compressed data gets too big, there's no point in compressing
-	uint8_t dest[CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)];
+	uint8_t dest[TILE_DATA_SIZE];
 
 	uLongf destlen = sizeof(dest);
 	int ret = compress2(
 		(Bytef *)dest, &destlen,
-		(Bytef *)data_.get(), DATA_SIZE,
+		(Bytef *)data_.get(), TILE_DATA_SIZE,
 		Z_BEST_COMPRESSION);
 
 	if (ret == Z_OK) {
@@ -57,7 +59,7 @@ void Chunk::decompress()
 	}
 
 	auto dest = std::make_unique<uint8_t[]>(DATA_SIZE);
-	uLongf destlen = DATA_SIZE;
+	uLongf destlen = TILE_DATA_SIZE;
 	int ret = uncompress(
 		dest.get(), &destlen,
 		(Bytef *)data_.get(), compressedSize_);
@@ -106,6 +108,62 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
 	Vec2 pos = (Vec2)pos_ * Vec2{CHUNK_WIDTH, CHUNK_HEIGHT};
 	rnd.drawChunk({pos, renderChunk_});
 	rnd.drawChunkShadow({pos, renderChunkShadow_});
+}
+
+void Chunk::serialize(MsgStream::Serializer &w)
+{
+	auto arr = w.beginArray(2);
+	if (isCompressed()) {
+		arr.writeUInt(1);
+		static_assert(std::endian::native == std::endian::little);
+		arr.writeBinary({
+			(unsigned char *)data_.get(),
+			(size_t)compressedSize_});
+	} else {
+		arr.writeUInt(0);
+		static_assert(std::endian::native == std::endian::little);
+		arr.writeBinary({
+			(unsigned char *)data_.get(),
+			CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)});
+	}
+	w.endArray(arr);
+}
+
+void Chunk::deserialize(MsgStream::Parser &p)
+{
+	needChunkRender_ = true;
+	isModified_ = true;
+
+	auto arr = p.nextArray();
+	uint64_t compressionType = arr.nextUInt();
+	if (compressionType == 0) {
+		std::vector<unsigned char> vec;
+		arr.nextBinary(vec);
+		if (vec.size() != CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)) {
+			throw std::runtime_error("Bad chunk size");
+		}
+
+		// We're probably already decompressed here,
+		// but in case we're not, decompress
+		decompress();
+
+		static_assert(std::endian::native == std::endian::little);
+		memcpy(data_.get(), vec.data(), vec.size());
+		deactivateTimer_ = DEACTIVATE_INTERVAL;
+	} else if (compressionType == 1) {
+		std::vector<unsigned char> vec;
+		arr.nextBinary(vec);
+
+		data_ = std::make_unique<uint8_t[]>(vec.size());
+		static_assert(std::endian::native == std::endian::little);
+		memcpy(data_.get(), vec.data(), vec.size());
+		compressedSize_ = vec.size();
+		deactivateTimer_ = 0;
+	} else {
+		throw std::runtime_error("Invalid compression type");
+	}
+
+	arr.skipAll();
 }
 
 Chunk::TickAction Chunk::tick(float dt)

@@ -138,28 +138,14 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos)
 		chunkInitList_.push_back(&chunk);
 
 		// Need to tell the light engine too
-		NewLightChunk lc;
-		for (int y = 0; y < CHUNK_HEIGHT; ++y) {
-			for (int x = 0; x < CHUNK_WIDTH; ++x) {
-				Tile::ID id = chunk.getTileID({x, y});
-				Tile &tile = world_->getTileByID(id);
-				if (tile.isOpaque) {
-					lc.blocks[y * CHUNK_HEIGHT + x] = true;
-				}
-				if (tile.lightLevel > 0) {
-					lc.lightSources[{x, y}] = tile.lightLevel;
-				}
-			}
-		}
-
-		lighting_->onChunkAdded(pos, std::move(lc));
-
-		// Otherwise, it might not be active, so let's activate it
+		lighting_->onChunkAdded(pos, computeLightChunk(chunk));
 	}
+
+	// Otherwise, it might not be active, so let's activate it
 	else if (!iter->second.isActive()) {
 		iter->second.keepActive();
 		activeChunks_.push_back(&iter->second);
-		chunkInitList_.push_back(&iter->second);
+		lighting_->onChunkAdded(pos, computeLightChunk(iter->second));
 	}
 
 	return iter->second;
@@ -347,7 +333,7 @@ void WorldPlane::update(float dt)
 		Chunk *chunk = chunkInitList_.front();
 		chunkInitList_.pop_front();
 
-		TilePos base = chunk->pos_ * Vec2i{CHUNK_WIDTH, CHUNK_HEIGHT};
+		TilePos base = chunk->topLeft();
 		for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 			for (int x = 0; x < CHUNK_WIDTH; ++x) {
 				Tile::ID id = chunk->getTileID({x, y});
@@ -398,6 +384,7 @@ void WorldPlane::tick(float dt)
 		switch (action) {
 		case Chunk::TickAction::DEACTIVATE:
 			info << "Compressing inactive modified chunk " << chunk->pos_;
+			lighting_->onChunkRemoved(chunk->pos_);
 			chunk->compress(world_->game_->renderer_);
 			activeChunks_[activeChunkIndex] = activeChunks_.back();
 			activeChunks_.pop_back();
@@ -405,6 +392,7 @@ void WorldPlane::tick(float dt)
 
 		case Chunk::TickAction::DELETE:
 			info << "Deleting inactive unmodified chunk " << chunk->pos_;
+			lighting_->onChunkRemoved(chunk->pos_);
 			chunk->destroy(world_->game_->renderer_);
 			chunks_.erase(chunk->pos_);
 			activeChunks_[activeChunkIndex] = activeChunks_.back();
@@ -458,9 +446,10 @@ void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos)
 	realChunk.setLightData(chunk.lightLevels);
 }
 
-void WorldPlane::serialize(MsgStream::Serializer &w) {
+void WorldPlane::serialize(MsgStream::Serializer &w)
+{
 	auto ctx = getContext();
-	auto map = w.beginMap(1);
+	auto map = w.beginMap(2);
 
 	map.writeString("entity-collections");
 	auto colls = map.beginMap(entColls_.size());
@@ -470,10 +459,33 @@ void WorldPlane::serialize(MsgStream::Serializer &w) {
 	}
 	map.endMap(colls);
 
+	size_t chunkCount = 0;
+	for (auto &[_, chunk]: chunks_) {
+		if (chunk.isModified()) {
+			chunkCount += 1;
+		}
+	}
+
+	map.writeString("chunks");
+	auto chunks = map.beginArray(chunkCount);
+	for (auto &[pos, chunk]: chunks_) {
+		if (!chunk.isModified()) {
+			continue;
+		}
+
+		auto chunkArr = chunks.beginArray(3);
+		chunkArr.writeInt(pos.x);
+		chunkArr.writeInt(pos.y);
+		chunk.serialize(chunkArr);
+		chunks.endArray(chunkArr);
+	}
+	map.endMap(chunks);
+
 	w.endMap(map);
 }
 
-void WorldPlane::deserialize(MsgStream::Parser &r) {
+void WorldPlane::deserialize(MsgStream::Parser &r)
+{
 	auto ctx = getContext();
 	auto map = r.nextMap();
 
@@ -491,10 +503,55 @@ void WorldPlane::deserialize(MsgStream::Parser &r) {
 
 				it->second->deserialize(ctx, colls);
 			}
-		} else {
+		}
+		else if (key == "chunks") {
+			auto chunks = map.nextArray();
+			chunks_.clear();
+			activeChunks_.clear();
+			chunkInitList_.clear();
+
+			while (chunks.hasNext()) {
+				auto chunkArr = chunks.nextArray();
+
+				int x = chunkArr.nextInt();
+				int y = chunkArr.nextInt();
+				ChunkPos pos{x, y};
+
+				auto it = chunks_.emplace(pos, Chunk(pos)).first;
+				Chunk &chunk = it->second;
+
+				chunk.deserialize(chunkArr);
+				lighting_->onChunkAdded(pos, computeLightChunk(chunk));
+				if (chunk.isActive()) {
+					activeChunks_.push_back(&chunk);
+				}
+
+				chunkArr.skipAll();
+			}
+		}
+		else {
 			map.skipNext();
 		}
 	}
+}
+
+NewLightChunk WorldPlane::computeLightChunk(const Chunk &chunk)
+{
+	NewLightChunk lc;
+	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
+		for (int x = 0; x < CHUNK_WIDTH; ++x) {
+			Tile::ID id = chunk.getTileID({x, y});
+			Tile &tile = world_->getTileByID(id);
+			if (tile.isOpaque) {
+				lc.blocks[y * CHUNK_HEIGHT + x] = true;
+			}
+			if (tile.lightLevel > 0) {
+				lc.lightSources[{x, y}] = tile.lightLevel;
+			}
+		}
+	}
+
+	return lc;
 }
 
 }

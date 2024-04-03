@@ -72,14 +72,16 @@ void Game::draw()
 		}
 
 		if (ImGui::Button("Save")) {
-			std::fstream f("world.mp", std::ios_base::out);
+			std::fstream f("world.mp.new", std::ios_base::out);
 			if (f) {
-				info << "Serializing to world.mp...";
+				info << "Serializing to world.mp.new...";
 				MsgStream::Serializer w(f);
 				world_->serialize(w);
+				info << "Renaming world.mp.new to world.mp...";
+				std::filesystem::rename("world.mp.new", "world.mp");
 				info << "Done.";
 			} else {
-				warn << "Failed to open world.mp!";
+				warn << "Failed to open world.mp.new!";
 			}
 		}
 
