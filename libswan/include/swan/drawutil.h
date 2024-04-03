@@ -9,7 +9,7 @@ namespace Swan {
 namespace Draw {
 
 Cygnet::Color linearGradient(
-	float val, std::initializer_list<std::pair<float, Cygnet::Color> > colors);
+	float val, std::initializer_list<std::pair<float, Cygnet::Color>> colors);
 
 }
 

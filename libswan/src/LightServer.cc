@@ -230,7 +230,7 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 
 float LightServer::recalcTile(
 	LightChunk &chunk, ChunkPos cpos, Vec2i rpos, TilePos base,
-	std::vector<std::pair<TilePos, float> > &lights)
+	std::vector<std::pair<TilePos, float>> &lights)
 {
 	TilePos pos = rpos + base;
 
@@ -391,7 +391,7 @@ void LightServer::processChunkSun(LightChunk &chunk, ChunkPos cpos)
 void LightServer::processChunkLights(LightChunk &chunk, ChunkPos cpos)
 {
 	TilePos base = cpos * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT);
-	std::vector<std::pair<TilePos, float> > lights;
+	std::vector<std::pair<TilePos, float>> lights;
 
 	for (auto &[pos, level]: chunk.lightSources) {
 		lights.emplace_back(Vec2i(pos) + base, level);
@@ -433,7 +433,7 @@ void LightServer::processChunkLights(LightChunk &chunk, ChunkPos cpos)
 void LightServer::processChunkBounces(LightChunk &chunk, ChunkPos cpos)
 {
 	TilePos base = cpos * Vec2i(CHUNK_WIDTH, CHUNK_HEIGHT);
-	std::vector<std::pair<TilePos, float> > lights;
+	std::vector<std::pair<TilePos, float>> lights;
 
 	for (auto &light: chunk.bounces) {
 		lights.emplace_back(light);

@@ -51,7 +51,7 @@ inline void Mod::registerEntity(const std::string name)
 	entities_.push_back(EntityCollection::Factory{
 		.name = cat(name_, "::", std::move(name)),
 		.create = [](std::string name) -> std::unique_ptr<EntityCollection> {
-			return std::make_unique<EntityCollectionImpl<Ent> >(std::move(name));
+			return std::make_unique<EntityCollectionImpl<Ent>>(std::move(name));
 		}
 	});
 }

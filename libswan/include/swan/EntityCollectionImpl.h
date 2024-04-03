@@ -184,6 +184,7 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(
 	uint64_t id = nextId_++;
 	size_t index = entities_.size();
 	auto &w = entities_.emplace_back(ctx);
+
 	w.ent.deserialize(ctx, r);
 
 	entities_.back().id = id;
@@ -380,7 +381,8 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 			warn << "Missing entity while deserializing " << name_;
 			arr.skipNil();
 			continue;
-		} else if (nextType != MsgStream::Type::MAP) {
+		}
+		else if (nextType != MsgStream::Type::MAP) {
 			warn << "Non-map array value while deserializing " << name_;
 			arr.skipNext();
 			continue;
@@ -393,7 +395,8 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 			if (key == "$id") {
 				id = mr.nextUInt();
 				break;
-			} else {
+			}
+			else {
 				warn
 					<< "Skipped unknown key '" << key
 					<< "' while deserializing " << name_;

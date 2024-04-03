@@ -73,8 +73,15 @@ public:
 	void update(float dt);
 	void tick(float dt);
 
-	Tile &invalidTile() { return *invalidTile_; }
-	Item &invalidItem() { return *invalidItem_; }
+	Tile &invalidTile()
+	{
+		return *invalidTile_;
+	}
+
+	Item &invalidItem()
+	{
+		return *invalidItem_;
+	}
 
 	void serialize(MsgStream::Serializer &w);
 	void deserialize(MsgStream::Parser &r);

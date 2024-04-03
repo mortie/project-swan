@@ -80,7 +80,8 @@ void Game::draw()
 				info << "Renaming world.mp.new to world.mp...";
 				std::filesystem::rename("world.mp.new", "world.mp");
 				info << "Done.";
-			} else {
+			}
+			else {
 				warn << "Failed to open world.mp.new!";
 			}
 		}

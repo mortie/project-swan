@@ -28,7 +28,7 @@ struct LightChunk {
 	int buffer = 0;
 	uint8_t blocksLine[CHUNK_WIDTH] = {0};
 	std::unordered_map<ChunkPos, float> lightSources;
-	std::vector<std::pair<TilePos, float> > bounces;
+	std::vector<std::pair<TilePos, float>> bounces;
 
 	float *lightBuffer()
 	{
@@ -80,7 +80,7 @@ private:
 
 	float recalcTile(
 		LightChunk &chunk, ChunkPos cpos, Vec2i rpos, TilePos base,
-		std::vector<std::pair<TilePos, float> > &lights);
+		std::vector<std::pair<TilePos, float>> &lights);
 	void processChunkSun(LightChunk &chunk, ChunkPos cpos);
 	void processChunkLights(LightChunk &chunk, ChunkPos cpos);
 	void processChunkBounces(LightChunk &chunk, ChunkPos cpos);

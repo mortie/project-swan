@@ -113,13 +113,15 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
 void Chunk::serialize(MsgStream::Serializer &w)
 {
 	auto arr = w.beginArray(2);
+
 	if (isCompressed()) {
 		arr.writeUInt(1);
 		static_assert(std::endian::native == std::endian::little);
 		arr.writeBinary({
 			(unsigned char *)data_.get(),
 			(size_t)compressedSize_});
-	} else {
+	}
+	else {
 		arr.writeUInt(0);
 		static_assert(std::endian::native == std::endian::little);
 		arr.writeBinary({
@@ -150,7 +152,8 @@ void Chunk::deserialize(MsgStream::Parser &p)
 		static_assert(std::endian::native == std::endian::little);
 		memcpy(data_.get(), vec.data(), vec.size());
 		deactivateTimer_ = DEACTIVATE_INTERVAL;
-	} else if (compressionType == 1) {
+	}
+	else if (compressionType == 1) {
 		std::vector<unsigned char> vec;
 		arr.nextBinary(vec);
 
@@ -159,7 +162,8 @@ void Chunk::deserialize(MsgStream::Parser &p)
 		memcpy(data_.get(), vec.data(), vec.size());
 		compressedSize_ = vec.size();
 		deactivateTimer_ = 0;
-	} else {
+	}
+	else {
 		throw std::runtime_error("Invalid compression type");
 	}
 

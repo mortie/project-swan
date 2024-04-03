@@ -132,7 +132,7 @@ private:
 	}
 
 	std::unique_ptr<uint8_t[]> data_;
-	std::vector<std::pair<ChunkRelPos, Tile::ID> > changeList_;
+	std::vector<std::pair<ChunkRelPos, Tile::ID>> changeList_;
 
 	ssize_t compressedSize_ = -1; // -1 if not compressed, a positive number if compressed
 	Cygnet::RenderChunk renderChunk_;

@@ -56,7 +56,7 @@ public:
 
 // This is just a bit nicer to use than using unique_ptr directly
 template<typename T, void(*Func)(T *)>
-using CPtr = std::unique_ptr<T, CPtrDeleter<T, Func> >;
+using CPtr = std::unique_ptr<T, CPtrDeleter<T, Func>>;
 
 // Free memory with 'free'
 template<typename T>
@@ -70,7 +70,7 @@ public:
 
 // This is just a bit nicer to use than using unique_ptr directly
 template<typename T>
-using MallocedPtr = std::unique_ptr<T, MallocedDeleter<T> >;
+using MallocedPtr = std::unique_ptr<T, MallocedDeleter<T>>;
 
 template<typename F>
 class Defer {

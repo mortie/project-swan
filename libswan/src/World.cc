@@ -544,13 +544,15 @@ void World::deserialize(MsgStream::Parser &r)
 		while (r.nextKey(key)) {
 			if (key == "world-gen") {
 				plane = &addPlane(r.nextString());
-			} else if (key == "plane") {
+			}
+			else if (key == "plane") {
 				if (!plane) {
 					throw std::runtime_error("Missing data for world plane");
 				}
 
 				plane->deserialize(r);
-			} else {
+			}
+			else {
 				r.skipNext();
 			}
 		}
@@ -558,6 +560,7 @@ void World::deserialize(MsgStream::Parser &r)
 
 	auto map = r.nextMap();
 	std::string key;
+
 	while (map.nextKey(key)) {
 		if (key == "planes") {
 			planes_.clear();
@@ -565,14 +568,16 @@ void World::deserialize(MsgStream::Parser &r)
 			while (planes.hasNext()) {
 				deserializePlane(planes.nextMap());
 			}
-		} else if (key == "player") {
+		}
+		else if (key == "player") {
 			if (planes_.size() == 0) {
 				throw std::runtime_error("Missing data for player");
 			}
 
 			playerRef_.deserialize(planes_[0].plane->getContext(), map);
 			player_ = playerRef_.trait<BodyTrait>();
-		} else {
+		}
+		else {
 			map.skipNext();
 		}
 	}

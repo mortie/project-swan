@@ -60,16 +60,20 @@ void ItemStackEntity::deserialize(
 	const Swan::Context &ctx, MsgStream::MapParser &r)
 {
 	std::string key;
+
 	while (r.hasNext()) {
 		r.nextString(key);
 
 		if (key == "body") {
 			physicsBody_.deserialize(r);
-		} else if (key == "lifetime") {
+		}
+		else if (key == "lifetime") {
 			lifetime_ = r.nextFloat32();
-		} else if (key == "item") {
+		}
+		else if (key == "item") {
 			item_ = &ctx.world.getItem(r.nextString());
-		} else {
+		}
+		else {
 			r.skipNext();
 		}
 	}

@@ -11,6 +11,7 @@ namespace CoreMod {
 static void explodeTile(const Swan::Context &ctx, Swan::TilePos tp, int x, int y)
 {
 	auto id = ctx.plane.getTileID(tp);
+
 	if (id == Swan::World::AIR_TILE_ID) {
 		return;
 	}
@@ -92,14 +93,17 @@ void DynamiteEntity::deserialize(
 	const Swan::Context &ctx, MsgStream::MapParser &r)
 {
 	std::string key;
+
 	while (r.hasNext()) {
 		r.nextString(key);
 
 		if (key == "body") {
 			physicsBody_.deserialize(r);
-		} else if (key == "fuse") {
+		}
+		else if (key == "fuse") {
 			fuse_ = r.nextFloat32();
-		} else {
+		}
+		else {
 			r.skipNext();
 		}
 	}

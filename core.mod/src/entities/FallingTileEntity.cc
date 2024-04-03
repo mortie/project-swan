@@ -49,14 +49,17 @@ void FallingTileEntity::deserialize(
 	const Swan::Context &ctx, MsgStream::MapParser &r)
 {
 	std::string key;
+
 	while (r.hasNext()) {
 		r.nextString(key);
 
 		if (key == "body") {
 			physicsBody_.deserialize(r);
-		} else if (key == "tile") {
+		}
+		else if (key == "tile") {
 			tile_ = ctx.world.getTileID(r.nextString());
-		} else {
+		}
+		else {
 			r.skipNext();
 		}
 	}

@@ -36,7 +36,7 @@ public:
 
 	WorldPlane(
 		ID id, World *world, std::unique_ptr<WorldGen> gen,
-		std::vector<std::unique_ptr<EntityCollection> > &&colls);
+		std::vector<std::unique_ptr<EntityCollection>> &&colls);
 
 	Context getContext();
 
@@ -97,8 +97,8 @@ private:
 
 	std::unordered_map<ChunkPos, Chunk> chunks_;
 	std::vector<Chunk *> activeChunks_;
-	std::vector<std::pair<ChunkPos, Chunk *> > tickChunks_;
-	std::vector<std::unique_ptr<EntityCollection> > entColls_;
+	std::vector<std::pair<ChunkPos, Chunk *>> tickChunks_;
+	std::vector<std::unique_ptr<EntityCollection>> entColls_;
 	std::unordered_map<std::type_index, EntityCollection *> entCollsByType_;
 	std::unordered_map<std::string, EntityCollection *> entCollsByName_;
 	EntityCollection *currentEntCol_;
@@ -118,7 +118,7 @@ private:
 	std::unique_ptr<LightServer> lighting_;
 
 	// Callbacks to run on next tick
-	std::vector<std::function<void(const Context &)> > nextTick_;
+	std::vector<std::function<void(const Context &)>> nextTick_;
 
 	friend EntityRef;
 };

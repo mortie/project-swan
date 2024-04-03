@@ -11,7 +11,7 @@ namespace Swan {
 
 WorldPlane::WorldPlane(
 	ID id, World *world, std::unique_ptr<WorldGen> worldGen,
-	std::vector<std::unique_ptr<EntityCollection> > &&colls):
+	std::vector<std::unique_ptr<EntityCollection>> &&colls):
 	id_(id), world_(world), worldGen_(std::move(worldGen)),
 	entColls_(std::move(colls)),
 	lighting_(std::make_unique<LightServer>(*this))
@@ -490,6 +490,7 @@ void WorldPlane::deserialize(MsgStream::Parser &r)
 	auto map = r.nextMap();
 
 	std::string key;
+
 	while (map.nextKey(key)) {
 		if (key == "entity-collections") {
 			auto colls = map.nextMap();
@@ -538,6 +539,7 @@ void WorldPlane::deserialize(MsgStream::Parser &r)
 NewLightChunk WorldPlane::computeLightChunk(const Chunk &chunk)
 {
 	NewLightChunk lc;
+
 	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 		for (int x = 0; x < CHUNK_WIDTH; ++x) {
 			Tile::ID id = chunk.getTileID({x, y});

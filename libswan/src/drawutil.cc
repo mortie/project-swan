@@ -23,7 +23,7 @@ static Cygnet::Color linearColor(Cygnet::Color from, Cygnet::Color to, float fra
 
 Cygnet::Color linearGradient(
 	float val,
-	std::initializer_list<std::pair<float, Cygnet::Color> > colors)
+	std::initializer_list<std::pair<float, Cygnet::Color>> colors)
 {
 	const std::pair<float, Cygnet::Color> *arr = colors.begin();
 	size_t size = colors.size();

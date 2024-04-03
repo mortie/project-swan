@@ -147,7 +147,8 @@ int main(int argc, char **argv)
 	std::ifstream worldFile("world.mp");
 	if (worldFile) {
 		game.loadWorld(worldFile, mods);
-	} else {
+	}
+	else {
 		game.createWorld("core::default", mods);
 	}
 

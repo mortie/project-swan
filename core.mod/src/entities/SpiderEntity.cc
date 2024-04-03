@@ -76,12 +76,14 @@ void SpiderEntity::deserialize(
 	const Swan::Context &ctx, MsgStream::MapParser &r)
 {
 	std::string key;
+
 	while (r.hasNext()) {
 		r.nextString(key);
 
 		if (key == "body") {
 			physicsBody_.deserialize(r);
-		} else {
+		}
+		else {
 			r.skipNext();
 		}
 	}

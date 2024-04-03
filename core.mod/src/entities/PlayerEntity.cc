@@ -408,12 +408,15 @@ void PlayerEntity::deserialize(
 	const Swan::Context &ctx, MsgStream::MapParser &r)
 {
 	std::string key;
+
 	while (r.nextKey(key)) {
 		if (key == "body") {
 			physicsBody_.deserialize(r);
-		} else if (key == "inventory") {
+		}
+		else if (key == "inventory") {
 			inventory_.deserialize(ctx, r);
-		} else {
+		}
+		else {
 			r.skipNext();
 		}
 	}

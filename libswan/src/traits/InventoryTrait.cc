@@ -56,7 +56,8 @@ void BasicInventory::serialize(MsgStream::Serializer &w)
 	for (auto &stack: content) {
 		if (stack.empty()) {
 			arr.writeNil();
-		} else {
+		}
+		else {
 			auto stackArr = arr.beginArray(2);
 			stackArr.writeString(stack.item()->name);
 			stackArr.writeUInt(stack.count());
@@ -77,7 +78,8 @@ void BasicInventory::deserialize(const Swan::Context &ctx, MsgStream::Parser &r)
 		auto nextType = arr.nextType();
 		if (nextType == MsgStream::Type::NIL) {
 			arr.skipNil();
-		} else {
+		}
+		else {
 			auto stackArr = arr.nextArray();
 			std::string itemName = stackArr.nextString();
 			int count = (int)stackArr.nextInt();
