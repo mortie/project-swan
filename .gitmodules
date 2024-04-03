@@ -37,3 +37,6 @@
 [submodule "subprojects/portaudio"]
 	path = subprojects/portaudio
 	url = https://github.com/PortAudio/portaudio.git
+[submodule "meson"]
+	path = meson
+	url = https://github.com/mesonbuild/meson.git

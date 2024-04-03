@@ -1,10 +1,11 @@
 OUT ?= ./build
 PREFIX ?= $(abspath $(OUT)/pfx)
+MESON ?= $(abspath ./meson/meson.py)
 
 all: $(OUT)/swan
 
 $(OUT)/build.ninja:
-	meson setup $(OUT) -Dprefix=$(PREFIX) -Dbuildtype=debugoptimized
+	$(MESON) setup $(OUT) -Dprefix=$(PREFIX) -Dbuildtype=debugoptimized
 
 $(OUT)/swan: $(OUT)/build.ninja phony
 	ninja -C $(OUT) swan
@@ -41,6 +42,9 @@ format:
 .PHONY: clock
 cloc:
 	cloc $(SRCS)
+
+$(MESON):
+	git submodule update --init
 
 .PHONY: phony
 phony:
