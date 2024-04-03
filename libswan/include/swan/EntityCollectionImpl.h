@@ -348,7 +348,6 @@ inline void EntityCollectionImpl<Ent>::serialize(
 	MsgStream::MapBuilder mb;
 	for (auto &wrapper: entities_) {
 		try {
-			info << "Serialize " << name_ << " " << wrapper.id;
 			mb.clear();
 
 			mb.writeString("$id");

@@ -1,6 +1,6 @@
 #include "DynamiteEntity.h"
 
-#include <math.h>
+#include <cmath>
 
 #include "FallingTileEntity.h"
 #include "swan/common.h"
@@ -21,7 +21,7 @@ static void explodeTile(const Swan::Context &ctx, Swan::TilePos tp, int x, int y
 		vx = 1.0 / x;
 	}
 
-	float vy = abs(x) * -6;
+	float vy = std::abs(x) * -6;
 
 	ctx.plane.setTileID(tp, Swan::World::AIR_TILE_ID);
 	auto ref = ctx.plane.spawnEntity<FallingTileEntity>(
@@ -35,10 +35,11 @@ static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
 	constexpr int R1 = 4;
 	constexpr int R2 = 6;
 
-	for (int y = -20; y <= 20; ++y) {
-		for (int x = -20; x <= 20; ++x) {
+	for (int y = -10; y <= 10; ++y) {
+		for (int x = -10; x <= 10; ++x) {
 			Swan::TilePos tp = {(int)round(pos.x + x), (int)round(pos.y + y)};
 			float dist = sqrt(y * y + x * x);
+
 			if (dist <= R1) {
 				breakTileAndDropItem(ctx, tp);
 			}
@@ -46,6 +47,23 @@ static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
 				explodeTile(ctx, tp, x, y);
 			}
 		}
+	}
+
+	Swan::BodyTrait::Body body = {
+		.pos = pos.add(-10, -10),
+		.size = {20, 20},
+	};
+
+	for (auto &collision: ctx.plane.getCollidingEntities(body)) {
+		auto delta = collision.body.center() - pos;
+		if (delta.squareLength() > 10 * 10) {
+			continue;
+		}
+
+		Swan::Vec2 vel = delta.norm() * (40.0 / std::max(delta.length(), 1.0f));
+		collision.ref.traitThen<Swan::PhysicsBodyTrait>([&](auto &body) {
+			body.addVelocity(vel);
+		});
 	}
 }
 
