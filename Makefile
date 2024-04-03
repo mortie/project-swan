@@ -4,7 +4,7 @@ MESON ?= $(abspath ./meson/meson.py)
 
 all: $(OUT)/swan
 
-$(OUT)/build.ninja:
+$(OUT)/build.ninja: $(MESON)
 	$(MESON) setup $(OUT) -Dprefix=$(PREFIX) -Dbuildtype=debugoptimized
 
 $(OUT)/swan: $(OUT)/build.ninja phony
