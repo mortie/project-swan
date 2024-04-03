@@ -184,11 +184,6 @@ void WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 	Tile &newTile = world_->getTileByID(id);
 	Tile &oldTile = world_->getTileByID(old);
 
-	if (old == World::AIR_TILE_ID) {
-		// TODO: Play a eparate place sound
-		world_->game_->playSound(newTile.breakSound);
-	}
-
 	if (oldTile.onBreak) {
 		oldTile.onBreak(getContext(), pos);
 	}
@@ -280,13 +275,13 @@ EntityRef WorldPlane::spawnPlayer()
 	return worldGen_->spawnPlayer(getContext());
 }
 
-void WorldPlane::breakTile(TilePos pos)
+bool WorldPlane::breakTile(TilePos pos)
 {
 	// If the block is already air, do nothing
 	Tile::ID id = getTileID(pos);
 
 	if (id == World::AIR_TILE_ID) {
-		return;
+		return false;
 	}
 
 	Tile &tile = world_->getTileByID(id);
@@ -300,6 +295,26 @@ void WorldPlane::breakTile(TilePos pos)
 
 	// Change tile to air
 	setTileID(pos, World::AIR_TILE_ID);
+	return true;
+}
+
+bool WorldPlane::placeTile(TilePos pos, Tile::ID id)
+{
+	Tile::ID old = getTileID(pos);
+
+	// If the block isn't air, do nothing
+	if (old != World::AIR_TILE_ID) {
+		return false;
+	}
+
+	Tile &tile = world_->getTileByID(id);
+
+	// TODO: play a separate place sound
+	world_->game_->playSound(tile.breakSound);
+
+	// Change tile to air
+	setTileID(pos, id);
+	return true;
 }
 
 WorldPlane::Raycast WorldPlane::raycast(

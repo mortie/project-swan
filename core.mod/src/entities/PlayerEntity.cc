@@ -488,7 +488,7 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 		Swan::info << "Not placing tile because stack.remove(1) is empty";
 	}
 
-	ctx.plane.setTileID(placePos_, item.tile->id);
+	ctx.plane.placeTile(placePos_, item.tile->id);
 }
 
 void PlayerEntity::craft(const Swan::Recipe &recipe)

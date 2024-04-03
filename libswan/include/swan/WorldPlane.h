@@ -63,7 +63,8 @@ public:
 	Tile &getTile(TilePos pos);
 
 	EntityRef spawnPlayer();
-	void breakTile(TilePos pos);
+	bool breakTile(TilePos pos);
+	bool placeTile(TilePos pos, Tile::ID);
 
 	void nextTick(std::function<void(const Context &)> cb);
 
