@@ -5,6 +5,7 @@
 #include <swan/traits/ContactDamageTrait.h>
 #include <swan/traits/InventoryTrait.h>
 #include <swan/traits/PhysicsBodyTrait.h>
+#include <swan/traits/TileEntityTrait.h>
 #include <swan/Animation.h>
 #include <swan/Chunk.h>
 #include <swan/Clock.h>

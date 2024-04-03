@@ -36,6 +36,7 @@ public:
 	{
 		return exists();
 	}
+
 	Entity *operator->()
 	{
 		return get();
@@ -106,6 +107,7 @@ public:
 	virtual Entity *get(uint64_t id) = 0;
 	virtual BodyTrait::Body *getBody(uint64_t id) = 0;
 
+	virtual EntityRef spawn(const Context &ctx) = 0;
 	virtual EntityRef spawn(const Context &ctx, MsgStream::MapParser &r) = 0;
 	virtual void update(const Context &ctx, float dt) = 0;
 	virtual void tick(const Context &ctx, float dt) = 0;

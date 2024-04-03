@@ -11,7 +11,10 @@ struct Vector2 {
 	T x;
 	T y;
 
-	constexpr Vector2(T x = 0, T y = 0): x(x), y(y)
+	constexpr Vector2(): x(0), y(0)
+	{}
+
+	constexpr Vector2(T x, T y): x(x), y(y)
 	{}
 
 	constexpr Vector2<T> &set(T x, T y)

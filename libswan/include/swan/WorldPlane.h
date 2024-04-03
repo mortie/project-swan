@@ -115,10 +115,13 @@ private:
 	std::vector<FoundEntity> foundEntitiesRet_;
 
 	std::vector<EntityRef> entDespawnList_;
+	std::vector<EntityRef> entDespawnListB_;
+
 	std::deque<Chunk *> chunkInitList_;
 
 	// Tiles to update the next tick
 	std::vector<TilePos> scheduledTileUpdates_;
+	std::vector<TilePos> scheduledTileUpdatesB_;
 
 	// The lighting server must destruct first. Until it has been destructed,
 	// it might call onLightChunkUpdated. If that happens after some other
@@ -128,6 +131,9 @@ private:
 
 	// Callbacks to run on next tick
 	std::vector<std::function<void(const Context &)>> nextTick_;
+	std::vector<std::function<void(const Context &)>> nextTickB_;
+
+	std::unordered_map<TilePos, EntityRef> tileEntities_;
 
 	friend EntityRef;
 };

@@ -6,6 +6,7 @@
 #include "log.h"
 #include "World.h"
 #include "Game.h"
+#include "traits/TileEntityTrait.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
 
 namespace Swan {
@@ -188,6 +189,17 @@ void WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 
 	Tile &newTile = world_->getTileByID(id);
 	Tile &oldTile = world_->getTileByID(old);
+	if (oldTile.tileEntity) {
+		auto it = tileEntities_.find(pos);
+		if (it == tileEntities_.end()) {
+			warn << "Didn't find expected tile entity at " << pos;
+		}
+		else {
+			despawnEntity(it->second);
+			tileEntities_.erase(pos);
+		}
+	}
+
 	chunk.setTileID(rp, id);
 
 	if (!oldTile.isOpaque && newTile.isOpaque) {
@@ -206,6 +218,38 @@ void WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 			addLight(pos, newTile.lightLevel);
 		}
 	}
+
+	[&] {
+		if (!newTile.tileEntity) {
+			return;
+		}
+
+		if (tileEntities_.contains(pos)) {
+			warn << "Tile entity already exists in " << pos;
+			return;
+		}
+
+		auto it = entCollsByName_.find(newTile.tileEntity.value());
+		if (it == entCollsByName_.end()) {
+			warn
+				<< "Tile entity " << newTile.tileEntity.value()
+				<< " for tile " << newTile.name << " doesn't exist";
+			return;
+		}
+
+		auto ent = it->second->spawn(getContext());
+		auto *tileEnt = ent.trait<TileEntityTrait>();
+		if (!tileEnt) {
+			warn
+				<< "Entity " << newTile.tileEntity.value()
+				<< " doesn't implement TileEntityTrait";
+			it->second->erase(getContext(), ent);
+			return;
+		}
+
+		tileEnt->pos = pos;
+		tileEntities_[pos] = ent;
+	}();
 
 	if (newTile.onSpawn) {
 		newTile.onSpawn(getContext(), pos);
@@ -418,10 +462,19 @@ void WorldPlane::update(float dt)
 		coll->update(ctx, dt);
 	}
 
-	for (auto &ref: entDespawnList_) {
+	auto despawnList = std::move(entDespawnList_);
+	entDespawnList_ = std::move(entDespawnListB_);
+
+	for (auto &ref: despawnList) {
+		if (ref) {
+			ref->onDespawn(ctx);
+		}
+
 		ref.coll_->erase(ctx, ref.id_);
 	}
-	entDespawnList_.clear();
+
+	despawnList.clear();
+	entDespawnListB_ = std::move(despawnList);
 }
 
 void WorldPlane::tick(float dt)
@@ -473,15 +526,17 @@ void WorldPlane::tick(float dt)
 
 	// Tick callbacks and tile updates which end up scheduling more callbacks/updates
 	// shouldn't have their callbacks/updates executed until next tick
-	auto nextTick = nextTick_;
-	nextTick_.clear();
-	auto scheduledTileUpdates = scheduledTileUpdates_;
-	scheduledTileUpdates_.clear();
+	auto nextTick = std::move(nextTick_);
+	nextTick_ = std::move(nextTickB_);
+	auto scheduledTileUpdates = std::move(scheduledTileUpdates_);
+	scheduledTileUpdates_ = std::move(scheduledTileUpdatesB_);
 
 	// Run next tick callbacks
 	for (auto &cb: nextTick) {
 		cb(ctx);
 	}
+	nextTick.clear();
+	nextTickB_ = std::move(nextTick);
 
 	// Run tile updates
 	for (auto &pos: scheduledTileUpdates) {
@@ -490,6 +545,8 @@ void WorldPlane::tick(float dt)
 			tile.onTileUpdate(ctx, pos);
 		}
 	}
+	scheduledTileUpdates.clear();
+	scheduledTileUpdatesB_ = std::move(scheduledTileUpdates);
 }
 
 void WorldPlane::addLight(TilePos pos, float level)
@@ -515,7 +572,7 @@ void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos)
 void WorldPlane::serialize(MsgStream::Serializer &w)
 {
 	auto ctx = getContext();
-	auto map = w.beginMap(2);
+	auto map = w.beginMap(3);
 
 	map.writeString("entity-collections");
 	auto colls = map.beginMap(entColls_.size());
@@ -546,6 +603,17 @@ void WorldPlane::serialize(MsgStream::Serializer &w)
 		chunks.endArray(chunkArr);
 	}
 	map.endMap(chunks);
+
+	map.writeString("tile-entities");
+	auto tileEnts = map.beginArray(tileEntities_.size());
+	for (auto &[pos, ref]: tileEntities_) {
+		auto entArr = tileEnts.beginArray(3);
+		entArr.writeInt(pos.x);
+		entArr.writeInt(pos.y);
+		ref.serialize(entArr);
+		tileEnts.endArray(entArr);
+	}
+	map.endArray(tileEnts);
 
 	w.endMap(map);
 }
@@ -594,6 +662,34 @@ void WorldPlane::deserialize(MsgStream::Parser &r)
 				}
 
 				chunkArr.skipAll();
+			}
+		}
+		else if (key == "tile-entities") {
+			auto tileEnts = map.nextArray();
+			while (tileEnts.hasNext()) {
+				auto entArr = tileEnts.nextArray();
+				TilePos pos;
+				pos.x = entArr.nextInt();
+				pos.y = entArr.nextInt();
+				EntityRef ref;
+				ref.deserialize(ctx, entArr);
+				entArr.skipAll();
+
+				if (!ref) {
+					warn << "Reference to non-existent entity in " << pos;
+					continue;
+				}
+
+				auto tileEnt = ref.trait<TileEntityTrait>();
+				if (!tileEnt) {
+					warn
+						<< "Tile entity reference to entity which "
+						<< "doesn't implement TileEntityTrait in " << pos;
+					continue;
+				}
+
+				tileEnt->pos = pos;
+				tileEntities_[pos] = ref;
 			}
 		}
 		else {

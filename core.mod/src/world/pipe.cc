@@ -1,13 +1,46 @@
 #include "pipe.h"
+#include "swan/EntityCollection.h"
 
 #include <array>
+#include <swan/swan.h>
+#include <unordered_map>
 
 namespace CoreMod {
 
 struct PipeTileTrait: PipeConnectableTileTrait {
 	PipeTileTrait(std::string p): prefix(std::move(p))
 	{}
+
 	std::string prefix;
+};
+
+class InputPipeTileEntity final: public Swan::Entity,
+	public Swan::TileEntityTrait {
+public:
+	InputPipeTileEntity(const Swan::Context &ctx)
+	{}
+
+	TileEntity &get(TileEntityTrait::Tag) override
+	{
+		return tileEntity_;
+	}
+
+	void tick(const Swan::Context &ctx, float dt) override
+	{
+		if (!printed_) {
+			Swan::info << "Hey am at " << tileEntity_.pos;
+			printed_ = true;
+		}
+	}
+
+	void onDespawn(const Swan::Context &ctx) override
+	{
+		Swan::info << "Oh no I died at " << tileEntity_.pos;
+	}
+
+private:
+	TileEntity tileEntity_;
+	bool printed_ = false;
 };
 
 constexpr std::array<const char *, 16> DIRECTION_LUT = []() {
@@ -58,6 +91,9 @@ static void onPipeUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 void registerGlassPipe(Swan::Mod &mod)
 {
 	auto traits = std::make_shared<PipeTileTrait>("core::glass-pipe");
+	auto openPipeTraits = std::make_shared<PipeTileTrait>("core::glass-pipe");
+
+	mod.registerEntity<InputPipeTileEntity>("tile::input-pipe");
 
 	mod.registerTile({
 		.name = "glass-pipe",
@@ -83,6 +119,7 @@ void registerGlassPipe(Swan::Mod &mod)
 		.isOpaque = false,
 		.droppedItem = "core::glass-pipe",
 		.onTileUpdate = onPipeUpdate,
+		.tileEntity = "core::tile::input-pipe",
 		.traits = traits,
 	});
 
@@ -115,6 +152,7 @@ void registerGlassPipe(Swan::Mod &mod)
 			.isOpaque = false,
 			.droppedItem = "core::glass-pipe",
 			.onTileUpdate = onPipeUpdate,
+			.tileEntity = "core::tile::input-pipe",
 			.traits = traits,
 		});
 	}

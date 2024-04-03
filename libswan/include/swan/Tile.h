@@ -33,6 +33,8 @@ struct Tile {
 		void (*onBreak)(const Context &ctx, TilePos pos) = nullptr;
 		void (*onTileUpdate)(const Context &ctx, TilePos pos) = nullptr;
 
+		std::optional<std::string> tileEntity = std::nullopt;
+
 		std::shared_ptr<Traits> traits = nullptr;
 	};
 
@@ -49,6 +51,8 @@ struct Tile {
 	void (*onBreak)(const Context &ctx, TilePos pos);
 	void (*onTileUpdate)(const Context &ctx, TilePos pos);
 
+	std::optional<std::string> tileEntity;
+
 	std::shared_ptr<Traits> traits;
 
 	Tile() = default;
@@ -58,7 +62,7 @@ struct Tile {
 		lightLevel(builder.lightLevel),
 		onSpawn(builder.onSpawn), onBreak(builder.onBreak),
 		onTileUpdate(builder.onTileUpdate),
-		traits(builder.traits)
+		tileEntity(builder.tileEntity), traits(builder.traits)
 	{}
 };
 

@@ -163,6 +163,7 @@ void Game::tick(float dt)
 void Game::save()
 {
 	std::fstream f("world.mp.new", std::ios_base::out);
+
 	if (f) {
 		info << "Serializing to world.mp.new...";
 		MsgStream::Serializer w(f);

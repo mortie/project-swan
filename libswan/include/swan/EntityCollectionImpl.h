@@ -38,6 +38,7 @@ public:
 	template<typename ... Args>
 	EntityRef spawn(const Context &ctx, Args && ... args);
 
+	EntityRef spawn(const Context &ctx) override;
 	EntityRef spawn(const Context &ctx, MsgStream::MapParser &r) override;
 
 	size_t size() override
@@ -178,26 +179,33 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, Args &&...
 }
 
 template<typename Ent>
-inline EntityRef EntityCollectionImpl<Ent>::spawn(
-	const Context &ctx, MsgStream::MapParser &r)
+inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx)
 {
 	uint64_t id = nextId_++;
 	size_t index = entities_.size();
 	auto &w = entities_.emplace_back(ctx);
 
-	w.ent.deserialize(ctx, r);
-
-	entities_.back().id = id;
+	w.id = id;
 	idToIndex_[id] = index;
 
-	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
-		BodyTrait::Body &body = w.ent.get(BodyTrait::Tag{});
-		body.chunkPos = tilePosToChunkPos({(int)body.pos.x, (int)body.pos.y});
-		auto &chunk = ctx.plane.getChunk(body.chunkPos);
-		chunk.entities_.insert({this, id});
+	return {this, id};
+}
+
+template<typename Ent>
+inline EntityRef EntityCollectionImpl<Ent>::spawn(
+	const Context &ctx, MsgStream::MapParser &r)
+{
+	auto ent = spawn(ctx);
+
+	try {
+		ent->deserialize(ctx, r);
+	} catch (std::exception &ex) {
+		warn << "Failed to spawn " << name_ << " from MsgStream: " << ex.what();
+		erase(ctx, ent);
+		return {};
 	}
 
-	return {this, id};
+	return ent;
 }
 
 template<typename Ent>
@@ -340,6 +348,7 @@ inline void EntityCollectionImpl<Ent>::serialize(
 	MsgStream::MapBuilder mb;
 	for (auto &wrapper: entities_) {
 		try {
+			info << "Serialize " << name_ << " " << wrapper.id;
 			mb.clear();
 
 			mb.writeString("$id");
@@ -388,7 +397,7 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 			continue;
 		}
 
-		uint64_t id;
+		std::optional<uint64_t> id;
 		MsgStream::MapParser mr = arr.nextMap();
 		while (mr.hasNext()) {
 			mr.nextString(key);
@@ -404,17 +413,17 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 			}
 		}
 
-		if (!mr.hasNext()) {
+		if (!id) {
 			warn << "Failed to deserialize " << name_ << " entity: Missing $id";
 			continue;
 		}
 
 		size_t index = entities_.size();
 		auto &w = entities_.emplace_back(ctx);
-		w.id = id;
+		w.id = id.value();
 		try {
 			w.ent.deserialize(ctx, mr);
-			idToIndex_[id] = index;
+			idToIndex_[id.value()] = index;
 		} catch (std::exception &ex) {
 			warn << "Failed to deserialize " << name_ << " entity: " << ex.what();
 			entities_.pop_back();
