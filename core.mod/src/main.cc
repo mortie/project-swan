@@ -8,6 +8,7 @@
 #include "entities/FallingTileEntity.h"
 #include "world/ladder.h"
 #include "world/pipe.h"
+#include "world/torch.h"
 #include "world/tree.h"
 #include "world/util.h"
 
@@ -80,13 +81,6 @@ public:
 			.onSpawn = spawnTree,
 		});
 		registerTile({
-			.name = "torch",
-			.image = "core::tiles/torch",
-			.isSolid = false,
-			.lightLevel = 80 / 255.0,
-			.droppedItem = "core::torch",
-		});
-		registerTile({
 			.name = "tall-grass",
 			.image = "core::tiles/tall-grass",
 			.isSolid = false,
@@ -103,6 +97,7 @@ public:
 
 		registerRopeLadder(*this);
 		registerGlassPipe(*this);
+		registerTorch(*this);
 
 		registerItem({
 			.name = "wood-pole",

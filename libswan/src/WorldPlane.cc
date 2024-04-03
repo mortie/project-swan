@@ -159,7 +159,7 @@ void WorldPlane::setTileID(TilePos pos, Tile::ID id)
 	setTileIDWithoutUpdate(pos, id);
 
 	// Update the new tile immediately
-	auto &tile = world_->getTileByID(id);
+	auto &tile = getTile(pos);
 	if (tile.onTileUpdate) {
 		tile.onTileUpdate(getContext(), pos);
 	}

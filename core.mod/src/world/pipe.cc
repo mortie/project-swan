@@ -32,7 +32,7 @@ constexpr std::array<const char *, 16> DIRECTION_LUT = []() {
 	return lut;
 }();
 
-static void onPipeUpdate(const Swan::Context &ctx, Swan:: TilePos pos)
+static void onPipeUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	auto &tile = ctx.plane.getTile(pos);
 	auto &prefix = dynamic_cast<PipeTileTrait *>(tile.traits.get())->prefix;
