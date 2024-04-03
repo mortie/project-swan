@@ -142,6 +142,7 @@ public:
 
 	void update(float dt);
 	void tick(float dt);
+	void save();
 
 	std::unique_ptr<World> world_ = NULL;
 	Cygnet::Renderer renderer_;

@@ -73,18 +73,7 @@ void Game::draw()
 		}
 
 		if (ImGui::Button("Save")) {
-			std::fstream f("world.mp.new", std::ios_base::out);
-			if (f) {
-				info << "Serializing to world.mp.new...";
-				MsgStream::Serializer w(f);
-				world_->serialize(w);
-				info << "Renaming world.mp.new to world.mp...";
-				std::filesystem::rename("world.mp.new", "world.mp");
-				info << "Done.";
-			}
-			else {
-				warn << "Failed to open world.mp.new!";
-			}
+			save();
 		}
 
 		ImGui::SliderFloat(
@@ -169,6 +158,22 @@ void Game::update(float dt)
 void Game::tick(float dt)
 {
 	world_->tick(dt);
+}
+
+void Game::save()
+{
+	std::fstream f("world.mp.new", std::ios_base::out);
+	if (f) {
+		info << "Serializing to world.mp.new...";
+		MsgStream::Serializer w(f);
+		world_->serialize(w);
+		info << "Renaming to world.mp...";
+		std::filesystem::rename("world.mp.new", "world.mp");
+		info << "Done.";
+	}
+	else {
+		warn << "Failed to open world.mp.new!";
+	}
 }
 
 }

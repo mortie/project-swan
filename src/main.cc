@@ -309,5 +309,7 @@ int main(int argc, char **argv)
 		FrameMark;
 	}
 
+	game.save();
+
 	return 0;
 }
