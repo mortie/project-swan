@@ -522,8 +522,8 @@ void WorldPlane::deserialize(MsgStream::Parser &r)
 				Chunk &chunk = it->second;
 
 				chunk.deserialize(chunkArr);
-				lighting_->onChunkAdded(pos, computeLightChunk(chunk));
 				if (chunk.isActive()) {
+					lighting_->onChunkAdded(pos, computeLightChunk(chunk));
 					activeChunks_.push_back(&chunk);
 				}
 
