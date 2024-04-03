@@ -463,6 +463,7 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 		Swan::Vec2 origin = physicsBody_.body.topMid().add(0, 0.25);
 		Swan::Vec2 mouse = ctx.game.getMousePos();
 		item.onActivate(ctx, slot, origin, (mouse - origin).norm());
+		interactTimer_ = 0.5;
 		return;
 	}
 
