@@ -26,13 +26,17 @@ static void onTorchUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	auto &tile = ctx.plane.getTile(pos);
 	Swan::TilePos connection;
+
 	if (tile.name == "core::torch") {
 		connection = pos.add(0, 1);
-	} else if (tile.name == "core::torch::left") {
+	}
+	else if (tile.name == "core::torch::left") {
 		connection = pos.add(-1, 0);
-	} else if (tile.name == "core::torch::right") {
+	}
+	else if (tile.name == "core::torch::right") {
 		connection = pos.add(1, 0);
-	} else {
+	}
+	else {
 		Swan::warn << "Torch update for unknown torch tile " << tile.name;
 		return;
 	}

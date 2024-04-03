@@ -477,8 +477,8 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 	}
 
 	if (
-			item.tile->isSolid &&
-			!ctx.plane.getEntitiesInTile(placePos_).empty()) {
+		item.tile->isSolid &&
+		!ctx.plane.getEntitiesInTile(placePos_).empty()) {
 		return;
 	}
 
