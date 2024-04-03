@@ -88,9 +88,6 @@ public:
 
 	std::unordered_map<std::string, std::string> modPaths_;
 
-	// These things can be used by the mods as they get initialized in the ctor.
-	EventEmitter<const Context &, TilePos, Tile &> evtTileBreak_;
-
 	// These things get filled in when the ctor loads mods.
 	std::vector<Tile> tiles_;
 	std::unordered_map<std::string, Tile::ID> tilesMap_;
