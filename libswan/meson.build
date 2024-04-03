@@ -25,6 +25,7 @@ libswan = declare_dependency(
       libimgui, libportaudio, libmsgstream,
     ] + maybe_libtracy,
     install: true,
+    install_rpath: get_option('libdir'),
     include_directories: 'include/swan',
   ),
 )
