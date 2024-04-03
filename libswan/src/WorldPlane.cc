@@ -270,13 +270,18 @@ WorldPlane::Raycast WorldPlane::raycast(
 	Vec2 start, Vec2 direction, float distance)
 {
 	float squareDist = distance * distance;
-	Vec2 step = direction.norm() * 0.1;
+	Vec2 step = direction.norm() * 0.25;
 	Vec2 pos = start;
 	Vec2 prevPos = start;
 
 	TilePos prevTP = {0, std::numeric_limits<int>::max()};
 	TilePos tp = {(int)floor(pos.x), (int)floor(pos.y)};
 	Tile *tile;
+
+	auto isFaceValid = [&](TilePos tp, Vec2i face) {
+		tp += face;
+		return !getTile(tp).isSolid;
+	};
 
 	while (true) {
 		do {
@@ -304,16 +309,16 @@ WorldPlane::Raycast WorldPlane::raycast(
 		Vec2 rel = pos - tp;
 		Vec2 prevRel = prevPos - tp;
 
-		if (rel.y > 0 && prevRel.y < 0) {
+		if (rel.y > 0 && prevRel.y < 0 && isFaceValid(tp, {0, -1})) {
 			face = {0, -1};
 		}
-		else if (rel.y < 1 && prevRel.y > 1) {
+		else if (rel.y < 1 && prevRel.y > 1 && isFaceValid(tp, {0, 1})) {
 			face = {0, 1};
 		}
-		else if (rel.x > 0 && prevRel.x < 0) {
+		else if (rel.x > 0 && prevRel.x < 0 && isFaceValid(tp, {-1, 0})) {
 			face = {-1, 0};
 		}
-		else if (rel.x < 1 && prevRel.x > 1) {
+		else if (rel.x < 1 && prevRel.x > 1 && isFaceValid(tp, {1, 0})) {
 			face = {1, 0};
 		}
 
