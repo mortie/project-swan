@@ -4,10 +4,11 @@
 #include <math.h>
 #include <time.h>
 #include <memory>
+#include <filesystem>
 #include <imgui/imgui.h>
 
 #include "traits/InventoryTrait.h"
-#include "EntityCollectionImpl.h"
+#include "EntityCollectionImpl.h" // IWYU pragma: keep
 
 namespace Swan {
 
