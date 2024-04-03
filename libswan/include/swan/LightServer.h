@@ -14,7 +14,8 @@
 namespace Swan {
 
 struct NewLightChunk {
-	std::bitset<CHUNK_WIDTH *CHUNK_HEIGHT> blocks;
+	static constexpr size_t SIZE = CHUNK_WIDTH * CHUNK_HEIGHT;
+	std::bitset<SIZE> blocks;
 	std::unordered_map<ChunkPos, float> lightSources;
 };
 
@@ -137,8 +138,9 @@ inline void LightServer::onChunkAdded(Vec2i pos, NewLightChunk &&chunk)
 {
 	std::lock_guard<std::mutex> lock(mut_);
 
-	buffers_[buffer_].push_back({Event::Tag::CHUNK_ADDED, pos,
-								 {.i = (int)newChunkBuffers_[buffer_].size()}});
+	buffers_[buffer_].push_back({
+		Event::Tag::CHUNK_ADDED, pos,
+		{.i = (int)newChunkBuffers_[buffer_].size()}});
 	newChunkBuffers_[buffer_].push_back(std::move(chunk));
 }
 
