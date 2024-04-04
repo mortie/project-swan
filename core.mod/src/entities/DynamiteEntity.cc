@@ -32,35 +32,36 @@ static void explodeTile(const Swan::Context &ctx, Swan::TilePos tp, int x, int y
 
 static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
 {
-	constexpr int R1 = 4;
-	constexpr int R2 = 6;
+	constexpr int R1 = 2;
+	constexpr int R2 = 3;
+	constexpr int R3 = 6;
 
-	for (int y = -10; y <= 10; ++y) {
-		for (int x = -10; x <= 10; ++x) {
+	for (int y = -R2; y <= R2; ++y) {
+		for (int x = -R2; x <= R2; ++x) {
 			Swan::TilePos tp = {(int)round(pos.x + x), (int)round(pos.y + y)};
-			float dist = sqrt(y * y + x * x);
+			float squareDist = y * y + x * x;
 
-			if (dist <= R1) {
+			if (squareDist <= R1 * R1) {
 				breakTileAndDropItem(ctx, tp);
 			}
-			else if (dist <= R2) {
+			else if (squareDist <= R2 * R2) {
 				explodeTile(ctx, tp, x, y);
 			}
 		}
 	}
 
 	Swan::BodyTrait::Body body = {
-		.pos = pos.add(-10, -10),
-		.size = {20, 20},
+		.pos = pos.add(-R3, -R3),
+		.size = {R3 * 2, R3 * 2},
 	};
 
 	for (auto &collision: ctx.plane.getCollidingEntities(body)) {
 		auto delta = collision.body.center() - pos;
-		if (delta.squareLength() > 10 * 10) {
+		if (delta.squareLength() > R3 * R3) {
 			continue;
 		}
 
-		Swan::Vec2 vel = delta.norm() * (40.0 / std::max(delta.length(), 1.0f));
+		Swan::Vec2 vel = delta.norm() * (20.0 / std::max(delta.length(), 1.0f));
 		collision.ref.traitThen<Swan::PhysicsBodyTrait>([&](auto &body) {
 			body.addVelocity(vel);
 		});
