@@ -13,6 +13,18 @@ namespace Cygnet {
 
 struct RendererState;
 
+enum class Anchor {
+	CENTER,
+	TOP,
+	LEFT,
+	RIGHT,
+	BOTTOM,
+	TOP_LEFT,
+	TOP_RIGHT,
+	BOTTOM_LEFT,
+	BOTTOM_RIGHT,
+};
+
 struct RenderChunk {
 	GLuint tex;
 };
@@ -23,7 +35,7 @@ struct RenderChunkShadow {
 
 struct RenderSprite {
 	GLuint tex;
-	SwanCommon::Vec2 scale;
+	SwanCommon::Vec2 size;
 	int frameCount;
 	int repeatFrom;
 };
@@ -56,8 +68,8 @@ public:
 
 	struct DrawSprite {
 		Mat3gf transform;
-		int frame = 0;
 		RenderSprite sprite;
+		int frame = 0;
 	};
 
 	struct DrawRect {
@@ -94,7 +106,21 @@ public:
 		drawRects_.push_back(drawRect);
 	}
 
-	void draw(const RenderCamera &cam);
+	void drawUISprite(DrawSprite drawSprite, Anchor anchor = Anchor::CENTER)
+	{
+		drawUISprites_.push_back(drawSprite);
+		drawUISpritesAnchors_.push_back(anchor);
+	}
+
+	void drawUITile(DrawTile drawTile, Anchor anchor = Anchor::CENTER)
+	{
+		drawUITiles_.push_back(drawTile);
+		drawUITilesAnchors_.push_back(anchor);
+	}
+
+	void render(const RenderCamera &cam);
+
+	void renderUI(const RenderCamera &cam);
 
 	void uploadTileAtlas(const void *data, int width, int height);
 	void modifyTile(TileID id, const void *data);
@@ -129,6 +155,12 @@ private:
 	std::vector<DrawTile> drawTiles_;
 	std::vector<DrawSprite> drawSprites_;
 	std::vector<DrawRect> drawRects_;
+
+	std::vector<DrawSprite> drawUISprites_;
+	std::vector<Anchor> drawUISpritesAnchors_;
+
+	std::vector<DrawTile> drawUITiles_;
+	std::vector<Anchor> drawUITilesAnchors_;;
 };
 
 }

@@ -137,7 +137,8 @@ public:
 
 	void render()
 	{
-		renderer_.draw(cam_);
+		renderer_.render(cam_);
+		renderer_.renderUI(uiCam_);
 	}
 
 	void update(float dt);
@@ -146,7 +147,8 @@ public:
 
 	std::unique_ptr<World> world_ = NULL;
 	Cygnet::Renderer renderer_;
-	Cygnet::RenderCamera cam_{.zoom = 0.125};
+	Cygnet::RenderCamera cam_{.zoom = 1.0/8};
+	Cygnet::RenderCamera uiCam_{.zoom = 1.0/16};
 
 	bool debugShowMenu_ = false;
 	bool debugDrawCollisionBoxes_ = false;

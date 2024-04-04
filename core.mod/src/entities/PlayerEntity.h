@@ -14,7 +14,9 @@ public:
 		fallingAnimation_(ctx, "core::entities/player/falling", 0.1),
 		jumpingAnimation_(ctx, "core::entities/player/jumping", 0.1),
 		landingAnimation_(ctx, "core::entities/player/landing", 0.1),
-		snapSound_(ctx.world.getSound("core::sounds/snap"))
+		snapSound_(ctx.world.getSound("core::sounds/snap")),
+		hotbarSprite_(ctx.world.getSprite("core::ui/hotbar")),
+		selectedSlotSprite_(ctx.world.getSprite("core::ui/selected-slot"))
 	{}
 
 	Body &get(BodyTrait::Tag) override
@@ -33,7 +35,6 @@ public:
 	}
 
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
-	void ui(const Swan::Context &ctx) override;
 	void update(const Swan::Context &ctx, float dt) override;
 	void tick(const Swan::Context &ctx, float dt) override;
 
@@ -78,6 +79,8 @@ private:
 	Swan::Animation *currentAnimation_ = &idleAnimation_;
 
 	Swan::SoundAsset *snapSound_;
+	Cygnet::RenderSprite hotbarSprite_;
+	Cygnet::RenderSprite selectedSlotSprite_;
 
 	Swan::Clock jumpTimer_;
 	float invincibleTimer_ = 0;

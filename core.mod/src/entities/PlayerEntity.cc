@@ -36,10 +36,34 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 
 	rnd.drawRect({Swan::Vec2(placePos_).add(0.1, 0.1), {0.8, 0.8}});
 	rnd.drawRect({breakPos_, {1, 1}});
-}
 
-void PlayerEntity::ui(const Swan::Context &ctx)
-{
+	rnd.drawUISprite({
+		.transform = Cygnet::Mat3gf{}.translate({0, -1}),
+		.sprite = hotbarSprite_,
+	}, Cygnet::Anchor::BOTTOM);
+
+	rnd.drawUISprite({
+		.transform = Cygnet::Mat3gf{}.translate({
+			-4.5f + selectedInventorySlot_, -1 + 2/32.0}),
+		.sprite = selectedSlotSprite_,
+	}, Cygnet::Anchor::BOTTOM);
+
+	for (int i = 0; i < 10; ++i) {
+		auto &stack = inventory_.content[i];
+		if (stack.empty()) {
+			continue;
+		}
+
+		rnd.drawUITile({
+			.transform = Cygnet::Mat3gf{}
+				.scale({0.6, 0.6})
+				.translate({0.2, 0.2})
+				.translate({-4.5f + i, -1}),
+			.id = stack.item()->id,
+		}, Cygnet::Anchor::BOTTOM);
+	}
+
+	// Everything after this is inventory stuff
 	if (!showInventory_) {
 		return;
 	}

@@ -25,6 +25,8 @@ public:
 		registerSprite("entities/player/landing");
 		registerSprite("entities/spider/idle");
 		registerSprite("misc/background-cave");
+		registerSprite("ui/selected-slot");
+		registerSprite("ui/hotbar");
 
 		registerSound("sounds/step/grass1");
 		registerSound("sounds/step/grass2");

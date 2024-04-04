@@ -45,7 +45,7 @@ private:
 
 inline void Animation::draw(Cygnet::Renderer &rnd, Cygnet::Mat3gf mat)
 {
-	rnd.drawSprite({mat, frame_, sprite_});
+	rnd.drawSprite({mat, sprite_, frame_});
 }
 
 }

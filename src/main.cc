@@ -83,6 +83,7 @@ static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
 	glViewport(0, 0, dw, dh);
 	Cygnet::glCheck();
 	gameptr->cam_.size = {dw, dh};
+	gameptr->uiCam_.size = {dw, dh};
 	double newPixelRatio = (double)dw / (double)width;
 
 	if (newPixelRatio != pixelRatio) {

@@ -62,7 +62,6 @@ public:
 	void update(const Context &ctx, float dt) override;
 	void tick(const Context &ctx, float dt) override;
 	void draw(const Context &ctx, Cygnet::Renderer &rnd) override;
-	void ui(const Context &ctx) override;
 	void erase(const Context &ctx, uint64_t id) override;
 
 	void serialize(const Context &ctx, MsgStream::Serializer &w) override;
@@ -293,16 +292,6 @@ inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Cygnet::Renderer
 				rnd.drawRect({body.pos, body.size});
 			}
 		}
-	}
-}
-
-template<typename Ent>
-inline void EntityCollectionImpl<Ent>::ui(const Context &ctx)
-{
-	ZoneScopedN(__PRETTY_FUNCTION__);
-	for (auto &w: entities_) {
-		ZoneScopedN("draw");
-		w.ent.ui(ctx);
 	}
 }
 

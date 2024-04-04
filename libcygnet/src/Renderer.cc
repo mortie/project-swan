@@ -1,5 +1,6 @@
 #include "Renderer.h"
 
+#include <cassert>
 #include <stdio.h>
 #include <swan-common/constants.h>
 #include <string.h>
@@ -13,6 +14,8 @@
 #include "Rect.glsl.h"
 #include "Sprite.glsl.h"
 #include "Tile.glsl.h"
+
+#include <iostream>
 
 namespace Cygnet {
 
@@ -110,9 +113,9 @@ struct SpriteProg: public GlProg<Shader::Sprite> {
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);
-		for (auto &[mat, frame, sprite]: drawSprites) {
+		for (auto &[mat, sprite, frame]: drawSprites) {
 			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, mat.data());
-			glUniform2f(shader.uniFrameSize, sprite.scale.x, sprite.scale.y);
+			glUniform2f(shader.uniFrameSize, sprite.size.x, sprite.size.y);
 			glUniform2f(shader.uniFrameInfo, sprite.frameCount, frame);
 			glBindTexture(GL_TEXTURE_2D, sprite.tex);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -183,7 +186,7 @@ Renderer::~Renderer()
 	glCheck();
 }
 
-void Renderer::draw(const RenderCamera &cam)
+void Renderer::render(const RenderCamera &cam)
 {
 	Mat3gf camMat;
 
@@ -248,6 +251,87 @@ void Renderer::draw(const RenderCamera &cam)
 	drawRects_.clear();
 
 	glCheck();
+}
+
+void Renderer::renderUI(const RenderCamera &cam)
+{
+	Mat3gf camMat;
+
+	camMat.translate(-cam.pos);
+
+	if (cam.size.y > cam.size.x) {
+		float ratio = (float)cam.size.y / (float)cam.size.x;
+		camMat.scale({cam.zoom * ratio, -cam.zoom});
+	}
+	else {
+		float ratio = (float)cam.size.x / (float)cam.size.y;
+		camMat.scale({cam.zoom, -cam.zoom * ratio});
+	}
+
+	auto scale = winScale_ / cam.zoom;
+
+	auto applyAnchor = [&](Anchor anchor, Mat3gf &mat, SwanCommon::Vec2 size) {
+		switch (anchor) {
+		case Anchor::CENTER:
+			mat.translate(size * -0.5f);
+			break;
+		case Anchor::LEFT:
+			mat.translate({
+				-scale.x, size.y * -0.5f});
+			break;
+		case Anchor::RIGHT:
+			mat.translate({
+				scale.x - size.x, size.y * -0.5f});
+			break;
+		case Anchor::TOP:
+			mat.translate({
+				size.x * -0.5f, -scale.y});
+			break;
+		case Anchor::BOTTOM:
+			mat.translate({
+				size.x * -0.5f, scale.y - size.y});
+			break;
+		case Anchor::TOP_LEFT:
+			mat.translate({
+				-scale.x, -scale.y});
+			break;
+		case Anchor::TOP_RIGHT:
+			mat.translate({
+				scale.x - size.x, -scale.y});
+			break;
+		case Anchor::BOTTOM_LEFT:
+			mat.translate({
+				-scale.x, scale.y - size.y});
+			break;
+		case Anchor::BOTTOM_RIGHT:
+			mat.translate({
+				scale.x - size.x, scale.y - size.y});
+			break;
+		}
+	};
+
+	assert(drawUISprites_.size() == drawUISpritesAnchors_.size());
+	for (size_t i = 0; i < drawUISprites_.size(); ++i) {
+		auto &ds = drawUISprites_[i];
+		auto anchor = drawUISpritesAnchors_[i];
+		applyAnchor(anchor, ds.transform, ds.sprite.size);
+	}
+	drawUISpritesAnchors_.clear();
+
+	assert(drawUITiles_.size() == drawUITilesAnchors_.size());
+	for (size_t i = 0; i < drawUITiles_.size(); ++i) {
+		auto &dt = drawUITiles_[i];
+		auto anchor = drawUITilesAnchors_[i];
+		applyAnchor(anchor, dt.transform, {1, 1});
+	}
+	drawUITilesAnchors_.clear();
+
+	state_->spriteProg.draw(drawUISprites_, camMat);
+	drawUISprites_.clear();
+
+	state_->tileProg.draw(
+		drawUITiles_, camMat, state_->atlasTex, state_->atlasTexSize);
+	drawUITiles_.clear();
 }
 
 void Renderer::uploadTileAtlas(const void *data, int width, int height)
@@ -372,7 +456,7 @@ RenderSprite Renderer::createSprite(void *data, int width, int height, int fh, i
 {
 	RenderSprite sprite;
 
-	sprite.scale = {
+	sprite.size = {
 		(float)width / SwanCommon::TILE_SIZE,
 		(float)fh / SwanCommon::TILE_SIZE};
 	sprite.frameCount = height / fh;

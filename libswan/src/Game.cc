@@ -102,6 +102,16 @@ void Game::draw()
 			soundPlayer_.volume(volume);
 		}
 
+		ImGui::SliderFloat(
+			"UI scale", &uiCam_.zoom, 0, 1.0, "%.03f",
+			ImGuiSliderFlags_Logarithmic);
+		if (ImGui::BeginPopupContextItem("UI scale menu")) {
+			if (ImGui::MenuItem("Reset")) {
+				uiCam_.zoom = 0.125;
+			}
+			ImGui::EndPopup();
+		}
+
 		auto &tile = world_->currentPlane().getTile(getMouseTile());
 		ImGui::Text("Tile: %s\n", tile.name.c_str());
 
@@ -125,8 +135,6 @@ void Game::draw()
 	}
 
 	world_->draw(renderer_);
-
-	world_->ui();
 }
 
 void Game::update(float dt)

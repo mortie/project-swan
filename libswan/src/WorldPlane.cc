@@ -429,16 +429,6 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 	}
 }
 
-void WorldPlane::ui()
-{
-	ZoneScopedN("WorldPlane ui");
-
-	auto ctx = getContext();
-	for (auto &coll: entColls_) {
-		coll->ui(ctx);
-	}
-}
-
 void WorldPlane::update(float dt)
 {
 	ZoneScopedN("WorldPlane update");

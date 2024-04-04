@@ -79,7 +79,6 @@ public:
 
 	Cygnet::Color backgroundColor();
 	void draw(Cygnet::Renderer &rnd);
-	void ui();
 	void update(float dt);
 	void tick(float dt);
 
