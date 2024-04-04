@@ -174,6 +174,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		(int)floor(physicsBody_.body.bottom() - 0.1),
 	};
 	auto &midTile = ctx.plane.getTile(midTilePos);
+	auto &topTile = ctx.plane.getTile(midTilePos.add(0, -1));
 
 	// Figure out what tile is below us
 	auto belowTilePos = Swan::TilePos{
@@ -182,7 +183,9 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	};
 	auto &belowTile = ctx.plane.getTile(belowTilePos);
 
-	bool inLadder = dynamic_cast<LadderTileTrait *>(midTile.traits.get());
+	bool inLadder =
+		dynamic_cast<LadderTileTrait *>(midTile.traits.get()) ||
+		dynamic_cast<LadderTileTrait *>(topTile.traits.get());
 
 	// Select item slots
 	if (ctx.game.wasKeyPressed(GLFW_KEY_1)) {
@@ -252,8 +255,15 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 
 	// Handle ladder climb
 	if (inLadder) {
-		if (ctx.game.isKeyPressed(GLFW_KEY_W) || ctx.game.isKeyPressed(GLFW_KEY_UP)) {
+		if (
+				ctx.game.isKeyPressed(GLFW_KEY_W) ||
+				ctx.game.isKeyPressed(GLFW_KEY_UP)) {
 			physicsBody_.force += Swan::Vec2{0, -LADDER_CLIMB_FORCE};
+		}
+		else if (
+				ctx.game.isKeyPressed(GLFW_KEY_S) ||
+				ctx.game.isKeyPressed(GLFW_KEY_DOWN)) {
+			physicsBody_.force += Swan::Vec2{0, LADDER_CLIMB_FORCE};
 		}
 
 		if (physicsBody_.vel.y > LADDER_MAX_VEL) {
@@ -312,7 +322,10 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 
 	// Fall down faster than we went up
-	if (!physicsBody_.onGround && (!jumpPressed || physicsBody_.vel.y > 0)) {
+	if (
+			!inLadder &&
+			!physicsBody_.onGround &&
+			(!jumpPressed || physicsBody_.vel.y > 0)) {
 		physicsBody_.force += Swan::Vec2(0, DOWN_FORCE);
 	}
 
@@ -424,7 +437,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		}
 	}
 
-	physicsBody_.standardForces();
+	if (inLadder && ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+		physicsBody_.friction({1000, 1000});
+	}
+	else {
+		physicsBody_.standardForces();
+	}
+
 	physicsBody_.update(ctx, dt);
 }
 

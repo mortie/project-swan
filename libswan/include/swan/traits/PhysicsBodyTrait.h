@@ -61,7 +61,6 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 		else {
 			friction(Vec2{100, 100});
 		}
-
 		gravity();
 	}
 
