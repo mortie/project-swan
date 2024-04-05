@@ -35,7 +35,7 @@ inline void breakIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	auto below = pos + Swan::TilePos{0, 1};
 
-	if (!ctx.plane.getTile(below).isOpaque) {
+	if (!ctx.plane.getTile(below).isSupport) {
 		breakTileAndDropItem(ctx, pos);
 	}
 }

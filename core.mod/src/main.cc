@@ -59,6 +59,12 @@ public:
 			.onTileUpdate = fallIfFloating,
 		});
 		registerTile({
+			.name = "glass",
+			.image = "core::tiles/glass",
+			.isOpaque = false,
+			.stepSound = "core::sounds/step/sand",
+		});
+		registerTile({
 			.name = "grass",
 			.image = "core::tiles/grass",
 			.stepSound = "core::sounds/step/grass",
@@ -69,7 +75,7 @@ public:
 			.name = "tree-trunk",
 			.image = "core::tiles/tree-trunk",
 			.isSolid = false,
-			.isOpaque = true,
+			.isSupport = true,
 			.droppedItem = "core::tree-trunk",
 			.onTileUpdate = breakIfFloating,
 			.traits = std::make_shared<TreeTrunkTrait>(),

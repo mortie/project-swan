@@ -7,14 +7,14 @@ static void onTorchSpawn(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	// The default torch stands on the tile below it,
 	// so if that's valid, we're good
-	if (ctx.plane.getTile(pos.add(0, 1)).isOpaque) {
+	if (ctx.plane.getTile(pos.add(0, 1)).isSupport) {
 		return;
 	}
 
-	if (ctx.plane.getTile(pos.add(-1, 0)).isOpaque) {
+	if (ctx.plane.getTile(pos.add(-1, 0)).isSupport) {
 		ctx.plane.setTile(pos, "core::torch::left");
 	}
-	else if (ctx.plane.getTile(pos.add(1, 0)).isOpaque) {
+	else if (ctx.plane.getTile(pos.add(1, 0)).isSupport) {
 		ctx.plane.setTile(pos, "core::torch::right");
 	}
 	else {
@@ -41,7 +41,7 @@ static void onTorchUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 		return;
 	}
 
-	if (!ctx.plane.getTile(connection).isOpaque) {
+	if (!ctx.plane.getTile(connection).isSupport) {
 		breakTileAndDropItem(ctx, pos);
 	}
 }
