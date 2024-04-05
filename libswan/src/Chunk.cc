@@ -46,9 +46,7 @@ void Chunk::compress(Cygnet::Renderer &rnd)
 		warn << "Chunk compression error: " << ret << " (Out of memory?)";
 	}
 
-	rnd.destroyChunk(renderChunk_);
-	rnd.destroyChunkShadow(renderChunkShadow_);
-	isRendered_ = false;
+	destroy(rnd);
 	entities_.rehash(0);
 }
 
@@ -76,8 +74,6 @@ void Chunk::decompress()
 		<< compressedSize_ << " bytes to "
 		<< DATA_SIZE << " bytes.";
 	compressedSize_ = -1;
-
-	needChunkRender_ = true;
 }
 
 void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
@@ -86,19 +82,17 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
 		return;
 	}
 
-	if (needChunkRender_) {
+	if (!isRendered_) {
 		renderChunk_ = rnd.createChunk(getTileData());
 		renderChunkShadow_ = rnd.createChunkShadow(getLightData());
-		needChunkRender_ = false;
-		needLightRender_ = false;
 		isRendered_ = true;
+		needLightRender_ = false;
 	}
-	else {
-		for (auto &change: changeList_) {
-			rnd.modifyChunk(renderChunk_, change.first, change.second);
-		}
-		changeList_.clear();
+
+	for (auto &change: changeList_) {
+		rnd.modifyChunk(renderChunk_, change.first, change.second);
 	}
+	changeList_.clear();
 
 	if (needLightRender_) {
 		rnd.modifyChunkShadow(renderChunkShadow_, getLightData());
@@ -133,7 +127,6 @@ void Chunk::serialize(MsgStream::Serializer &w)
 
 void Chunk::deserialize(MsgStream::Parser &p)
 {
-	needChunkRender_ = true;
 	isModified_ = true;
 
 	auto arr = p.nextArray();

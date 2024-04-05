@@ -26,15 +26,15 @@ enum class Anchor {
 };
 
 struct RenderChunk {
-	GLuint tex;
+	GLuint tex = ~(GLuint)0;
 };
 
 struct RenderChunkShadow {
-	GLuint tex;
+	GLuint tex = ~(GLuint)0;
 };
 
 struct RenderSprite {
-	GLuint tex;
+	GLuint tex = ~(GLuint)0;
 	SwanCommon::Vec2 size;
 	int frameCount;
 	int repeatFrom;

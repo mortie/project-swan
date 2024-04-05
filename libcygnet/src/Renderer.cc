@@ -391,6 +391,7 @@ RenderChunk Renderer::createChunk(
 
 void Renderer::modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id)
 {
+	assert(chunk.tex != ~(GLuint)0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, chunk.tex);
 	glCheck();
@@ -403,6 +404,7 @@ void Renderer::modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id)
 
 void Renderer::destroyChunk(RenderChunk chunk)
 {
+	assert(chunk.tex != ~(GLuint)0);
 	glDeleteTextures(1, &chunk.tex);
 	glCheck();
 }
@@ -436,6 +438,8 @@ void Renderer::modifyChunkShadow(
 	RenderChunkShadow shadow,
 	uint8_t data[SwanCommon::CHUNK_WIDTH *SwanCommon::CHUNK_HEIGHT])
 {
+	assert(shadow.tex != ~(GLuint)0);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, shadow.tex);
 
@@ -448,6 +452,7 @@ void Renderer::modifyChunkShadow(
 
 void Renderer::destroyChunkShadow(RenderChunkShadow shadow)
 {
+	assert(shadow.tex != ~(GLuint)0);
 	glDeleteTextures(1, &shadow.tex);
 	glCheck();
 }
@@ -482,6 +487,7 @@ RenderSprite Renderer::createSprite(void *data, int width, int height, int fh, i
 
 void Renderer::destroySprite(RenderSprite sprite)
 {
+	assert(sprite.tex != ~(GLuint)0);
 	glDeleteTextures(1, &sprite.tex);
 	glCheck();
 }

@@ -101,6 +101,8 @@ public:
 	{
 		if (isRendered_) {
 			rnd.destroyChunk(renderChunk_);
+			rnd.destroyChunkShadow(renderChunkShadow_);
+			isRendered_ = false;
 		}
 	}
 
@@ -137,7 +139,6 @@ private:
 	ssize_t compressedSize_ = -1; // -1 if not compressed, a positive number if compressed
 	Cygnet::RenderChunk renderChunk_;
 	Cygnet::RenderChunkShadow renderChunkShadow_;
-	bool needChunkRender_ = true;
 	bool needLightRender_ = false;
 	float deactivateTimer_ = DEACTIVATE_INTERVAL;
 	bool isModified_ = false;
