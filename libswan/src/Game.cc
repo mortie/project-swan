@@ -112,6 +112,31 @@ void Game::draw()
 			ImGui::EndPopup();
 		}
 
+		ImGui::SliderFloat(
+			"FPS limit", &fpsLimit_, 10, 360.0, "%.03f", 0);
+		if (ImGui::BeginPopupContextItem("FPS limit menu")) {
+			if (ImGui::MenuItem("Disable")) {
+				fpsLimit_ = 0;
+			}
+			else if (ImGui::MenuItem("30")) {
+				fpsLimit_ = 30;
+			}
+			else if (ImGui::MenuItem("60")) {
+				fpsLimit_ = 60;
+			} else if (ImGui::MenuItem("90")) {
+				fpsLimit_ = 90;
+			} else if (ImGui::MenuItem("120")) {
+				fpsLimit_ = 120;
+			} else if (ImGui::MenuItem("144")) {
+				fpsLimit_ = 144;
+			}
+			ImGui::EndPopup();
+		}
+
+		if (fpsLimit_ < 10) {
+			fpsLimit_ = 0;
+		}
+
 		auto &tile = world_->currentPlane().getTile(getMouseTile());
 		ImGui::Text("Tile: %s\n", tile.name.c_str());
 

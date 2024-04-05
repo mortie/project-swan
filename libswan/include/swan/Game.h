@@ -153,8 +153,9 @@ public:
 	bool debugShowMenu_ = false;
 	bool debugDrawCollisionBoxes_ = false;
 	bool debugDrawChunkBoundaries_ = false;
-	bool enableVSync_ = true;
+	bool enableVSync_ = false;
 	float timeScale_ = 1.0;
+	float fpsLimit_ = 0;
 
 private:
 	std::bitset<GLFW_KEY_LAST + 1> pressedKeys_;

@@ -136,10 +136,6 @@ int main(int argc, char **argv)
 	glEnable(GL_BLEND);
 	Cygnet::glCheck();
 
-	// Enable vsync
-	glfwSwapInterval(1);
-	Cygnet::glCheck();
-
 	// Create the game and mod list
 	Game game;
 	std::vector<std::string> mods{"core.mod"};
@@ -159,6 +155,17 @@ int main(int argc, char **argv)
 	glfwSetCursorPosCallback(window, cursorPositionCallback);
 	glfwSetScrollCallback(window, scrollCallback);
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+
+	// Enable vsync, unless on Apple platforms,
+	// where vsync results in a choppy experience and an FPS lock works better
+#ifdef __APPLE__
+	glfwSwapInterval(0);
+	game.fpsLimit_ = 120;
+#else
+	glfwSwapInterval(1);
+	Cygnet::glCheck();
+	game.enableVSync_ = true;
+#endif
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -202,6 +209,17 @@ int main(int argc, char **argv)
 
 		auto now = std::chrono::steady_clock::now();
 		std::chrono::duration<float> dur(now - prevTime);
+		if (game.fpsLimit_ > 0)  {
+			std::chrono::duration<float> minDur(1.0 / game.fpsLimit_);
+			if (dur < minDur) {
+				using T = std::chrono::steady_clock::duration;
+				auto sleepTime = std::chrono::duration_cast<T>(minDur - dur);
+				std::this_thread::sleep_for(sleepTime);
+				now += sleepTime;
+				dur = now - prevTime;
+			}
+		}
+
 		prevTime = now;
 		float dt = dur.count();
 
