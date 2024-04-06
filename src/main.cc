@@ -156,16 +156,12 @@ int main(int argc, char **argv)
 	glfwSetScrollCallback(window, scrollCallback);
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-	// Enable vsync, unless on Apple platforms,
-	// where vsync results in a choppy experience and an FPS lock works better
-#ifdef __APPLE__
-	glfwSwapInterval(0);
-	game.fpsLimit_ = 120;
-#else
 	glfwSwapInterval(1);
 	Cygnet::glCheck();
 	game.enableVSync_ = true;
-#endif
+
+	const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+	game.fpsLimit_ = mode->refreshRate;
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
