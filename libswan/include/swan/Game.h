@@ -4,6 +4,7 @@
 #include <istream>
 #include <string>
 #include <cygnet/Renderer.h>
+#include <cygnet/TextCache.h>
 #include <cygnet/util.h>
 #include <msgstream/msgstream.h>
 
@@ -156,6 +157,12 @@ public:
 	bool enableVSync_ = false;
 	float timeScale_ = 1.0;
 	float fpsLimit_ = 0;
+
+	std::shared_ptr<Cygnet::FontFace> notoSans_{Cygnet::loadFontFace(
+		"assets/NotoSans-Regular.ttf")};
+
+	Cygnet::TextCache smallFont_{notoSans_, 60};
+	Cygnet::TextCache bigFont_{notoSans_, 200};
 
 private:
 	std::bitset<GLFW_KEY_LAST + 1> pressedKeys_;

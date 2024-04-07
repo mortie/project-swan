@@ -13,6 +13,7 @@
 #include "ChunkShadow.glsl.h"
 #include "Rect.glsl.h"
 #include "Sprite.glsl.h"
+#include "Text.glsl.h"
 #include "Tile.glsl.h"
 
 #include <iostream>
@@ -124,6 +125,76 @@ struct SpriteProg: public GlProg<Shader::Sprite> {
 	}
 };
 
+struct TextProg: public GlProg<Shader::Text> {
+	void draw(
+		const std::vector<Renderer::TextSegment> &drawTexts,
+		const std::vector<TextCache::RenderedCodepoint> &textBuffer,
+		const Mat3gf &cam, float scale)
+	{
+		glUseProgram(id());
+
+		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
+		glUniform1i(shader.uniTextAtlas, 0);
+		glUniform1f(shader.uniTextScale, scale);
+		glCheck();
+
+		TextAtlas *prevAtlas = nullptr;
+
+		for (const auto &segment: drawTexts) {
+			glUniformMatrix3fv(
+				shader.uniTransform, 1, GL_TRUE,
+				segment.drawText.transform.data());
+			glCheck();
+
+			glUniform4f(
+				shader.uniColor,
+				segment.drawText.color.r, segment.drawText.color.g,
+				segment.drawText.color.b, segment.drawText.color.a);
+			glCheck();
+
+			if (&segment.atlas != prevAtlas) {
+				glUniform2ui(
+					shader.uniTextAtlasSize,
+					segment.atlas.sideLength * segment.atlas.charWidth,
+					segment.atlas.sideLength * segment.atlas.charHeight);
+				glCheck();
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, segment.atlas.tex);
+				glCheck();
+
+				prevAtlas = &segment.atlas;
+			}
+
+			int x = 0;
+			for (size_t i = segment.start; i < segment.end; ++i) {
+				const auto &rendered = textBuffer[i];
+
+				glUniform2ui(
+					shader.uniCharPosition,
+					rendered.textureX, rendered.textureY);
+				glCheck();
+
+				glUniform2ui(
+					shader.uniCharSize,
+					rendered.width, segment.atlas.charHeight);
+				glCheck();
+
+				x += rendered.x;
+
+				glUniform2i(
+					shader.uniPositionOffset,
+					x, rendered.y);
+
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+				glCheck();
+
+				x += rendered.width + 1;
+			}
+		}
+	}
+};
+
 struct TileProg: public GlProg<Shader::Tile> {
 	void draw(
 		const std::vector<Renderer::DrawTile> &drawTiles, const Mat3gf &cam,
@@ -160,6 +231,7 @@ struct RendererState {
 	ChunkShadowProg chunkShadowProg{};
 	RectProg rectProg{};
 	SpriteProg spriteProg{};
+	TextProg textProg{};
 	TileProg tileProg{};
 
 	SwanCommon::Vec2i screenSize;
@@ -250,6 +322,11 @@ void Renderer::render(const RenderCamera &cam)
 	state_->rectProg.draw(drawRects_, camMat);
 	drawRects_.clear();
 
+	state_->textProg.draw(drawTexts_, textBuffer_, camMat, 1.0/128);
+	drawTexts_.clear();
+
+	textBuffer_.clear();
+
 	glCheck();
 }
 
@@ -326,12 +403,28 @@ void Renderer::renderUI(const RenderCamera &cam)
 	}
 	drawUITilesAnchors_.clear();
 
+	assert(drawUITexts_.size() == drawUITextsAnchors_.size());
+	for (size_t i = 0; i < drawUITexts_.size(); ++i) {
+		auto &dt = drawUITexts_[i];
+		auto anchor = drawUITextsAnchors_[i];
+		applyAnchor(anchor, dt.drawText.transform, dt.size);
+	}
+	drawUITextsAnchors_.clear();
+
 	state_->spriteProg.draw(drawUISprites_, camMat);
 	drawUISprites_.clear();
 
 	state_->tileProg.draw(
 		drawUITiles_, camMat, state_->atlasTex, state_->atlasTexSize);
 	drawUITiles_.clear();
+
+	state_->textProg.draw(
+		drawUITexts_, textUIBuffer_, camMat, 1.0/64);
+	drawUITexts_.clear();
+
+	textUIBuffer_.clear();
+
+	glCheck();
 }
 
 void Renderer::uploadTileAtlas(const void *data, int width, int height)

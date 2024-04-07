@@ -13,6 +13,7 @@
 namespace Cygnet {
 
 class Renderer;
+class TextCache;
 
 }
 

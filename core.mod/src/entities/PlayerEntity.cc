@@ -1,10 +1,12 @@
 #include "PlayerEntity.h"
 
 #include <algorithm>
+#include <stdio.h>
 #include <imgui/imgui.h>
 #include <unordered_map>
 
 #include "ItemStackEntity.h"
+#include "cygnet/TextCache.h"
 #include "world/util.h"
 #include "world/ladder.h"
 
@@ -48,6 +50,8 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		.sprite = selectedSlotSprite_,
 	}, Cygnet::Anchor::BOTTOM);
 
+	char stackSizeBuf[8];
+
 	for (int i = 0; i < 10; ++i) {
 		auto &stack = inventory_.content[i];
 		if (stack.empty()) {
@@ -61,6 +65,17 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 				.translate({-4.5f + i, -1}),
 			.id = stack.item()->id,
 		}, Cygnet::Anchor::BOTTOM);
+
+		snprintf(stackSizeBuf, sizeof(stackSizeBuf), "%d", stack.count());
+
+		auto &text = rnd.drawUIText({
+			.textCache = ctx.game.smallFont_,
+			.transform = Cygnet::Mat3gf{}
+				.scale({0.7, 0.7})
+				.translate({-4.875f + i, -0.95}),
+			.text = stackSizeBuf,
+		}, Cygnet::Anchor::BOTTOM);
+		text.drawText.transform.translate({text.size.x / 2, 0});
 	}
 
 	// Everything after this is inventory stuff

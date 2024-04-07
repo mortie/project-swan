@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string_view>
 #include <vector>
 #include <stdint.h>
 
@@ -8,6 +9,7 @@
 #include <swan-common/Vector2.h>
 
 #include "util.h"
+#include "TextCache.h"
 
 namespace Cygnet {
 
@@ -78,6 +80,21 @@ public:
 		Color color = {0.6, 0.6, 0.6, 0.8};
 	};
 
+	struct DrawText {
+		TextCache &textCache;
+		Mat3gf transform;
+		std::string_view text;
+		Color color = {1.0, 1.0, 1.0, 1.0};
+	};
+
+	struct TextSegment {
+		DrawText drawText;
+		TextAtlas &atlas;
+		SwanCommon::Vec2 size;
+		size_t start;
+		size_t end;
+	};
+
 	Renderer();
 	~Renderer();
 
@@ -106,6 +123,21 @@ public:
 		drawRects_.push_back(drawRect);
 	}
 
+	TextSegment &drawText(DrawText drawText)
+	{
+		SwanCommon::Vec2 size;
+		size_t start = textBuffer_.size();
+		drawText.textCache.renderString(drawText.text, textBuffer_, size);
+		drawTexts_.push_back({
+			.drawText = drawText,
+			.atlas = drawText.textCache.atlas_,
+			.size = size / 128,
+			.start = start,
+			.end = textBuffer_.size(),
+		});
+		return drawTexts_.back();
+	}
+
 	void drawUISprite(DrawSprite drawSprite, Anchor anchor = Anchor::CENTER)
 	{
 		drawUISprites_.push_back(drawSprite);
@@ -116,6 +148,22 @@ public:
 	{
 		drawUITiles_.push_back(drawTile);
 		drawUITilesAnchors_.push_back(anchor);
+	}
+
+	TextSegment &drawUIText(DrawText drawText, Anchor anchor = Anchor::CENTER)
+	{
+		SwanCommon::Vec2 size;
+		size_t start = textUIBuffer_.size();
+		drawText.textCache.renderString(drawText.text, textUIBuffer_, size);
+		drawUITexts_.push_back({
+			.drawText = drawText,
+			.atlas = drawText.textCache.atlas_,
+			.size = size / 64,
+			.start = start,
+			.end = textUIBuffer_.size(),
+		});
+		drawUITextsAnchors_.push_back(anchor);
+		return drawUITexts_.back();
 	}
 
 	void render(const RenderCamera &cam);
@@ -155,12 +203,17 @@ private:
 	std::vector<DrawTile> drawTiles_;
 	std::vector<DrawSprite> drawSprites_;
 	std::vector<DrawRect> drawRects_;
+	std::vector<TextSegment> drawTexts_;
+	std::vector<TextCache::RenderedCodepoint> textBuffer_;
 
 	std::vector<DrawSprite> drawUISprites_;
 	std::vector<Anchor> drawUISpritesAnchors_;
 
 	std::vector<DrawTile> drawUITiles_;
-	std::vector<Anchor> drawUITilesAnchors_;;
+	std::vector<Anchor> drawUITilesAnchors_;
+	std::vector<TextSegment> drawUITexts_;
+	std::vector<Anchor> drawUITextsAnchors_;
+	std::vector<TextCache::RenderedCodepoint> textUIBuffer_;
 };
 
 }

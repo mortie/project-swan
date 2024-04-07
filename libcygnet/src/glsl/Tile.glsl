@@ -32,5 +32,5 @@ out vec4 fragColor;
 
 void main() {
 	vec4 pix = texture(tileAtlas, v_atlasPos / tileAtlasSize);
-	fragColor = vec4(pix.rgb * brightness, pix.a);
+	fragColor = vec4(pix.rgb * brightness, 1.0) * pix.a;
 }
