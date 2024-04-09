@@ -134,7 +134,7 @@ const TextCache::RenderedCodepoint &TextCache::render(Codepoint codepoint)
 		&face_->info, codepoint, scale_, scale_, &x0, &y0, &x1, &y1);
 	rendered.width = (x1 - x0);
 	rendered.x = 0;
-	rendered.y = 750 * scale_ + y0;
+	rendered.y = (int)(750 * scale_) + y0;
 
 	if (codepoint == ' ') {
 		rendered.width = 270 * scale_;
