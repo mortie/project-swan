@@ -6,7 +6,6 @@
 #include <unordered_map>
 
 #include "ItemStackEntity.h"
-#include "cygnet/TextCache.h"
 #include "world/util.h"
 #include "world/ladder.h"
 

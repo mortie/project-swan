@@ -23,6 +23,8 @@ void main() {
 		vec3((positionOffset + charSize * vertex) * textScale, 1);
 	gl_Position = vec4(pos.xy, 0, 1);
 
+	vertex += vec2(0.01, 0.01);
+	vertex *= 0.98;
 	v_atlasPos = vec2(charPosition + charSize * vertex) / textAtlasSize;
 }
 

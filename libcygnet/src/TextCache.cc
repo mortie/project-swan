@@ -52,8 +52,8 @@ TextCache::TextCache(std::shared_ptr<FontFace> face, int size)
 
 	int x0, y0, x1, y1;
 	stbtt_GetFontBoundingBox(&face_->info, &x0, &y0, &x1, &y1);
-	atlas_.charWidth = (scale_ * (x1 - x0)) / 2 + 1;
-	atlas_.charHeight = (scale_ * (y1 - y0)) / 2 + 1;
+	atlas_.charWidth = scale_ * 0.75 * (x1 - x0);
+	atlas_.charHeight = scale_ * 0.75 * (y1 - y0);
 	scratchPixelBuffer_ = std::make_unique<unsigned char[]>(
 		atlas_.charWidth * atlas_.charHeight);
 
@@ -83,7 +83,8 @@ TextCache::TextCache(std::shared_ptr<FontFace> face, int size)
 		atlas_.sideLength * atlas_.charHeight,
 		0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, oldUnpackAlignment);
@@ -148,8 +149,8 @@ const TextCache::RenderedCodepoint &TextCache::render(Codepoint codepoint)
 
 	memset(scratchPixelBuffer_.get(), 0, atlas_.charWidth * atlas_.charHeight);
 	stbtt_MakeCodepointBitmap(
-		&face_->info, scratchPixelBuffer_.get(),
-		atlas_.charWidth, atlas_.charHeight, atlas_.charWidth,
+		&face_->info, scratchPixelBuffer_.get() + atlas_.charWidth + 1,
+		atlas_.charWidth - 1, atlas_.charHeight - 1, atlas_.charWidth,
 		scale_, scale_, codepoint);
 
 	GLint oldUnpackAlignment;
