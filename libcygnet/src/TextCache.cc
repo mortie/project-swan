@@ -1,5 +1,6 @@
 #include "TextCache.h"
 
+#include <string.h>
 #include <stdexcept>
 #include <iostream>
 #include <fstream>

@@ -327,7 +327,7 @@ WorldPlane::Raycast WorldPlane::raycast(
 
 	TilePos prevTP = {0, std::numeric_limits<int>::max()};
 	TilePos tp = {(int)floor(pos.x), (int)floor(pos.y)};
-	Tile *tile;
+	Tile *tile = &getTile(tp);
 
 	auto isFaceValid = [&](TilePos tp, Vec2i face) {
 		tp += face;
