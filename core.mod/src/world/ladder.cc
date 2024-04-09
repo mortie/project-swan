@@ -15,10 +15,10 @@ struct RopeLadderTileTrait: LadderTileTrait {
 
 static void spawnRopeLadderAnchor(const Swan::Context &ctx, Swan::TilePos pos)
 {
-	if (ctx.plane.getTile(pos.add(-1, 0)).isSupport) {
+	if (ctx.plane.getTile(pos.add(-1, 0)).isSupportH) {
 		ctx.plane.setTile(pos, "core::rope-ladder::anchor::left");
 	}
-	else if (ctx.plane.getTile(pos.add(1, 0)).isSupport) {
+	else if (ctx.plane.getTile(pos.add(1, 0)).isSupportH) {
 		ctx.plane.setTile(pos, "core::rope-ladder::anchor::right");
 	}
 	else {
@@ -49,7 +49,7 @@ static void cascadeRopeLadder(const Swan::Context &ctx, Swan::TilePos pos)
 			adjacentPos = pos.add(1, 0);
 		}
 
-		if (!ctx.plane.getTile(adjacentPos).isSupport) {
+		if (!ctx.plane.getTile(adjacentPos).isSupportH) {
 			breakTileAndDropItem(ctx, pos);
 			return;
 		}

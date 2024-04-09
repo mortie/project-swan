@@ -7,14 +7,14 @@ static void onTorchSpawn(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	// The default torch stands on the tile below it,
 	// so if that's valid, we're good
-	if (ctx.plane.getTile(pos.add(0, 1)).isSupport) {
+	if (ctx.plane.getTile(pos.add(0, 1)).isSupportV) {
 		return;
 	}
 
-	if (ctx.plane.getTile(pos.add(-1, 0)).isSupport) {
+	if (ctx.plane.getTile(pos.add(-1, 0)).isSupportH) {
 		ctx.plane.setTile(pos, "core::torch::left");
 	}
-	else if (ctx.plane.getTile(pos.add(1, 0)).isSupport) {
+	else if (ctx.plane.getTile(pos.add(1, 0)).isSupportH) {
 		ctx.plane.setTile(pos, "core::torch::right");
 	}
 	else {
@@ -25,23 +25,23 @@ static void onTorchSpawn(const Swan::Context &ctx, Swan::TilePos pos)
 static void onTorchUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	auto &tile = ctx.plane.getTile(pos);
-	Swan::TilePos connection;
+	bool isSupported;
 
 	if (tile.name == "core::torch") {
-		connection = pos.add(0, 1);
+		isSupported = ctx.plane.getTile(pos.add(0, 1)).isSupportV;
 	}
 	else if (tile.name == "core::torch::left") {
-		connection = pos.add(-1, 0);
+		isSupported = ctx.plane.getTile(pos.add(-1, 0)).isSupportH;
 	}
 	else if (tile.name == "core::torch::right") {
-		connection = pos.add(1, 0);
+		isSupported = ctx.plane.getTile(pos.add(1, 0)).isSupportH;
 	}
 	else {
 		Swan::warn << "Torch update for unknown torch tile " << tile.name;
 		return;
 	}
 
-	if (!ctx.plane.getTile(connection).isSupport) {
+	if (!isSupported) {
 		breakTileAndDropItem(ctx, pos);
 	}
 }

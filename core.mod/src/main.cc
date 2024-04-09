@@ -72,10 +72,19 @@ public:
 			.droppedItem = "core::dirt",
 		});
 		registerTile({
+			.name = "wood-pole",
+			.image = "core::tiles/wood-pole",
+			.isSolid = false,
+			.isSupportV = true,
+			.droppedItem = "core::wood-pole",
+			.onTileUpdate = breakIfFloating,
+		});
+		registerTile({
 			.name = "tree-trunk",
 			.image = "core::tiles/tree-trunk",
 			.isSolid = false,
-			.isSupport = true,
+			.isSupportV = true,
+			.isSupportH = true,
 			.droppedItem = "core::tree-trunk",
 			.onTileUpdate = breakIfFloating,
 			.traits = std::make_shared<TreeTrunkTrait>(),
@@ -113,10 +122,6 @@ public:
 		registerGlassPipe(*this);
 		registerTorch(*this);
 
-		registerItem({
-			.name = "wood-pole",
-			.image = "core::items/wood-pole",
-		});
 		registerItem({
 			.name = "straw",
 			.image = "core::items/straw",
