@@ -107,7 +107,7 @@ void Game::draw()
 			ImGuiSliderFlags_Logarithmic);
 		if (ImGui::BeginPopupContextItem("UI scale menu")) {
 			if (ImGui::MenuItem("Reset")) {
-				uiCam_.zoom = 0.125;
+				uiCam_.zoom = 1.0/16;
 			}
 			ImGui::EndPopup();
 		}
