@@ -10,7 +10,7 @@
 
 namespace Swan {
 
-void Chunk::compress(Cygnet::Renderer &rnd)
+void Chunk::compress()
 {
 	if (isCompressed()) {
 		return;
@@ -46,7 +46,6 @@ void Chunk::compress(Cygnet::Renderer &rnd)
 		warn << "Chunk compression error: " << ret << " (Out of memory?)";
 	}
 
-	destroy(rnd);
 	entities_.rehash(0);
 }
 
@@ -125,9 +124,11 @@ void Chunk::serialize(MsgStream::Serializer &w)
 	w.endArray(arr);
 }
 
-void Chunk::deserialize(MsgStream::Parser &p)
+void Chunk::deserialize(MsgStream::Parser &p, std::span<Tile::ID> tileMap)
 {
 	isModified_ = true;
+
+	bool wasCompressed = false;
 
 	auto arr = p.nextArray();
 	uint64_t compressionType = arr.nextUInt();
@@ -154,10 +155,27 @@ void Chunk::deserialize(MsgStream::Parser &p)
 		static_assert(std::endian::native == std::endian::little);
 		memcpy(data_.get(), vec.data(), vec.size());
 		compressedSize_ = vec.size();
-		deactivateTimer_ = 0;
+		deactivateTimer_ = DEACTIVATE_INTERVAL;
+
+		decompress();
+		wasCompressed = true;
 	}
 	else {
 		throw std::runtime_error("Invalid compression type");
+	}
+
+	std::span<Tile::ID> tileData(getTileData(), CHUNK_WIDTH * CHUNK_HEIGHT);
+	for (Tile::ID &tile: tileData) {
+		if (tile > tileMap.size()) {
+			tile = 0;
+		} else {
+			tile = tileMap[tile];
+		}
+	}
+
+	if (wasCompressed) {
+		compress();
+		deactivateTimer_ = 0;
 	}
 
 	arr.skipAll();

@@ -16,7 +16,6 @@
 #include "Entity.h"
 #include "EntityCollection.h"
 #include "Mod.h"
-#include "EventEmitter.h"
 #include "Recipe.h"
 #include "assets.h"
 

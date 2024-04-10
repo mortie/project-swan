@@ -509,7 +509,14 @@ void World::tick(float dt)
 
 void World::serialize(MsgStream::Serializer &w)
 {
-	auto map = w.beginMap(2);
+	auto map = w.beginMap(3);
+
+	map.writeString("tiles");
+	auto tiles = map.beginArray(tiles_.size());
+	for (auto &tile: tiles_) {
+		tiles.writeString(tile.name);
+	}
+	map.endArray(tiles);
 
 	map.writeString("planes");
 	auto planes = map.beginArray(planes_.size());
@@ -531,6 +538,8 @@ void World::serialize(MsgStream::Serializer &w)
 
 void World::deserialize(MsgStream::Parser &r)
 {
+	std::vector<Tile::ID> tileMap;
+
 	auto deserializePlane = [&](MsgStream::MapParser r) {
 		WorldPlane *plane = nullptr;
 
@@ -544,7 +553,7 @@ void World::deserialize(MsgStream::Parser &r)
 					throw std::runtime_error("Missing data for world plane");
 				}
 
-				plane->deserialize(r);
+				plane->deserialize(r, tileMap);
 			}
 			else {
 				r.skipNext();
@@ -556,7 +565,16 @@ void World::deserialize(MsgStream::Parser &r)
 	std::string key;
 
 	while (map.nextKey(key)) {
-		if (key == "planes") {
+		if (key == "tiles") {
+			tileMap.clear();
+			auto tiles = map.nextArray();
+			tileMap.reserve(tiles.arraySize());
+			std::string name;
+			while (tiles.hasNext()) {
+				tiles.nextString(name);
+				tileMap.push_back(getTileID(name));
+			}
+		} else if (key == "planes") {
 			planes_.clear();
 			auto planes = map.nextArray();
 			while (planes.hasNext()) {

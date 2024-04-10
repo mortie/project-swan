@@ -1,5 +1,6 @@
 #pragma once
 
+#include <span>
 #include <vector>
 #include <deque>
 #include <utility>
@@ -89,7 +90,7 @@ public:
 	void onLightChunkUpdated(const LightChunk &chunk, Vec2i pos) final;
 
 	void serialize(MsgStream::Serializer &w);
-	void deserialize(MsgStream::Parser &r);
+	void deserialize(MsgStream::Parser &r, std::span<Tile::ID> tileMap);
 
 	ID id_;
 	World *world_;

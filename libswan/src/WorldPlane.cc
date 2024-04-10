@@ -501,7 +501,8 @@ void WorldPlane::tick(float dt)
 		case Chunk::TickAction::DEACTIVATE:
 			info << "Compressing inactive modified chunk " << chunk->pos_;
 			lighting_->onChunkRemoved(chunk->pos_);
-			chunk->compress(world_->game_->renderer_);
+			chunk->destroyTextures(world_->game_->renderer_);
+			chunk->compress();
 			activeChunks_[activeChunkIndex] = activeChunks_.back();
 			activeChunks_.pop_back();
 			break;
@@ -509,7 +510,7 @@ void WorldPlane::tick(float dt)
 		case Chunk::TickAction::DELETE:
 			info << "Deleting inactive unmodified chunk " << chunk->pos_;
 			lighting_->onChunkRemoved(chunk->pos_);
-			chunk->destroy(world_->game_->renderer_);
+			chunk->destroyTextures(world_->game_->renderer_);
 			chunks_.erase(chunk->pos_);
 			activeChunks_[activeChunkIndex] = activeChunks_.back();
 			activeChunks_.pop_back();
@@ -615,7 +616,7 @@ void WorldPlane::serialize(MsgStream::Serializer &w)
 	w.endMap(map);
 }
 
-void WorldPlane::deserialize(MsgStream::Parser &r)
+void WorldPlane::deserialize(MsgStream::Parser &r, std::span<Tile::ID> tileMap)
 {
 	auto ctx = getContext();
 	auto map = r.nextMap();
@@ -652,7 +653,7 @@ void WorldPlane::deserialize(MsgStream::Parser &r)
 				auto it = chunks_.emplace(pos, Chunk(pos)).first;
 				Chunk &chunk = it->second;
 
-				chunk.deserialize(chunkArr);
+				chunk.deserialize(chunkArr, tileMap);
 				if (chunk.isActive()) {
 					lighting_->onChunkAdded(pos, computeLightChunk(chunk));
 					activeChunks_.push_back(&chunk);

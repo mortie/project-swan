@@ -1,5 +1,6 @@
 #pragma once
 
+#include <span>
 #include <string.h>
 #include <stdint.h>
 #include <memory>
@@ -95,9 +96,9 @@ public:
 	void generateDone();
 	void keepActive();
 	void decompress();
-	void compress(Cygnet::Renderer &rnd);
+	void compress();
 
-	void destroy(Cygnet::Renderer &rnd)
+	void destroyTextures(Cygnet::Renderer &rnd)
 	{
 		if (isRendered_) {
 			rnd.destroyChunk(renderChunk_);
@@ -120,7 +121,7 @@ public:
 	}
 
 	void serialize(MsgStream::Serializer &w);
-	void deserialize(MsgStream::Parser &r);
+	void deserialize(MsgStream::Parser &r, std::span<Tile::ID> tileMap);
 
 	const ChunkPos pos_;
 	std::unordered_set<EntityRef> entities_;
