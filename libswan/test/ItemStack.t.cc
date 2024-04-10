@@ -48,7 +48,7 @@ TEST("Insert never overflows")
 
 TEST("Insert respects maxStack")
 {
-	Item item1(0, "test::item1", {.maxStack = 20});
+	Item item1(0, "test::item1", {.name = "item1", .maxStack = 20});
 
 	Swan::ItemStack s1(&item1, 15);
 	Swan::ItemStack s2(&item1, 19);
