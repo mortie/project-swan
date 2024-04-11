@@ -440,6 +440,10 @@ void WorldPlane::update(float dt)
 		Chunk *chunk = chunkInitList_.front();
 		chunkInitList_.pop_front();
 
+		for (auto &[_, chunk]: chunks_) {
+			chunk.wasModified_ = chunk.isModified_;
+		}
+
 		TilePos base = chunk->topLeft();
 		for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 			for (int x = 0; x < CHUNK_WIDTH; ++x) {
@@ -451,7 +455,9 @@ void WorldPlane::update(float dt)
 			}
 		}
 
-		worldGen_->initializeChunk(ctx, *chunk);
+		for (auto &[_, chunk]: chunks_) {
+			chunk.isModified_ = chunk.wasModified_;
+		}
 	}
 
 	for (auto &coll: entColls_) {
