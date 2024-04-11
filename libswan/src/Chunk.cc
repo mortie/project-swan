@@ -46,7 +46,10 @@ void Chunk::compress()
 		warn << "Chunk compression error: " << ret << " (Out of memory?)";
 	}
 
-	entities_.rehash(0);
+	if (entities_.empty()) {
+		std::unordered_set<EntityRef> empty;
+		entities_.swap(empty);
+	}
 }
 
 void Chunk::decompress()

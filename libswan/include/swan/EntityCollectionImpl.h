@@ -71,6 +71,7 @@ public:
 	uint64_t nextId_ = 0;
 	std::vector<Wrapper> entities_;
 	std::unordered_map<uint64_t, size_t> idToIndex_;
+	bool hasTicked_ = false;
 };
 
 /*
@@ -264,7 +265,7 @@ inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt)
 		if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 			BodyTrait::Body &body = w.ent.get(BodyTrait::Tag{});
 			auto newChunkPos = tilePosToChunkPos({(int)body.pos.x, (int)body.pos.y});
-			if (newChunkPos == body.chunkPos) {
+			if (hasTicked_ && newChunkPos == body.chunkPos) {
 				continue;
 			}
 
@@ -274,6 +275,8 @@ inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt)
 			body.chunkPos = newChunkPos;
 		}
 	}
+
+	hasTicked_ = true;
 }
 
 template<typename Ent>
@@ -359,6 +362,7 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 	entities_.clear();
 	idToIndex_.clear();
 	nextId_ = 0;
+	hasTicked_ = false;
 
 	if (r.nextType() != MsgStream::Type::ARRAY) {
 		warn << "Failed to deserialize " << name_ << " entities: value not array";
