@@ -8,7 +8,7 @@
 
 namespace CoreMod {
 
-void spawnTree(const Swan::Context &ctx, Swan::TilePos pos)
+bool spawnTree(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	Swan::Tile::ID logID = ctx.world.getTileID("core::tree-trunk");
 	Swan::Tile::ID leavesID = ctx.world.getTileID("core::tree-leaves");
@@ -36,6 +36,8 @@ void spawnTree(const Swan::Context &ctx, Swan::TilePos pos)
 			}
 		}
 	}
+
+	return true;
 }
 
 void breakTreeLeavesIfFloating(const Swan::Context &ctx, Swan::TilePos pos)

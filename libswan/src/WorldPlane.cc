@@ -189,14 +189,7 @@ void WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 	}
 
 	if (oldTile.tileEntity) {
-		auto it = tileEntities_.find(pos);
-		if (it == tileEntities_.end()) {
-			warn << "Didn't find expected tile entity at " << pos;
-		}
-		else {
-			despawnEntity(it->second);
-			tileEntities_.erase(pos);
-		}
+		despawnTileEntity(pos);
 	}
 
 	chunk.setTileID(rp, id);
@@ -218,40 +211,12 @@ void WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 		}
 	}
 
-	[&] {
-		if (!newTile.tileEntity) {
-			return;
-		}
-
-		if (tileEntities_.contains(pos)) {
-			warn << "Tile entity already exists in " << pos;
-			return;
-		}
-
-		auto it = entCollsByName_.find(newTile.tileEntity.value());
-		if (it == entCollsByName_.end()) {
-			warn
-				<< "Tile entity " << newTile.tileEntity.value()
-				<< " for tile " << newTile.name << " doesn't exist";
-			return;
-		}
-
-		auto ent = it->second->spawn(getContext());
-		auto *tileEnt = ent.trait<TileEntityTrait>();
-		if (!tileEnt) {
-			warn
-				<< "Entity " << newTile.tileEntity.value()
-				<< " doesn't implement TileEntityTrait";
-			it->second->erase(getContext(), ent);
-			return;
-		}
-
-		tileEnt->pos = pos;
-		tileEntities_[pos] = ent;
-	}();
-
 	if (newTile.onSpawn) {
 		newTile.onSpawn(getContext(), pos);
+	}
+
+	if (newTile.tileEntity) {
+		spawnTileEntity(pos, newTile.tileEntity.value());
 	}
 }
 
@@ -300,20 +265,89 @@ bool WorldPlane::breakTile(TilePos pos)
 
 bool WorldPlane::placeTile(TilePos pos, Tile::ID id)
 {
-	Tile::ID old = getTileID(pos);
+	Chunk &chunk = getChunk(tilePosToChunkPos(pos));
+	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+
+	Tile::ID old = chunk.getTileID(rp);
 
 	// If the block isn't air, do nothing
+	// This check will probably be changed in the future,
+	// so the rest of the code doesn't make assumptions
+	// about the old tile being air
 	if (old != World::AIR_TILE_ID) {
 		return false;
 	}
 
-	Tile &tile = world_->getTileByID(id);
+	// Don't replace it with itself
+	if (id == old) {
+		return false;
+	}
+
+	auto &oldTile = world_->getTileByID(old);
+	auto &newTileBeforeSpawn = world_->getTileByID(id);
+
+	// Try to run the onSpawn immediately,
+	// and revert if it returns false
+	chunk.setTileID(rp, id);
+	if (
+			newTileBeforeSpawn.onSpawn &&
+			!newTileBeforeSpawn.onSpawn(getContext(), pos)) {
+		chunk.setTileID(rp, old);
+		return false;
+	}
+
+	// The ID might've been changed after onSpawn
+	id = chunk.getTileID(rp);
+	auto &newTile = world_->getTileByID(id);
+
+	world_->game_->playSound(oldTile.breakSound);
 
 	// TODO: play a separate place sound
-	world_->game_->playSound(tile.breakSound);
+	world_->game_->playSound(newTile.breakSound);
 
-	// Change tile to air
-	setTileID(pos, id);
+	// We didn't run the onBreak and despawn tile entities yet,
+	// so let's do that
+	chunk.setTileID(rp, old);
+	if (oldTile.onBreak) {
+		oldTile.onBreak(getContext(), pos);
+	}
+	if (oldTile.tileEntity) {
+		despawnTileEntity(pos);
+	}
+	chunk.setTileID(rp, id);
+
+	if (!oldTile.isOpaque && newTile.isOpaque) {
+		lighting_->onSolidBlockAdded(pos);
+	}
+	else if (oldTile.isOpaque && !newTile.isOpaque) {
+		lighting_->onSolidBlockRemoved(pos);
+	}
+
+	if (newTile.lightLevel != oldTile.lightLevel) {
+		if (oldTile.lightLevel > 0) {
+			removeLight(pos, oldTile.lightLevel);
+		}
+
+		if (newTile.lightLevel > 0) {
+			addLight(pos, newTile.lightLevel);
+		}
+	}
+
+	if (newTile.tileEntity) {
+		spawnTileEntity(pos, newTile.tileEntity.value());
+	}
+
+	// Run a tile update immediately
+	if (newTile.onTileUpdate) {
+		newTile.onTileUpdate(getContext(), pos);
+	}
+
+	// Schedule surrounding tile updates for later
+	scheduledTileUpdates_.push_back(pos.add(-1, 0));
+	scheduledTileUpdates_.push_back(pos.add(0, -1));
+	scheduledTileUpdates_.push_back(pos.add(1, 0));
+	scheduledTileUpdates_.push_back(pos.add(0, 1));
+
 	return true;
 }
 
@@ -720,6 +754,40 @@ NewLightChunk WorldPlane::computeLightChunk(const Chunk &chunk)
 	}
 
 	return lc;
+}
+
+void WorldPlane::despawnTileEntity(TilePos pos)
+{
+	auto it = tileEntities_.find(pos);
+	if (it == tileEntities_.end()) {
+		warn << "Didn't find expected tile entity at " << pos;
+	}
+	else {
+		despawnEntity(it->second);
+		tileEntities_.erase(pos);
+	}
+}
+
+void WorldPlane::spawnTileEntity(TilePos pos, const std::string &name)
+{
+	if (tileEntities_.contains(pos)) {
+		warn << "Tile entity already exists in " << pos;
+		return;
+	}
+
+	auto it = entCollsByName_.find(name);
+	if (it == entCollsByName_.end()) {
+		warn << "Tile entity " << name << " doesn't exist";
+		return;
+	}
+
+	auto ent = it->second->spawn(getContext());
+	auto *tileEnt = ent.trait<TileEntityTrait>();
+	if (tileEnt) {
+		tileEnt->pos = pos;
+	}
+
+	tileEntities_[pos] = ent;
 }
 
 }

@@ -31,7 +31,7 @@ struct Tile {
 		std::optional<std::string> breakSound = std::nullopt;
 		std::optional<std::string> droppedItem = std::nullopt;
 
-		void (*onSpawn)(const Context &ctx, TilePos pos) = nullptr;
+		bool (*onSpawn)(const Context &ctx, TilePos pos) = nullptr;
 		void (*onBreak)(const Context &ctx, TilePos pos) = nullptr;
 		void (*onTileUpdate)(const Context &ctx, TilePos pos) = nullptr;
 
@@ -51,7 +51,7 @@ struct Tile {
 	SoundAsset *breakSound = nullptr;
 	Item *droppedItem = nullptr;
 
-	void (*onSpawn)(const Context &ctx, TilePos pos);
+	bool (*onSpawn)(const Context &ctx, TilePos pos);
 	void (*onBreak)(const Context &ctx, TilePos pos);
 	void (*onTileUpdate)(const Context &ctx, TilePos pos);
 

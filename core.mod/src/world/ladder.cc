@@ -13,16 +13,18 @@ struct RopeLadderTileTrait: LadderTileTrait {
 	std::string direction;
 };
 
-static void spawnRopeLadderAnchor(const Swan::Context &ctx, Swan::TilePos pos)
+static bool spawnRopeLadderAnchor(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	if (ctx.plane.getTile(pos.add(-1, 0)).isSupportH) {
 		ctx.plane.setTile(pos, "core::rope-ladder::anchor::left");
+		return true;
 	}
 	else if (ctx.plane.getTile(pos.add(1, 0)).isSupportH) {
 		ctx.plane.setTile(pos, "core::rope-ladder::anchor::right");
+		return true;
 	}
 	else {
-		breakTileAndDropItem(ctx, pos);
+		return false;
 	}
 }
 

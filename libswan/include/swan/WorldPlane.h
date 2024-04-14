@@ -136,6 +136,9 @@ private:
 
 	std::unordered_map<TilePos, EntityRef> tileEntities_;
 
+	void despawnTileEntity(TilePos pos);
+	void spawnTileEntity(TilePos pos, const std::string &name);
+
 	friend EntityRef;
 };
 

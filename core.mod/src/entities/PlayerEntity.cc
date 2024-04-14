@@ -528,24 +528,22 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 		return;
 	}
 
-	Swan::Tile &placeTile = ctx.plane.getTile(placePos_);
-	if (placeTile.name != "@::air") {
-		return;
-	}
-
 	if (
 		item.tile->isSolid &&
 		!ctx.plane.getEntitiesInTile(placePos_).empty()) {
 		return;
 	}
 
-	interactTimer_ = 0.2;
-
-	if (slot.remove(1).empty()) {
-		Swan::info << "Not placing tile because stack.remove(1) is empty";
+	if (slot.get().empty()) {
+		return;
 	}
 
-	ctx.plane.placeTile(placePos_, item.tile->id);
+	if (!ctx.plane.placeTile(placePos_, item.tile->id)) {
+		return;
+	}
+
+	interactTimer_ = 0.2;
+	slot.remove(1);
 }
 
 void PlayerEntity::craft(const Swan::Recipe &recipe)

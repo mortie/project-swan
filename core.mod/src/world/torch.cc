@@ -3,22 +3,24 @@
 
 namespace CoreMod {
 
-static void onTorchSpawn(const Swan::Context &ctx, Swan::TilePos pos)
+static bool onTorchSpawn(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	// The default torch stands on the tile below it,
 	// so if that's valid, we're good
 	if (ctx.plane.getTile(pos.add(0, 1)).isSupportV) {
-		return;
+		return true;
 	}
 
 	if (ctx.plane.getTile(pos.add(-1, 0)).isSupportH) {
 		ctx.plane.setTile(pos, "core::torch::left");
+		return true;
 	}
 	else if (ctx.plane.getTile(pos.add(1, 0)).isSupportH) {
 		ctx.plane.setTile(pos, "core::torch::right");
+		return true;
 	}
 	else {
-		breakTileAndDropItem(ctx, pos);
+		return false;
 	}
 }
 

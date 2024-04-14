@@ -31,6 +31,13 @@ inline void breakTileAndDropItem(const Swan::Context &ctx, Swan::TilePos pos)
 	ctx.plane.breakTile(pos);
 }
 
+inline bool denyIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
+{
+	auto below = pos + Swan::TilePos{0, 1};
+
+	return ctx.plane.getTile(below).isSupportV;
+}
+
 inline void breakIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	auto below = pos + Swan::TilePos{0, 1};
