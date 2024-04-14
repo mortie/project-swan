@@ -17,15 +17,26 @@ static bool spawnRopeLadderAnchor(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	if (ctx.plane.getTile(pos.add(-1, 0)).isSupportH) {
 		ctx.plane.setTile(pos, "core::rope-ladder::anchor::left");
-		return true;
 	}
 	else if (ctx.plane.getTile(pos.add(1, 0)).isSupportH) {
 		ctx.plane.setTile(pos, "core::rope-ladder::anchor::right");
-		return true;
 	}
 	else {
 		return false;
 	}
+
+	Swan::TilePos below = pos.add(0, 1);
+	while (true) {
+		auto &tile = ctx.plane.getTile(below);
+		if (!dynamic_cast<RopeLadderTileTrait *>(tile.traits.get())) {
+			break;
+		}
+
+		ctx.plane.scheduleTileUpdate(below);
+		below = below.add(0, 1);
+	}
+
+	return true;
 }
 
 static void cascadeRopeLadder(const Swan::Context &ctx, Swan::TilePos pos)
@@ -79,6 +90,12 @@ static void cascadeRopeLadder(const Swan::Context &ctx, Swan::TilePos pos)
 			ctx.plane.breakTile(pos);
 			return;
 		}
+
+		// Ensure that the current tile is the right one
+		if (remainingLength > 0) {
+			ctx.plane.setTile(pos, Swan::cat(
+				"core::rope-ladder::middle::", ropeLadderTrait->direction));
+		}
 	}
 
 	// Spawn tile below
@@ -120,6 +137,7 @@ void registerRopeLadder(Swan::Mod &mod)
 			.name = Swan::cat("rope-ladder::middle::", direction),
 			.image = Swan::cat("core::tiles/rope-ladder/middle::", direction),
 			.isSolid = false,
+			.isReplacable = true,
 			.onTileUpdate = cascadeRopeLadder,
 			.traits = std::make_shared<RopeLadderTileTrait>(false, direction),
 		});
@@ -127,6 +145,7 @@ void registerRopeLadder(Swan::Mod &mod)
 			.name = Swan::cat("rope-ladder::bottom::", direction),
 			.image = Swan::cat("core::tiles/rope-ladder/bottom::", direction),
 			.isSolid = false,
+			.isReplacable = true,
 			.onTileUpdate = cascadeRopeLadder,
 			.traits = std::make_shared<RopeLadderTileTrait>(false, direction),
 		});

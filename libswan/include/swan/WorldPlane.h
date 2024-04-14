@@ -58,7 +58,7 @@ public:
 	Chunk &slowGetChunk(ChunkPos pos);
 	void setTileID(TilePos pos, Tile::ID id);
 	void setTile(TilePos pos, const std::string &name);
-	void setTileIDWithoutUpdate(TilePos pos, Tile::ID id);
+	bool setTileIDWithoutUpdate(TilePos pos, Tile::ID id);
 
 	Tile::ID getTileID(TilePos pos);
 	Tile &getTile(TilePos pos);
@@ -91,6 +91,11 @@ public:
 
 	void serialize(MsgStream::Serializer &w);
 	void deserialize(MsgStream::Parser &r, std::span<Tile::ID> tileMap);
+
+	void scheduleTileUpdate(TilePos pos)
+	{
+		scheduledTileUpdates_.push_back(pos);
+	}
 
 	ID id_;
 	World *world_;

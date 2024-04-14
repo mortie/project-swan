@@ -155,22 +155,22 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos)
 
 void WorldPlane::setTileID(TilePos pos, Tile::ID id)
 {
-	setTileIDWithoutUpdate(pos, id);
+	if (setTileIDWithoutUpdate(pos, id)) {
+		// Update the new tile immediately
+		auto &tile = getTile(pos);
+		if (tile.onTileUpdate) {
+			tile.onTileUpdate(getContext(), pos);
+		}
 
-	// Update the new tile immediately
-	auto &tile = getTile(pos);
-	if (tile.onTileUpdate) {
-		tile.onTileUpdate(getContext(), pos);
+		// Schedule surrounding tile updates for later
+		scheduleTileUpdate(pos.add(-1, 0));
+		scheduleTileUpdate(pos.add(0, -1));
+		scheduleTileUpdate(pos.add(1, 0));
+		scheduleTileUpdate(pos.add(0, 1));
 	}
-
-	// Schedule surrounding tile updates for later
-	scheduledTileUpdates_.push_back(pos.add(-1, 0));
-	scheduledTileUpdates_.push_back(pos.add(0, -1));
-	scheduledTileUpdates_.push_back(pos.add(1, 0));
-	scheduledTileUpdates_.push_back(pos.add(0, 1));
 }
 
-void WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
+bool WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 {
 	Chunk &chunk = getChunk(tilePosToChunkPos(pos));
 	ChunkRelPos rp = tilePosToChunkRelPos(pos);
@@ -178,7 +178,7 @@ void WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 	Tile::ID old = chunk.getTileID(rp);
 
 	if (id == old) {
-		return;
+		return false;
 	}
 
 	Tile &newTile = world_->getTileByID(id);
@@ -218,6 +218,8 @@ void WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 	if (newTile.tileEntity) {
 		spawnTileEntity(pos, newTile.tileEntity.value());
 	}
+
+	return true;
 }
 
 void WorldPlane::setTile(TilePos pos, const std::string &name)
@@ -338,10 +340,10 @@ bool WorldPlane::placeTile(TilePos pos, Tile::ID id)
 	}
 
 	// Schedule surrounding tile updates for later
-	scheduledTileUpdates_.push_back(pos.add(-1, 0));
-	scheduledTileUpdates_.push_back(pos.add(0, -1));
-	scheduledTileUpdates_.push_back(pos.add(1, 0));
-	scheduledTileUpdates_.push_back(pos.add(0, 1));
+	scheduleTileUpdate(pos.add(-1, 0));
+	scheduleTileUpdate(pos.add(0, -1));
+	scheduleTileUpdate(pos.add(1, 0));
+	scheduleTileUpdate(pos.add(0, 1));
 
 	return true;
 }
