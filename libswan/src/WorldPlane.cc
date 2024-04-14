@@ -269,21 +269,16 @@ bool WorldPlane::placeTile(TilePos pos, Tile::ID id)
 	ChunkRelPos rp = tilePosToChunkRelPos(pos);
 
 	Tile::ID old = chunk.getTileID(rp);
+	auto &oldTile = world_->getTileByID(old);
 
-	// If the block isn't air, do nothing
-	// This check will probably be changed in the future,
-	// so the rest of the code doesn't make assumptions
-	// about the old tile being air
-	if (old != World::AIR_TILE_ID) {
+	if (!oldTile.isReplacable) {
 		return false;
 	}
 
-	// Don't replace it with itself
 	if (id == old) {
 		return false;
 	}
 
-	auto &oldTile = world_->getTileByID(old);
 	auto &newTileBeforeSpawn = world_->getTileByID(id);
 
 	// Try to run the onSpawn immediately,

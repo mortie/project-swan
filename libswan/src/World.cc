@@ -113,6 +113,7 @@ void World::buildResources()
 	tiles_.push_back(Tile(INVALID_TILE_ID, INVALID_TILE_NAME, {
 		.name = "", .image = "", // Not used in this case
 		.isSolid = false,
+		.isReplacable = true,
 	}));
 	items_[INVALID_TILE_NAME] = Item(INVALID_TILE_ID, INVALID_TILE_NAME, {
 		.name = "", .image = "", // Not used in this case
@@ -124,6 +125,7 @@ void World::buildResources()
 	tiles_.push_back(Tile(AIR_TILE_ID, AIR_TILE_NAME, {
 		.name = "", .image = "", // Not used in this case
 		.isSolid = false,
+		.isReplacable = true,
 	}));
 	items_[AIR_TILE_NAME] = Item(AIR_TILE_ID, AIR_TILE_NAME, {
 		.name = "", .image = "", // Not used in this case

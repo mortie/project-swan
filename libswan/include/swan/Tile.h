@@ -26,6 +26,7 @@ struct Tile {
 		bool isOpaque = isSolid;
 		bool isSupportV = isSolid;
 		bool isSupportH = isSolid;
+		bool isReplacable = false;
 		float lightLevel = 0;
 		std::optional<std::string> stepSound = std::nullopt;
 		std::optional<std::string> breakSound = std::nullopt;
@@ -46,6 +47,7 @@ struct Tile {
 	bool isOpaque;
 	bool isSupportV;
 	bool isSupportH;
+	bool isReplacable;
 	float lightLevel;
 	SoundAsset *stepSounds[2] = {nullptr, nullptr};
 	SoundAsset *breakSound = nullptr;
@@ -64,7 +66,7 @@ struct Tile {
 		id(id), name(name),
 		isSolid(builder.isSolid), isOpaque(builder.isOpaque),
 		isSupportV(builder.isSupportV), isSupportH(builder.isSupportH),
-		lightLevel(builder.lightLevel),
+		isReplacable(builder.isReplacable), lightLevel(builder.lightLevel),
 		onSpawn(builder.onSpawn), onBreak(builder.onBreak),
 		onTileUpdate(builder.onTileUpdate),
 		tileEntity(builder.tileEntity), traits(builder.traits)

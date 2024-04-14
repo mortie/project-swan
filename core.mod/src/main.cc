@@ -109,6 +109,7 @@ public:
 			.name = "tall-grass",
 			.image = "core::tiles/tall-grass",
 			.isSolid = false,
+			.isReplacable = true,
 			.breakSound = "core::sounds/break/leaves",
 			.onBreak = +[] (const Swan::Context &ctx, Swan::TilePos pos) {
 				for (int i = 0; i < 3; ++i) {
