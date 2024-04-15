@@ -51,20 +51,20 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane)
 	int firstX = (int)floor(phys.body.left() + epsilon);
 	int lastX = (int)floor(phys.body.right() - epsilon);
 	for (int x = firstX; x <= lastX; ++x) {
-		int ty = (int)floor(phys.body.top());
-		Tile &top = plane.getTile({x, ty});
-		if (top.isSolid) {
-			phys.body.pos.y = (float)ty + 1.0;
-			collided = true;
-			break;
-		}
-
 		int by = (int)floor(phys.body.bottom());
 		Tile &bottom = plane.getTile({x, by});
 		if (bottom.isSolid) {
 			phys.body.pos.y = (float)by - phys.body.size.y;
 			collided = true;
 			phys.onGround = true;
+			break;
+		}
+
+		int ty = (int)floor(phys.body.top());
+		Tile &top = plane.getTile({x, ty});
+		if (top.isSolid) {
+			phys.body.pos.y = (float)ty + 1.0;
+			collided = true;
 			break;
 		}
 	}
@@ -106,15 +106,6 @@ void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 	Vec2 dir = dist.sign();
 	Vec2 step = dir * 0.4;
 
-	// Move in increments of at most 'step', on the X axis
-	while (std::abs(dist.x) > std::abs(step.x)) {
-		body.pos.x += step.x;
-		collideX(*this, ctx.plane);
-		dist.x -= step.x;
-	}
-	body.pos.x += dist.x;
-	collideX(*this, ctx.plane);
-
 	// Move in increments of at most 'step', on the Y axis
 	while (std::abs(dist.y) > std::abs(step.y)) {
 		body.pos.y += step.y;
@@ -123,6 +114,15 @@ void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 	}
 	body.pos.y += dist.y;
 	collideY(*this, ctx.plane);
+
+	// Move in increments of at most 'step', on the X axis
+	while (std::abs(dist.x) > std::abs(step.x)) {
+		body.pos.x += step.x;
+		collideX(*this, ctx.plane);
+		dist.x -= step.x;
+	}
+	body.pos.x += dist.x;
+	collideX(*this, ctx.plane);
 }
 
 void BasicPhysicsBody::serialize(MsgStream::Serializer &w)
