@@ -119,8 +119,8 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 		if (
 				tpos.x < pos.x ||
 				tpos.y < pos.y ||
-				tpos.x > pos.x + Swan::CHUNK_WIDTH ||
-				tpos.y > pos.y + Swan::CHUNK_HEIGHT) {
+				tpos.x >= pos.x + Swan::CHUNK_WIDTH ||
+				tpos.y >= pos.y + Swan::CHUNK_HEIGHT) {
 			continue;
 		}
 
