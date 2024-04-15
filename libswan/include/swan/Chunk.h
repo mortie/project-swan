@@ -144,11 +144,6 @@ private:
 	float deactivateTimer_ = DEACTIVATE_INTERVAL;
 	bool isModified_ = false;
 	bool isRendered_ = false;
-
-	// Only used by WorldPlane when initializing chunks
-	bool wasModified_ = false;
-
-	friend WorldPlane;
 };
 
 }

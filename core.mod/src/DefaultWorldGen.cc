@@ -2,9 +2,13 @@
 
 #include "entities/PlayerEntity.h"
 #include "entities/SpiderEntity.h"
+#include "swan-common/constants.h"
 #include "world/util.h"
+#include "worldgen/StructureDef.h"
 
 namespace CoreMod {
+
+static constexpr int GEN_PADDING = 16;
 
 static int getGrassLevel(const siv::PerlinNoise &perlin, int x)
 {
@@ -42,33 +46,14 @@ Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos)
 	});
 }
 
-Swan::Tile::ID DefaultWorldGen::genTile(Swan::TilePos pos)
+Swan::Tile::ID DefaultWorldGen::genTile(
+	Swan::TilePos pos,
+	int grassLevel,
+	int stoneLevel)
 {
-	int grassLevel = getGrassLevel(perlin_, pos.x);
-	int stoneLevel = getStoneLevel(perlin_, pos.x);
-
 	// Caves
 	if (pos.y > grassLevel + 7 && perlin_.noise2D(pos.x / 43.37, pos.y / 16.37) > 0.2) {
 		return tAir_;
-	}
-
-	// Trees
-	if (pos.y == grassLevel - 1) {
-		constexpr int treeProb = 4;
-		bool spawnTree = Swan::random(pos.x) % treeProb == 0;
-		if (spawnTree) {
-			// Avoid trees which are too close
-			for (int rx = 1; rx <= 5; ++rx) {
-				if (Swan::random(pos.x + rx) % treeProb == 0) {
-					spawnTree = false;
-					break;
-				}
-			}
-
-			if (spawnTree) {
-				return tTreeSeeder_;
-			}
-		}
 	}
 
 	if (pos.y > stoneLevel) {
@@ -90,16 +75,56 @@ Swan::Tile::ID DefaultWorldGen::genTile(Swan::TilePos pos)
 
 void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 {
+	Swan::TilePos pos = chunk.pos_ * Swan::TilePos{
+		Swan::CHUNK_WIDTH, Swan::CHUNK_HEIGHT}; 
+
+	constexpr int GEN_WIDTH = SwanCommon::CHUNK_WIDTH + GEN_PADDING * 2;
+	constexpr int GEN_HEIGHT = SwanCommon::CHUNK_HEIGHT + GEN_PADDING * 2;
+
+	int grassLevels[GEN_WIDTH];
+	int stoneLevels[GEN_WIDTH];
+	for (int rx = 0; rx < GEN_WIDTH; ++rx) {
+		int x = (chunk.pos_.x * Swan::CHUNK_WIDTH) - GEN_PADDING + rx;
+		grassLevels[rx] = getGrassLevel(perlin_, x);
+		stoneLevels[rx] = getStoneLevel(perlin_, x);
+	}
+
+	StructureDef::Meta meta = {
+		.grassLevels = grassLevels,
+		.stoneLevels = stoneLevels,
+		.world = *plane.world_,
+	};
+
 	for (int cx = 0; cx < Swan::CHUNK_WIDTH; ++cx) {
-		int tilex = chunk.pos_.x * Swan::CHUNK_WIDTH + cx;
+		int tilex = pos.x + cx;
 
 		for (int cy = 0; cy < Swan::CHUNK_HEIGHT; ++cy) {
-			int tiley = chunk.pos_.y * Swan::CHUNK_HEIGHT + cy;
+			int tiley = pos.y + cy;
 
 			Swan::TilePos pos(tilex, tiley);
 			Swan::ChunkRelPos rel(cx, cy);
-			chunk.setTileData(rel, genTile(pos));
+			chunk.setTileData(rel, genTile(
+				pos,
+				grassLevels[cx + GEN_PADDING],
+				stoneLevels[cx + GEN_PADDING]));
 		}
+	}
+
+	structureMap_.clear();
+	treeDef_.generateArea(
+		meta, pos.add(-GEN_PADDING, -GEN_PADDING),
+		{GEN_WIDTH, GEN_HEIGHT}, structureMap_);
+
+	for (auto &[tpos, tile]: structureMap_) {
+		if (
+				tpos.x < pos.x ||
+				tpos.y < pos.y ||
+				tpos.x > pos.x + Swan::CHUNK_WIDTH ||
+				tpos.y > pos.y + Swan::CHUNK_HEIGHT) {
+			continue;
+		}
+
+		chunk.setTileData(tpos - pos, tile);
 	}
 }
 

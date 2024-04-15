@@ -101,11 +101,6 @@ public:
 			.traits = std::make_shared<TreeLeavesTrait>(),
 		});
 		registerTile({
-			.name = "tree-seeder",
-			.image = "core::tiles/leaves",
-			.onSpawn = spawnTree,
-		});
-		registerTile({
 			.name = "tall-grass",
 			.image = "core::tiles/tall-grass",
 			.isSolid = false,
