@@ -41,6 +41,7 @@ private:
 	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
 		.size = {0.5, 0.5},
 		.mass = 80,
+		.isSolid = false,
 	};
 	static constexpr float DESPAWN_TIME = 5 * 60;
 	static constexpr float BOUNCINESS = 0.6;

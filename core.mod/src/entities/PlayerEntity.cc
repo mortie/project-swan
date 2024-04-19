@@ -164,6 +164,53 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 
 void PlayerEntity::update(const Swan::Context &ctx, float dt)
 {
+	// Collide with stuff
+	for (auto &c: ctx.plane.getCollidingEntities(physicsBody_.body)) {
+		auto *entity = c.ref.get();
+
+		// Pick it up if it's an item stack, and don't collide
+		auto *itemStackEnt = dynamic_cast<ItemStackEntity *>(entity);
+		if (itemStackEnt) {
+			// Don't pick up immediately
+			if (itemStackEnt->lifetime_ < 0.2) {
+				continue;
+			}
+
+			Swan::ItemStack stack{itemStackEnt->item(), 1};
+			stack = inventory_.insert(stack);
+			if (stack.empty()) {
+				ctx.plane.despawnEntity(c.ref);
+				ctx.game.playSound(snapSound_);
+			}
+			continue;
+		}
+
+		if (c.body.isSolid) {
+			physicsBody_.collideWith(c.body);
+		}
+
+		// Get damaged if it's something which deals contact damage
+		auto *damage = entity->trait<Swan::ContactDamageTrait>();
+		bool damaged = false;
+		if (damage && invincibleTimer_ <= 0) {
+			Swan::Vec2 direction;
+			direction.y = -0.5;
+			if (physicsBody_.body.center().x < c.body.center().x) {
+				direction.x = -1;
+			}
+			else {
+				direction.x = 1;
+			}
+
+			physicsBody_.vel += direction * damage->knockback;
+			damaged = true;
+		}
+
+		if (damaged) {
+			invincibleTimer_ = 0.5;
+		}
+	}
+
 	if (interactTimer_ >= 0) {
 		interactTimer_ -= dt;
 	}
@@ -404,53 +451,6 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 	else {
 		stepTimer_ = 0.3;
-	}
-
-	// Collide with stuff
-	for (auto &c: ctx.plane.getCollidingEntities(physicsBody_.body)) {
-		auto *entity = c.ref.get();
-
-		// Pick it up if it's an item stack, and don't collide
-		auto *itemStackEnt = dynamic_cast<ItemStackEntity *>(entity);
-		if (itemStackEnt) {
-			// Don't pick up immediately
-			if (itemStackEnt->lifetime_ < 0.2) {
-				continue;
-			}
-
-			Swan::ItemStack stack{itemStackEnt->item(), 1};
-			stack = inventory_.insert(stack);
-			if (stack.empty()) {
-				ctx.plane.despawnEntity(c.ref);
-				ctx.game.playSound(snapSound_);
-			}
-			continue;
-		}
-
-		if (c.body.isSolid) {
-			physicsBody_.collideWith(c.body);
-		}
-
-		// Get damaged if it's something which deals contact damage
-		auto *damage = entity->trait<Swan::ContactDamageTrait>();
-		bool damaged = false;
-		if (damage && invincibleTimer_ <= 0) {
-			Swan::Vec2 direction;
-			direction.y = -0.5;
-			if (physicsBody_.body.center().x < c.body.center().x) {
-				direction.x = -1;
-			}
-			else {
-				direction.x = 1;
-			}
-
-			physicsBody_.vel += direction * damage->knockback;
-			damaged = true;
-		}
-
-		if (damaged) {
-			invincibleTimer_ = 0.5;
-		}
 	}
 
 	if (inLadder && ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {

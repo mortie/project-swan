@@ -73,7 +73,7 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 		return vel;
 	}
 
-	void collideWith(const BodyTrait::Body &otehr);
+	void collideWith(BodyTrait::Body &otehr);
 	void collideAll(WorldPlane &plane);
 
 	void update(const Context &ctx, float dt);

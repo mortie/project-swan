@@ -4,6 +4,7 @@
 
 #include "WorldPlane.h"
 #include "util.h"
+#include "log.h"
 
 namespace Swan {
 
@@ -77,17 +78,42 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane)
 	}
 }
 
-void BasicPhysicsBody::collideWith(const BodyTrait::Body &other)
+void BasicPhysicsBody::collideWith(BodyTrait::Body &other)
 {
-	auto dist = Swan::max(0.5,
-		std::abs(body.bottom() - other.top()),
-		std::abs(body.top() - other.bottom()),
-		std::abs(body.left() - other.right()),
-		std::abs(body.right() - other.left()));
+	if (body.bottom() < other.top() + 0.2) {
+		float delta = body.bottom() - other.top();
+		body.pos.y -= delta / 2;
+		other.pos.y += delta / 2;
+		if (vel.y > 0.01) {
+			vel.y = 0.01;
+		}
 
-	auto direction = (body.center() - other.center()).norm();
-
-	applyForce(direction * dist * 10000);
+		onGround = true;
+	}
+	else if (body.top() > other.bottom() - 0.2) {
+		float delta = body.top() - other.bottom();
+		body.pos.y -= delta / 2;
+		other.pos.y += delta / 2;
+		if (vel.y < -0.01) {
+			vel.y = -0.01;
+		}
+	}
+	else if (body.right() < other.left() + 0.2) {
+		float delta = body.right() - other.left();
+		body.pos.x -= delta / 2;
+		other.pos.x += delta / 2;
+		if (vel.x > 0.01) {
+			vel.x = 0.01;
+		}
+	}
+	else if (body.left() > other.right() - 0.2) {
+		float delta = body.left() - other.right();
+		body.pos.x -= delta / 2;
+		other.pos.x += delta / 2;
+		if (vel.x < -0.01) {
+			vel.x = -0.01;
+		}
+	}
 }
 
 void BasicPhysicsBody::collideAll(WorldPlane &plane)

@@ -21,9 +21,16 @@ void FallingTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 
 void FallingTileEntity::update(const Swan::Context &ctx, float dt)
 {
+	physicsBody_.collideAll(ctx.plane);
+
 	physicsBody_.standardForces();
 	physicsBody_.update(ctx, dt);
 
+	// Normally, we would check onGround after collideAll
+	// and before update, to treat other entities as ground.
+	// However, here we only want to treat terrain as ground,
+	// so we let physicsBody_.update clear the onGround state
+	// from collideAll first.
 	if (physicsBody_.onGround) {
 		Swan::TilePos pos = {
 			(int)floor(physicsBody_.body.midX()),
@@ -33,6 +40,7 @@ void FallingTileEntity::update(const Swan::Context &ctx, float dt)
 		ctx.plane.despawnEntity(ctx.plane.currentEntity());
 		breakTileAndDropItem(ctx, pos);
 		ctx.plane.placeTile(pos, tile_);
+		return;
 	}
 }
 
