@@ -427,7 +427,9 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 			continue;
 		}
 
-		physicsBody_.collideWith(c.body);
+		if (c.body.isSolid) {
+			physicsBody_.collideWith(c.body);
+		}
 
 		// Get damaged if it's something which deals contact damage
 		auto *damage = entity->trait<Swan::ContactDamageTrait>();

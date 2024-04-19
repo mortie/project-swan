@@ -93,7 +93,9 @@ void BasicPhysicsBody::collideWith(const BodyTrait::Body &other)
 void BasicPhysicsBody::collideAll(WorldPlane &plane)
 {
 	for (auto &c: plane.getCollidingEntities(body)) {
-		collideWith(c.body);
+		if (c.body.isSolid) {
+			collideWith(c.body);
+		}
 	}
 }
 

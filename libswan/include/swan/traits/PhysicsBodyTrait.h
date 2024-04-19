@@ -32,10 +32,11 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 		float mass;
 		float bounciness = 0.6;
 		float mushyness = 2;
+		bool isSolid = true;
 	};
 
 	BasicPhysicsBody(Props props):
-		body({.size = props.size}),
+		body({.size = props.size, .isSolid = props.isSolid}),
 		mass(props.mass),
 		bounciness(props.bounciness),
 		mushyness(props.mushyness)

@@ -10,6 +10,7 @@ struct BodyTrait {
 	struct Body final {
 		Vec2 pos{};
 		Vec2 size{};
+		bool isSolid;
 
 		// The chunkPos is managed by the engine (notably, EntityCollection)
 		ChunkPos chunkPos{};
