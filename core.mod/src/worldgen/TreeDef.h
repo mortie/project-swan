@@ -8,13 +8,22 @@ namespace CoreMod {
 
 class TreeDef final: public StructureDef {
 public:
-	TreeDef(uint32_t seed): seed_(seed) {}
+	TreeDef(Swan::World &world, uint32_t seed):
+		tGrass_(world.getTileID("core::grass")),
+		tTreeTrunk_(world.getTileID("core::tree-trunk")),
+		tTreeLeaves_(world.getTileID("core::tree-leaves")),
+		seed_(seed)
+	{}
 
-	void generateArea(
-		const Meta &meta, Swan::TilePos pos, Swan::Vec2i size,
-		std::unordered_map<Swan::TilePos, Swan::Tile::ID> &map) override;
+	void generateArea(Area &area) override;
 
 private:
+	Swan::Tile::ID tGrass_;
+	Swan::Tile::ID tTreeTrunk_;
+	Swan::Tile::ID tTreeLeaves_;
+
+	void spawnTree(Swan::TilePos base, Area &area);
+
 	uint32_t seed_;
 };
 

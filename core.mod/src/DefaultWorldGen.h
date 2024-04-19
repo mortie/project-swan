@@ -15,7 +15,8 @@ public:
 		tStone_(world.getTileID("core::stone")),
 		tTallGrass_(world.getTileID("core::tall-grass")),
 		tAir_(world.getTileID("@::air")),
-		bgCave_(world.getSprite("core::misc/background-cave"))
+		bgCave_(world.getSprite("core::misc/background-cave")),
+		treeDef_(world, seed_)
 	{}
 
 	void drawBackground(
@@ -33,9 +34,7 @@ private:
 	Cygnet::RenderSprite bgCave_;
 	siv::PerlinNoise perlin_{seed_};
 
-	TreeDef treeDef_{seed_};
-
-	std::unordered_map<Swan::TilePos, Swan::Tile::ID> structureMap_;
+	TreeDef treeDef_;
 };
 
 }

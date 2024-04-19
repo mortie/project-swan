@@ -1,21 +1,34 @@
 #pragma once
 
 #include <swan/swan.h>
-#include <unordered_map>
+#include <span>
 
 namespace CoreMod {
 
 class StructureDef {
 public:
-	struct Meta {
-		std::span<int> grassLevels;
-		std::span<int> stoneLevels;
-		Swan::World &world;
+	struct Area {
+		Swan::TilePos begin;
+		Swan::Vec2i end;
+		Swan::Tile::ID **rows;
+
+		Swan::Tile::ID &operator()(Swan::TilePos tp)
+		{
+			if (
+					tp.x < begin.x || tp.y < begin.y ||
+					tp.x >= end.x || tp.y >= end.y) {
+				dummy = Swan::World::AIR_TILE_ID;
+				return dummy;
+			}
+
+			return rows[tp.y - begin.y][tp.x - begin.x];
+		}
+
+	private:
+		Swan::Tile::ID dummy;
 	};
 
-	virtual void generateArea(
-		const Meta &meta, Swan::TilePos pos, Swan::Vec2i size,
-		std::unordered_map<Swan::TilePos, Swan::Tile::ID> &map) = 0;
+	virtual void generateArea(Area &area) = 0;
 };
 
 }

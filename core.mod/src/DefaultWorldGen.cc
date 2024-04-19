@@ -52,8 +52,10 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 	int stoneLevel)
 {
 	// Caves
-	if (pos.y > grassLevel + 7 && perlin_.noise2D(pos.x / 43.37, pos.y / 16.37) > 0.2) {
-		return tAir_;
+	if (
+			pos.y > grassLevel + 7 &&
+			perlin_.noise2D(pos.x / 43.37, pos.y / 16.37) > 0.2) {
+		return Swan::World::AIR_TILE_ID;
 	}
 
 	if (pos.y > stoneLevel) {
@@ -75,56 +77,40 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 
 void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 {
-	Swan::TilePos pos = chunk.pos_ * Swan::TilePos{
-		Swan::CHUNK_WIDTH, Swan::CHUNK_HEIGHT}; 
+	Swan::TilePos chunkTilePos = chunk.pos_ *
+		Swan::TilePos{Swan::CHUNK_WIDTH, Swan::CHUNK_HEIGHT};
 
 	constexpr int GEN_WIDTH = SwanCommon::CHUNK_WIDTH + GEN_PADDING * 2;
 	constexpr int GEN_HEIGHT = SwanCommon::CHUNK_HEIGHT + GEN_PADDING * 2;
 
-	int grassLevels[GEN_WIDTH];
-	int stoneLevels[GEN_WIDTH];
-	for (int rx = 0; rx < GEN_WIDTH; ++rx) {
-		int x = (chunk.pos_.x * Swan::CHUNK_WIDTH) - GEN_PADDING + rx;
-		grassLevels[rx] = getGrassLevel(perlin_, x);
-		stoneLevels[rx] = getStoneLevel(perlin_, x);
+	StructureDef::Area area;
+	area.begin = chunkTilePos.add(-GEN_PADDING, -GEN_PADDING);
+	area.end = area.begin.add(GEN_WIDTH, GEN_HEIGHT);
+
+	Swan::Tile::ID *rows[GEN_HEIGHT];
+	area.rows = rows;
+
+	Swan::Tile::ID buffer[GEN_WIDTH * GEN_HEIGHT];
+	for (int ry = 0; ry < GEN_HEIGHT; ++ry) {
+		rows[ry] = &buffer[ry * GEN_WIDTH];
 	}
 
-	StructureDef::Meta meta = {
-		.grassLevels = grassLevels,
-		.stoneLevels = stoneLevels,
-		.world = *plane.world_,
-	};
-
-	for (int cx = 0; cx < Swan::CHUNK_WIDTH; ++cx) {
-		int tilex = pos.x + cx;
-
-		for (int cy = 0; cy < Swan::CHUNK_HEIGHT; ++cy) {
-			int tiley = pos.y + cy;
-
-			Swan::TilePos pos(tilex, tiley);
-			Swan::ChunkRelPos rel(cx, cy);
-			chunk.setTileData(rel, genTile(
-				pos,
-				grassLevels[cx + GEN_PADDING],
-				stoneLevels[cx + GEN_PADDING]));
+	for (int x = area.begin.x; x <= area.end.x; ++x) {
+		int grassLevel = getGrassLevel(perlin_, x);
+		int stoneLevel = getStoneLevel(perlin_, x);
+		for (int y = area.begin.y; y <= area.end.y; ++y) {
+			area({x, y}) = genTile({x, y}, grassLevel, stoneLevel);
 		}
 	}
 
-	structureMap_.clear();
-	treeDef_.generateArea(
-		meta, pos.add(-GEN_PADDING, -GEN_PADDING),
-		{GEN_WIDTH, GEN_HEIGHT}, structureMap_);
+	treeDef_.generateArea(area);
 
-	for (auto &[tpos, tile]: structureMap_) {
-		if (
-				tpos.x < pos.x ||
-				tpos.y < pos.y ||
-				tpos.x >= pos.x + Swan::CHUNK_WIDTH ||
-				tpos.y >= pos.y + Swan::CHUNK_HEIGHT) {
-			continue;
-		}
-
-		chunk.setTileData(tpos - pos, tile);
+	for (int cy = 0; cy < Swan::CHUNK_HEIGHT; ++cy) {
+		Swan::Tile::ID *crow = &chunk.getTileData()[cy * Swan::CHUNK_WIDTH];
+		Swan::Tile::ID *arow = &buffer[(cy + GEN_PADDING) * GEN_WIDTH];
+		memcpy(
+			crow, &arow[GEN_PADDING],
+			Swan::CHUNK_WIDTH * sizeof(Swan::Tile::ID));
 	}
 }
 

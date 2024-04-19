@@ -57,6 +57,11 @@ public:
 
 	Tile &getTileByID(Tile::ID id)
 	{
+		if (id >= tiles_.size()) {
+			warn << "Invalid ID: " << id;
+			return tiles_[INVALID_TILE_ID];
+		}
+
 		return tiles_[id];
 	}
 
