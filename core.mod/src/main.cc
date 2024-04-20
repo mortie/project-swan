@@ -77,8 +77,8 @@ public:
 			.isSolid = false,
 			.isSupportV = true,
 			.droppedItem = "core::wood-pole",
-			.onTileUpdate = breakIfFloating,
 			.onSpawn = denyIfFloating,
+			.onTileUpdate = breakIfFloating,
 		});
 		registerTile({
 			.name = "tree-trunk",
@@ -87,8 +87,8 @@ public:
 			.isSupportV = true,
 			.isSupportH = true,
 			.droppedItem = "core::tree-trunk",
-			.onTileUpdate = breakIfFloating,
 			.onSpawn = denyIfFloating,
+			.onTileUpdate = breakIfFloating,
 			.traits = std::make_shared<TreeTrunkTrait>(),
 		});
 		registerTile({
