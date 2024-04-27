@@ -444,13 +444,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		}
 	}
 	else if (state_ == State::LANDING && oldState != State::LANDING) {
-		auto *sound = belowTile.stepSounds[stepIndex_];
+		auto *sound = belowTile.stepSounds[1];
+		stepIndex_ = 0;
 		ctx.game.playSound(sound);
-		stepIndex_ = (stepIndex_ + 1) % 2;
 		stepTimer_ = 0.2;
 	}
 	else {
-		stepTimer_ = 0.3;
+		stepTimer_ = 0.15;
 	}
 
 	if (inLadder && ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
