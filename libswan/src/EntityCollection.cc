@@ -4,22 +4,20 @@
 
 namespace Swan {
 
-void EntityRef::serialize(MsgStream::Serializer &w)
+void EntityRef::serialize(nbon::Writer w)
 {
-	auto arr = w.beginArray(2);
-
-	arr.writeString(coll_->name());
-	arr.writeUInt(id_);
-	w.endArray(arr);
+	w.writeArray([&](nbon::Writer w) {
+		w.writeString(coll_->name());
+		w.writeUInt(id_);
+	});
 }
 
-void EntityRef::deserialize(const Context &ctx, MsgStream::Parser &r)
+void EntityRef::deserialize(const Context &ctx, nbon::Reader r)
 {
-	auto arr = r.nextArray();
-
-	coll_ = &ctx.plane.getCollectionOf(arr.nextString());
-	id_ = arr.nextUInt();
-	arr.skipAll();
+	r.getArray([&](nbon::ArrayReader r) {
+		coll_ = &ctx.plane.getCollectionOf(r.next().getString());
+		id_ = r.next().getUInt();
+	});
 }
 
 }

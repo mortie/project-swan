@@ -3,8 +3,6 @@
 #include <cmath>
 
 #include "WorldPlane.h"
-#include "util.h"
-#include "log.h"
 
 namespace Swan {
 
@@ -153,25 +151,25 @@ void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 	collideX(*this, ctx.plane);
 }
 
-void BasicPhysicsBody::serialize(MsgStream::Serializer &w)
+void BasicPhysicsBody::serialize(nbon::Writer w)
 {
-	auto arr = w.beginArray(4);
-
-	arr.writeFloat32(body.pos.x);
-	arr.writeFloat32(body.pos.y);
-	arr.writeFloat32(vel.x);
-	arr.writeFloat32(vel.y);
-	w.endArray(arr);
+	w.writeArray([&](nbon::Writer w) {
+		w.writeFloat(body.pos.x);
+		w.writeFloat(body.pos.y);
+		w.writeFloat(vel.x);
+		w.writeFloat(vel.y);
+	});
 }
 
-void BasicPhysicsBody::deserialize(MsgStream::Parser &r)
+void BasicPhysicsBody::deserialize(nbon::Reader r)
 {
-	auto arr = r.nextArray();
+	r.getArray([&](nbon::ArrayReader r) {
+		body.pos.x = r.next().getFloat();
+		body.pos.y = r.next().getFloat();
+		vel.x = r.next().getFloat();
+		vel.y = r.next().getFloat();
+	});
 
-	body.pos.x = arr.nextFloat32();
-	body.pos.y = arr.nextFloat32();
-	vel.x = arr.nextFloat32();
-	vel.y = arr.nextFloat32();
 	onGround = false;
 }
 

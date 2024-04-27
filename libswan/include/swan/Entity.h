@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <msgstream/msgstream.h>
+#include <nbon.h>
 
 #include "common.h"
 #include "util.h"
@@ -17,7 +17,7 @@ public:
 	struct Factory {
 		const std::string name;
 		std::unique_ptr<Entity> (*create)(
-			const Context &ctx, MsgStream::MapParser &parser);
+			const Context &ctx, nbon::ObjectReader r);
 	};
 
 	Entity() = default;
@@ -36,9 +36,9 @@ public:
 	virtual void onDespawn(const Context &ctx)
 	{}
 
-	virtual void serialize(const Swan::Context &ctx, MsgStream::MapBuilder &w)
+	virtual void serialize(const Swan::Context &ctx, nbon::ObjectWriter w)
 	{}
-	virtual void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r)
+	virtual void deserialize(const Swan::Context &ctx, nbon::ObjectReader r)
 	{}
 
 	template<typename T>

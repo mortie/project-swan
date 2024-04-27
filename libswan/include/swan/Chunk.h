@@ -7,7 +7,7 @@
 #include <unordered_set>
 #include <cygnet/Renderer.h>
 #include <assert.h>
-#include <msgstream/msgstream.h>
+#include <nbon.h>
 
 #include "common.h"
 #include "Tile.h"
@@ -18,6 +18,7 @@ namespace Swan {
 class World;
 class WorldPlane;
 class Game;
+class EntityCollection;
 
 class Chunk {
 public:
@@ -120,10 +121,14 @@ public:
 		return isModified_;
 	}
 
-	void serialize(MsgStream::Serializer &w);
-	void deserialize(MsgStream::Parser &r, std::span<Tile::ID> tileMap);
+	ChunkPos pos() const
+	{
+		return pos_;
+	}
 
-	const ChunkPos pos_;
+	void serialize(nbon::Writer w);
+	void deserialize(nbon::Reader r, std::span<Tile::ID> tileMap);
+
 	std::unordered_set<EntityRef> entities_;
 
 private:
@@ -144,6 +149,8 @@ private:
 	float deactivateTimer_ = DEACTIVATE_INTERVAL;
 	bool isModified_ = false;
 	bool isRendered_ = false;
+
+	ChunkPos pos_;
 };
 
 }

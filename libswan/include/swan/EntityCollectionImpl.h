@@ -39,7 +39,7 @@ public:
 	EntityRef spawn(const Context &ctx, Args && ... args);
 
 	EntityRef spawn(const Context &ctx) override;
-	EntityRef spawn(const Context &ctx, MsgStream::MapParser &r) override;
+	EntityRef spawn(const Context &ctx, nbon::ObjectReader r) override;
 
 	size_t size() override
 	{
@@ -64,8 +64,8 @@ public:
 	void draw(const Context &ctx, Cygnet::Renderer &rnd) override;
 	void erase(const Context &ctx, uint64_t id) override;
 
-	void serialize(const Context &ctx, MsgStream::Serializer &w) override;
-	void deserialize(const Context &ctx, MsgStream::Parser &r) override;
+	void serialize(const Context &ctx, nbon::Writer w) override;
+	void deserialize(const Context &ctx, nbon::Reader r) override;
 
 	const std::string name_;
 	uint64_t nextId_ = 0;
@@ -193,14 +193,14 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx)
 
 template<typename Ent>
 inline EntityRef EntityCollectionImpl<Ent>::spawn(
-	const Context &ctx, MsgStream::MapParser &r)
+	const Context &ctx, nbon::ObjectReader r)
 {
 	auto ent = spawn(ctx);
 
 	try {
 		ent->deserialize(ctx, r);
 	} catch (std::exception &ex) {
-		warn << "Failed to spawn " << name_ << " from MsgStream: " << ex.what();
+		warn << "Failed to spawn " << name_ << " from NBON: " << ex.what();
 		erase(ctx, ent);
 		return {};
 	}
@@ -331,96 +331,79 @@ inline void EntityCollectionImpl<Ent>::erase(const Context &ctx, uint64_t id)
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::serialize(
-	const Context &ctx, MsgStream::Serializer &w)
+	const Context &ctx, nbon::Writer w)
 {
-	MsgStream::Serializer arr = w.beginArray(entities_.size() + 1);
-
-	arr.writeUInt(nextId_);
-
-	MsgStream::MapBuilder mb;
-	for (auto &wrapper: entities_) {
-		try {
-			mb.clear();
-
-			mb.writeString("$id");
-			mb.writeUInt(wrapper.id);
-			wrapper.ent.serialize(ctx, mb);
-			arr.writeMap(mb);
-		} catch (std::exception &ex) {
-			warn << "Failed to serialize " << name_ << " entity: " << ex.what();
-			arr.writeNil();
-		}
-	}
-
-	w.endArray(arr);
+	w.writeObject([&](nbon::ObjectWriter w) {
+		w.key("next").writeUInt(nextId_);
+		w.key("entities").writeArray([&](nbon::Writer w) {
+			for (auto &wrapper: entities_) {
+				try {
+					w.writeObject([&](nbon::ObjectWriter w) {
+						w.key("$id").writeUInt(wrapper.id);
+						wrapper.ent.serialize(ctx, w);
+					});
+				} catch (std::exception &ex) {
+					warn << "Failed to serialize " << name_ << " entity: " << ex.what();
+				}
+			}
+		});
+	});
 }
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::deserialize(
-	const Context &ctx, MsgStream::Parser &r)
+	const Context &ctx, nbon::Reader r)
 {
 	entities_.clear();
 	idToIndex_.clear();
 	nextId_ = 0;
 	hasTicked_ = false;
 
-	if (r.nextType() != MsgStream::Type::ARRAY) {
-		warn << "Failed to deserialize " << name_ << " entities: value not array";
-		r.skipNext();
-		return;
-	}
-
-	MsgStream::ArrayParser arr = r.nextArray();
-
-	nextId_ = arr.nextUInt();
-
-	entities_.reserve(arr.arraySize());
-	std::string key;
-	while (arr.hasNext()) {
-		MsgStream::Type nextType = arr.nextType();
-		if (nextType == MsgStream::Type::NIL) {
-			warn << "Missing entity while deserializing " << name_;
-			arr.skipNil();
-			continue;
-		}
-		else if (nextType != MsgStream::Type::MAP) {
-			warn << "Non-map array value while deserializing " << name_;
-			arr.skipNext();
-			continue;
-		}
-
+	auto deserializeEntity = [&](nbon::ObjectReader r) {
 		std::optional<uint64_t> id;
-		MsgStream::MapParser mr = arr.nextMap();
-		while (mr.hasNext()) {
-			mr.nextString(key);
+		std::string key;
+		while (true) {
+			auto val = r.next(key);
 			if (key == "$id") {
-				id = mr.nextUInt();
+				id = val.getUInt();
 				break;
-			}
-			else {
+			} else {
 				warn
-					<< "Skipped unknown key '" << key
+					<< "Skipping unknown key '" << key
 					<< "' while deserializing " << name_;
-				mr.skipNext();
 			}
 		}
 
 		if (!id) {
 			warn << "Failed to deserialize " << name_ << " entity: Missing $id";
-			continue;
+			return;
 		}
 
 		size_t index = entities_.size();
 		auto &w = entities_.emplace_back(ctx);
 		w.id = id.value();
 		try {
-			w.ent.deserialize(ctx, mr);
+			w.ent.deserialize(ctx, r);
 			idToIndex_[id.value()] = index;
 		} catch (std::exception &ex) {
 			warn << "Failed to deserialize " << name_ << " entity: " << ex.what();
 			entities_.pop_back();
 		}
-	}
+	};
+
+	r.readObject([&](std::string &key, nbon::Reader val) {
+		if (key == "next") {
+			nextId_ = val.getUInt();
+		}
+		else if (key == "entities") {
+			val.readArray([&](nbon::Reader val) {
+				val.getObject(deserializeEntity);
+			});
+		}
+		else {
+			val.skip();
+		}
+	});
 }
 
 }

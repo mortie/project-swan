@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 	std::vector<std::string> mods{"core.mod"};
 
 	// Load or create world
-	std::ifstream worldFile("world.mp");
+	std::ifstream worldFile("world.nb");
 	if (worldFile) {
 		game.loadWorld(worldFile, mods);
 	}

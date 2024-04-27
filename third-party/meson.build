@@ -27,8 +27,8 @@ libimgui = declare_dependency(
   ),
 )
 
-libmsgstream = declare_dependency(
-  include_directories: '.',
+libnbon = declare_dependency(
+  include_directories: 'nbon/cpp/include',
 )
 
 libperlinnoise = declare_dependency(

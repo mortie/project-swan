@@ -33,7 +33,7 @@ Context WorldPlane::getContext()
 	};
 }
 
-EntityRef WorldPlane::spawnEntity(const std::string &name, MsgStream::MapParser &r)
+EntityRef WorldPlane::spawnEntity(const std::string &name, nbon::ObjectReader r)
 {
 	return entCollsByName_.at(name)->spawn(getContext(), r);
 }
@@ -444,7 +444,7 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 
 				if (ctx.game.debugDrawChunkBoundaries_) {
 					Vec2i size = {CHUNK_WIDTH, CHUNK_HEIGHT};
-					rnd.drawRect({chunk.pos_ * size, size, {0.7, 0.1, 0.2, 1}});
+					rnd.drawRect({chunk.pos() * size, size, {0.7, 0.1, 0.2, 1}});
 				}
 			}
 		}
@@ -528,8 +528,8 @@ void WorldPlane::tick(float dt)
 
 		switch (action) {
 		case Chunk::TickAction::DEACTIVATE:
-			info << "Compressing inactive modified chunk " << chunk->pos_;
-			lighting_->onChunkRemoved(chunk->pos_);
+			info << "Compressing inactive modified chunk " << chunk->pos();
+			lighting_->onChunkRemoved(chunk->pos());
 			chunk->destroyTextures(world_->game_->renderer_);
 			chunk->compress();
 			activeChunks_[activeChunkIndex] = activeChunks_.back();
@@ -537,10 +537,10 @@ void WorldPlane::tick(float dt)
 			break;
 
 		case Chunk::TickAction::DELETE:
-			info << "Deleting inactive unmodified chunk " << chunk->pos_;
-			lighting_->onChunkRemoved(chunk->pos_);
+			info << "Deleting inactive unmodified chunk " << chunk->pos();
+			lighting_->onChunkRemoved(chunk->pos());
 			chunk->destroyTextures(world_->game_->renderer_);
-			chunks_.erase(chunk->pos_);
+			chunks_.erase(chunk->pos());
 			activeChunks_[activeChunkIndex] = activeChunks_.back();
 			activeChunks_.pop_back();
 			break;
@@ -596,133 +596,108 @@ void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos)
 	realChunk.setLightData(chunk.lightLevels);
 }
 
-void WorldPlane::serialize(MsgStream::Serializer &w)
+void WorldPlane::serialize(nbon::Writer w)
 {
 	auto ctx = getContext();
-	auto map = w.beginMap(3);
 
-	map.writeString("entity-collections");
-	auto colls = map.beginMap(entColls_.size());
-	for (auto &coll: entColls_) {
-		colls.writeString(coll->name());
-		coll->serialize(ctx, colls);
-	}
-	map.endMap(colls);
+	w.writeObject([&](nbon::ObjectWriter w) {
+		w.key("entity-collections").writeObject([&](nbon::ObjectWriter w) {
+			for (auto &coll: entColls_) {
+				coll->serialize(ctx, w.key(coll->name().c_str()));
+			}
+		});
 
-	size_t chunkCount = 0;
-	for (auto &[_, chunk]: chunks_) {
-		if (chunk.isModified()) {
-			chunkCount += 1;
-		}
-	}
+		w.key("chunks").writeArray([&](nbon::Writer w) {
+			for (auto &[pos, chunk]: chunks_) {
+				if (!chunk.isModified()) {
+					continue;
+				}
 
-	map.writeString("chunks");
-	auto chunks = map.beginArray(chunkCount);
-	for (auto &[pos, chunk]: chunks_) {
-		if (!chunk.isModified()) {
-			continue;
-		}
+				chunk.serialize(w);
+			}
+		});
 
-		auto chunkArr = chunks.beginArray(3);
-		chunkArr.writeInt(pos.x);
-		chunkArr.writeInt(pos.y);
-		chunk.serialize(chunkArr);
-		chunks.endArray(chunkArr);
-	}
-	map.endMap(chunks);
-
-	map.writeString("tile-entities");
-	auto tileEnts = map.beginArray(tileEntities_.size());
-	for (auto &[pos, ref]: tileEntities_) {
-		auto entArr = tileEnts.beginArray(3);
-		entArr.writeInt(pos.x);
-		entArr.writeInt(pos.y);
-		ref.serialize(entArr);
-		tileEnts.endArray(entArr);
-	}
-	map.endArray(tileEnts);
-
-	w.endMap(map);
+		w.key("tile-entities").writeArray([&](nbon::Writer w) {
+			for (auto &[pos, ref]: tileEntities_) {
+				w.writeObject([&](nbon::ObjectWriter w) {
+					w.key("x").writeInt(pos.x);
+					w.key("y").writeInt(pos.y);
+					ref.serialize(w.key("ref"));
+				});
+			}
+		});
+	});
 }
 
-void WorldPlane::deserialize(MsgStream::Parser &r, std::span<Tile::ID> tileMap)
+void WorldPlane::deserialize(nbon::Reader r, std::span<Tile::ID> tileMap)
 {
 	auto ctx = getContext();
-	auto map = r.nextMap();
 
-	std::string key;
-
-	while (map.nextKey(key)) {
+	r.readObject([&](std::string &key, nbon::Reader val) {
 		if (key == "entity-collections") {
-			auto colls = map.nextMap();
-			while (colls.nextKey(key)) {
+			val.readObject([&](std::string &key, nbon::Reader val) {
 				auto it = entCollsByName_.find(key);
 				if (it == entCollsByName_.end()) {
 					warn << "Deserialize unknown entity collection: " << key;
-					map.skipNext();
-					continue;
+					val.skip();
+					return;
 				}
 
-				it->second->deserialize(ctx, colls);
-			}
+				it->second->deserialize(ctx, val);
+			});
 		}
 		else if (key == "chunks") {
-			auto chunks = map.nextArray();
 			chunks_.clear();
 			activeChunks_.clear();
 			chunkInitList_.clear();
+			val.readArray([&](nbon::Reader r) {
+				Chunk tempChunk({0, 0});
+				tempChunk.deserialize(r, tileMap);
+				auto [it, _] = chunks_.emplace(
+					tempChunk.pos(), std::move(tempChunk));
+				auto &chunk = it->second;
 
-			while (chunks.hasNext()) {
-				auto chunkArr = chunks.nextArray();
-
-				int x = chunkArr.nextInt();
-				int y = chunkArr.nextInt();
-				ChunkPos pos{x, y};
-
-				auto it = chunks_.emplace(pos, Chunk(pos)).first;
-				Chunk &chunk = it->second;
-
-				chunk.deserialize(chunkArr, tileMap);
 				if (chunk.isActive()) {
-					lighting_->onChunkAdded(pos, computeLightChunk(chunk));
+					lighting_->onChunkAdded(chunk.pos(), computeLightChunk(chunk));
 					activeChunks_.push_back(&chunk);
 				}
-
-				chunkArr.skipAll();
-			}
+			});
 		}
 		else if (key == "tile-entities") {
-			auto tileEnts = map.nextArray();
-			while (tileEnts.hasNext()) {
-				auto entArr = tileEnts.nextArray();
+			val.readArray([&](nbon::Reader val) {
 				TilePos pos;
-				pos.x = entArr.nextInt();
-				pos.y = entArr.nextInt();
 				EntityRef ref;
-				ref.deserialize(ctx, entArr);
-				entArr.skipAll();
+				val.readObject([&](std::string &key, nbon::Reader val) {
+					if (key == "x") {
+						pos.x = val.getInt();
+					}
+					else if (key == "y") {
+						pos.y = val.getInt();
+					}
+					else if (key == "ref") {
+						ref.deserialize(ctx, val);
+					}
+					else {
+						val.skip();
+					}
+				});
 
 				if (!ref) {
 					warn << "Reference to non-existent entity in " << pos;
-					continue;
+					return;
 				}
 
-				auto tileEnt = ref.trait<TileEntityTrait>();
-				if (!tileEnt) {
-					warn
-						<< "Tile entity reference to entity which "
-						<< "doesn't implement TileEntityTrait in " << pos;
-					continue;
-				}
+				ref.traitThen<TileEntityTrait>([&](TileEntityTrait::TileEntity &ent) {
+					ent.pos = pos;
+				});
 
-				tileEnt->pos = pos;
 				tileEntities_[pos] = ref;
-			}
+			});
 		}
 		else {
-			map.skipNext();
+			val.skip();
 		}
-	}
+	});
 }
 
 NewLightChunk WorldPlane::computeLightChunk(const Chunk &chunk)

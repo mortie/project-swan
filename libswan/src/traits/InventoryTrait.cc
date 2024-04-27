@@ -1,5 +1,4 @@
 #include "traits/InventoryTrait.h"
-#include "log.h"
 #include "Item.h"
 #include "World.h"
 
@@ -49,45 +48,38 @@ ItemStack BasicInventory::insert(ItemStack stack)
 	return stack;
 }
 
-void BasicInventory::serialize(MsgStream::Serializer &w)
+void BasicInventory::serialize(nbon::Writer w)
 {
-	auto arr = w.beginArray(content.size());
-
-	for (auto &stack: content) {
-		if (stack.empty()) {
-			arr.writeNil();
+	w.writeArray([&](nbon::Writer w) {
+		for (auto &stack: content) {
+			if (stack.empty()) {
+				w.writeNull();
+			}
+			else {
+				w.writeArray([&](nbon::Writer w) {
+					w.writeString(stack.item()->name);
+					w.writeUInt(stack.count());
+				});
+			}
 		}
-		else {
-			auto stackArr = arr.beginArray(2);
-			stackArr.writeString(stack.item()->name);
-			stackArr.writeUInt(stack.count());
-			arr.endArray(stackArr);
-		}
-	}
-
-	w.endArray(arr);
+	});
 }
 
-void BasicInventory::deserialize(const Swan::Context &ctx, MsgStream::Parser &r)
+void BasicInventory::deserialize(const Swan::Context &ctx, nbon::Reader r)
 {
-	auto arr = r.nextArray();
-
 	content.clear();
-	content.reserve(arr.arraySize());
-	while (arr.hasNext()) {
-		auto nextType = arr.nextType();
-		if (nextType == MsgStream::Type::NIL) {
-			arr.skipNil();
+	r.readArray([&](nbon::Reader r) {
+		if (r.getType() == nbon::Type::NIL) {
+			r.getNil();
 			content.emplace_back();
+		} else {
+			r.getArray([&](nbon::ArrayReader r) {
+				auto name = r.next().getString();
+				auto count = r.next().getUInt();
+				content.emplace_back(&ctx.world.getItem(name), count);
+			});
 		}
-		else {
-			auto stackArr = arr.nextArray();
-			std::string itemName = stackArr.nextString();
-			int count = (int)stackArr.nextInt();
-			stackArr.skipAll();
-			content.emplace_back(&ctx.world.getItem(itemName), (int)count);
-		}
-	}
+	});
 }
 
 }

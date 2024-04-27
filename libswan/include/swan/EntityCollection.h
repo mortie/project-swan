@@ -4,7 +4,7 @@
 #include <typeindex>
 #include <functional>
 #include <stdint.h>
-#include <msgstream/msgstream.h>
+#include <nbon.h>
 
 #include "common.h"
 #include "Entity.h"
@@ -75,8 +75,8 @@ public:
 		return coll_;
 	}
 
-	void serialize(MsgStream::Serializer &w);
-	void deserialize(const Context &ctx, MsgStream::Parser &r);
+	void serialize(nbon::Writer w);
+	void deserialize(const Context &ctx, nbon::Reader r);
 
 private:
 	EntityCollection *coll_;
@@ -108,14 +108,14 @@ public:
 	virtual BodyTrait::Body *getBody(uint64_t id) = 0;
 
 	virtual EntityRef spawn(const Context &ctx) = 0;
-	virtual EntityRef spawn(const Context &ctx, MsgStream::MapParser &r) = 0;
+	virtual EntityRef spawn(const Context &ctx, nbon::ObjectReader r) = 0;
 	virtual void update(const Context &ctx, float dt) = 0;
 	virtual void tick(const Context &ctx, float dt) = 0;
 	virtual void draw(const Context &ctx, Cygnet::Renderer &rnd) = 0;
 	virtual void erase(const Context &ctx, uint64_t id) = 0;
 
-	virtual void serialize(const Context &ctx, MsgStream::Serializer &w) = 0;
-	virtual void deserialize(const Context &ctx, MsgStream::Parser &r) = 0;
+	virtual void serialize(const Context &ctx, nbon::Writer w) = 0;
+	virtual void deserialize(const Context &ctx, nbon::Reader r) = 0;
 
 protected:
 	uint64_t currentId_;

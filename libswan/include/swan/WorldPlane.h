@@ -9,7 +9,6 @@
 #include <typeindex>
 #include <mutex>
 #include <functional>
-#include <msgstream/msgstream.h>
 
 #include "common.h"
 #include "traits/BodyTrait.h"
@@ -41,7 +40,7 @@ public:
 
 	Context getContext();
 
-	EntityRef spawnEntity(const std::string &name, MsgStream::MapParser &r);
+	EntityRef spawnEntity(const std::string &name, nbon::ObjectReader r);
 
 	template<typename Ent, typename ... Args>
 	EntityRef spawnEntity(Args && ... args);
@@ -89,8 +88,8 @@ public:
 	// LightingCallback implementation
 	void onLightChunkUpdated(const LightChunk &chunk, Vec2i pos) final;
 
-	void serialize(MsgStream::Serializer &w);
-	void deserialize(MsgStream::Parser &r, std::span<Tile::ID> tileMap);
+	void serialize(nbon::Writer w);
+	void deserialize(nbon::Reader r, std::span<Tile::ID> tileMap);
 
 	void scheduleTileUpdate(TilePos pos)
 	{

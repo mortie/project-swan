@@ -35,8 +35,8 @@ void Game::loadWorld(
 		mod.mod_->start(*world_);
 	}
 
-	MsgStream::Parser parser(is);
-	world_->deserialize(parser);
+	nbon::Reader r(&is);
+	world_->deserialize(r);
 }
 
 Vec2 Game::getMousePos()
@@ -195,18 +195,18 @@ void Game::tick(float dt)
 
 void Game::save()
 {
-	std::fstream f("world.mp.new", std::ios_base::out);
+	std::fstream f("world.nb.new", std::ios_base::out);
 
 	if (f) {
-		info << "Serializing to world.mp.new...";
-		MsgStream::Serializer w(f);
+		info << "Serializing to world.nb.new...";
+		nbon::Writer w(&f);
 		world_->serialize(w);
-		info << "Renaming to world.mp...";
-		std::filesystem::rename("world.mp.new", "world.mp");
+		info << "Renaming to world.nb...";
+		std::filesystem::rename("world.nb.new", "world.nb");
 		info << "Done.";
 	}
 	else {
-		warn << "Failed to open world.mp.new!";
+		warn << "Failed to open world.nb.new!";
 	}
 }
 

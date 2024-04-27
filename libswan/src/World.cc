@@ -509,92 +509,73 @@ void World::tick(float dt)
 		ChunkPos((int)player_->pos.x / CHUNK_WIDTH, (int)player_->pos.y / CHUNK_HEIGHT));
 }
 
-void World::serialize(MsgStream::Serializer &w)
+void World::serialize(nbon::Writer w)
 {
-	auto map = w.beginMap(3);
+	w.writeObject([&](nbon::ObjectWriter w) {
+		w.key("tiles").writeArray([&](nbon::Writer w) {
+			for (auto &tile: tiles_) {
+				w.writeString(tile.name);
+			}
+		});
 
-	map.writeString("tiles");
-	auto tiles = map.beginArray(tiles_.size());
-	for (auto &tile: tiles_) {
-		tiles.writeString(tile.name);
-	}
-	map.endArray(tiles);
+		w.key("planes").writeArray([&](nbon::Writer w) {
+			for (auto &plane: planes_) {
+				w.writeObject([&](nbon::ObjectWriter w) {
+					w.key("world-gen").writeString(plane.worldGen);
+					plane.plane->serialize(w.key("plane"));
+				});
+			}
+		});
 
-	map.writeString("planes");
-	auto planes = map.beginArray(planes_.size());
-	for (auto &plane: planes_) {
-		auto planeMap = planes.beginMap(2);
-		planeMap.writeString("world-gen");
-		planeMap.writeString(plane.worldGen);
-		planeMap.writeString("plane");
-		plane.plane->serialize(planeMap);
-		planes.endMap(planeMap);
-	}
-	map.endArray(planes);
-
-	map.writeString("player");
-	playerRef_.serialize(map);
-
-	w.endMap(map);
+		playerRef_.serialize(w.key("player"));
+	});
 }
 
-void World::deserialize(MsgStream::Parser &r)
+void World::deserialize(nbon::Reader r)
 {
 	std::vector<Tile::ID> tileMap;
 
-	auto deserializePlane = [&](MsgStream::MapParser r) {
+	auto deserializePlane = [&](nbon::ObjectReader r) {
 		WorldPlane *plane = nullptr;
 
-		std::string key;
-		while (r.nextKey(key)) {
+		r.all([&](std::string &key, nbon::Reader val) {
 			if (key == "world-gen") {
-				plane = &addPlane(r.nextString());
+				plane = &addPlane(val.getString());
 			}
 			else if (key == "plane") {
 				if (!plane) {
 					throw std::runtime_error("Missing data for world plane");
 				}
 
-				plane->deserialize(r, tileMap);
+				plane->deserialize(val, tileMap);
 			}
 			else {
-				r.skipNext();
+				val.skip();
 			}
-		}
+		});
 	};
 
-	auto map = r.nextMap();
-	std::string key;
-
-	while (map.nextKey(key)) {
+	r.readObject([&](std::string &key, nbon::Reader val) {
 		if (key == "tiles") {
 			tileMap.clear();
-			auto tiles = map.nextArray();
-			tileMap.reserve(tiles.arraySize());
-			std::string name;
-			while (tiles.hasNext()) {
-				tiles.nextString(name);
-				tileMap.push_back(getTileID(name));
-			}
-		} else if (key == "planes") {
-			planes_.clear();
-			auto planes = map.nextArray();
-			while (planes.hasNext()) {
-				deserializePlane(planes.nextMap());
-			}
+			val.readArray([&](nbon::Reader val) {
+				tileMap.push_back(getTileID(val.getString()));
+			});
 		}
-		else if (key == "player") {
+		else if (key == "planes") {
+			planes_.clear();
+			val.readArray([&](nbon::Reader val) {
+				val.getObject(deserializePlane);
+			});
+		} else if (key == "player") {
 			if (planes_.size() == 0) {
-				throw std::runtime_error("Missing data for player");
+				throw std::runtime_error("Missing planes");
 			}
 
-			playerRef_.deserialize(planes_[0].plane->getContext(), map);
+			playerRef_.deserialize(planes_[0].plane->getContext(), val);
 			player_ = playerRef_.trait<BodyTrait>();
 		}
-		else {
-			map.skipNext();
-		}
-	}
+	});
 }
 
 }

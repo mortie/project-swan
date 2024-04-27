@@ -38,8 +38,8 @@ public:
 	void update(const Swan::Context &ctx, float dt) override;
 	void tick(const Swan::Context &ctx, float dt) override;
 
-	void serialize(const Swan::Context &ctx, MsgStream::MapBuilder &w) override;
-	void deserialize(const Swan::Context &ctx, MsgStream::MapParser &r) override;
+	void serialize(const Swan::Context &ctx, nbon::ObjectWriter w) override;
+	void deserialize(const Swan::Context &ctx, nbon::ObjectReader r) override;
 
 private:
 	enum class State {

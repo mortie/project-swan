@@ -100,32 +100,26 @@ void DynamiteEntity::update(const Swan::Context &ctx, float dt)
 }
 
 void DynamiteEntity::serialize(
-	const Swan::Context &ctx, MsgStream::MapBuilder &w)
+	const Swan::Context &ctx, nbon::ObjectWriter w)
 {
-	w.writeString("body");
-	physicsBody_.serialize(w);
-	w.writeString("fuse");
-	w.writeFloat32(fuse_);
+	physicsBody_.serialize(w.key("body"));
+	w.key("fuse").writeFloat(fuse_);
 }
 
 void DynamiteEntity::deserialize(
-	const Swan::Context &ctx, MsgStream::MapParser &r)
+	const Swan::Context &ctx, nbon::ObjectReader r)
 {
-	std::string key;
-
-	while (r.hasNext()) {
-		r.nextString(key);
-
+	r.all([&](std::string &key, nbon::Reader val) {
 		if (key == "body") {
-			physicsBody_.deserialize(r);
+			physicsBody_.deserialize(val);
 		}
 		else if (key == "fuse") {
-			fuse_ = r.nextFloat32();
+			fuse_ = val.getFloat();
 		}
 		else {
-			r.skipNext();
+			val.skip();
 		}
-	}
+	});
 }
 
 }

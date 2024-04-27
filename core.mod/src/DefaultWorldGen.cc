@@ -1,9 +1,7 @@
 #include "DefaultWorldGen.h"
 
 #include "entities/PlayerEntity.h"
-#include "entities/SpiderEntity.h"
 #include "swan-common/constants.h"
-#include "world/util.h"
 #include "worldgen/StructureDef.h"
 
 namespace CoreMod {
@@ -77,7 +75,7 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 
 void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 {
-	Swan::TilePos chunkTilePos = chunk.pos_ *
+	Swan::TilePos chunkTilePos = chunk.pos() *
 		Swan::TilePos{Swan::CHUNK_WIDTH, Swan::CHUNK_HEIGHT};
 
 	constexpr int GEN_WIDTH = SwanCommon::CHUNK_WIDTH + GEN_PADDING * 2;

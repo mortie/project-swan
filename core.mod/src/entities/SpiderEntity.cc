@@ -66,27 +66,22 @@ void SpiderEntity::tick(const Swan::Context &ctx, float dt)
 }
 
 void SpiderEntity::serialize(
-	const Swan::Context &ctx, MsgStream::MapBuilder &w)
+	const Swan::Context &ctx, nbon::ObjectWriter w)
 {
-	w.writeString("body");
-	physicsBody_.serialize(w);
+	physicsBody_.serialize(w.key("body"));
 }
 
 void SpiderEntity::deserialize(
-	const Swan::Context &ctx, MsgStream::MapParser &r)
+	const Swan::Context &ctx, nbon::ObjectReader r)
 {
-	std::string key;
-
-	while (r.hasNext()) {
-		r.nextString(key);
-
+	r.all([&](std::string &key, nbon::Reader val) {
 		if (key == "body") {
-			physicsBody_.deserialize(r);
+			physicsBody_.deserialize(val);
 		}
 		else {
-			r.skipNext();
+			val.skip();
 		}
-	}
+	});
 }
 
 }

@@ -6,7 +6,7 @@
 #include <cygnet/Renderer.h>
 #include <cygnet/TextCache.h>
 #include <cygnet/util.h>
-#include <msgstream/msgstream.h>
+#include <nbon.h>
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>

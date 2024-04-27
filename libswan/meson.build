@@ -1,7 +1,7 @@
 libswan = declare_dependency(
   include_directories: 'include',
   dependencies: [
-    common, libcygnet, libglfw3, libmsgstream,
+    common, libcygnet, libglfw3, libnbon,
   ] + maybe_libtracy,
   link_with: library('swan',
     'src/traits/InventoryTrait.cc',
@@ -22,7 +22,7 @@ libswan = declare_dependency(
     dependencies: [
       common, libcygnet, libthreads, libstb_image,
       libstb_vorbis, libcpptoml, libdl, libz, libglfw3,
-      libimgui, libportaudio, libmsgstream,
+      libimgui, libportaudio, libnbon,
     ] + maybe_libtracy,
     install: true,
     install_rpath: get_option('libdir'),

@@ -46,37 +46,30 @@ void ItemStackEntity::tick(const Swan::Context &ctx, float dt)
 }
 
 void ItemStackEntity::serialize(
-	const Swan::Context &ctx, MsgStream::MapBuilder &w)
+	const Swan::Context &ctx, nbon::ObjectWriter w)
 {
-	w.writeString("body");
-	physicsBody_.serialize(w);
-	w.writeString("lifetime");
-	w.writeFloat32(lifetime_);
-	w.writeString("item");
-	w.writeString(item_->name);
+	physicsBody_.serialize(w.key("body"));
+	w.key("lifetime").writeFloat(lifetime_);
+	w.key("item").writeString(item_->name);
 }
 
 void ItemStackEntity::deserialize(
-	const Swan::Context &ctx, MsgStream::MapParser &r)
+	const Swan::Context &ctx, nbon::ObjectReader r)
 {
-	std::string key;
-
-	while (r.hasNext()) {
-		r.nextString(key);
-
+	r.all([&](std::string &key, nbon::Reader val) {
 		if (key == "body") {
-			physicsBody_.deserialize(r);
+			physicsBody_.deserialize(val);
 		}
 		else if (key == "lifetime") {
-			lifetime_ = r.nextFloat32();
+			lifetime_ = val.getFloat();
 		}
 		else if (key == "item") {
-			item_ = &ctx.world.getItem(r.nextString());
+			item_ = &ctx.world.getItem(val.getString());
 		}
 		else {
-			r.skipNext();
+			val.skip();
 		}
-	}
+	});
 }
 
 }

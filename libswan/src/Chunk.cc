@@ -106,66 +106,82 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
 	rnd.drawChunkShadow({pos, renderChunkShadow_});
 }
 
-void Chunk::serialize(MsgStream::Serializer &w)
+void Chunk::serialize(nbon::Writer w)
 {
-	auto arr = w.beginArray(2);
+	compress();
 
-	if (isCompressed()) {
-		arr.writeUInt(1);
-		static_assert(std::endian::native == std::endian::little);
-		arr.writeBinary({
-			(unsigned char *)data_.get(),
-			(size_t)compressedSize_});
-	}
-	else {
-		arr.writeUInt(0);
-		static_assert(std::endian::native == std::endian::little);
-		arr.writeBinary({
-			(unsigned char *)data_.get(),
-			CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)});
-	}
-	w.endArray(arr);
+	w.writeObject([&](nbon::ObjectWriter w) {
+		w.key("x").writeInt(pos_.x);
+		w.key("y").writeInt(pos_.y);
+
+		if (isCompressed()) {
+			w.key("compression").writeUInt(1);
+			static_assert(std::endian::native == std::endian::little);
+			w.key("tiles").writeBinary(
+				(unsigned char *)data_.get(),
+				(size_t)compressedSize_);
+		}
+		else {
+			w.key("compression").writeUInt(0);
+			static_assert(std::endian::native == std::endian::little);
+			w.key("tiles").writeBinary(
+				(unsigned char *)data_.get(),
+				CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID));
+		}
+	});
 }
 
-void Chunk::deserialize(MsgStream::Parser &p, std::span<Tile::ID> tileMap)
+void Chunk::deserialize(nbon::Reader r, std::span<Tile::ID> tileMap)
 {
 	isModified_ = true;
 
 	bool wasCompressed = false;
+	int compression = -1;
 
-	auto arr = p.nextArray();
-	uint64_t compressionType = arr.nextUInt();
-	if (compressionType == 0) {
-		std::vector<unsigned char> vec;
-		arr.nextBinary(vec);
-		if (vec.size() != CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)) {
-			throw std::runtime_error("Bad chunk size");
+	r.readObject([&](std::string &key, nbon::Reader val) {
+		if (key == "x") {
+			pos_.x = val.getInt();
 		}
+		else if (key == "y") {
+			pos_.y = val.getInt();
+		}
+		else if (key == "compression") {
+			compression = (int)val.getUInt();
+		}
+		else if (key == "tiles") {
+			auto vec = val.getBinary();
 
-		// We're probably already decompressed here,
-		// but in case we're not, decompress
-		decompress();
+			if (compression == 0) {
+				if (vec.size() != CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID)) {
+					throw std::runtime_error("Bad chunk size");
+				}
 
-		static_assert(std::endian::native == std::endian::little);
-		memcpy(data_.get(), vec.data(), vec.size());
-		deactivateTimer_ = DEACTIVATE_INTERVAL;
-	}
-	else if (compressionType == 1) {
-		std::vector<unsigned char> vec;
-		arr.nextBinary(vec);
+				// We're probably already decompressed here,
+				// but in case we're not, decompress
+				decompress();
 
-		data_ = std::make_unique<uint8_t[]>(vec.size());
-		static_assert(std::endian::native == std::endian::little);
-		memcpy(data_.get(), vec.data(), vec.size());
-		compressedSize_ = vec.size();
-		deactivateTimer_ = DEACTIVATE_INTERVAL;
+				static_assert(std::endian::native == std::endian::little);
+				memcpy(data_.get(), vec.data(), vec.size());
+				deactivateTimer_ = DEACTIVATE_INTERVAL;
+			}
+			else if (compression == 1) {
+				data_ = std::make_unique<uint8_t[]>(vec.size());
+				static_assert(std::endian::native == std::endian::little);
+				memcpy(data_.get(), vec.data(), vec.size());
+				compressedSize_ = vec.size();
+				deactivateTimer_ = DEACTIVATE_INTERVAL;
 
-		decompress();
-		wasCompressed = true;
-	}
-	else {
-		throw std::runtime_error("Invalid compression type");
-	}
+				decompress();
+				wasCompressed = true;
+			}
+			else {
+				throw std::runtime_error("Invalid compression type");
+			}
+		}
+		else {
+			val.skip();
+		}
+	});
 
 	std::span<Tile::ID> tileData(getTileData(), CHUNK_WIDTH * CHUNK_HEIGHT);
 	for (Tile::ID &tile: tileData) {
@@ -180,8 +196,6 @@ void Chunk::deserialize(MsgStream::Parser &p, std::span<Tile::ID> tileMap)
 		compress();
 		deactivateTimer_ = 0;
 	}
-
-	arr.skipAll();
 }
 
 Chunk::TickAction Chunk::tick(float dt)

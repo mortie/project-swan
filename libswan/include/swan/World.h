@@ -7,6 +7,7 @@
 #include <cygnet/Renderer.h>
 #include <cygnet/ResourceManager.h>
 #include <cygnet/util.h>
+#include <nbon.h>
 
 #include "common.h"
 #include "Item.h"
@@ -18,6 +19,7 @@
 #include "Mod.h"
 #include "Recipe.h"
 #include "assets.h"
+#include "log.h"
 
 namespace Swan {
 
@@ -86,8 +88,8 @@ public:
 		return *invalidItem_;
 	}
 
-	void serialize(MsgStream::Serializer &w);
-	void deserialize(MsgStream::Parser &r);
+	void serialize(nbon::Writer w);
+	void deserialize(nbon::Reader r);
 
 	std::unordered_map<std::string, std::string> modPaths_;
 

@@ -45,32 +45,26 @@ void FallingTileEntity::update(const Swan::Context &ctx, float dt)
 }
 
 void FallingTileEntity::serialize(
-	const Swan::Context &ctx, MsgStream::MapBuilder &w)
+	const Swan::Context &ctx, nbon::ObjectWriter w)
 {
-	w.writeString("body");
-	physicsBody_.serialize(w);
-	w.writeString("tile");
-	w.writeString(ctx.world.getTileByID(tile_).name);
+	physicsBody_.serialize(w.key("body"));
+	w.key("tile").writeString(ctx.world.getTileByID(tile_).name);
 }
 
 void FallingTileEntity::deserialize(
-	const Swan::Context &ctx, MsgStream::MapParser &r)
+	const Swan::Context &ctx, nbon::ObjectReader r)
 {
-	std::string key;
-
-	while (r.hasNext()) {
-		r.nextString(key);
-
+	r.all([&](std::string &key, nbon::Reader val) {
 		if (key == "body") {
-			physicsBody_.deserialize(r);
+			physicsBody_.deserialize(val);
 		}
 		else if (key == "tile") {
-			tile_ = ctx.world.getTileID(r.nextString());
+			tile_ = ctx.world.getTileID(val.getString());
 		}
 		else {
-			r.skipNext();
+			val.skip();
 		}
-	}
+	});
 }
 
 }
