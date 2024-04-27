@@ -106,11 +106,11 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
 	rnd.drawChunkShadow({pos, renderChunkShadow_});
 }
 
-void Chunk::serialize(nbon::Writer w)
+void Chunk::serialize(sbon::Writer w)
 {
 	compress();
 
-	w.writeObject([&](nbon::ObjectWriter w) {
+	w.writeObject([&](sbon::ObjectWriter w) {
 		w.key("x").writeInt(pos_.x);
 		w.key("y").writeInt(pos_.y);
 
@@ -131,14 +131,14 @@ void Chunk::serialize(nbon::Writer w)
 	});
 }
 
-void Chunk::deserialize(nbon::Reader r, std::span<Tile::ID> tileMap)
+void Chunk::deserialize(sbon::Reader r, std::span<Tile::ID> tileMap)
 {
 	isModified_ = true;
 
 	bool wasCompressed = false;
 	int compression = -1;
 
-	r.readObject([&](std::string &key, nbon::Reader val) {
+	r.readObject([&](std::string &key, sbon::Reader val) {
 		if (key == "x") {
 			pos_.x = val.getInt();
 		}

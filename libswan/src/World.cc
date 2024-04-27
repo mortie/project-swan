@@ -509,18 +509,18 @@ void World::tick(float dt)
 		ChunkPos((int)player_->pos.x / CHUNK_WIDTH, (int)player_->pos.y / CHUNK_HEIGHT));
 }
 
-void World::serialize(nbon::Writer w)
+void World::serialize(sbon::Writer w)
 {
-	w.writeObject([&](nbon::ObjectWriter w) {
-		w.key("tiles").writeArray([&](nbon::Writer w) {
+	w.writeObject([&](sbon::ObjectWriter w) {
+		w.key("tiles").writeArray([&](sbon::Writer w) {
 			for (auto &tile: tiles_) {
 				w.writeString(tile.name);
 			}
 		});
 
-		w.key("planes").writeArray([&](nbon::Writer w) {
+		w.key("planes").writeArray([&](sbon::Writer w) {
 			for (auto &plane: planes_) {
-				w.writeObject([&](nbon::ObjectWriter w) {
+				w.writeObject([&](sbon::ObjectWriter w) {
 					w.key("world-gen").writeString(plane.worldGen);
 					plane.plane->serialize(w.key("plane"));
 				});
@@ -531,14 +531,14 @@ void World::serialize(nbon::Writer w)
 	});
 }
 
-void World::deserialize(nbon::Reader r)
+void World::deserialize(sbon::Reader r)
 {
 	std::vector<Tile::ID> tileMap;
 
-	auto deserializePlane = [&](nbon::ObjectReader r) {
+	auto deserializePlane = [&](sbon::ObjectReader r) {
 		WorldPlane *plane = nullptr;
 
-		r.all([&](std::string &key, nbon::Reader val) {
+		r.all([&](std::string &key, sbon::Reader val) {
 			if (key == "world-gen") {
 				plane = &addPlane(val.getString());
 			}
@@ -555,16 +555,16 @@ void World::deserialize(nbon::Reader r)
 		});
 	};
 
-	r.readObject([&](std::string &key, nbon::Reader val) {
+	r.readObject([&](std::string &key, sbon::Reader val) {
 		if (key == "tiles") {
 			tileMap.clear();
-			val.readArray([&](nbon::Reader val) {
+			val.readArray([&](sbon::Reader val) {
 				tileMap.push_back(getTileID(val.getString()));
 			});
 		}
 		else if (key == "planes") {
 			planes_.clear();
-			val.readArray([&](nbon::Reader val) {
+			val.readArray([&](sbon::Reader val) {
 				val.getObject(deserializePlane);
 			});
 		} else if (key == "player") {

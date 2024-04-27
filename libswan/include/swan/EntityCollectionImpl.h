@@ -39,7 +39,7 @@ public:
 	EntityRef spawn(const Context &ctx, Args && ... args);
 
 	EntityRef spawn(const Context &ctx) override;
-	EntityRef spawn(const Context &ctx, nbon::ObjectReader r) override;
+	EntityRef spawn(const Context &ctx, sbon::ObjectReader r) override;
 
 	size_t size() override
 	{
@@ -64,8 +64,8 @@ public:
 	void draw(const Context &ctx, Cygnet::Renderer &rnd) override;
 	void erase(const Context &ctx, uint64_t id) override;
 
-	void serialize(const Context &ctx, nbon::Writer w) override;
-	void deserialize(const Context &ctx, nbon::Reader r) override;
+	void serialize(const Context &ctx, sbon::Writer w) override;
+	void deserialize(const Context &ctx, sbon::Reader r) override;
 
 	const std::string name_;
 	uint64_t nextId_ = 0;
@@ -193,14 +193,14 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx)
 
 template<typename Ent>
 inline EntityRef EntityCollectionImpl<Ent>::spawn(
-	const Context &ctx, nbon::ObjectReader r)
+	const Context &ctx, sbon::ObjectReader r)
 {
 	auto ent = spawn(ctx);
 
 	try {
 		ent->deserialize(ctx, r);
 	} catch (std::exception &ex) {
-		warn << "Failed to spawn " << name_ << " from NBON: " << ex.what();
+		warn << "Failed to spawn " << name_ << " from SBON: " << ex.what();
 		erase(ctx, ent);
 		return {};
 	}
@@ -331,14 +331,14 @@ inline void EntityCollectionImpl<Ent>::erase(const Context &ctx, uint64_t id)
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::serialize(
-	const Context &ctx, nbon::Writer w)
+	const Context &ctx, sbon::Writer w)
 {
-	w.writeObject([&](nbon::ObjectWriter w) {
+	w.writeObject([&](sbon::ObjectWriter w) {
 		w.key("next").writeUInt(nextId_);
-		w.key("entities").writeArray([&](nbon::Writer w) {
+		w.key("entities").writeArray([&](sbon::Writer w) {
 			for (auto &wrapper: entities_) {
 				try {
-					w.writeObject([&](nbon::ObjectWriter w) {
+					w.writeObject([&](sbon::ObjectWriter w) {
 						w.key("$id").writeUInt(wrapper.id);
 						wrapper.ent.serialize(ctx, w);
 					});
@@ -352,14 +352,14 @@ inline void EntityCollectionImpl<Ent>::serialize(
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::deserialize(
-	const Context &ctx, nbon::Reader r)
+	const Context &ctx, sbon::Reader r)
 {
 	entities_.clear();
 	idToIndex_.clear();
 	nextId_ = 0;
 	hasTicked_ = false;
 
-	auto deserializeEntity = [&](nbon::ObjectReader r) {
+	auto deserializeEntity = [&](sbon::ObjectReader r) {
 		std::optional<uint64_t> id;
 		std::string key;
 		while (true) {
@@ -391,12 +391,12 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 		}
 	};
 
-	r.readObject([&](std::string &key, nbon::Reader val) {
+	r.readObject([&](std::string &key, sbon::Reader val) {
 		if (key == "next") {
 			nextId_ = val.getUInt();
 		}
 		else if (key == "entities") {
-			val.readArray([&](nbon::Reader val) {
+			val.readArray([&](sbon::Reader val) {
 				val.getObject(deserializeEntity);
 			});
 		}

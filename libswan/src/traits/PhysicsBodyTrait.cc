@@ -151,9 +151,9 @@ void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 	collideX(*this, ctx.plane);
 }
 
-void BasicPhysicsBody::serialize(nbon::Writer w)
+void BasicPhysicsBody::serialize(sbon::Writer w)
 {
-	w.writeArray([&](nbon::Writer w) {
+	w.writeArray([&](sbon::Writer w) {
 		w.writeFloat(body.pos.x);
 		w.writeFloat(body.pos.y);
 		w.writeFloat(vel.x);
@@ -161,9 +161,9 @@ void BasicPhysicsBody::serialize(nbon::Writer w)
 	});
 }
 
-void BasicPhysicsBody::deserialize(nbon::Reader r)
+void BasicPhysicsBody::deserialize(sbon::Reader r)
 {
-	r.getArray([&](nbon::ArrayReader r) {
+	r.getArray([&](sbon::ArrayReader r) {
 		body.pos.x = r.next().getFloat();
 		body.pos.y = r.next().getFloat();
 		vel.x = r.next().getFloat();

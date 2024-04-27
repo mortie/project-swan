@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nbon.h>
+#include <sbon.h>
 
 #include "../traits/BodyTrait.h"
 #include "../common.h"
@@ -78,8 +78,8 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 
 	void update(const Context &ctx, float dt);
 
-	void serialize(nbon::Writer w);
-	void deserialize(nbon::Reader r);
+	void serialize(sbon::Writer w);
+	void deserialize(sbon::Reader r);
 };
 
 /*

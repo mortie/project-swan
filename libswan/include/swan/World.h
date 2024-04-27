@@ -7,7 +7,7 @@
 #include <cygnet/Renderer.h>
 #include <cygnet/ResourceManager.h>
 #include <cygnet/util.h>
-#include <nbon.h>
+#include <sbon.h>
 
 #include "common.h"
 #include "Item.h"
@@ -88,8 +88,8 @@ public:
 		return *invalidItem_;
 	}
 
-	void serialize(nbon::Writer w);
-	void deserialize(nbon::Reader r);
+	void serialize(sbon::Writer w);
+	void deserialize(sbon::Reader r);
 
 	std::unordered_map<std::string, std::string> modPaths_;
 

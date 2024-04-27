@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <nbon.h>
+#include <sbon.h>
 
 #include "../ItemStack.h"
 
@@ -76,8 +76,8 @@ struct BasicInventory final: InventoryTrait::Inventory {
 	ItemStack insert(int slot, ItemStack stack) override;
 	ItemStack insert(ItemStack stack) override;
 
-	void serialize(nbon::Writer w);
-	void deserialize(const Swan::Context &ctx, nbon::Reader r);
+	void serialize(sbon::Writer w);
+	void deserialize(const Swan::Context &ctx, sbon::Reader r);
 };
 
 inline InventorySlot InventoryTrait::Inventory::slot(int slot)

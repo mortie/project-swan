@@ -7,7 +7,7 @@
 #include <unordered_set>
 #include <cygnet/Renderer.h>
 #include <assert.h>
-#include <nbon.h>
+#include <sbon.h>
 
 #include "common.h"
 #include "Tile.h"
@@ -126,8 +126,8 @@ public:
 		return pos_;
 	}
 
-	void serialize(nbon::Writer w);
-	void deserialize(nbon::Reader r, std::span<Tile::ID> tileMap);
+	void serialize(sbon::Writer w);
+	void deserialize(sbon::Reader r, std::span<Tile::ID> tileMap);
 
 	std::unordered_set<EntityRef> entities_;
 

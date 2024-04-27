@@ -467,16 +467,16 @@ void PlayerEntity::tick(const Swan::Context &ctx, float dt)
 {}
 
 void PlayerEntity::serialize(
-	const Swan::Context &ctx, nbon::ObjectWriter w)
+	const Swan::Context &ctx, sbon::ObjectWriter w)
 {
 	physicsBody_.serialize(w.key("body"));
 	inventory_.serialize(w.key("inventory"));
 }
 
 void PlayerEntity::deserialize(
-	const Swan::Context &ctx, nbon::ObjectReader r)
+	const Swan::Context &ctx, sbon::ObjectReader r)
 {
-	r.all([&](std::string &key, nbon::Reader val) {
+	r.all([&](std::string &key, sbon::Reader val) {
 		if (key == "body") {
 			physicsBody_.deserialize(val);
 		}

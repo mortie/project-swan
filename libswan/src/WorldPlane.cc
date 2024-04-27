@@ -33,7 +33,7 @@ Context WorldPlane::getContext()
 	};
 }
 
-EntityRef WorldPlane::spawnEntity(const std::string &name, nbon::ObjectReader r)
+EntityRef WorldPlane::spawnEntity(const std::string &name, sbon::ObjectReader r)
 {
 	return entCollsByName_.at(name)->spawn(getContext(), r);
 }
@@ -596,18 +596,18 @@ void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos)
 	realChunk.setLightData(chunk.lightLevels);
 }
 
-void WorldPlane::serialize(nbon::Writer w)
+void WorldPlane::serialize(sbon::Writer w)
 {
 	auto ctx = getContext();
 
-	w.writeObject([&](nbon::ObjectWriter w) {
-		w.key("entity-collections").writeObject([&](nbon::ObjectWriter w) {
+	w.writeObject([&](sbon::ObjectWriter w) {
+		w.key("entity-collections").writeObject([&](sbon::ObjectWriter w) {
 			for (auto &coll: entColls_) {
 				coll->serialize(ctx, w.key(coll->name().c_str()));
 			}
 		});
 
-		w.key("chunks").writeArray([&](nbon::Writer w) {
+		w.key("chunks").writeArray([&](sbon::Writer w) {
 			for (auto &[pos, chunk]: chunks_) {
 				if (!chunk.isModified()) {
 					continue;
@@ -617,9 +617,9 @@ void WorldPlane::serialize(nbon::Writer w)
 			}
 		});
 
-		w.key("tile-entities").writeArray([&](nbon::Writer w) {
+		w.key("tile-entities").writeArray([&](sbon::Writer w) {
 			for (auto &[pos, ref]: tileEntities_) {
-				w.writeObject([&](nbon::ObjectWriter w) {
+				w.writeObject([&](sbon::ObjectWriter w) {
 					w.key("x").writeInt(pos.x);
 					w.key("y").writeInt(pos.y);
 					ref.serialize(w.key("ref"));
@@ -629,13 +629,13 @@ void WorldPlane::serialize(nbon::Writer w)
 	});
 }
 
-void WorldPlane::deserialize(nbon::Reader r, std::span<Tile::ID> tileMap)
+void WorldPlane::deserialize(sbon::Reader r, std::span<Tile::ID> tileMap)
 {
 	auto ctx = getContext();
 
-	r.readObject([&](std::string &key, nbon::Reader val) {
+	r.readObject([&](std::string &key, sbon::Reader val) {
 		if (key == "entity-collections") {
-			val.readObject([&](std::string &key, nbon::Reader val) {
+			val.readObject([&](std::string &key, sbon::Reader val) {
 				auto it = entCollsByName_.find(key);
 				if (it == entCollsByName_.end()) {
 					warn << "Deserialize unknown entity collection: " << key;
@@ -650,7 +650,7 @@ void WorldPlane::deserialize(nbon::Reader r, std::span<Tile::ID> tileMap)
 			chunks_.clear();
 			activeChunks_.clear();
 			chunkInitList_.clear();
-			val.readArray([&](nbon::Reader r) {
+			val.readArray([&](sbon::Reader r) {
 				Chunk tempChunk({0, 0});
 				tempChunk.deserialize(r, tileMap);
 				auto [it, _] = chunks_.emplace(
@@ -664,10 +664,10 @@ void WorldPlane::deserialize(nbon::Reader r, std::span<Tile::ID> tileMap)
 			});
 		}
 		else if (key == "tile-entities") {
-			val.readArray([&](nbon::Reader val) {
+			val.readArray([&](sbon::Reader val) {
 				TilePos pos;
 				EntityRef ref;
-				val.readObject([&](std::string &key, nbon::Reader val) {
+				val.readObject([&](std::string &key, sbon::Reader val) {
 					if (key == "x") {
 						pos.x = val.getInt();
 					}

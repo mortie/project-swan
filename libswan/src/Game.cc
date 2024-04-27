@@ -35,7 +35,7 @@ void Game::loadWorld(
 		mod.mod_->start(*world_);
 	}
 
-	nbon::Reader r(&is);
+	sbon::Reader r(&is);
 	world_->deserialize(r);
 }
 
@@ -195,18 +195,18 @@ void Game::tick(float dt)
 
 void Game::save()
 {
-	std::fstream f("world.nb.new", std::ios_base::out);
+	std::fstream f("world.sb.new", std::ios_base::out);
 
 	if (f) {
-		info << "Serializing to world.nb.new...";
-		nbon::Writer w(&f);
+		info << "Serializing to world.sb.new...";
+		sbon::Writer w(&f);
 		world_->serialize(w);
-		info << "Renaming to world.nb...";
-		std::filesystem::rename("world.nb.new", "world.nb");
+		info << "Renaming to world.sb...";
+		std::filesystem::rename("world.sb.new", "world.sb");
 		info << "Done.";
 	}
 	else {
-		warn << "Failed to open world.nb.new!";
+		warn << "Failed to open world.sb.new!";
 	}
 }
 

@@ -40,7 +40,7 @@ public:
 
 	Context getContext();
 
-	EntityRef spawnEntity(const std::string &name, nbon::ObjectReader r);
+	EntityRef spawnEntity(const std::string &name, sbon::ObjectReader r);
 
 	template<typename Ent, typename ... Args>
 	EntityRef spawnEntity(Args && ... args);
@@ -88,8 +88,8 @@ public:
 	// LightingCallback implementation
 	void onLightChunkUpdated(const LightChunk &chunk, Vec2i pos) final;
 
-	void serialize(nbon::Writer w);
-	void deserialize(nbon::Reader r, std::span<Tile::ID> tileMap);
+	void serialize(sbon::Writer w);
+	void deserialize(sbon::Reader r, std::span<Tile::ID> tileMap);
 
 	void scheduleTileUpdate(TilePos pos)
 	{

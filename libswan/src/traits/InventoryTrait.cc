@@ -48,15 +48,15 @@ ItemStack BasicInventory::insert(ItemStack stack)
 	return stack;
 }
 
-void BasicInventory::serialize(nbon::Writer w)
+void BasicInventory::serialize(sbon::Writer w)
 {
-	w.writeArray([&](nbon::Writer w) {
+	w.writeArray([&](sbon::Writer w) {
 		for (auto &stack: content) {
 			if (stack.empty()) {
 				w.writeNull();
 			}
 			else {
-				w.writeArray([&](nbon::Writer w) {
+				w.writeArray([&](sbon::Writer w) {
 					w.writeString(stack.item()->name);
 					w.writeUInt(stack.count());
 				});
@@ -65,15 +65,15 @@ void BasicInventory::serialize(nbon::Writer w)
 	});
 }
 
-void BasicInventory::deserialize(const Swan::Context &ctx, nbon::Reader r)
+void BasicInventory::deserialize(const Swan::Context &ctx, sbon::Reader r)
 {
 	content.clear();
-	r.readArray([&](nbon::Reader r) {
-		if (r.getType() == nbon::Type::NIL) {
+	r.readArray([&](sbon::Reader r) {
+		if (r.getType() == sbon::Type::NIL) {
 			r.getNil();
 			content.emplace_back();
 		} else {
-			r.getArray([&](nbon::ArrayReader r) {
+			r.getArray([&](sbon::ArrayReader r) {
 				auto name = r.next().getString();
 				auto count = r.next().getUInt();
 				content.emplace_back(&ctx.world.getItem(name), count);
