@@ -39,6 +39,47 @@ void Game::loadWorld(
 	world_->deserialize(r);
 }
 
+void Game::onKeyDown(int scancode, int key)
+{
+	pressedKeys_[scancode] = true;
+	didPressKeys_[scancode] = true;
+	if (key >= 0) {
+		pressedLiteralKeys_[key] = true;
+		didPressLiteralKeys_[key] = true;
+	}
+}
+
+void Game::onKeyUp(int scancode, int key)
+{
+	pressedKeys_[scancode] = false;
+	if (key >= 0) {
+		pressedLiteralKeys_[key] = false;
+	}
+}
+
+void Game::onMouseMove(float x, float y)
+{
+	mousePos_ = (Vec2{x, y} / (Vec2)cam_.size) * renderer_.winScale();
+	mouseUIPos_ = (Vec2{x, y} / uiCam_.size / uiCam_.zoom * 2) * renderer_.winScale();
+}
+
+void Game::onMouseDown(int button)
+{
+	pressedButtons_[button] = true;
+	didPressButtons_[button] = true;
+}
+
+void Game::onMouseUp(int button)
+{
+	pressedButtons_[button] = false;
+	didReleaseButtons_[button] = true;
+}
+
+void Game::onScrollWheel(double dy)
+{
+	didScroll_ += dy;
+}
+
 Vec2 Game::getMousePos()
 {
 	return (getMouseScreenPos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;

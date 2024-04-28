@@ -25,45 +25,12 @@ public:
 	void loadWorld(
 		std::istream &is, const std::vector<std::string> &modPaths);
 
-	void onKeyDown(int scancode, int key)
-	{
-		pressedKeys_[scancode] = true;
-		didPressKeys_[scancode] = true;
-		if (key >= 0) {
-			pressedLiteralKeys_[key] = true;
-			didPressLiteralKeys_[key] = true;
-		}
-	}
-
-	void onKeyUp(int scancode, int key)
-	{
-		pressedKeys_[scancode] = false;
-		if (key >= 0) {
-			pressedLiteralKeys_[key] = false;
-		}
-	}
-
-	void onMouseMove(float x, float y)
-	{
-		mousePos_ = (Vec2{x, y} / (Vec2)cam_.size) * renderer_.winScale();
-	}
-
-	void onMouseDown(int button)
-	{
-		pressedButtons_[button] = true;
-		didPressButtons_[button] = true;
-	}
-
-	void onMouseUp(int button)
-	{
-		pressedButtons_[button] = false;
-		didReleaseButtons_[button] = true;
-	}
-
-	void onScrollWheel(double dy)
-	{
-		didScroll_ += dy;
-	}
+	void onKeyDown(int scancode, int key);
+	void onKeyUp(int scancode, int key);
+	void onMouseMove(float x, float y);
+	void onMouseDown(int button);
+	void onMouseUp(int button);
+	void onScrollWheel(double dy);
 
 	bool isKeyPressed(int key)
 	{
@@ -98,6 +65,11 @@ public:
 	Vec2 getMouseScreenPos()
 	{
 		return mousePos_;
+	}
+
+	Vec2 getMouseUIPos()
+	{
+		return mouseUIPos_;
 	}
 
 	bool isMousePressed(int button)
@@ -174,6 +146,7 @@ private:
 	std::bitset<GLFW_KEY_LAST + 1> didReleaseLiteralKeys_;
 
 	Vec2 mousePos_;
+	Vec2 mouseUIPos_;
 	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> pressedButtons_;
 	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> didPressButtons_;
 	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> didReleaseButtons_;

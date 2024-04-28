@@ -77,6 +77,17 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		text.drawText.transform.translate({text.size.x / 2, 0});
 	}
 
+	cursorStack_ = inventory_.content[selectedInventorySlot_];
+	if (!cursorStack_.empty()) {
+		rnd.drawUITile({
+			.transform = Cygnet::Mat3gf{}
+				.scale({0.7, 0.7})
+				.translate({ctx.game.getMouseUIPos()})
+				.translate({-0.3, 0}),
+			.id = cursorStack_.item()->id,
+		}, Cygnet::Anchor::TOP_LEFT);
+	}
+
 	// Everything after this is inventory stuff
 	if (!showInventory_) {
 		return;
