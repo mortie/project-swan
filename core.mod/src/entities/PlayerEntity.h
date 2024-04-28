@@ -95,7 +95,7 @@ private:
 	Swan::TilePos breakPos_;
 	Swan::TilePos placePos_;
 
-	Swan::ItemStack cursorStack_;
+	Swan::ItemStack heldStack_;
 
 	Swan::BasicInventory inventory_{INVENTORY_SIZE};
 	Swan::BasicPhysicsBody physicsBody_{PROPS};

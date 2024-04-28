@@ -77,15 +77,26 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		text.drawText.transform.translate({text.size.x / 2, 0});
 	}
 
-	cursorStack_ = inventory_.content[selectedInventorySlot_];
-	if (!cursorStack_.empty()) {
+	if (!heldStack_.empty()) {
 		rnd.drawUITile({
 			.transform = Cygnet::Mat3gf{}
 				.scale({0.7, 0.7})
 				.translate({ctx.game.getMouseUIPos()})
-				.translate({-0.3, 0}),
-			.id = cursorStack_.item()->id,
+				.translate({-0.3, -0.3}),
+			.id = heldStack_.item()->id,
 		}, Cygnet::Anchor::TOP_LEFT);
+
+		snprintf(stackSizeBuf, sizeof(stackSizeBuf), "%d", heldStack_.count());
+
+		auto &text = rnd.drawUIText({
+			.textCache = ctx.game.smallFont_,
+			.transform = Cygnet::Mat3gf{}
+				.scale({0.7, 0.7})
+				.translate({ctx.game.getMouseUIPos()})
+				.translate({-0.6, 0.1}),
+			.text = stackSizeBuf,
+		}, Cygnet::Anchor::TOP_LEFT);
+		text.drawText.transform.translate({text.size.x / 2, 0});
 	}
 
 	// Everything after this is inventory stuff
@@ -291,6 +302,12 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		selectedInventorySlot_ = 9;
 	}
 
+	if (ctx.game.wasKeyPressed(GLFW_KEY_X)) {
+		Swan::ItemStack tmp = inventory_.content[selectedInventorySlot_];
+		inventory_.content[selectedInventorySlot_] = heldStack_;
+		heldStack_ = tmp;
+	}
+
 	// Toggle inventory
 	if (ctx.game.wasKeyPressed(GLFW_KEY_E)) {
 		showInventory_ = !showInventory_;
@@ -482,6 +499,7 @@ void PlayerEntity::serialize(
 {
 	physicsBody_.serialize(w.key("body"));
 	inventory_.serialize(w.key("inventory"));
+	heldStack_.serialize(w.key("held-stack"));
 }
 
 void PlayerEntity::deserialize(
@@ -493,6 +511,9 @@ void PlayerEntity::deserialize(
 		}
 		else if (key == "inventory") {
 			inventory_.deserialize(ctx, val);
+		}
+		else if (key == "held-stack") {
+			heldStack_.deserialize(ctx, val);
 		}
 		else {
 			val.skip();

@@ -1,7 +1,10 @@
 #pragma once
 
+#include <sbon.h>
+
 namespace Swan {
 
+struct Context;
 struct Item;
 
 class ItemStack {
@@ -38,6 +41,9 @@ public:
 
 	// Remove 'count' items from the stack, returning the removed items
 	ItemStack remove(int count);
+
+	void serialize(sbon::Writer w);
+	void deserialize(const Context &ctx, sbon::Reader r);
 
 private:
 	Item *item_;
