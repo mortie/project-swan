@@ -21,17 +21,17 @@ public:
 	ItemStack(): item_(nullptr), count_(0)
 	{}
 
-	Item *item()
+	Item *item() const
 	{
 		return item_;
 	}
 
-	int count()
+	int count() const
 	{
 		return count_;
 	}
 
-	bool empty()
+	bool empty() const
 	{
 		return item_ == nullptr;
 	}
@@ -44,6 +44,14 @@ public:
 
 	void serialize(sbon::Writer w);
 	void deserialize(const Context &ctx, sbon::Reader r);
+
+	friend bool operator==(const ItemStack &a, const ItemStack &b) {
+		if (a.empty() && b.empty()) {
+			return true;
+		}
+
+		return a.item() == b.item() && a.count() == b.count();
+	}
 
 private:
 	Item *item_;

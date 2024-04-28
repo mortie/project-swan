@@ -309,7 +309,12 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 			slot = {};
 		}
 		else {
+			auto tmp = heldStack_;
 			heldStack_ = slot.insert(heldStack_);
+			if (heldStack_ == tmp) {
+				heldStack_ = slot;
+				slot = tmp;
+			}
 		}
 	}
 
