@@ -303,9 +303,14 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 
 	if (ctx.game.wasKeyPressed(GLFW_KEY_X)) {
-		Swan::ItemStack tmp = inventory_.content[selectedInventorySlot_];
-		inventory_.content[selectedInventorySlot_] = heldStack_;
-		heldStack_ = tmp;
+		Swan::ItemStack &slot = inventory_.content[selectedInventorySlot_];
+		if (heldStack_.empty()) {
+			heldStack_ = slot;
+			slot = {};
+		}
+		else {
+			heldStack_ = slot.insert(heldStack_);
+		}
 	}
 
 	// Toggle inventory
