@@ -187,6 +187,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 void PlayerEntity::update(const Swan::Context &ctx, float dt)
 {
 	// Collide with stuff
+	bool pickedUpItem = false;
 	for (auto &c: ctx.plane.getCollidingEntities(physicsBody_.body)) {
 		auto *entity = c.ref.get();
 
@@ -198,11 +199,17 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 				continue;
 			}
 
+			// Only one per update
+			if (pickedUpItem) {
+				continue;
+			}
+
 			Swan::ItemStack stack{itemStackEnt->item(), 1};
 			stack = inventory_.insert(stack);
 			if (stack.empty()) {
 				ctx.plane.despawnEntity(c.ref);
 				ctx.game.playSound(snapSound_);
+				pickedUpItem = true;
 			}
 			continue;
 		}
@@ -316,6 +323,10 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 				slot = tmp;
 			}
 		}
+	}
+
+	if (ctx.game.wasKeyPressed(GLFW_KEY_C)) {
+		ctx.plane.setWater(placePos_);
 	}
 
 	// Toggle inventory

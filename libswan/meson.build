@@ -8,6 +8,7 @@ libswan = declare_dependency(
     'src/traits/PhysicsBodyTrait.cc',
     'src/Animation.cc',
     'src/assets.cc',
+    'src/Automata.cc',
     'src/Chunk.cc',
     'src/Clock.cc',
     'src/drawutil.cc',

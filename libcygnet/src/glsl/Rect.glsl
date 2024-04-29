@@ -3,7 +3,8 @@
 uniform mat3 camera;
 uniform vec2 pos;
 uniform vec2 size;
-uniform vec4 color;
+uniform vec4 outline;
+uniform vec4 fill;
 
 // @Vertex
 out vec2 v_coord;
@@ -28,5 +29,9 @@ out vec4 fragColor;
 void main() {
 	vec2 invCoord = size - v_coord;
 	float minDist = min(v_coord.x, min(v_coord.y, min(invCoord.x, invCoord.y)));
-	fragColor = color * float(minDist < THICKNESS);
+	if (minDist < THICKNESS) {
+		fragColor = outline;
+	} else {
+		fragColor = fill;
+	}
 }

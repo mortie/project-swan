@@ -77,7 +77,8 @@ public:
 	struct DrawRect {
 		SwanCommon::Vec2 pos;
 		SwanCommon::Vec2 size = {1.0, 1.0};
-		Color color = {0.6, 0.6, 0.6, 0.8};
+		Color outline = {0.6, 0.6, 0.6, 0.8};
+		Color fill = {0.0, 0.0, 0.0, 0.0};
 	};
 
 	struct DrawText {

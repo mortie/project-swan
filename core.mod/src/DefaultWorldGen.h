@@ -14,6 +14,7 @@ public:
 		tDirt_(world.getTileID("core::dirt")),
 		tStone_(world.getTileID("core::stone")),
 		tTallGrass_(world.getTileID("core::tall-grass")),
+		tWater_(world.getTileID("core::water")),
 		tAir_(world.getTileID("@::air")),
 		bgCave_(world.getSprite("core::misc/background-cave")),
 		treeDef_(world, seed_)
@@ -30,7 +31,7 @@ private:
 	void initializeTile(const Swan::Context &ctx, Swan::TilePos pos);
 
 	const uint32_t seed_ = 100;
-	Swan::Tile::ID tGrass_, tDirt_, tStone_, tTallGrass_, tAir_;
+	Swan::Tile::ID tGrass_, tDirt_, tStone_, tTallGrass_, tWater_, tAir_;
 	Cygnet::RenderSprite bgCave_;
 	siv::PerlinNoise perlin_{seed_};
 

@@ -116,6 +116,17 @@ public:
 			.onTileUpdate = breakIfFloating,
 		});
 
+		registerTile({
+			.name = "water",
+			.image = "@::invalid",
+			.isSolid = false,
+			.onSpawn = +[](const Swan::Context &ctx, Swan::TilePos pos) {
+				ctx.plane.setTileIDWithoutUpdate(pos, Swan::World::AIR_TILE_ID);
+				ctx.plane.setWater(pos);
+				return true;
+			},
+		});
+
 		registerRopeLadder(*this);
 		registerGlassPipe(*this);
 		registerTorch(*this);

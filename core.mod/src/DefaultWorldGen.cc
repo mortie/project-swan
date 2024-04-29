@@ -56,6 +56,14 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 		return Swan::World::AIR_TILE_ID;
 	}
 
+	// Lakes
+	if (
+			pos.y >= grassLevel &&
+			pos.y <= grassLevel + 10 &&
+			perlin_.noise2D(pos.x / 20.6, pos.y / 14.565) > 0.4) {
+		return tWater_;
+	}
+
 	if (pos.y > stoneLevel) {
 		return tStone_;
 	}

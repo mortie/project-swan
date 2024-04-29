@@ -58,7 +58,7 @@ public:
 	uint8_t *getLightData()
 	{
 		assert(isActive());
-		return data_.get() + CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID);
+		return data_.get() + TILE_DATA_SIZE;
 	}
 
 	Tile::ID getTileID(ChunkRelPos pos) const

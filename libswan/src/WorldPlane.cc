@@ -211,6 +211,13 @@ bool WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 		}
 	}
 
+	if (oldTile.isSolid && !newTile.isSolid) {
+		automata_.clear(pos);
+	}
+	else if (!oldTile.isSolid && newTile.isSolid) {
+		automata_.fill(pos);
+	}
+
 	if (newTile.onSpawn) {
 		newTile.onSpawn(getContext(), pos);
 	}
@@ -330,6 +337,13 @@ bool WorldPlane::placeTile(TilePos pos, Tile::ID id)
 		}
 	}
 
+	if (oldTile.isSolid && !newTile.isSolid) {
+		automata_.clear(pos);
+	}
+	else if (!oldTile.isSolid && newTile.isSolid) {
+		automata_.fill(pos);
+	}
+
 	if (newTile.tileEntity) {
 		spawnTileEntity(pos, newTile.tileEntity.value());
 	}
@@ -447,6 +461,11 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 					rnd.drawRect({chunk.pos() * size, size, {0.7, 0.1, 0.2, 1}});
 				}
 			}
+
+			{
+				ZoneScopedN("Automata chunk");
+				automata_.draw(pcpos + ChunkPos{x, y}, rnd);
+			}
 		}
 	}
 
@@ -476,6 +495,11 @@ void WorldPlane::update(float dt)
 			for (int x = 0; x < CHUNK_WIDTH; ++x) {
 				Tile::ID id = chunk->getTileID({x, y});
 				Tile &tile = world_->getTileByID(id);
+
+				if (tile.isSolid) {
+					automata_.fill(base.add(x, y));
+				}
+
 				if (tile.onSpawn) {
 					tile.onSpawn(getContext(), base + Vec2i{x, y});
 				}
@@ -574,6 +598,12 @@ void WorldPlane::tick(float dt)
 	}
 	scheduledTileUpdates.clear();
 	scheduledTileUpdatesB_ = std::move(scheduledTileUpdates);
+
+	// Run automata
+	{
+		ZoneScopedN("Automata tick");
+		automata_.tick();
+	}
 }
 
 void WorldPlane::addLight(TilePos pos, float level)
