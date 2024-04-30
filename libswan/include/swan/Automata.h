@@ -13,6 +13,8 @@ namespace Swan {
 class Automata {
 public:
 	static constexpr int RESOLUTION = 3;
+	static constexpr int AM_CHUNK_WIDTH = CHUNK_WIDTH * RESOLUTION;
+	static constexpr int AM_CHUNK_HEIGHT = CHUNK_WIDTH * RESOLUTION;
 
 	using CellPos = Vec2i;
 
@@ -33,7 +35,7 @@ public:
 	};
 
 	struct Chunk {
-		Cell data[CHUNK_HEIGHT * RESOLUTION][CHUNK_WIDTH * RESOLUTION];
+		Cell data[AM_CHUNK_HEIGHT][AM_CHUNK_WIDTH];
 		bool modified = false;
 		bool nextModified = false;
 

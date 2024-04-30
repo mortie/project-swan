@@ -47,14 +47,41 @@ void Automata::draw(ChunkPos pos, Cygnet::Renderer &rnd)
 		return;
 	}
 
+	auto isWater = [](Cell c) {
+		return c == Cell::WATER || c == Cell::WATER_L || c == Cell::WATER_R;
+	};
+
 	Chunk &chunk = it->second;
-	for (int y = 0; y < CHUNK_WIDTH * RESOLUTION; ++y) {
+	for (int y = 0; y < AM_CHUNK_WIDTH; ++y) {
 		float rndY = pos.y * CHUNK_WIDTH + (y / (float)RESOLUTION);
 
-		for (int x = 0; x < CHUNK_HEIGHT * RESOLUTION; ++x) {
+		for (int x = 0; x < AM_CHUNK_HEIGHT; ++x) {
 			Cell cell = chunk[y][x];
-			if (cell == Cell::AIR || cell == Cell::SOLID) {
+			if (cell == Cell::SOLID) {
 				continue;
+			}
+
+			int adjacentWater = 0;
+			if (cell == Cell::AIR) {
+				if (y > 0 && isWater(chunk[y - 1][x])) {
+					adjacentWater += 1;
+				}
+
+				if (y < AM_CHUNK_HEIGHT - 1 && isWater(chunk[y + 1][x])) {
+					adjacentWater += 1;
+				}
+
+				if (x > 0 && isWater(chunk[y][x - 1])) {
+					adjacentWater += 1;
+				}
+
+				if (x < AM_CHUNK_WIDTH - 1 && isWater(chunk[y][x + 1])) {
+					adjacentWater += 1;
+				}
+
+				if (adjacentWater < 2) {
+					continue;
+				}
 			}
 
 			float rndX = pos.x * CHUNK_WIDTH + (x / (float)RESOLUTION);
@@ -64,7 +91,16 @@ void Automata::draw(ChunkPos pos, Cygnet::Renderer &rnd)
 				.size = {1.0 / RESOLUTION, 1.0 / RESOLUTION},
 			};
 
-			if (cell == Cell::WATER) {
+			if (cell == Cell::AIR) {
+				float alpha = 0;
+				switch (adjacentWater) {
+				case 1: alpha = 0.2; break;
+				case 2: alpha = 0.3; break;
+				default: alpha = 0.4; break;
+				}
+				rect.fill = {0.137f * alpha, 0.535f * alpha, 0.852f * alpha, alpha};
+			}
+			else if (cell == Cell::WATER) {
 				rect.fill = {0.137 * 0.5, 0.535 * 0.5, 0.852 * 0.5, 0.5};
 			}
 			else if (cell == Cell::WATER_L) {
@@ -109,9 +145,9 @@ Automata::Chunk &Automata::getChunk(ChunkPos cpos)
 void Automata::tickChunk(ChunkPos pos, Chunk &chunk)
 {
 	constexpr int TOP = 0;
-	constexpr int BOTTOM = CHUNK_HEIGHT * RESOLUTION - 1;
+	constexpr int BOTTOM = AM_CHUNK_HEIGHT - 1;
 	constexpr int LEFT = 0;
-	constexpr int RIGHT = CHUNK_WIDTH * RESOLUTION - 1;
+	constexpr int RIGHT = AM_CHUNK_WIDTH - 1;
 
 	// Main body
 	if (chunk.modified) {
