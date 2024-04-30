@@ -73,9 +73,6 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 	else if (pos.y == grassLevel) {
 		return tGrass_;
 	}
-	else if (pos.y == grassLevel - 1 && perlin_.noise2D(pos.x / 20.6, 0) > 0.2) {
-		return tTallGrass_;
-	}
 	else{
 		return tAir_;
 	}
@@ -110,6 +107,7 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 	}
 
 	treeDef_.generateArea(area);
+	tallGrassDef_.generateArea(area);
 
 	for (int cy = 0; cy < Swan::CHUNK_HEIGHT; ++cy) {
 		Swan::Tile::ID *crow = &chunk.getTileData()[cy * Swan::CHUNK_WIDTH];

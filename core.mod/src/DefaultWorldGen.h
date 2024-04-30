@@ -1,9 +1,10 @@
 #pragma once
 
 #include <swan/swan.h>
-#include "worldgen/TreeDef.h"
-
 #include <PerlinNoise.hpp>
+
+#include "worldgen/TreeDef.h"
+#include "worldgen/TallGrassDef.h"
 
 namespace CoreMod {
 
@@ -13,11 +14,11 @@ public:
 		tGrass_(world.getTileID("core::grass")),
 		tDirt_(world.getTileID("core::dirt")),
 		tStone_(world.getTileID("core::stone")),
-		tTallGrass_(world.getTileID("core::tall-grass")),
 		tWater_(world.getTileID("core::water")),
 		tAir_(world.getTileID("@::air")),
 		bgCave_(world.getSprite("core::misc/background-cave")),
-		treeDef_(world, seed_)
+		treeDef_(world, seed_),
+		tallGrassDef_(world, seed_)
 	{}
 
 	void drawBackground(
@@ -31,11 +32,12 @@ private:
 	void initializeTile(const Swan::Context &ctx, Swan::TilePos pos);
 
 	const uint32_t seed_ = 100;
-	Swan::Tile::ID tGrass_, tDirt_, tStone_, tTallGrass_, tWater_, tAir_;
+	Swan::Tile::ID tGrass_, tDirt_, tStone_, tWater_, tAir_;
 	Cygnet::RenderSprite bgCave_;
 	siv::PerlinNoise perlin_{seed_};
 
 	TreeDef treeDef_;
+	TallGrassDef tallGrassDef_;
 };
 
 }
