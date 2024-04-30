@@ -19,11 +19,11 @@ public:
 	using CellPos = Vec2i;
 
 	enum class Cell: unsigned char {
-		AIR,
-		SOLID,
-		WATER,
-		WATER_L,
-		WATER_R,
+		AIR = 0,
+		SOLID = 1,
+		WATER = 2,
+		WATER_L = 3,
+		WATER_R = 4,
 	};
 
 	struct Window {

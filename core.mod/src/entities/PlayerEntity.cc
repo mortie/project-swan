@@ -325,7 +325,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		}
 	}
 
-	if (ctx.game.wasKeyPressed(GLFW_KEY_C)) {
+	if (ctx.game.isKeyPressed(GLFW_KEY_C)) {
 		ctx.plane.setWater(placePos_);
 	}
 

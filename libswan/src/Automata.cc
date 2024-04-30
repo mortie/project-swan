@@ -68,18 +68,18 @@ void Automata::draw(ChunkPos pos, Cygnet::Renderer &rnd)
 				}
 
 				if (y < AM_CHUNK_HEIGHT - 1 && isWater(chunk[y + 1][x])) {
-					adjacentWater += 1;
+					adjacentWater += 2;
 				}
 
 				if (x > 0 && isWater(chunk[y][x - 1])) {
-					adjacentWater += 1;
+					adjacentWater += 2;
 				}
 
 				if (x < AM_CHUNK_WIDTH - 1 && isWater(chunk[y][x + 1])) {
-					adjacentWater += 1;
+					adjacentWater += 2;
 				}
 
-				if (adjacentWater < 2) {
+				if (adjacentWater < 3) {
 					continue;
 				}
 			}
