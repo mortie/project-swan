@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bitset>
+#include <chrono>
 #include <istream>
 #include <string>
 #include <cygnet/Renderer.h>
@@ -129,6 +130,10 @@ public:
 	bool enableVSync_ = false;
 	float timeScale_ = 1.0;
 	float fpsLimit_ = 0;
+
+	float fps_ = 0;
+	int frameCountSinceUpdate_ = 0;
+	std::chrono::steady_clock::time_point fpsUpdateTime_ = std::chrono::steady_clock::now();
 
 	std::shared_ptr<Cygnet::FontFace> notoSans_{Cygnet::loadFontFace(
 		"assets/NotoSans-Regular.ttf")};

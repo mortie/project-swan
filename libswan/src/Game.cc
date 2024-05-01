@@ -99,8 +99,21 @@ Cygnet::Color Game::backgroundColor()
 
 void Game::draw()
 {
+	auto now = std::chrono::steady_clock::now();
+
+	frameCountSinceUpdate_ += 1;
+	if (now > fpsUpdateTime_ + std::chrono::milliseconds(100)) {
+		float fps = frameCountSinceUpdate_ * 10;
+		fps_ = (fps_ + fps) / 2;
+		frameCountSinceUpdate_ = 0;
+		fpsUpdateTime_ += std::chrono::milliseconds(100);
+	}
+
 	if (debugShowMenu_) {
 		ImGui::Begin("Debug Menu", &debugShowMenu_, ImGuiWindowFlags_AlwaysAutoResize);
+
+		ImGui::Text("FPS: %.01f", fps_);
+
 		ImGui::Checkbox("Draw collision boxes", &debugDrawCollisionBoxes_);
 		ImGui::Checkbox("Draw chunk boundaries", &debugDrawChunkBoundaries_);
 

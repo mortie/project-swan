@@ -189,10 +189,8 @@ int main(int argc, char **argv)
 
 	auto prevTime = std::chrono::steady_clock::now();
 
-	float fpsAcc = 0;
 	float tickAcc = 0;
 
-	int fCount = 0;
 	int slowFrames = 0;
 	while (!glfwWindowShouldClose(window)) {
 		ZoneScopedN("game loop");
@@ -218,15 +216,6 @@ int main(int argc, char **argv)
 
 		prevTime = now;
 		float dt = dur.count();
-
-		// Display FPS
-		fpsAcc += dt;
-		fCount += 1;
-		if (fpsAcc >= 4) {
-			info << "FPS: " << fCount / 4.0;
-			fpsAcc -= 4;
-			fCount = 0;
-		}
 
 		// We want to warn if one frame takes over 0.1 seconds...
 		if (dt > 0.1) {
