@@ -26,12 +26,12 @@ public:
 	void volume(float volume);
 	float volume();
 
-	void play(SoundAsset *asset)
+	void play(SoundAsset *asset, float volume)
 	{
-		play(asset, nullHandle_);
+		play(asset, volume, nullHandle_);
 	}
 
-	void play(SoundAsset *asset, std::shared_ptr<Handle> handle);
+	void play(SoundAsset *asset, float volume, std::shared_ptr<Handle> handle);
 
 private:
 	std::shared_ptr<Handle> nullHandle_;

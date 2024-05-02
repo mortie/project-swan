@@ -14,6 +14,7 @@ constexpr size_t MAX_NEW_PLAYBACKS = 32;
 struct Playback {
 	std::shared_ptr<SoundPlayer::Handle> handle;
 	SoundAsset *asset;
+	float volume;
 	size_t position;
 };
 
@@ -24,7 +25,7 @@ struct SoundPlayer::Context {
 
 	AtomicRingBuffer<Playback, MAX_NEW_PLAYBACKS> newPlaybacks;
 	std::atomic<bool> end = false;
-	std::atomic<float> volume = 1.0;
+	std::atomic<float> volume = 0.5;
 };
 
 static int callback(
@@ -72,8 +73,8 @@ static int callback(
 		// PortAudio output is interleaved
 		float *dest = output;
 		for (size_t i = playback.position; i < end; ++i) {
-			*(dest++) += playback.asset->l[i];
-			*(dest++) += playback.asset->r[i];
+			*(dest++) += playback.asset->l[i] * playback.volume;
+			*(dest++) += playback.asset->r[i] * playback.volume;
 		}
 
 		// Clear out the playback if it's done
@@ -177,7 +178,7 @@ float SoundPlayer::volume()
 	return context_->volume;
 }
 
-void SoundPlayer::play(SoundAsset *asset, std::shared_ptr<Handle> handle)
+void SoundPlayer::play(SoundAsset *asset, float volume, std::shared_ptr<Handle> handle)
 {
 	if (!asset) {
 		warn << "Attempt to play null asset";
@@ -198,6 +199,7 @@ void SoundPlayer::play(SoundAsset *asset, std::shared_ptr<Handle> handle)
 	context_->newPlaybacks.write({
 		.handle = handle,
 		.asset = asset,
+		.volume = volume,
 		.position = 0,
 	});
 }

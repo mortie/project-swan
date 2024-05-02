@@ -107,7 +107,7 @@ void Game::draw()
 		fps_ = std::round(1.0f / avgFrameTime);
 		frameAcc_ = 0;
 		frameTimeAcc_ = {};
-		fpsUpdateTime_ = now;;
+		fpsUpdateTime_ = now;
 	}
 	else {
 		frameTimeAcc_ += now - prevTime_;

@@ -95,12 +95,22 @@ public:
 
 	void playSound(SoundAsset *asset)
 	{
-		soundPlayer_.play(asset);
+		soundPlayer_.play(asset, 0.5);
+	}
+
+	void playSound(SoundAsset *asset, float volume)
+	{
+		soundPlayer_.play(asset, volume);
 	}
 
 	void playSound(SoundAsset *asset, std::shared_ptr<SoundPlayer::Handle> h)
 	{
-		soundPlayer_.play(asset, h);
+		soundPlayer_.play(asset, 0.5, h);
+	}
+
+	void playSound(SoundAsset *asset, float volume, std::shared_ptr<SoundPlayer::Handle> h)
+	{
+		soundPlayer_.play(asset, volume, h);
 	}
 
 	Vec2 getMousePos();
