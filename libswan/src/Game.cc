@@ -1,5 +1,6 @@
 #include "Game.h"
 
+#include <cmath>
 #include <fstream>
 #include <math.h>
 #include <time.h>
@@ -101,18 +102,23 @@ void Game::draw()
 {
 	auto now = std::chrono::steady_clock::now();
 
-	frameCountSinceUpdate_ += 1;
-	if (now > fpsUpdateTime_ + std::chrono::milliseconds(100)) {
-		float fps = frameCountSinceUpdate_ * 10;
-		fps_ = (fps_ + fps) / 2;
-		frameCountSinceUpdate_ = 0;
-		fpsUpdateTime_ += std::chrono::milliseconds(100);
+	if (now > fpsUpdateTime_ + std::chrono::milliseconds(200)) {
+		float avgFrameTime = std::chrono::duration_cast<std::chrono::duration<float>>(frameTimeAcc_).count() / frameAcc_;
+		fps_ = std::round(1.0f / avgFrameTime);
+		frameAcc_ = 0;
+		frameTimeAcc_ = {};
+		fpsUpdateTime_ = now;;
 	}
+	else {
+		frameTimeAcc_ += now - prevTime_;
+		frameAcc_ += 1;
+	}
+	prevTime_ = now;
 
 	if (debugShowMenu_) {
 		ImGui::Begin("Debug Menu", &debugShowMenu_, ImGuiWindowFlags_AlwaysAutoResize);
 
-		ImGui::Text("FPS: %.01f", fps_);
+		ImGui::Text("FPS: %d", fps_);
 
 		ImGui::Checkbox("Draw collision boxes", &debugDrawCollisionBoxes_);
 		ImGui::Checkbox("Draw chunk boundaries", &debugDrawChunkBoundaries_);

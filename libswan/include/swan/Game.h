@@ -131,9 +131,11 @@ public:
 	float timeScale_ = 1.0;
 	float fpsLimit_ = 0;
 
-	float fps_ = 0;
-	int frameCountSinceUpdate_ = 0;
+	int fps_ = 0;
+	int frameAcc_ = 0;
+	std::chrono::steady_clock::duration frameTimeAcc_;
 	std::chrono::steady_clock::time_point fpsUpdateTime_ = std::chrono::steady_clock::now();
+	std::chrono::steady_clock::time_point prevTime_;
 
 	std::shared_ptr<Cygnet::FontFace> notoSans_{Cygnet::loadFontFace(
 		"assets/NotoSans-Regular.ttf")};
