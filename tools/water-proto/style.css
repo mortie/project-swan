@@ -1,0 +1,15 @@
+* {
+	box-sizing: border-box;
+}
+
+html, body {
+	height: 100%;
+}
+
+canvas {
+	width: 600px;
+	height: 600px;
+	max-width: calc(100% - 20px);
+	max-height: calc(100% - 20px);
+	border: 1px solid black;
+}
