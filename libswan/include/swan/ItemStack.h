@@ -45,7 +45,8 @@ public:
 	void serialize(sbon::Writer w);
 	void deserialize(const Context &ctx, sbon::Reader r);
 
-	friend bool operator==(const ItemStack &a, const ItemStack &b) {
+	friend bool operator==(const ItemStack &a, const ItemStack &b)
+	{
 		if (a.empty() && b.empty()) {
 			return true;
 		}

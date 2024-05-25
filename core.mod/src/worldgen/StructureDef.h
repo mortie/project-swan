@@ -15,8 +15,8 @@ public:
 		Swan::Tile::ID &operator()(Swan::TilePos tp)
 		{
 			if (
-					tp.x < begin.x || tp.y < begin.y ||
-					tp.x >= end.x || tp.y >= end.y) {
+				tp.x < begin.x || tp.y < begin.y ||
+				tp.x >= end.x || tp.y >= end.y) {
 				dummy = Swan::World::AIR_TILE_ID;
 				return dummy;
 			}

@@ -294,8 +294,8 @@ bool WorldPlane::placeTile(TilePos pos, Tile::ID id)
 	// and revert if it returns false
 	chunk.setTileID(rp, id);
 	if (
-			newTileBeforeSpawn.onSpawn &&
-			!newTileBeforeSpawn.onSpawn(getContext(), pos)) {
+		newTileBeforeSpawn.onSpawn &&
+		!newTileBeforeSpawn.onSpawn(getContext(), pos)) {
 		chunk.setTileID(rp, old);
 		return false;
 	}
@@ -753,6 +753,7 @@ NewLightChunk WorldPlane::computeLightChunk(const Chunk &chunk)
 void WorldPlane::despawnTileEntity(TilePos pos)
 {
 	auto it = tileEntities_.find(pos);
+
 	if (it == tileEntities_.end()) {
 		warn << "Didn't find expected tile entity at " << pos;
 	}

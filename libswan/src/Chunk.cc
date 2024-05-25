@@ -187,7 +187,8 @@ void Chunk::deserialize(sbon::Reader r, std::span<Tile::ID> tileMap)
 	for (Tile::ID &tile: tileData) {
 		if (tile > tileMap.size()) {
 			tile = 0;
-		} else {
+		}
+		else {
 			tile = tileMap[tile];
 		}
 	}

@@ -43,6 +43,7 @@ void Automata::tick()
 void Automata::draw(ChunkPos pos, Cygnet::Renderer &rnd)
 {
 	auto it = chunks_.find(pos);
+
 	if (it == chunks_.end()) {
 		return;
 	}
@@ -95,7 +96,9 @@ void Automata::draw(ChunkPos pos, Cygnet::Renderer &rnd)
 				float alpha = 0;
 				switch (adjacentWater) {
 				case 1: alpha = 0.2; break;
+
 				case 2: alpha = 0.3; break;
+
 				default: alpha = 0.4; break;
 				}
 				rect.fill = {0.137f * alpha, 0.535f * alpha, 0.852f * alpha, alpha};
@@ -122,6 +125,7 @@ void Automata::setTile(TilePos pos, Cell value)
 	ChunkRelPos rpos = tilePosToChunkRelPos(pos) * RESOLUTION;
 
 	Chunk &chunk = getChunk(cpos);
+
 	chunk.modified = true;
 	for (int y = rpos.y; y < rpos.y + RESOLUTION; ++y) {
 		for (int x = rpos.x; x < rpos.x + RESOLUTION; ++x) {
@@ -133,6 +137,7 @@ void Automata::setTile(TilePos pos, Cell value)
 Automata::Chunk &Automata::getChunk(ChunkPos cpos)
 {
 	auto it = chunks_.find(cpos);
+
 	if (it == chunks_.end()) {
 		Chunk &chunk = chunks_[cpos];
 		memset(chunk.data, 0, sizeof(chunk.data));
@@ -346,8 +351,8 @@ bool Automata::rule(Window win)
 			});
 		}
 		else if (
-				win.below == Cell::WATER_L &&
-				random() % 4 == 0) {
+			win.below == Cell::WATER_L &&
+			random() % 4 == 0) {
 			moveEvents_.push_back({
 				.src = &win.self,
 				.dest = &win.self,
@@ -355,8 +360,8 @@ bool Automata::rule(Window win)
 			});
 		}
 		else if (
-				win.below == Cell::WATER_R &&
-				random() % 4 == 0) {
+			win.below == Cell::WATER_R &&
+			random() % 4 == 0) {
 			moveEvents_.push_back({
 				.src = &win.self,
 				.dest = &win.self,
@@ -364,8 +369,8 @@ bool Automata::rule(Window win)
 			});
 		}
 		else if (
-				win.left == Cell::AIR &&
-				win.right == Cell::AIR) {
+			win.left == Cell::AIR &&
+			win.right == Cell::AIR) {
 			moveEvents_.push_back({
 				.src = &win.self,
 				.dest = &win.self,
@@ -391,8 +396,8 @@ bool Automata::rule(Window win)
 		}
 	}
 	else if (
-			(win.self == Cell::WATER_L || win.self == Cell::WATER_R) &&
-			win.below == Cell::AIR) {
+		(win.self == Cell::WATER_L || win.self == Cell::WATER_R) &&
+		win.below == Cell::AIR) {
 		moveEvents_.push_back({
 			.src = &win.self,
 			.dest = &win.below,
@@ -400,9 +405,9 @@ bool Automata::rule(Window win)
 	}
 	else if (win.self == Cell::WATER_L) {
 		if (
-				win.left == Cell::AIR &&
-				win.right == Cell::AIR &&
-				random() % 128 == 0) {
+			win.left == Cell::AIR &&
+			win.right == Cell::AIR &&
+			random() % 128 == 0) {
 			moveEvents_.push_back({
 				.src = &win.self,
 				.dest = &win.self,
@@ -417,8 +422,8 @@ bool Automata::rule(Window win)
 			});
 		}
 		else if (
-				isWater(win.left) &&
-				random() % 4 == 0) {
+			isWater(win.left) &&
+			random() % 4 == 0) {
 			moveEvents_.push_back({
 				.src = &win.self,
 				.dest = &win.self,
@@ -426,8 +431,8 @@ bool Automata::rule(Window win)
 			});
 		}
 		else if (
-				win.left == Cell::AIR &&
-				(win.below != Cell::WATER_L || random() % 8 > 0)) {
+			win.left == Cell::AIR &&
+			(win.below != Cell::WATER_L || random() % 8 > 0)) {
 			moveEvents_.push_back({
 				.src = &win.self,
 				.dest = &win.left,
@@ -443,9 +448,9 @@ bool Automata::rule(Window win)
 	}
 	else if (win.self == Cell::WATER_R) {
 		if (
-				win.left == Cell::AIR &&
-				win.right == Cell::AIR &&
-				random() % 128 == 0) {
+			win.left == Cell::AIR &&
+			win.right == Cell::AIR &&
+			random() % 128 == 0) {
 			moveEvents_.push_back({
 				.src = &win.self,
 				.dest = &win.self,
@@ -460,8 +465,8 @@ bool Automata::rule(Window win)
 			});
 		}
 		else if (
-				isWater(win.right) &&
-				random() % 4 == 0) {
+			isWater(win.right) &&
+			random() % 4 == 0) {
 			moveEvents_.push_back({
 				.src = &win.self,
 				.dest = &win.self,
@@ -469,8 +474,8 @@ bool Automata::rule(Window win)
 			});
 		}
 		else if (
-				win.right == Cell::AIR &&
-				(win.below != Cell::WATER_R || random() % 8 > 0)) {
+			win.right == Cell::AIR &&
+			(win.below != Cell::WATER_R || random() % 8 > 0)) {
 			moveEvents_.push_back({
 				.src = &win.self,
 				.dest = &win.right,

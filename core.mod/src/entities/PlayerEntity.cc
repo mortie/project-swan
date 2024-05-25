@@ -45,7 +45,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 
 	rnd.drawUISprite({
 		.transform = Cygnet::Mat3gf{}.translate({
-			-4.5f + selectedInventorySlot_, -1 + 2/32.0}),
+			-4.5f + selectedInventorySlot_, -1 + 2 / 32.0}),
 		.sprite = selectedSlotSprite_,
 	}, Cygnet::Anchor::BOTTOM);
 
@@ -188,6 +188,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 {
 	// Collide with stuff
 	bool pickedUpItem = false;
+
 	for (auto &c: ctx.plane.getCollidingEntities(physicsBody_.body)) {
 		auto *entity = c.ref.get();
 
@@ -366,13 +367,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	// Handle ladder climb
 	if (inLadder) {
 		if (
-				ctx.game.isKeyPressed(GLFW_KEY_W) ||
-				ctx.game.isKeyPressed(GLFW_KEY_UP)) {
+			ctx.game.isKeyPressed(GLFW_KEY_W) ||
+			ctx.game.isKeyPressed(GLFW_KEY_UP)) {
 			physicsBody_.force += Swan::Vec2{0, -LADDER_CLIMB_FORCE};
 		}
 		else if (
-				ctx.game.isKeyPressed(GLFW_KEY_S) ||
-				ctx.game.isKeyPressed(GLFW_KEY_DOWN)) {
+			ctx.game.isKeyPressed(GLFW_KEY_S) ||
+			ctx.game.isKeyPressed(GLFW_KEY_DOWN)) {
 			physicsBody_.force += Swan::Vec2{0, LADDER_CLIMB_FORCE};
 		}
 
@@ -433,9 +434,9 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 
 	// Fall down faster than we went up
 	if (
-			!inLadder &&
-			!physicsBody_.onGround &&
-			(!jumpPressed || physicsBody_.vel.y > 0)) {
+		!inLadder &&
+		!physicsBody_.onGround &&
+		(!jumpPressed || physicsBody_.vel.y > 0)) {
 		physicsBody_.force += Swan::Vec2(0, DOWN_FORCE);
 	}
 

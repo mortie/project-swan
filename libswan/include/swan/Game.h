@@ -131,8 +131,8 @@ public:
 
 	std::unique_ptr<World> world_ = NULL;
 	Cygnet::Renderer renderer_;
-	Cygnet::RenderCamera cam_{.zoom = 1.0/8};
-	Cygnet::RenderCamera uiCam_{.zoom = 1.0/16};
+	Cygnet::RenderCamera cam_{.zoom = 1.0 / 8};
+	Cygnet::RenderCamera uiCam_{.zoom = 1.0 / 16};
 
 	bool debugShowMenu_ = false;
 	bool debugDrawCollisionBoxes_ = false;

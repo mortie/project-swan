@@ -51,16 +51,16 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 {
 	// Caves
 	if (
-			pos.y > grassLevel + 7 &&
-			perlin_.noise2D(pos.x / 43.37, pos.y / 16.37) > 0.2) {
+		pos.y > grassLevel + 7 &&
+		perlin_.noise2D(pos.x / 43.37, pos.y / 16.37) > 0.2) {
 		return Swan::World::AIR_TILE_ID;
 	}
 
 	// Lakes
 	if (
-			pos.y >= grassLevel &&
-			pos.y <= grassLevel + 10 &&
-			perlin_.noise2D(pos.x / 20.6, pos.y / 14.565) > 0.4) {
+		pos.y >= grassLevel &&
+		pos.y <= grassLevel + 10 &&
+		perlin_.noise2D(pos.x / 20.6, pos.y / 14.565) > 0.4) {
 		return tWater_;
 	}
 
@@ -87,6 +87,7 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 	constexpr int GEN_HEIGHT = SwanCommon::CHUNK_HEIGHT + GEN_PADDING * 2;
 
 	StructureDef::Area area;
+
 	area.begin = chunkTilePos.add(-GEN_PADDING, -GEN_PADDING);
 	area.end = area.begin.add(GEN_WIDTH, GEN_HEIGHT);
 

@@ -203,7 +203,7 @@ int main(int argc, char **argv)
 
 		auto now = std::chrono::steady_clock::now();
 		std::chrono::duration<float> dur(now - prevTime);
-		if (game.fpsLimit_ > 0)  {
+		if (game.fpsLimit_ > 0) {
 			std::chrono::duration<float> minDur(1.0 / game.fpsLimit_);
 			if (dur < minDur) {
 				using T = std::chrono::steady_clock::duration;

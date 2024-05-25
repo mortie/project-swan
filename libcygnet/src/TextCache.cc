@@ -139,7 +139,8 @@ const TextCache::RenderedCodepoint &TextCache::render(Codepoint codepoint)
 	if (codepoint == ' ') {
 		rendered.width = 270 * scale_;
 		rendered.y = 0;
-	} else {
+	}
+	else {
 		rendered.width += 68 * scale_;
 	}
 
@@ -174,6 +175,7 @@ void TextCache::renderString(
 	SwanCommon::Vec2 &size)
 {
 	Codepoint prev = 0;
+
 	size.set(0, 770 * scale_);
 
 	auto it = s.begin();
@@ -184,16 +186,20 @@ void TextCache::renderString(
 		if (ch <= 0x7f) {
 			bytes = 0;
 			point = ch;
-		} else if (ch <= 0xdfu) {
+		}
+		else if (ch <= 0xdfu) {
 			bytes = 1;
 			point = ch & 0x17u;
-		} else if (ch <= 0xefu) {
+		}
+		else if (ch <= 0xefu) {
 			bytes = 2;
 			point = ch & 0x0fu;
-		} else if (ch <= 0xf7u) {
+		}
+		else if (ch <= 0xf7u) {
 			bytes = 3;
 			point = ch & 0x07u;
-		} else {
+		}
+		else {
 			bytes = 0;
 			point = 0xfffdu;
 		}
@@ -222,25 +228,28 @@ void TextCache::renderString(
 	}
 }
 
-static bool isRound(TextCache::Codepoint ch) {
+static bool isRound(TextCache::Codepoint ch)
+{
 	return ch == 'e' || ch == 'o';
 }
 
-static bool isRoundLeft(TextCache::Codepoint ch) {
+static bool isRoundLeft(TextCache::Codepoint ch)
+{
 	return isRound(ch) ||
-		ch == 'a' || ch == 'c' || ch == 'g' || ch == 'q' || ch == 'd';
+		   ch == 'a' || ch == 'c' || ch == 'g' || ch == 'q' || ch == 'd';
 }
 
-static bool isRoundRight(TextCache::Codepoint ch) {
+static bool isRoundRight(TextCache::Codepoint ch)
+{
 	return isRound(ch) || ch == 'b' || ch == 'h';
 }
 
 static bool isSmall(TextCache::Codepoint ch)
 {
-	return (
+	return
 		ch == 'a' || ch == 'c' || ch == 'e' ||
 		ch == 'g' || (ch >= 'm' && ch <= 's') ||
-		(ch >= 'u' && ch <= 'z'));
+		(ch >= 'u' && ch <= 'z');
 }
 
 static bool isSmallLeft(TextCache::Codepoint ch)
@@ -270,8 +279,8 @@ void TextCache::kern(Codepoint prev, RenderedCodepoint &rendered)
 		rendered.x = -180 * scale_;
 	}
 	else if (
-			(prev == 'r' || prev == 'w' || prev == 'k') &&
-			(isRoundLeft(curr))) {
+		(prev == 'r' || prev == 'w' || prev == 'k') &&
+		(isRoundLeft(curr))) {
 		rendered.x = -60 * scale_;
 	}
 	else if (isRoundRight(prev) && curr == 'w') {

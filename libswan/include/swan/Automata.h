@@ -6,7 +6,9 @@
 #include "common.h"
 
 namespace Cygnet {
+
 class Renderer;
+
 }
 
 namespace Swan {

@@ -367,7 +367,8 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 			if (key == "$id") {
 				id = val.getUInt();
 				break;
-			} else {
+			}
+			else {
 				warn
 					<< "Skipping unknown key '" << key
 					<< "' while deserializing " << name_;

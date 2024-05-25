@@ -167,7 +167,7 @@ void Game::draw()
 			ImGuiSliderFlags_Logarithmic);
 		if (ImGui::BeginPopupContextItem("UI scale menu")) {
 			if (ImGui::MenuItem("Reset")) {
-				uiCam_.zoom = 1.0/16;
+				uiCam_.zoom = 1.0 / 16;
 			}
 			ImGui::EndPopup();
 		}
@@ -183,11 +183,14 @@ void Game::draw()
 			}
 			else if (ImGui::MenuItem("60")) {
 				fpsLimit_ = 60;
-			} else if (ImGui::MenuItem("90")) {
+			}
+			else if (ImGui::MenuItem("90")) {
 				fpsLimit_ = 90;
-			} else if (ImGui::MenuItem("120")) {
+			}
+			else if (ImGui::MenuItem("120")) {
 				fpsLimit_ = 120;
-			} else if (ImGui::MenuItem("144")) {
+			}
+			else if (ImGui::MenuItem("144")) {
 				fpsLimit_ = 144;
 			}
 			ImGui::EndPopup();

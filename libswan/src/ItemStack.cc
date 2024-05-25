@@ -58,7 +58,8 @@ void ItemStack::serialize(sbon::Writer w)
 {
 	if (empty()) {
 		w.writeNull();
-	} else {
+	}
+	else {
 		w.writeArray([&](sbon::Writer w) {
 			w.writeString(item_->name);
 			w.writeUInt(count_);
@@ -72,7 +73,8 @@ void ItemStack::deserialize(const Swan::Context &ctx, sbon::Reader r)
 		r.getNil();
 		item_ = nullptr;
 		count_ = 0;
-	} else {
+	}
+	else {
 		r.getArray([&](sbon::ArrayReader r) {
 			item_ = &ctx.world.getItem(r.next().getString());
 			count_ = r.next().getUInt();

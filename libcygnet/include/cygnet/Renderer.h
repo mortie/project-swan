@@ -128,6 +128,7 @@ public:
 	{
 		SwanCommon::Vec2 size;
 		size_t start = textBuffer_.size();
+
 		drawText.textCache.renderString(drawText.text, textBuffer_, size);
 		drawTexts_.push_back({
 			.drawText = drawText,
@@ -155,6 +156,7 @@ public:
 	{
 		SwanCommon::Vec2 size;
 		size_t start = textUIBuffer_.size();
+
 		drawText.textCache.renderString(drawText.text, textUIBuffer_, size);
 		drawUITexts_.push_back({
 			.drawText = drawText,

@@ -325,7 +325,7 @@ void Renderer::render(const RenderCamera &cam)
 	state_->rectProg.draw(drawRects_, camMat);
 	drawRects_.clear();
 
-	state_->textProg.draw(drawTexts_, textBuffer_, camMat, 1.0/128);
+	state_->textProg.draw(drawTexts_, textBuffer_, camMat, 1.0 / 128);
 	drawTexts_.clear();
 
 	textBuffer_.clear();
@@ -355,37 +355,37 @@ void Renderer::renderUI(const RenderCamera &cam)
 		case Anchor::CENTER:
 			mat.translate(size * -0.5f);
 			break;
+
 		case Anchor::LEFT:
-			mat.translate({
-				-scale.x, size.y * -0.5f});
+			mat.translate({-scale.x, size.y * -0.5f});
 			break;
+
 		case Anchor::RIGHT:
-			mat.translate({
-				scale.x - size.x, size.y * -0.5f});
+			mat.translate({scale.x - size.x, size.y * -0.5f});
 			break;
+
 		case Anchor::TOP:
-			mat.translate({
-				size.x * -0.5f, -scale.y});
+			mat.translate({size.x * -0.5f, -scale.y});
 			break;
+
 		case Anchor::BOTTOM:
-			mat.translate({
-				size.x * -0.5f, scale.y - size.y});
+			mat.translate({size.x * -0.5f, scale.y - size.y});
 			break;
+
 		case Anchor::TOP_LEFT:
-			mat.translate({
-				-scale.x, -scale.y});
+			mat.translate({-scale.x, -scale.y});
 			break;
+
 		case Anchor::TOP_RIGHT:
-			mat.translate({
-				scale.x - size.x, -scale.y});
+			mat.translate({scale.x - size.x, -scale.y});
 			break;
+
 		case Anchor::BOTTOM_LEFT:
-			mat.translate({
-				-scale.x, scale.y - size.y});
+			mat.translate({-scale.x, scale.y - size.y});
 			break;
+
 		case Anchor::BOTTOM_RIGHT:
-			mat.translate({
-				scale.x - size.x, scale.y - size.y});
+			mat.translate({scale.x - size.x, scale.y - size.y});
 			break;
 		}
 	};
@@ -422,7 +422,7 @@ void Renderer::renderUI(const RenderCamera &cam)
 	drawUITiles_.clear();
 
 	state_->textProg.draw(
-		drawUITexts_, textUIBuffer_, camMat, 1.0/64);
+		drawUITexts_, textUIBuffer_, camMat, 1.0 / 64);
 	drawUITexts_.clear();
 
 	textUIBuffer_.clear();

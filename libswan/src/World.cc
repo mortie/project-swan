@@ -567,7 +567,8 @@ void World::deserialize(sbon::Reader r)
 			val.readArray([&](sbon::Reader val) {
 				val.getObject(deserializePlane);
 			});
-		} else if (key == "player") {
+		}
+		else if (key == "player") {
 			if (planes_.size() == 0) {
 				throw std::runtime_error("Missing planes");
 			}
