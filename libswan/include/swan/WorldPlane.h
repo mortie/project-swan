@@ -161,8 +161,10 @@ private:
 template<typename Ent, typename ... Args>
 inline EntityRef WorldPlane::spawnEntity(Args &&... args)
 {
-	return getCollectionOf(typeid(Ent)).spawn<Ent, Args...>(
+	auto ent = getCollectionOf(typeid(Ent)).spawn<Ent, Args...>(
 		getContext(), std::forward<Args>(args)...);
+	ent->onSpawn(getContext());
+	return ent;
 }
 
 inline EntityRef WorldPlane::currentEntity()

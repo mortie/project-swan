@@ -25,12 +25,13 @@ public:
 		return tileEntity_;
 	}
 
+	void onSpawn(const Swan::Context &ctx) override
+	{
+		Swan::info << "Hey I spawned at " << tileEntity_.pos;
+	}
+
 	void tick(const Swan::Context &ctx, float dt) override
 	{
-		if (!printed_) {
-			Swan::info << "Hey am at " << tileEntity_.pos;
-			printed_ = true;
-		}
 	}
 
 	void onDespawn(const Swan::Context &ctx) override
@@ -40,7 +41,6 @@ public:
 
 private:
 	TileEntity tileEntity_;
-	bool printed_ = false;
 };
 
 constexpr std::array<const char *, 16> DIRECTION_LUT = []() {

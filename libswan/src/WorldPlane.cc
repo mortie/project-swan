@@ -35,7 +35,9 @@ Context WorldPlane::getContext()
 
 EntityRef WorldPlane::spawnEntity(const std::string &name, sbon::ObjectReader r)
 {
-	return entCollsByName_.at(name)->spawn(getContext(), r);
+	auto ent = entCollsByName_.at(name)->spawn(getContext(), r);
+	ent->onSpawn(getContext());
+	return ent;
 }
 
 std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(
@@ -783,6 +785,7 @@ void WorldPlane::spawnTileEntity(TilePos pos, const std::string &name)
 	}
 
 	tileEntities_[pos] = ent;
+	ent->onSpawn(getContext());
 }
 
 }
