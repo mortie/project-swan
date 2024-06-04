@@ -30,10 +30,16 @@ public:
 	void deserialize(const Swan::Context &ctx, sbon::ObjectReader r) override;
 
 private:
-	struct ContainedItem {
+	struct MovingItem {
 		Swan::Item *item;
 		Swan::Direction from;
+		Swan::Direction to;
 		int timer = 0;
+	};
+
+	struct InboxItem {
+		Swan::Item *item;
+		Swan::Direction from;
 	};
 
 	class Inbox: public Swan::InventoryTrait::Inventory {
@@ -57,12 +63,12 @@ private:
 		Swan::ItemStack insert(
 			Swan::Direction dir, Swan::ItemStack stack) override;
 
-		std::vector<ContainedItem> contents_;
+		std::optional<InboxItem> contents_;
 	};
 
 	void moveItemOut(const Swan::Context &ctx, size_t index);
 
-	std::vector<ContainedItem> contents_;
+	std::vector<MovingItem> contents_;
 	TileEntity tileEntity_;
 	Inbox inbox_;
 };

@@ -5,6 +5,7 @@
 
 #include "../ItemStack.h"
 #include "../common.h"
+#include "../Direction.h"
 
 namespace Swan {
 

@@ -9,6 +9,8 @@
 #include <swan/Animation.h>
 #include <swan/Chunk.h>
 #include <swan/Clock.h>
+#include <swan/Direction.h>
+#include <swan/DirectionSet.h>
 #include <swan/Entity.h>
 #include <swan/EntityCollection.h>
 #include <swan/EventEmitter.h>

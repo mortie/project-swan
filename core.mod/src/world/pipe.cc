@@ -85,6 +85,7 @@ void registerGlassPipe(Swan::Mod &mod)
 		.isOpaque = false,
 		.droppedItem = "core::glass-pipe",
 		.onTileUpdate = onPipeUpdate,
+		.tileEntity = "core::tile::input-pipe",
 		.traits = traits,
 	});
 
@@ -105,6 +106,7 @@ void registerGlassPipe(Swan::Mod &mod)
 			.isOpaque = false,
 			.droppedItem = "core::glass-pipe",
 			.onTileUpdate = onPipeUpdate,
+			.tileEntity = "core::tile::input-pipe",
 			.traits = traits,
 		});
 	}
@@ -116,6 +118,7 @@ void registerGlassPipe(Swan::Mod &mod)
 			.isOpaque = false,
 			.droppedItem = "core::glass-pipe",
 			.onTileUpdate = onPipeUpdate,
+			.tileEntity = "core::tile::input-pipe",
 			.traits = traits,
 		});
 	}
@@ -139,6 +142,7 @@ void registerGlassPipe(Swan::Mod &mod)
 			.isOpaque = false,
 			.droppedItem = "core::glass-pipe",
 			.onTileUpdate = onPipeUpdate,
+			.tileEntity = "core::tile::input-pipe",
 			.traits = traits,
 		});
 	}
