@@ -2,8 +2,6 @@
 
 namespace CoreMod {
 
-struct PipeConnectableTileTrait: Swan::Tile::Traits {};
-
 void registerGlassPipe(Swan::Mod &mod);
 
 }

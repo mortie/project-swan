@@ -24,6 +24,12 @@ struct Vector2 {
 		return *this;
 	}
 
+	template<typename U>
+	constexpr Vector2<U> as() const
+	{
+		return {U(x), U(y)};
+	}
+
 	constexpr T length() const
 	{
 		return (T)std::sqrt((double)squareLength());

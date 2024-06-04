@@ -50,6 +50,7 @@ public:
 
 	std::vector<FoundEntity> &getCollidingEntities(BodyTrait::Body &body);
 	std::vector<FoundEntity> &getEntitiesInTile(TilePos pos);
+	EntityRef getTileEntity(TilePos pos);
 
 	EntityRef currentEntity();
 
@@ -165,6 +166,16 @@ inline EntityRef WorldPlane::spawnEntity(Args &&... args)
 		getContext(), std::forward<Args>(args)...);
 	ent->onSpawn(getContext());
 	return ent;
+}
+
+inline EntityRef WorldPlane::getTileEntity(TilePos pos)
+{
+	auto it = tileEntities_.find(pos);
+	if (it == tileEntities_.end()) {
+		return {};
+	} else {
+		return it->second;
+	}
 }
 
 inline EntityRef WorldPlane::currentEntity()

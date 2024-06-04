@@ -1,5 +1,5 @@
 #include "pipe.h"
-#include "swan/EntityCollection.h"
+#include "tileentities/ItemPipeTileEntity.h"
 
 #include <array>
 #include <swan/swan.h>
@@ -7,40 +7,11 @@
 
 namespace CoreMod {
 
-struct PipeTileTrait: PipeConnectableTileTrait {
+struct PipeTileTrait: Swan::Tile::Traits {
 	PipeTileTrait(std::string p): prefix(std::move(p))
 	{}
 
 	std::string prefix;
-};
-
-class InputPipeTileEntity final: public Swan::Entity,
-	public Swan::TileEntityTrait {
-public:
-	InputPipeTileEntity(const Swan::Context &ctx)
-	{}
-
-	TileEntity &get(TileEntityTrait::Tag) override
-	{
-		return tileEntity_;
-	}
-
-	void onSpawn(const Swan::Context &ctx) override
-	{
-		Swan::info << "Hey I spawned at " << tileEntity_.pos;
-	}
-
-	void tick(const Swan::Context &ctx, float dt) override
-	{
-	}
-
-	void onDespawn(const Swan::Context &ctx) override
-	{
-		Swan::info << "Oh no I died at " << tileEntity_.pos;
-	}
-
-private:
-	TileEntity tileEntity_;
 };
 
 constexpr std::array<const char *, 16> DIRECTION_LUT = []() {
@@ -71,8 +42,12 @@ static void onPipeUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 	auto &prefix = dynamic_cast<PipeTileTrait *>(tile.traits.get())->prefix;
 
 	auto check = [&](int x, int y) {
-		auto &t = ctx.plane.getTile(pos + Swan::TilePos{x, y});
-		return !!dynamic_cast<PipeConnectableTileTrait *>(t.traits.get());
+		auto ref = ctx.plane.getTileEntity(pos + Swan::TilePos{x, y});
+		if (!ref) {
+			return false;
+		}
+
+		return !!ref.trait<Swan::InventoryTrait>();
 	};
 
 	int key =
@@ -93,7 +68,7 @@ void registerGlassPipe(Swan::Mod &mod)
 	auto traits = std::make_shared<PipeTileTrait>("core::glass-pipe");
 	auto openPipeTraits = std::make_shared<PipeTileTrait>("core::glass-pipe");
 
-	mod.registerEntity<InputPipeTileEntity>("tile::input-pipe");
+	mod.registerEntity<ItemPipeTileEntity>("tile::input-pipe");
 
 	mod.registerTile({
 		.name = "glass-pipe",

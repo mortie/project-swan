@@ -4,6 +4,7 @@
 #include <sbon.h>
 
 #include "../ItemStack.h"
+#include "../common.h"
 
 namespace Swan {
 
@@ -17,8 +18,17 @@ struct InventoryTrait {
 		virtual int size() = 0;
 		virtual ItemStack get(int slot) = 0;
 		virtual ItemStack set(int slot, ItemStack stack) = 0;
-		virtual ItemStack insert(int slot, ItemStack stack) = 0;
 		virtual ItemStack insert(ItemStack stack) = 0;
+
+		virtual ItemStack insert(int slot, ItemStack stack)
+		{
+			return insert(stack);
+		}
+
+		virtual ItemStack insert(Direction dir, ItemStack stack)
+		{
+			return insert(stack);
+		}
 
 		InventorySlot slot(int slot);
 
