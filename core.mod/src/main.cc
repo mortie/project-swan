@@ -6,6 +6,7 @@
 #include "entities/ItemStackEntity.h"
 #include "entities/SpiderEntity.h"
 #include "entities/FallingTileEntity.h"
+#include "world/item-fan.h"
 #include "world/ladder.h"
 #include "world/pipe.h"
 #include "world/torch.h"
@@ -127,6 +128,7 @@ public:
 			},
 		});
 
+		registerItemFan(*this);
 		registerRopeLadder(*this);
 		registerGlassPipe(*this);
 		registerTorch(*this);

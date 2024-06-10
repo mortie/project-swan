@@ -7,7 +7,7 @@
 
 namespace CoreMod {
 
-struct PipeTileTrait: Swan::Tile::Traits {
+struct PipeTileTrait: PipeConnectibleTileTrait {
 	PipeTileTrait(std::string p): prefix(std::move(p))
 	{}
 
@@ -42,7 +42,14 @@ static void onPipeUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 	auto &prefix = dynamic_cast<PipeTileTrait *>(tile.traits.get())->prefix;
 
 	auto check = [&](int x, int y) {
-		auto ref = ctx.plane.getTileEntity(pos + Swan::TilePos{x, y});
+		auto checkPos = pos.add(x, y);
+
+		auto tile = ctx.plane.getTile(checkPos);
+		if (dynamic_cast<PipeConnectibleTileTrait *>(tile.traits.get())) {
+			return true;
+		}
+
+		auto ref = ctx.plane.getTileEntity(checkPos);
 		if (!ref) {
 			return false;
 		}
