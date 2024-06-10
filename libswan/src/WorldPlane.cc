@@ -96,12 +96,25 @@ std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(
 	return foundEntitiesRet_;
 }
 
-std::vector<WorldPlane::FoundEntity> &WorldPlane::getEntitiesInTile(TilePos pos)
+std::vector<WorldPlane::FoundEntity> &WorldPlane::getEntitiesInTile(
+	TilePos pos)
 {
 	BodyTrait::Body body = {
 		.pos = pos,
 		.size = {1, 1},
 		.chunkPos = tilePosToChunkPos(pos),
+	};
+
+	return getCollidingEntities(body);
+}
+
+std::vector<WorldPlane::FoundEntity> &WorldPlane::getEntitiesInArea(
+	Vec2 pos, Vec2 size)
+{
+	BodyTrait::Body body = {
+		.pos = pos,
+		.size = size,
+		.chunkPos = tilePosToChunkPos(pos.as<int>()),
 	};
 
 	return getCollidingEntities(body);

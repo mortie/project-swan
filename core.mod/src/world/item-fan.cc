@@ -2,12 +2,14 @@
 
 #include <optional>
 
+#include "tileentities/ItemFanTileEntity.h"
 #include "pipe.h"
 
 namespace CoreMod {
 
 static void updateItemFan(const Swan::Context &ctx, Swan::TilePos pos)
 {
+	Swan::info << "fan update";
 	bool hasLeft = ctx.plane.getTileEntity(pos + Swan::Direction::LEFT)
 		->trait<Swan::InventoryTrait>();
 	bool hasRight = ctx.plane.getTileEntity(pos + Swan::Direction::RIGHT)
@@ -23,15 +25,26 @@ static void updateItemFan(const Swan::Context &ctx, Swan::TilePos pos)
 		return;
 	}
 
-	if (hasLeft) {
-		ctx.plane.setTile(pos, "core::item-fan::left");
-	} else if (hasRight) {
+	Swan::Direction dir = Swan::Direction::LEFT;
+	if (hasRight) {
 		ctx.plane.setTile(pos, "core::item-fan::right");
+		dir = Swan::Direction::RIGHT;
+	} else {
+		ctx.plane.setTile(pos, "core::item-fan::left");
+		dir = Swan::Direction::LEFT;
+	}
+
+	Swan::Entity *ent = ctx.plane.getTileEntity(pos).get();
+	if (ent) {
+		Swan::info << "Setting direction: " << dir;
+		dynamic_cast<ItemFanTileEntity *>(ent)->setDirection(dir);
 	}
 }
 
 void registerItemFan(Swan::Mod &mod)
 {
+	mod.registerEntity<ItemFanTileEntity>("tile::item-fan");
+
 	mod.registerTile({
 		.name = "item-fan",
 		.image = "core::tiles/item-fan",
@@ -47,6 +60,7 @@ void registerItemFan(Swan::Mod &mod)
 			.image = Swan::cat("core::tiles/item-fan::", direction),
 			.isSolid = true,
 			.droppedItem = "core::item-fan",
+			.tileEntity = "core::tile::item-fan",
 			.onTileUpdate = updateItemFan,
 			.traits = std::make_shared<PipeConnectibleTileTrait>(),
 		});

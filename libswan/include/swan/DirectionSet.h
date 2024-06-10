@@ -85,7 +85,7 @@ public:
 	{
 		assert(value_ != 0);
 
-		unsigned char val = std::countl_zero((unsigned char)value_);
+		unsigned char val = std::countr_zero((unsigned char)value_);
 		return Direction::fromInt(1 << val).value();
 	}
 
@@ -93,8 +93,8 @@ public:
 	{
 		assert(value_ != 0);
 
-		unsigned char val = std::countl_zero((unsigned char)value_);
-		value_ &= ~val;
+		unsigned char val = std::countr_zero((unsigned char)value_);
+		value_ &= ~(1 << val);
 		return *this;
 	}
 

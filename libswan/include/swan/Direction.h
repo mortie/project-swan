@@ -3,6 +3,8 @@
 #include "common.h"
 #include "util.h"
 
+#include <ostream>
+
 namespace Swan {
 
 class Direction {
@@ -67,11 +69,18 @@ public:
 
 	static constexpr std::optional<Direction> fromInt(int num)
 	{
-		if (num < 0 || num > 3) {
-			return std::nullopt;
+		switch (num) {
+		case (int)Value::UP:
+			return Value::UP;
+		case (int)Value::DOWN:
+			return Value::DOWN;
+		case (int)Value::LEFT:
+			return Value::LEFT;
+		case (int)Value::RIGHT:
+			return Value::RIGHT;
 		}
 
-		return Value(num);
+		return std::nullopt;
 	}
 
 	static Direction random()
@@ -89,9 +98,34 @@ inline constexpr TilePos operator+(TilePos pos, Direction dir)
 	return pos + dir.vec();
 }
 
+inline constexpr TilePos operator-(TilePos pos, Direction dir)
+{
+	return pos - dir.vec();
+}
+
 inline constexpr TilePos operator+(Direction dir, TilePos pos)
 {
 	return dir.vec() + pos;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const Direction &dir)
+{
+	switch (dir) {
+	case Direction::UP:
+		os << "Direction::UP";
+		break;
+	case Direction::DOWN:
+		os << "Direction::DOWN";
+		break;
+	case Direction::LEFT:
+		os << "Direction::LEFT";
+		break;
+	case Direction::RIGHT:
+		os << "Direction::RIGHT";
+		break;
+	}
+
+	return os;
 }
 
 }

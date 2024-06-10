@@ -41,7 +41,6 @@ void ItemPipeTileEntity::tick(const Swan::Context &ctx, float dt)
 			}
 
 			possibilities.set(dir);
-			break;
 		}
 
 		auto dest = possibilities.random();
@@ -76,13 +75,15 @@ void ItemPipeTileEntity::moveItemOut(const Swan::Context &ctx, size_t index)
 		}
 
 		Swan::ItemStack stack(item.item, 1);
-		stack = inv->insert(item.to, stack);
+		stack = inv->insert(item.to.opposite(), stack);
 		return stack.empty();
 	}();
 
 	if (!ok) {
 		auto entPos = pos.as<float>().add(0.5, 0.5);
-		ctx.plane.spawnEntity<ItemStackEntity>(entPos, item.item);
+		auto vel = item.to.vec().as<float>() * 2;
+		entPos -= item.to.vec().as<float>() * 0.2;
+		ctx.plane.spawnEntity<ItemStackEntity>(entPos, vel, item.item);
 	}
 }
 

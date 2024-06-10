@@ -50,6 +50,7 @@ public:
 
 	std::vector<FoundEntity> &getCollidingEntities(BodyTrait::Body &body);
 	std::vector<FoundEntity> &getEntitiesInTile(TilePos pos);
+	std::vector<FoundEntity> &getEntitiesInArea(Vec2 pos, Vec2 size);
 	EntityRef getTileEntity(TilePos pos);
 
 	EntityRef currentEntity();

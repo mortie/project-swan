@@ -75,7 +75,7 @@ void registerGlassPipe(Swan::Mod &mod)
 	auto traits = std::make_shared<PipeTileTrait>("core::glass-pipe");
 	auto openPipeTraits = std::make_shared<PipeTileTrait>("core::glass-pipe");
 
-	mod.registerEntity<ItemPipeTileEntity>("tile::input-pipe");
+	mod.registerEntity<ItemPipeTileEntity>("tile::item-pipe");
 
 	mod.registerTile({
 		.name = "glass-pipe",
@@ -92,7 +92,7 @@ void registerGlassPipe(Swan::Mod &mod)
 		.isOpaque = false,
 		.droppedItem = "core::glass-pipe",
 		.onTileUpdate = onPipeUpdate,
-		.tileEntity = "core::tile::input-pipe",
+		.tileEntity = "core::tile::item-pipe",
 		.traits = traits,
 	});
 
@@ -102,7 +102,7 @@ void registerGlassPipe(Swan::Mod &mod)
 		.isOpaque = false,
 		.droppedItem = "core::glass-pipe",
 		.onTileUpdate = onPipeUpdate,
-		.tileEntity = "core::tile::input-pipe",
+		.tileEntity = "core::tile::item-pipe",
 		.traits = traits,
 	});
 
@@ -113,7 +113,7 @@ void registerGlassPipe(Swan::Mod &mod)
 			.isOpaque = false,
 			.droppedItem = "core::glass-pipe",
 			.onTileUpdate = onPipeUpdate,
-			.tileEntity = "core::tile::input-pipe",
+			.tileEntity = "core::tile::item-pipe",
 			.traits = traits,
 		});
 	}
@@ -125,7 +125,7 @@ void registerGlassPipe(Swan::Mod &mod)
 			.isOpaque = false,
 			.droppedItem = "core::glass-pipe",
 			.onTileUpdate = onPipeUpdate,
-			.tileEntity = "core::tile::input-pipe",
+			.tileEntity = "core::tile::item-pipe",
 			.traits = traits,
 		});
 	}
@@ -137,7 +137,7 @@ void registerGlassPipe(Swan::Mod &mod)
 			.isOpaque = false,
 			.droppedItem = "core::glass-pipe",
 			.onTileUpdate = onPipeUpdate,
-			.tileEntity = "core::tile::input-pipe",
+			.tileEntity = "core::tile::item-pipe",
 			.traits = traits,
 		});
 	}
@@ -149,7 +149,7 @@ void registerGlassPipe(Swan::Mod &mod)
 			.isOpaque = false,
 			.droppedItem = "core::glass-pipe",
 			.onTileUpdate = onPipeUpdate,
-			.tileEntity = "core::tile::input-pipe",
+			.tileEntity = "core::tile::item-pipe",
 			.traits = traits,
 		});
 	}

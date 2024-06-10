@@ -6,7 +6,6 @@ namespace CoreMod {
 
 class ItemPipeTileEntity final: public Swan::Entity,
 	public Swan::TileEntityTrait,
-	public Swan::TileEntityTrait::TileEntity,
 	public Swan::InventoryTrait {
 public:
 	ItemPipeTileEntity(const Swan::Context &ctx)
