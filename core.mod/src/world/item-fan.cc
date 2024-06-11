@@ -9,7 +9,6 @@ namespace CoreMod {
 
 static void updateItemFan(const Swan::Context &ctx, Swan::TilePos pos)
 {
-	Swan::info << "fan update";
 	bool hasLeft = ctx.plane.getTileEntity(pos + Swan::Direction::LEFT)
 		->trait<Swan::InventoryTrait>();
 	bool hasRight = ctx.plane.getTileEntity(pos + Swan::Direction::RIGHT)
@@ -36,7 +35,6 @@ static void updateItemFan(const Swan::Context &ctx, Swan::TilePos pos)
 
 	Swan::Entity *ent = ctx.plane.getTileEntity(pos).get();
 	if (ent) {
-		Swan::info << "Setting direction: " << dir;
 		dynamic_cast<ItemFanTileEntity *>(ent)->setDirection(dir);
 	}
 }
