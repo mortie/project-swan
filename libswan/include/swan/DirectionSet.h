@@ -60,10 +60,10 @@ public:
 			return std::nullopt;
 		}
 
-		int choice = ::Swan::random() % 4;
-		while (!(value_ & (1 << choice))) {
-			choice = (choice + 1) % 4;
-		}
+		int choice;
+		do {
+			choice = ::Swan::random() % 4;
+		} while (!(value_ & (1 << choice)));
 
 		return Direction::fromInt(1 << choice).value();
 	}
