@@ -24,7 +24,7 @@ public:
 	}
 
 private:
-	Swan::Direction dir_ = Swan::Direction::UP;
+	Swan::Direction dir_;
 	TileEntity tileEntity_;
 };
 
