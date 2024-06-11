@@ -15,7 +15,7 @@ void ItemPipeTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		auto &item = inbox_.contents_.value();
 		Swan::Vec2 from = center + item.from.vec().as<float>() * 0.5;
 		Swan::Vec2 pos = from.add(-0.25, -0.25);
-		rnd.drawTile({
+		rnd.drawTile(Cygnet::RenderLayer::BEHIND, {
 			Cygnet::Mat3gf{}.scale({0.5, 0.5}).translate(pos),
 			item.item->id, 0.8,
 		});
@@ -37,7 +37,7 @@ void ItemPipeTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		}
 
 		Swan::Vec2 pos = Swan::lerp(from, to, frac).add(-0.25, -0.25);
-		rnd.drawTile({
+		rnd.drawTile(Cygnet::RenderLayer::BEHIND, {
 			Cygnet::Mat3gf{}.scale({0.5, 0.5}).translate(pos),
 			item.item->id, 0.8,
 		});

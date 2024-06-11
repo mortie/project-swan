@@ -38,6 +38,10 @@ struct ChunkProg: public GlProg<Shader::Chunk> {
 		const std::vector<Renderer::DrawChunk> &drawChunks, const Mat3gf &cam,
 		GLuint atlasTex, SwanCommon::Vec2 atlasTexSize)
 	{
+		if (drawChunks.size() == 0) {
+			return;
+		}
+
 		glUseProgram(id());
 
 		glUniform1i(shader.uniTileAtlas, 0);
@@ -68,6 +72,10 @@ struct ChunkProg: public GlProg<Shader::Chunk> {
 struct ChunkShadowProg: public GlProg<Shader::ChunkShadow> {
 	void draw(const std::vector<Renderer::DrawChunkShadow> &drawChunkShadows, const Mat3gf &cam)
 	{
+		if (drawChunkShadows.size() == 0) {
+			return;
+		}
+
 		glUseProgram(id());
 
 		glUniform1i(shader.uniTex, 0);
@@ -87,6 +95,10 @@ struct ChunkShadowProg: public GlProg<Shader::ChunkShadow> {
 struct RectProg: public GlProg<Shader::Rect> {
 	void draw(const std::vector<Renderer::DrawRect> &drawRects, const Mat3gf &cam)
 	{
+		if (drawRects.size() == 0) {
+			return;
+		}
+
 		glUseProgram(id());
 
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
@@ -110,6 +122,10 @@ struct RectProg: public GlProg<Shader::Rect> {
 struct SpriteProg: public GlProg<Shader::Sprite> {
 	void draw(const std::vector<Renderer::DrawSprite> &drawSprites, const Mat3gf &cam)
 	{
+		if (drawSprites.size() == 0) {
+			return;
+		}
+
 		glUseProgram(id());
 
 		glUniform1i(shader.uniTex, 0);
@@ -134,6 +150,10 @@ struct TextProg: public GlProg<Shader::Text> {
 		const std::vector<TextCache::RenderedCodepoint> &textBuffer,
 		const Mat3gf &cam, float scale)
 	{
+		if (drawTexts.size() == 0) {
+			return;
+		}
+
 		glUseProgram(id());
 
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
@@ -203,6 +223,10 @@ struct TileProg: public GlProg<Shader::Tile> {
 		const std::vector<Renderer::DrawTile> &drawTiles, const Mat3gf &cam,
 		GLuint atlasTex, SwanCommon::Vec2 atlasTexSize)
 	{
+		if (drawTiles.size() == 0) {
+			return;
+		}
+
 		glUseProgram(id());
 
 		glUniform1i(shader.uniTileAtlas, 0);
@@ -264,7 +288,6 @@ Renderer::~Renderer()
 void Renderer::render(const RenderCamera &cam)
 {
 	Mat3gf camMat;
-
 	camMat.translate(-cam.pos);
 
 	if (cam.size.y > cam.size.x) {
@@ -299,6 +322,17 @@ void Renderer::render(const RenderCamera &cam)
 		glCheck();
 	}
 
+	for (int i = 0; i <= (int)RenderLayer::MAX; ++i) {
+		renderLayer(RenderLayer(i), camMat);
+	}
+
+	textBuffer_.clear();
+}
+
+void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
+{
+	int idx = (int)layer;
+
 	glBindFramebuffer(GL_FRAMEBUFFER, state_->offscreenFramebuffer);
 	glFramebufferTexture2D(
 		GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
@@ -307,28 +341,26 @@ void Renderer::render(const RenderCamera &cam)
 	glClear(GL_COLOR_BUFFER_BIT);
 	glCheck();
 
-	state_->chunkProg.draw(drawChunks_, camMat, state_->atlasTex, state_->atlasTexSize);
-	drawChunks_.clear();
+	state_->chunkProg.draw(drawChunks_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
+	drawChunks_[idx].clear();
 
-	state_->tileProg.draw(drawTiles_, camMat, state_->atlasTex, state_->atlasTexSize);
-	drawTiles_.clear();
+	state_->tileProg.draw(drawTiles_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
+	drawTiles_[idx].clear();
 
-	state_->spriteProg.draw(drawSprites_, camMat);
-	drawSprites_.clear();
+	state_->spriteProg.draw(drawSprites_[idx], camMat);
+	drawSprites_[idx].clear();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	state_->blendProg.draw(state_->offscreenTex);
 
-	state_->chunkShadowProg.draw(drawChunkShadows_, camMat);
-	drawChunkShadows_.clear();
+	state_->chunkShadowProg.draw(drawChunkShadows_[idx], camMat);
+	drawChunkShadows_[idx].clear();
 
-	state_->rectProg.draw(drawRects_, camMat);
-	drawRects_.clear();
+	state_->rectProg.draw(drawRects_[idx], camMat);
+	drawRects_[idx].clear();
 
-	state_->textProg.draw(drawTexts_, textBuffer_, camMat, 1.0 / 128);
-	drawTexts_.clear();
-
-	textBuffer_.clear();
+	state_->textProg.draw(drawTexts_[idx], textBuffer_, camMat, 1.0 / 128);
+	drawTexts_[idx].clear();
 
 	glCheck();
 }
@@ -348,7 +380,18 @@ void Renderer::renderUI(const RenderCamera &cam)
 		camMat.scale({cam.zoom, -cam.zoom * ratio});
 	}
 
-	auto scale = winScale_ / cam.zoom;
+	SwanCommon::Vec2 scale = winScale_ / cam.zoom;
+
+	for (int i = 0; i <= (int)RenderLayer::MAX; ++i) {
+		renderUILayer(RenderLayer(i), scale, camMat);
+	}
+
+	textUIBuffer_.clear();
+}
+
+void Renderer::renderUILayer(RenderLayer layer, SwanCommon::Vec2 scale, Mat3gf camMat)
+{
+	int idx = (int)layer;
 
 	auto applyAnchor = [&](Anchor anchor, Mat3gf &mat, SwanCommon::Vec2 size) {
 		switch (anchor) {
@@ -390,42 +433,40 @@ void Renderer::renderUI(const RenderCamera &cam)
 		}
 	};
 
-	assert(drawUISprites_.size() == drawUISpritesAnchors_.size());
-	for (size_t i = 0; i < drawUISprites_.size(); ++i) {
-		auto &ds = drawUISprites_[i];
-		auto anchor = drawUISpritesAnchors_[i];
+	assert(drawUISprites_[idx].size() == drawUISpritesAnchors_[idx].size());
+	for (size_t i = 0; i < drawUISprites_[idx].size(); ++i) {
+		auto &ds = drawUISprites_[idx][i];
+		auto anchor = drawUISpritesAnchors_[idx][i];
 		applyAnchor(anchor, ds.transform, ds.sprite.size);
 	}
-	drawUISpritesAnchors_.clear();
+	drawUISpritesAnchors_[idx].clear();
 
-	assert(drawUITiles_.size() == drawUITilesAnchors_.size());
-	for (size_t i = 0; i < drawUITiles_.size(); ++i) {
-		auto &dt = drawUITiles_[i];
-		auto anchor = drawUITilesAnchors_[i];
+	assert(drawUITiles_[idx].size() == drawUITilesAnchors_[idx].size());
+	for (size_t i = 0; i < drawUITiles_[idx].size(); ++i) {
+		auto &dt = drawUITiles_[idx][i];
+		auto anchor = drawUITilesAnchors_[idx][i];
 		applyAnchor(anchor, dt.transform, {1, 1});
 	}
-	drawUITilesAnchors_.clear();
+	drawUITilesAnchors_[idx].clear();
 
-	assert(drawUITexts_.size() == drawUITextsAnchors_.size());
-	for (size_t i = 0; i < drawUITexts_.size(); ++i) {
-		auto &dt = drawUITexts_[i];
-		auto anchor = drawUITextsAnchors_[i];
+	assert(drawUITexts_[idx].size() == drawUITextsAnchors_[idx].size());
+	for (size_t i = 0; i < drawUITexts_[idx].size(); ++i) {
+		auto &dt = drawUITexts_[idx][i];
+		auto anchor = drawUITextsAnchors_[idx][i];
 		applyAnchor(anchor, dt.drawText.transform, dt.size);
 	}
-	drawUITextsAnchors_.clear();
+	drawUITextsAnchors_[idx].clear();
 
-	state_->spriteProg.draw(drawUISprites_, camMat);
-	drawUISprites_.clear();
+	state_->spriteProg.draw(drawUISprites_[idx], camMat);
+	drawUISprites_[idx].clear();
 
 	state_->tileProg.draw(
-		drawUITiles_, camMat, state_->atlasTex, state_->atlasTexSize);
-	drawUITiles_.clear();
+		drawUITiles_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
+	drawUITiles_[idx].clear();
 
 	state_->textProg.draw(
-		drawUITexts_, textUIBuffer_, camMat, 1.0 / 64);
-	drawUITexts_.clear();
-
-	textUIBuffer_.clear();
+		drawUITexts_[idx], textUIBuffer_, camMat, 1.0 / 64);
+	drawUITexts_[idx].clear();
 
 	glCheck();
 }

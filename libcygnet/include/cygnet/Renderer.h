@@ -48,9 +48,19 @@ struct RenderCamera {
 	float zoom = 1;
 };
 
+enum class RenderLayer {
+	BACKGROUND = 0,
+	BEHIND = 1,
+	NORMAL = 2,
+	FOREGROUND = 3,
+
+	MAX = FOREGROUND,
+};
+
 class Renderer {
 public:
 	using TileID = uint16_t;
+	static constexpr int LAYER_COUNT = (int)RenderLayer::MAX + 1;
 
 	struct DrawChunk {
 		SwanCommon::Vec2 pos;
@@ -99,74 +109,110 @@ public:
 	Renderer();
 	~Renderer();
 
+	void drawChunk(RenderLayer layer, DrawChunk chunk)
+	{
+		drawChunks_[(int)layer].push_back(chunk);
+	}
 	void drawChunk(DrawChunk chunk)
 	{
-		drawChunks_.push_back(chunk);
+		drawChunk(RenderLayer::NORMAL, chunk);
 	}
 
+	void drawChunkShadow(RenderLayer layer, DrawChunkShadow chunkShadow)
+	{
+		drawChunkShadows_[(int)layer].push_back(chunkShadow);
+	}
 	void drawChunkShadow(DrawChunkShadow chunkShadow)
 	{
-		drawChunkShadows_.push_back(chunkShadow);
+		drawChunkShadow(RenderLayer::NORMAL, chunkShadow);
 	}
 
-	void drawTile(DrawTile drawTile)
+	void drawTile(RenderLayer layer, DrawTile drawTile)
 	{
-		drawTiles_.push_back(drawTile);
+		drawTiles_[(int)layer].push_back(drawTile);
 	}
-
-	void drawSprite(DrawSprite drawSprite)
+	void drawTile(DrawTile dt)
 	{
-		drawSprites_.push_back(drawSprite);
+		drawTile(RenderLayer::NORMAL, dt);
 	}
 
-	void drawRect(DrawRect drawRect)
+	void drawSprite(RenderLayer layer, DrawSprite drawSprite)
 	{
-		drawRects_.push_back(drawRect);
+		drawSprites_[(int)layer].push_back(drawSprite);
+	}
+	void drawSprite(DrawSprite ds)
+	{
+		drawSprite(RenderLayer::NORMAL, ds);
 	}
 
-	TextSegment &drawText(DrawText drawText)
+	void drawRect(RenderLayer layer, DrawRect drawRect)
+	{
+		drawRects_[(int)layer].push_back(drawRect);
+	}
+	void drawRect(DrawRect dr)
+	{
+		drawRect(RenderLayer::NORMAL, dr);
+	}
+
+	TextSegment &drawText(RenderLayer layer, DrawText drawText)
 	{
 		SwanCommon::Vec2 size;
 		size_t start = textBuffer_.size();
 
 		drawText.textCache.renderString(drawText.text, textBuffer_, size);
-		drawTexts_.push_back({
+		drawTexts_[(int)layer].push_back({
 			.drawText = drawText,
 			.atlas = drawText.textCache.atlas_,
 			.size = size / 128,
 			.start = start,
 			.end = textBuffer_.size(),
 		});
-		return drawTexts_.back();
+		return drawTexts_[(int)layer].back();
+	}
+	TextSegment &drawText(DrawText dt)
+	{
+		return drawText(RenderLayer::NORMAL, dt);
 	}
 
+	void drawUISprite(RenderLayer layer, DrawSprite drawSprite, Anchor anchor = Anchor::CENTER)
+	{
+		drawUISprites_[(int)layer].push_back(drawSprite);
+		drawUISpritesAnchors_[(int)layer].push_back(anchor);
+	}
 	void drawUISprite(DrawSprite drawSprite, Anchor anchor = Anchor::CENTER)
 	{
-		drawUISprites_.push_back(drawSprite);
-		drawUISpritesAnchors_.push_back(anchor);
+		drawUISprite(RenderLayer::NORMAL, drawSprite, anchor);
 	}
 
+	void drawUITile(RenderLayer layer, DrawTile drawTile, Anchor anchor = Anchor::CENTER)
+	{
+		drawUITiles_[(int)layer].push_back(drawTile);
+		drawUITilesAnchors_[(int)layer].push_back(anchor);
+	}
 	void drawUITile(DrawTile drawTile, Anchor anchor = Anchor::CENTER)
 	{
-		drawUITiles_.push_back(drawTile);
-		drawUITilesAnchors_.push_back(anchor);
+		drawUITile(RenderLayer::NORMAL, drawTile, anchor);
 	}
 
-	TextSegment &drawUIText(DrawText drawText, Anchor anchor = Anchor::CENTER)
+	TextSegment &drawUIText(RenderLayer layer, DrawText drawText, Anchor anchor = Anchor::CENTER)
 	{
 		SwanCommon::Vec2 size;
 		size_t start = textUIBuffer_.size();
 
 		drawText.textCache.renderString(drawText.text, textUIBuffer_, size);
-		drawUITexts_.push_back({
+		drawUITexts_[(int)layer].push_back({
 			.drawText = drawText,
 			.atlas = drawText.textCache.atlas_,
 			.size = size / 64,
 			.start = start,
 			.end = textUIBuffer_.size(),
 		});
-		drawUITextsAnchors_.push_back(anchor);
-		return drawUITexts_.back();
+		drawUITextsAnchors_[(int)layer].push_back(anchor);
+		return drawUITexts_[(int)layer].back();
+	}
+	TextSegment &drawUIText(DrawText drawText, Anchor anchor = Anchor::CENTER)
+	{
+		return drawUIText(RenderLayer::NORMAL, drawText, anchor);
 	}
 
 	void render(const RenderCamera &cam);
@@ -197,25 +243,28 @@ public:
 	}
 
 private:
+	void renderLayer(RenderLayer layer, Mat3gf camMat);
+	void renderUILayer(RenderLayer layer, SwanCommon::Vec2 scale, Mat3gf camMat);
+
 	SwanCommon::Vec2 winScale_ = {1, 1};
 
 	std::unique_ptr<RendererState> state_;
 
-	std::vector<DrawChunk> drawChunks_;
-	std::vector<DrawChunkShadow> drawChunkShadows_;
-	std::vector<DrawTile> drawTiles_;
-	std::vector<DrawSprite> drawSprites_;
-	std::vector<DrawRect> drawRects_;
-	std::vector<TextSegment> drawTexts_;
+	std::vector<DrawChunk> drawChunks_[LAYER_COUNT];
+	std::vector<DrawChunkShadow> drawChunkShadows_[LAYER_COUNT];
+	std::vector<DrawTile> drawTiles_[LAYER_COUNT];
+	std::vector<DrawSprite> drawSprites_[LAYER_COUNT];
+	std::vector<DrawRect> drawRects_[LAYER_COUNT];
+	std::vector<TextSegment> drawTexts_[LAYER_COUNT];
 	std::vector<TextCache::RenderedCodepoint> textBuffer_;
 
-	std::vector<DrawSprite> drawUISprites_;
-	std::vector<Anchor> drawUISpritesAnchors_;
+	std::vector<DrawSprite> drawUISprites_[LAYER_COUNT];
+	std::vector<Anchor> drawUISpritesAnchors_[LAYER_COUNT];
 
-	std::vector<DrawTile> drawUITiles_;
-	std::vector<Anchor> drawUITilesAnchors_;
-	std::vector<TextSegment> drawUITexts_;
-	std::vector<Anchor> drawUITextsAnchors_;
+	std::vector<DrawTile> drawUITiles_[LAYER_COUNT];
+	std::vector<Anchor> drawUITilesAnchors_[LAYER_COUNT];
+	std::vector<TextSegment> drawUITexts_[LAYER_COUNT];
+	std::vector<Anchor> drawUITextsAnchors_[LAYER_COUNT];
 	std::vector<TextCache::RenderedCodepoint> textUIBuffer_;
 };
 
