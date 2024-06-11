@@ -95,7 +95,8 @@ void ItemPipeTileEntity::onDespawn(const Swan::Context &ctx)
 	}
 
 	if (inbox_.contents_) {
-		ctx.plane.spawnEntity<ItemStackEntity>(pos, inbox_.contents_.value().item);
+		ctx.plane.spawnEntity<ItemStackEntity>(
+			pos, inbox_.contents_.value().item);
 	}
 }
 

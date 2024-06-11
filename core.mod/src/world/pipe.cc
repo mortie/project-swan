@@ -41,11 +41,15 @@ static void onPipeUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 	auto &tile = ctx.plane.getTile(pos);
 	auto &prefix = dynamic_cast<PipeTileTrait *>(tile.traits.get())->prefix;
 
-	auto check = [&](int x, int y) {
-		auto checkPos = pos.add(x, y);
+	auto check = [&](Swan::Direction dir) {
+		auto checkPos = pos + dir;
 
 		auto tile = ctx.plane.getTile(checkPos);
-		if (dynamic_cast<PipeConnectibleTileTrait *>(tile.traits.get())) {
+		auto *connectible = dynamic_cast<PipeConnectibleTileTrait *>(
+			tile.traits.get());
+		if (
+				connectible &&
+				connectible->pipeConnectDirections.has(dir.opposite())) {
 			return true;
 		}
 
@@ -58,10 +62,10 @@ static void onPipeUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 	};
 
 	int key =
-		(check(-1, 0) << 3) | // left
-			(check(1, 0) << 2) | // right
-			(check(0, -1) << 1) | // up
-			(check(0, 1) << 0); // down
+		(check(Swan::Direction::LEFT) << 3) |
+			(check(Swan::Direction::RIGHT) << 2) |
+			(check(Swan::Direction::UP) << 1) |
+			(check(Swan::Direction::DOWN) << 0);
 
 	std::string name = Swan::cat(prefix, "::", DIRECTION_LUT[key]);
 

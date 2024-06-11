@@ -54,17 +54,27 @@ void registerItemFan(Swan::Mod &mod)
 		.traits = std::make_shared<PipeConnectibleTileTrait>(),
 	});
 
-	for (auto direction: {"left", "right"}) {
-		mod.registerTile({
-			.name = Swan::cat("item-fan::", direction),
-			.image = Swan::cat("core::tiles/item-fan::", direction),
-			.isSolid = true,
-			.droppedItem = "core::item-fan",
-			.tileEntity = "core::tile::item-fan",
-			.onTileUpdate = updateItemFan,
-			.traits = std::make_shared<PipeConnectibleTileTrait>(),
-		});
-	}
+	mod.registerTile({
+		.name = "item-fan::left",
+		.image = "core::tiles/item-fan::left",
+		.isSolid = true,
+		.droppedItem = "core::item-fan",
+		.tileEntity = "core::tile::item-fan",
+		.onTileUpdate = updateItemFan,
+		.traits = std::make_shared<PipeConnectibleTileTrait>(
+			Swan::Direction::LEFT),
+	});
+
+	mod.registerTile({
+		.name = "item-fan::right",
+		.image = "core::tiles/item-fan::right",
+		.isSolid = true,
+		.droppedItem = "core::item-fan",
+		.tileEntity = "core::tile::item-fan",
+		.onTileUpdate = updateItemFan,
+		.traits = std::make_shared<PipeConnectibleTileTrait>(
+			Swan::Direction::RIGHT),
+	});
 }
 
 }
