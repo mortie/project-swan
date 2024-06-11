@@ -7,6 +7,43 @@
 
 namespace CoreMod {
 
+void ItemPipeTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
+{
+	Swan::Vec2 center = tileEntity_.pos.as<float>().add(0.5, 0.5);
+
+	if (inbox_.contents_) {
+		auto &item = inbox_.contents_.value();
+		Swan::Vec2 from = center + item.from.vec().as<float>() * 0.5;
+		Swan::Vec2 pos = from.add(-0.25, -0.25);
+		rnd.drawTile({
+			Cygnet::Mat3gf{}.scale({0.5, 0.5}).translate(pos),
+			item.item->id, 0.8,
+		});
+	}
+
+	for (auto &item: contents_) {
+		float frac;
+		Swan::Vec2 from;
+		Swan::Vec2 to;
+		auto timer = item.timer + 1;
+		if (timer <= 5) {
+			frac = timer / 5.0;
+			from = (center + (item.from.vec().as<float>() * 0.5));
+			to = center;
+		} else {
+			frac = (timer - 5) / 5.0;
+			from = center;
+			to = (center + (item.to.vec().as<float>() * 0.5));;
+		}
+
+		Swan::Vec2 pos = Swan::lerp(from, to, frac).add(-0.25, -0.25);
+		rnd.drawTile({
+			Cygnet::Mat3gf{}.scale({0.5, 0.5}).translate(pos),
+			item.item->id, 0.8,
+		});
+	}
+}
+
 void ItemPipeTileEntity::tick(const Swan::Context &ctx, float dt)
 {
 	for (size_t i = 0; i < contents_.size();) {

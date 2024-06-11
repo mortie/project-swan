@@ -9,7 +9,7 @@
 
 namespace Swan {
 
-inline uint32_t random(uint32_t x)
+inline constexpr uint32_t random(uint32_t x)
 {
 	x ^= 0x55555555u;
 	x = ((x >> 16u) ^ x) * 0x45d9f3bu;
@@ -29,6 +29,13 @@ inline uint32_t random()
 inline float randfloat()
 {
 	return (random() & 0xffff) / (float)0xffff;
+}
+
+template<typename T, typename U>
+inline constexpr T lerp(T a, T b, U t, U max = 1)
+{
+	t /= max;
+	return (a * (1 - t)) + (b * t);
 }
 
 // Inherit from this class to make a class non-copyable
