@@ -51,7 +51,7 @@ private:
 	};
 
 	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
-		.size = {0.6, 1.9},
+		.size = {0.6, 1.5},
 		.mass = 80,
 		.bounciness = 0,
 	};
@@ -60,8 +60,8 @@ private:
 	static constexpr float SPRINT_FORCE_GROUND = 125 * PROPS.mass;
 	static constexpr float MOVE_FORCE_GROUND = 75 * PROPS.mass;
 	static constexpr float MOVE_FORCE_AIR = 10 * PROPS.mass;
-	static constexpr float JUMP_VEL = 11;
-	static constexpr float DOWN_FORCE = 20 * PROPS.mass;
+	static constexpr float JUMP_VEL = 12.5;
+	static constexpr float DOWN_FORCE = 30 * PROPS.mass;
 	static constexpr float LADDER_CLIMB_FORCE = 70 * PROPS.mass;
 	static constexpr float LADDER_MAX_VEL = 5;
 

@@ -33,7 +33,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	}
 
 	currentAnimation_->draw(rnd, mat.translate(
-		physicsBody_.body.pos - Swan::Vec2{0.6, 0.1}));
+		physicsBody_.body.pos - Swan::Vec2{0.6, 0.5}));
 
 	rnd.drawRect({Swan::Vec2(placePos_).add(0.1, 0.1), {0.8, 0.8}});
 	rnd.drawRect({breakPos_, {1, 1}});
