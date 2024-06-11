@@ -53,6 +53,8 @@ public:
 		case Direction::RIGHT:
 			return Direction::LEFT;
 		}
+
+		return Direction::NONE;
 	}
 
 	template<typename T = int>
@@ -70,6 +72,8 @@ public:
 		case Direction::RIGHT:
 			return {1, 0};
 		}
+
+		return {};
 	}
 
 	constexpr int asInt()

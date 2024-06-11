@@ -1,7 +1,5 @@
 #include "item-fan.h"
 
-#include <optional>
-
 #include "tileentities/ItemFanTileEntity.h"
 #include "pipe.h"
 
@@ -57,8 +55,8 @@ void registerItemFan(Swan::Mod &mod)
 		.image = "core::tiles/item-fan::left",
 		.isSolid = true,
 		.droppedItem = "core::item-fan",
-		.tileEntity = "core::tile::item-fan",
 		.onTileUpdate = updateItemFan,
+		.tileEntity = "core::tile::item-fan",
 		.traits = std::make_shared<PipeConnectibleTileTrait>(
 			Swan::Direction::LEFT),
 	});
@@ -68,8 +66,8 @@ void registerItemFan(Swan::Mod &mod)
 		.image = "core::tiles/item-fan::right",
 		.isSolid = true,
 		.droppedItem = "core::item-fan",
-		.tileEntity = "core::tile::item-fan",
 		.onTileUpdate = updateItemFan,
+		.tileEntity = "core::tile::item-fan",
 		.traits = std::make_shared<PipeConnectibleTileTrait>(
 			Swan::Direction::RIGHT),
 	});
