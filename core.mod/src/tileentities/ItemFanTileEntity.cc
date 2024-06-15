@@ -57,4 +57,22 @@ void ItemFanTileEntity::tick(const Swan::Context &ctx, float dt)
 	}
 }
 
+void ItemFanTileEntity::serialize(const Swan::Context &ctx, sbon::ObjectWriter w)
+{
+	dir_.serialize(w.key("dir"));
+	tileEntity_.serialize(w.key("ent"));
+}
+
+void ItemFanTileEntity::deserialize(const Swan::Context &ctx, sbon::ObjectReader r)
+{
+	r.all([&](std::string &key, sbon::Reader val) {
+		if (key == "dir") {
+			dir_.deserialize(val);
+		}
+		else if (key == "ent") {
+			tileEntity_.deserialize(val);
+		}
+	});
+}
+
 }

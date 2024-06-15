@@ -23,6 +23,9 @@ public:
 		dir_ = dir;
 	}
 
+	void serialize(const Swan::Context &ctx, sbon::ObjectWriter w) override;
+	void deserialize(const Swan::Context &ctx, sbon::ObjectReader r) override;
+
 private:
 	Swan::Direction dir_;
 	TileEntity tileEntity_;

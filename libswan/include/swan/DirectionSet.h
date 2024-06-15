@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <bit>
 #include <optional>
+#include <sbon.h>
 
 #include "Direction.h"
 #include "util.h"
@@ -70,6 +71,16 @@ public:
 
 	constexpr Iterator begin() const;
 	constexpr Iterator end() const;
+
+	void serialize(sbon::Writer w)
+	{
+		w.writeInt(value_);
+	}
+
+	void deserialize(sbon::Reader r)
+	{
+		value_ = uint8_t(r.getInt()) & 0x0f;
+	}
 
 private:
 	uint8_t value_ = 0;

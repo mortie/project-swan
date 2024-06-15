@@ -4,6 +4,7 @@
 #include "util.h"
 
 #include <ostream>
+#include <sbon.h>
 
 namespace Swan {
 
@@ -103,6 +104,21 @@ public:
 	{
 		int rand = ::Swan::random() % 4;
 		return Value(1 << rand);
+	}
+
+	void serialize(sbon::Writer w)
+	{
+		w.writeInt(asInt());
+	}
+
+	void deserialize(sbon::Reader r)
+	{
+		auto val = fromInt(r.getInt());
+		if (!val) {
+			throw std::runtime_error("Invalid direction value");
+		}
+
+		value_ = val.value();
 	}
 
 private:
