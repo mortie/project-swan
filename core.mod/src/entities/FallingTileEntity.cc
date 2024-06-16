@@ -54,16 +54,13 @@ void FallingTileEntity::serialize(
 void FallingTileEntity::deserialize(
 	const Swan::Context &ctx, sbon::ObjectReader r)
 {
-	r.all([&](std::string &key, sbon::Reader val) {
-		if (key == "body") {
+	r.match({
+		{"body", [&](sbon::Reader val) {
 			physicsBody_.deserialize(val);
-		}
-		else if (key == "tile") {
+		}},
+		{"tile", [&](sbon::Reader val) {
 			tile_ = ctx.world.getTileID(val.getString());
-		}
-		else {
-			val.skip();
-		}
+		}},
 	});
 }
 

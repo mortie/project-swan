@@ -109,16 +109,13 @@ void DynamiteEntity::serialize(
 void DynamiteEntity::deserialize(
 	const Swan::Context &ctx, sbon::ObjectReader r)
 {
-	r.all([&](std::string &key, sbon::Reader val) {
-		if (key == "body") {
+	r.match({
+		{"body", [&](sbon::Reader val) {
 			physicsBody_.deserialize(val);
-		}
-		else if (key == "fuse") {
+		}},
+		{"fuse", [&](sbon::Reader val) {
 			fuse_ = val.getFloat();
-		}
-		else {
-			val.skip();
-		}
+		}},
 	});
 }
 

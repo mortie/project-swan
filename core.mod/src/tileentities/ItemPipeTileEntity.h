@@ -68,9 +68,9 @@ private:
 
 	void moveItemOut(const Swan::Context &ctx, size_t index);
 
-	std::vector<MovingItem> contents_;
 	TileEntity tileEntity_;
 	Inbox inbox_;
+	std::vector<MovingItem> contents_;
 };
 
 }

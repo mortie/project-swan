@@ -1,6 +1,5 @@
 #include "ItemPipeTileEntity.h"
 
-#include <array>
 #include <optional>
 
 #include "entities/ItemStackEntity.h"
@@ -140,13 +139,69 @@ void ItemPipeTileEntity::onDespawn(const Swan::Context &ctx)
 void ItemPipeTileEntity::serialize(
 	const Swan::Context &ctx, sbon::ObjectWriter w)
 {
-	// TODO
+	tileEntity_.serialize(w.key("ent"));
+
+	if (inbox_.contents_) {
+		w.key("inbox").writeArray([&](sbon::Writer w) {
+			w.writeString(inbox_.contents_->item->name);
+			inbox_.contents_->from.serialize(w);
+		});
+	} else {
+		w.key("inbox").writeNull();
+	}
+
+	w.key("contents").writeArray([&](sbon::Writer w) {
+		for (auto &item: contents_) {
+			w.writeArray([&](sbon::Writer w) {
+				w.writeString(item.item->name);
+				item.from.serialize(w);
+				item.to.serialize(w);
+				w.writeInt(item.timer);
+			});
+		}
+	});
 }
 
 void ItemPipeTileEntity::deserialize(
 	const Swan::Context &ctx, sbon::ObjectReader r)
 {
-	// TODO
+	std::string str;
+	r.match({
+		{"ent", [&](sbon::Reader val) {
+			tileEntity_.deserialize(val);
+		}},
+		{"inbox", [&](sbon::Reader val) {
+			if (val.getType() == sbon::Type::NIL) {
+				val.getNil();
+				inbox_.contents_ = std::nullopt;
+				return;
+			}
+
+			InboxItem item;
+
+			val.getString(str);
+			item.item = &ctx.world.getItem(str);
+
+			item.from.deserialize(val);
+
+			inbox_.contents_ = item;
+		}},
+		{"contents", [&](sbon::Reader val) {
+			contents_.clear();
+			val.readArray([&](sbon::Reader val) {
+				val.getArray([&](sbon::ArrayReader val) {
+					MovingItem item;
+
+					val.next().getString(str);
+					item.item = &ctx.world.getItem(str);
+					item.from.deserialize(val.next());
+					item.to.deserialize(val.next());
+					item.timer = val.next().getInt();
+					contents_.push_back(item);
+				});
+			});
+		}},
+	});
 }
 
 Swan::ItemStack ItemPipeTileEntity::Inbox::insert(Swan::ItemStack stack)

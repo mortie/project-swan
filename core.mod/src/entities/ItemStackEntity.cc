@@ -56,19 +56,16 @@ void ItemStackEntity::serialize(
 void ItemStackEntity::deserialize(
 	const Swan::Context &ctx, sbon::ObjectReader r)
 {
-	r.all([&](std::string &key, sbon::Reader val) {
-		if (key == "body") {
+	r.match({
+		{"body", [&](sbon::Reader val) {
 			physicsBody_.deserialize(val);
-		}
-		else if (key == "lifetime") {
+		}},
+		{"lifetime", [&](sbon::Reader val) {
 			lifetime_ = val.getFloat();
-		}
-		else if (key == "item") {
+		}},
+		{"item", [&](sbon::Reader val) {
 			item_ = &ctx.world.getItem(val.getString());
-		}
-		else {
-			val.skip();
-		}
+		}},
 	});
 }
 

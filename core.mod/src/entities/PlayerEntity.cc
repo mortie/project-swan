@@ -527,19 +527,16 @@ void PlayerEntity::serialize(
 void PlayerEntity::deserialize(
 	const Swan::Context &ctx, sbon::ObjectReader r)
 {
-	r.all([&](std::string &key, sbon::Reader val) {
-		if (key == "body") {
+	r.match({
+		{"body", [&](sbon::Reader val) {
 			physicsBody_.deserialize(val);
-		}
-		else if (key == "inventory") {
+		}},
+		{"inventory", [&](sbon::Reader val) {
 			inventory_.deserialize(ctx, val);
-		}
-		else if (key == "held-stack") {
+		}},
+		{"held-stack", [&](sbon::Reader val) {
 			heldStack_.deserialize(ctx, val);
-		}
-		else {
-			val.skip();
-		}
+		}},
 	});
 }
 
