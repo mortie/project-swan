@@ -179,12 +179,14 @@ void ItemPipeTileEntity::deserialize(
 
 			InboxItem item;
 
-			val.getString(str);
-			item.item = &ctx.world.getItem(str);
+			val.getArray([&](sbon::ArrayReader val) {
+				val.next().getString(str);
+				item.item = &ctx.world.getItem(str);
 
-			item.from.deserialize(val);
+				item.from.deserialize(val.next());
 
-			inbox_.contents_ = item;
+				inbox_.contents_ = item;
+			});
 		}},
 		{"contents", [&](sbon::Reader val) {
 			contents_.clear();
