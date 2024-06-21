@@ -61,6 +61,7 @@ public:
 
 	void update(const Context &ctx, float dt) override;
 	void tick(const Context &ctx, float dt) override;
+	void tick2(const Context &ctx, float dt) override;
 	void draw(const Context &ctx, Cygnet::Renderer &rnd) override;
 	void erase(const Context &ctx, uint64_t id) override;
 
@@ -277,6 +278,17 @@ inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt)
 	}
 
 	hasTicked_ = true;
+}
+
+template<typename Ent>
+inline void EntityCollectionImpl<Ent>::tick2(const Context &ctx, float dt)
+{
+	ZoneScopedN(__PRETTY_FUNCTION__);
+	for (auto &w: entities_) {
+		ZoneScopedN("tick2");
+		currentId_ = w.id;
+		w.ent.tick2(ctx, dt);
+	}
 }
 
 template<typename Ent>

@@ -33,6 +33,8 @@ public:
 	{}
 	virtual void tick(const Context &ctx, float dt)
 	{}
+	virtual void tick2(const Context &ctx, float dt)
+	{}
 	virtual void onSpawn(const Context &ctx)
 	{}
 	virtual void onDespawn(const Context &ctx)

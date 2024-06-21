@@ -10,16 +10,6 @@ void ItemPipeTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 {
 	Swan::Vec2 center = tileEntity_.pos.as<float>().add(0.5, 0.5);
 
-	if (inbox_.contents_) {
-		auto &item = inbox_.contents_.value();
-		Swan::Vec2 from = center + item.from.vec().as<float>() * 0.5;
-		Swan::Vec2 pos = from.add(-0.25, -0.25);
-		rnd.drawTile(Cygnet::RenderLayer::BEHIND, {
-			Cygnet::Mat3gf{}.scale({0.5, 0.5}).translate(pos),
-			item.item->id, 0.8,
-		});
-	}
-
 	for (auto &item: contents_) {
 		float frac;
 		Swan::Vec2 from;
@@ -54,7 +44,10 @@ void ItemPipeTileEntity::tick(const Swan::Context &ctx, float dt)
 			i += 1;
 		}
 	}
+}
 
+void ItemPipeTileEntity::tick2(const Swan::Context &ctx, float dt)
+{
 	if (inbox_.contents_ && contents_.size() < 10) {
 		auto input = inbox_.contents_.value();
 		inbox_.contents_.reset();

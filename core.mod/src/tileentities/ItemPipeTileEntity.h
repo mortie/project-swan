@@ -23,6 +23,7 @@ public:
 
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
 	void tick(const Swan::Context &ctx, float dt) override;
+	void tick2(const Swan::Context &ctx, float dt) override;
 
 	void onDespawn(const Swan::Context &ctx) override;
 

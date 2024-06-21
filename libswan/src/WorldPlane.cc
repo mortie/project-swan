@@ -559,6 +559,11 @@ void WorldPlane::tick(float dt)
 		coll->tick(ctx, dt);
 	}
 
+	for (auto &coll: entColls_) {
+		currentEntCol_ = coll.get();
+		coll->tick2(ctx, dt);
+	}
+
 	// Tick all chunks, figure out if any of them should be deleted or compressed
 	size_t activeChunkIndex = 0;
 	while (activeChunkIndex < activeChunks_.size()) {
