@@ -14,9 +14,18 @@ void ItemFanTileEntity::update(const Swan::Context &ctx, float dt)
 		pos = tileEntity_.pos.as<float>().add(-size.x, 0);
 	}
 
+	Swan::Vec2 center = tileEntity_.pos.as<float>().add(0.5, 0.5);
+
 	auto &ents = ctx.plane.getEntitiesInArea(pos, size);
 	auto force = dir_.vec().as<float>() * 500;
 	for (auto &found: ents) {
+		if (
+				!pickup_ &&
+				(found.body.center() - center).squareLength() < 0.9 * 0.9 &&
+				found.ref.as<ItemStackEntity>()) {
+			pickup_ = found.ref;
+		}
+
 		found.ref.traitThen<Swan::PhysicsBodyTrait>([&](auto &physics) {
 			physics.applyForce(force);
 		});
@@ -25,35 +34,28 @@ void ItemFanTileEntity::update(const Swan::Context &ctx, float dt)
 
 void ItemFanTileEntity::tick(const Swan::Context &ctx, float dt)
 {
-	Swan::Vec2 pos;
-	Swan::Vec2 size = {0.1, 1};
-	if (dir_ == Swan::Direction::LEFT) {
-		pos = tileEntity_.pos.as<float>().add(1, 0);
-	} else {
-		pos = tileEntity_.pos.as<float>().add(-size.x, 0);
+	auto pickup = pickup_;
+	pickup_ = {};
+	if (!pickup) {
+		return;
 	}
 
-	auto &ents = ctx.plane.getEntitiesInArea(pos, size);
-	for (auto &found: ents) {
-		auto *stackEnt = dynamic_cast<ItemStackEntity *>(found.ref.get());
-		if (!stackEnt) {
-			continue;
-		}
-
-		auto inv = ctx.plane.getTileEntity(tileEntity_.pos + dir_)
-			.trait<Swan::InventoryTrait>();
-		if (!inv) {
-			return;
-		}
-
-		Swan::ItemStack stack(stackEnt->item(), 1);
-		stack = inv->insert(dir_.opposite(), stack);
-
-		if (stack.empty()) {
-			ctx.plane.despawnEntity(found.ref);
-		}
-
+	auto inv = ctx.plane.getTileEntity(tileEntity_.pos + dir_)
+		.trait<Swan::InventoryTrait>();
+	if (!inv) {
 		return;
+	}
+
+	auto *stackEnt = pickup.as<ItemStackEntity>();
+	if (!stackEnt) {
+		return;
+	}
+
+	Swan::ItemStack stack(stackEnt->item(), 1);
+	stack = inv->insert(dir_.opposite(), stack);
+
+	if (stack.empty()) {
+		ctx.plane.despawnEntity(pickup);
 	}
 }
 

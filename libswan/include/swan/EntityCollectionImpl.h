@@ -332,6 +332,7 @@ inline void EntityCollectionImpl<Ent>::erase(const Context &ctx, uint64_t id)
 
 	if (index == entities_.size() - 1) {
 		entities_.pop_back();
+		idToIndex_.erase(id);
 		return;
 	}
 

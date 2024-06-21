@@ -29,6 +29,8 @@ public:
 private:
 	Swan::Direction dir_;
 	TileEntity tileEntity_;
+
+	Swan::EntityRef pickup_;
 };
 
 }

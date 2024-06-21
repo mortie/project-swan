@@ -59,6 +59,12 @@ public:
 	Entity *get();
 	BodyTrait::Body *getBody();
 
+	template<typename T>
+	T *as()
+	{
+		return dynamic_cast<T *>(get());
+	}
+
 	template<typename Trait>
 	auto *trait();
 
