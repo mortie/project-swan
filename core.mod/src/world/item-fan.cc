@@ -44,7 +44,7 @@ void registerItemFan(Swan::Mod &mod)
 	mod.registerTile({
 		.name = "item-fan",
 		.image = "core::tiles/item-fan",
-		.isSolid = true,
+		.isSolid = false,
 		.droppedItem = "core::item-fan",
 		.onTileUpdate = updateItemFan,
 		.traits = std::make_shared<PipeConnectibleTileTrait>(),
@@ -53,7 +53,7 @@ void registerItemFan(Swan::Mod &mod)
 	mod.registerTile({
 		.name = "item-fan::left",
 		.image = "core::tiles/item-fan::left",
-		.isSolid = true,
+		.isSolid = false,
 		.droppedItem = "core::item-fan",
 		.onTileUpdate = updateItemFan,
 		.tileEntity = "core::tile::item-fan",
@@ -64,7 +64,7 @@ void registerItemFan(Swan::Mod &mod)
 	mod.registerTile({
 		.name = "item-fan::right",
 		.image = "core::tiles/item-fan::right",
-		.isSolid = true,
+		.isSolid = false,
 		.droppedItem = "core::item-fan",
 		.onTileUpdate = updateItemFan,
 		.tileEntity = "core::tile::item-fan",

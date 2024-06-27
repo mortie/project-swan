@@ -84,7 +84,7 @@ void registerGlassPipe(Swan::Mod &mod)
 	mod.registerTile({
 		.name = "glass-pipe",
 		.image = "core::tiles/glass-pipe/cross",
-		.isOpaque = false,
+		.isSolid = false,
 		.droppedItem = "core::glass-pipe",
 		.onTileUpdate = onPipeUpdate,
 		.traits = traits,
@@ -93,7 +93,7 @@ void registerGlassPipe(Swan::Mod &mod)
 	mod.registerTile({
 		.name = "glass-pipe::cross",
 		.image = "core::tiles/glass-pipe/cross",
-		.isOpaque = false,
+		.isSolid = false,
 		.droppedItem = "core::glass-pipe",
 		.onTileUpdate = onPipeUpdate,
 		.tileEntity = "core::tile::item-pipe",
@@ -103,7 +103,7 @@ void registerGlassPipe(Swan::Mod &mod)
 	mod.registerTile({
 		.name = "glass-pipe::lone",
 		.image = "core::tiles/glass-pipe/lone",
-		.isOpaque = false,
+		.isSolid = false,
 		.droppedItem = "core::glass-pipe",
 		.onTileUpdate = onPipeUpdate,
 		.tileEntity = "core::tile::item-pipe",
@@ -114,7 +114,7 @@ void registerGlassPipe(Swan::Mod &mod)
 		mod.registerTile({
 			.name = Swan::cat("glass-pipe::elbow::", variant),
 			.image = Swan::cat("core::tiles/glass-pipe/elbow::", variant),
-			.isOpaque = false,
+			.isSolid = false,
 			.droppedItem = "core::glass-pipe",
 			.onTileUpdate = onPipeUpdate,
 			.tileEntity = "core::tile::item-pipe",
@@ -126,7 +126,7 @@ void registerGlassPipe(Swan::Mod &mod)
 		mod.registerTile({
 			.name = Swan::cat("glass-pipe::line::", variant),
 			.image = Swan::cat("core::tiles/glass-pipe/line::", variant),
-			.isOpaque = false,
+			.isSolid = false,
 			.droppedItem = "core::glass-pipe",
 			.onTileUpdate = onPipeUpdate,
 			.tileEntity = "core::tile::item-pipe",
@@ -138,7 +138,7 @@ void registerGlassPipe(Swan::Mod &mod)
 		mod.registerTile({
 			.name = Swan::cat("glass-pipe::open::", variant),
 			.image = Swan::cat("core::tiles/glass-pipe/open::", variant),
-			.isOpaque = false,
+			.isSolid = false,
 			.droppedItem = "core::glass-pipe",
 			.onTileUpdate = onPipeUpdate,
 			.tileEntity = "core::tile::item-pipe",
@@ -150,7 +150,7 @@ void registerGlassPipe(Swan::Mod &mod)
 		mod.registerTile({
 			.name = Swan::cat("glass-pipe::tee::", variant),
 			.image = Swan::cat("core::tiles/glass-pipe/tee::", variant),
-			.isOpaque = false,
+			.isSolid = false,
 			.droppedItem = "core::glass-pipe",
 			.onTileUpdate = onPipeUpdate,
 			.tileEntity = "core::tile::item-pipe",
