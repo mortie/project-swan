@@ -146,7 +146,10 @@ function updateMouse() {
 	if (cellY > HEIGHT - 2) cellY = HEIGHT - 2;
 
 	let type, mass;
-	if (evt.buttons == 1) {
+	if (evt.buttons == 1 && evt.shiftKey) {
+		type = TYPE_AIR;
+		mass = 0;
+	} else if (evt.buttons == 1) {
 		type = TYPE_SOLID;
 		mass = 0;
 	} else {
@@ -165,7 +168,7 @@ function updateMouse() {
 canvas.addEventListener("mousedown", onMouse);
 canvas.addEventListener("mousemove", onMouse);
 canvas.addEventListener("contextmenu", evt => evt.preventDefault());
-canvas.addEventListener("mouseup", () => prevMouseEvt = null);
+canvas.addEventListener("mouseup", () => currMouseEvt = null);
 
 function updateVelocities(x, y) {
 	let tSelf = fields.type[y][x];
