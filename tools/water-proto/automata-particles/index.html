@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Water Prototype</title>
+		<link rel="stylesheet" href="style.css">
+	</head>
+
+	<body>
+		<button onclick="toggleSim()">Toggle</button>
+		<button onclick="stepSim()">Step</button>
+		-- Left click: Place solid
+		-- Right click: Place water
+		-- Shift click: Clear
+		<br>
+		<canvas id="canvas"></canvas>
+		<div>Particles: <span id="particleCount">?</span></div>
+		<div>Updates: <span id="updateCount">?</span></div>
+		<div>Sim time: <span id="simTime">?</span>ms</div>
+		<script src="script.js"></script>
+	</body>
+</html>
