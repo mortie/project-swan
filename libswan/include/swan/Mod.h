@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 
+#include "Fluid.h"
 #include "Tile.h"
 #include "Item.h"
 #include "Recipe.h"
@@ -23,6 +24,7 @@ public:
 
 	void registerTile(Tile::Builder &&tile);
 	void registerItem(Item::Builder &&item);
+	void registerFluid(Fluid::Builder &&item);
 	void registerRecipe(Recipe::Builder &&recipe);
 	void registerSprite(std::string &&sprite);
 	void registerSound(std::string &&sprite);
@@ -40,6 +42,7 @@ private:
 	const std::string name_;
 	std::vector<Tile::Builder> tiles_;
 	std::vector<Item::Builder> items_;
+	std::vector<Fluid::Builder> fluids_;
 	std::vector<Recipe::Builder> recipes_;
 	std::vector<std::string> sprites_;
 	std::vector<std::string> sounds_;
@@ -77,6 +80,11 @@ public:
 	const std::vector<Item::Builder> &items()
 	{
 		return mod_->items_;
+	}
+
+	const std::vector<Fluid::Builder> &fluids()
+	{
+		return mod_->fluids_;
 	}
 
 	const std::vector<Recipe::Builder> &recipes()

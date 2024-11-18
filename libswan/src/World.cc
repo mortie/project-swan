@@ -256,6 +256,49 @@ void World::buildResources()
 		}
 	}
 
+	// Load all fluids.
+
+	// Air
+	static_assert(AIR_FLUID_ID == 0);
+	fluidsMap_[AIR_FLUID_NAME] = AIR_FLUID_ID;
+	fluids_.emplace_back(AIR_FLUID_ID, AIR_FLUID_NAME, Fluid::Builder{
+		.color = Cygnet::Color{0, 0, 0, 0},
+		.density = 0,
+	});
+
+	// Solid
+	static_assert(SOLID_FLUID_ID == 1);
+	fluidsMap_[SOLID_FLUID_NAME] = SOLID_FLUID_ID;
+	fluids_.emplace_back(SOLID_FLUID_ID, SOLID_FLUID_NAME, Fluid::Builder{
+		.color = Cygnet::Color{0, 0, 0, 1},
+		.density = 0,
+	});
+
+	// Fluids from mods
+	for (auto &mod: mods_) {
+		for (auto &fluidBuilder: mod.fluids()) {
+			std::string fluidName = cat(mod.name(), "::", fluidBuilder.name);
+
+			if (fluids_.size() >= INVALID_FLUID_ID) {
+				warn << "Can't load fluid " << fluidName << ": Fluid overflow";
+				continue;
+			}
+
+			Fluid::ID id = Fluid::ID(fluids_.size());
+			fluidsMap_[fluidName] = id;
+			fluids_.emplace_back(id, std::move(fluidName), fluidBuilder);
+		}
+	}
+
+	// Invalid
+	fluidsMap_[INVALID_FLUID_NAME] = INVALID_FLUID_ID;
+	while (fluids_.size() <= INVALID_FLUID_ID) {
+		fluids_.emplace_back(fluids_.size(), INVALID_FLUID_NAME, Fluid::Builder{
+			.color = Cygnet::Color{1, 0.19, 0.97, 1},
+			.density = 0,
+		});
+	}
+
 	// Load recipes.
 	std::vector<Recipe::Items> recipeInputs;
 	for (auto &mod: mods_) {
@@ -333,7 +376,6 @@ void World::buildResources()
 		}
 	}
 
-	invalidTile_ = &tiles_[INVALID_TILE_ID];
 	invalidItem_ = &items_.at(INVALID_TILE_NAME);
 
 	resources_ = Cygnet::ResourceManager(std::move(builder));
@@ -433,13 +475,6 @@ Tile::ID World::getTileID(const std::string &name)
 	return iter->second;
 }
 
-Tile &World::getTile(const std::string &name)
-{
-	Tile::ID id = getTileID(name);
-
-	return getTileByID(id);
-}
-
 Item &World::getItem(const std::string &name)
 {
 	auto iter = items_.find(name);
@@ -450,6 +485,18 @@ Item &World::getItem(const std::string &name)
 	}
 
 	return iter->second;
+}
+
+Fluid::ID World::getFluidID(const std::string &name)
+{
+	auto it = fluidsMap_.find(name);
+
+	if (it == fluidsMap_.end()) {
+		warn << "Tried to get non-existent fluid " << name << "!";
+		return INVALID_FLUID_ID;
+	}
+
+	return it->second;
 }
 
 Cygnet::RenderSprite &World::getSprite(const std::string &name)

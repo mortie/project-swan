@@ -16,6 +16,11 @@ inline void Mod::registerItem(Item::Builder &&item)
 	items_.push_back(std::move(item));
 }
 
+inline void Mod::registerFluid(Fluid::Builder &&fluid)
+{
+	fluids_.push_back(std::move(fluid));
+}
+
 inline void Mod::registerRecipe(Recipe::Builder &&recipe)
 {
 	recipes_.push_back(std::move(recipe));

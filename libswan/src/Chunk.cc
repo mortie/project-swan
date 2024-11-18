@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "log.h"
+#include "World.h"
 
 namespace Swan {
 
@@ -104,6 +105,27 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
 	Vec2 pos = (Vec2)pos_ * Vec2{CHUNK_WIDTH, CHUNK_HEIGHT};
 	rnd.drawChunk({pos, renderChunk_});
 	rnd.drawChunkShadow({pos, renderChunkShadow_});
+
+	for (int y = 0; y < CHUNK_HEIGHT * FLUID_RESOLUTION; ++y) {
+		auto *row = getFluidData() + (y * CHUNK_WIDTH * FLUID_RESOLUTION);
+		float rndY = pos.y + (float(y) / FLUID_RESOLUTION);
+		for (int x = 0; x < CHUNK_WIDTH * FLUID_RESOLUTION; ++x) {
+			Fluid::ID cell = row[x];
+			if (cell == World::AIR_FLUID_ID || cell == World::SOLID_FLUID_ID) {
+				continue;
+			}
+
+			Fluid &fluid = ctx.world.getFluidByID(cell);
+
+			float rndX = pos.x + (float(x) / FLUID_RESOLUTION);
+			rnd.drawRect(Cygnet::Renderer::DrawRect{
+				.pos = {rndX, rndY},
+				.size = {1.0 / FLUID_RESOLUTION, 1.0 / FLUID_RESOLUTION},
+				.outline = fluid.color,
+				.fill = fluid.color,
+			});
+		}
+	}
 }
 
 void Chunk::serialize(sbon::Writer w)

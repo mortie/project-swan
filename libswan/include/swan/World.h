@@ -9,6 +9,7 @@
 #include <cygnet/util.h>
 #include <sbon.h>
 
+#include "Fluid.h"
 #include "common.h"
 #include "Item.h"
 #include "Tile.h"
@@ -33,6 +34,13 @@ public:
 	static constexpr char AIR_TILE_NAME[] = "@::air";
 
 	static constexpr char INVALID_SPRITE_NAME[] = "@::invalid";
+
+	static constexpr Fluid::ID AIR_FLUID_ID = 0;
+	static constexpr char AIR_FLUID_NAME[] = "@::air";
+	static constexpr Fluid::ID SOLID_FLUID_ID = 1;
+	static constexpr char SOLID_FLUID_NAME[] = "@::solid";
+	static constexpr Fluid::ID INVALID_FLUID_ID = 255;
+	static constexpr char INVALID_FLUID_NAME[] = "@::invalid";
 
 	static constexpr char INVALID_SOUND_NAME[] = "@::invalid";
 	static constexpr char THUD_SOUND_NAME[] = "@::thud";
@@ -68,8 +76,24 @@ public:
 	}
 
 	Tile::ID getTileID(const std::string &name);
-	Tile &getTile(const std::string &name);
+	Tile &getTile(const std::string &name)
+	{
+		return tiles_[getTileID(name)];
+	}
+
 	Item &getItem(const std::string &name);
+
+	Fluid &getFluidByID(Fluid::ID id)
+	{
+		return fluids_[id];
+	}
+
+	Fluid::ID getFluidID(const std::string &name);
+	Fluid &getFluid(const std::string &name)
+	{
+		return fluids_[getFluidID(name)];
+	}
+
 	Cygnet::RenderSprite &getSprite(const std::string &name);
 	SoundAsset *getSound(const std::string &name);
 
@@ -80,12 +104,17 @@ public:
 
 	Tile &invalidTile()
 	{
-		return *invalidTile_;
+		return tiles_[INVALID_TILE_ID];
 	}
 
 	Item &invalidItem()
 	{
 		return *invalidItem_;
+	}
+
+	Fluid &invalidFluid()
+	{
+		return fluids_[INVALID_FLUID_ID];
 	}
 
 	void serialize(sbon::Writer w);
@@ -97,6 +126,8 @@ public:
 	std::vector<Tile> tiles_;
 	std::unordered_map<std::string, Tile::ID> tilesMap_;
 	std::unordered_map<std::string, Item> items_;
+	std::vector<Fluid> fluids_;
+	std::unordered_map<std::string, Fluid::ID> fluidsMap_;
 	std::vector<Recipe> recipes_;
 	std::unordered_map<std::string, WorldGen::Factory> worldGenFactories_;
 	std::unordered_map<std::string, EntityCollection::Factory> entCollFactories_;
@@ -131,7 +162,6 @@ private:
 	std::vector<PlaneWrapper> planes_;
 	std::string defaultWorldGen_;
 
-	Tile *invalidTile_;
 	Item *invalidItem_;
 };
 

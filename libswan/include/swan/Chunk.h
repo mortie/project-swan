@@ -10,6 +10,7 @@
 #include <sbon.h>
 
 #include "common.h"
+#include "Fluid.h"
 #include "Tile.h"
 #include "EntityCollection.h"
 
@@ -26,9 +27,11 @@ public:
 		CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID);
 	static constexpr size_t LIGHT_DATA_SIZE =
 		CHUNK_WIDTH * CHUNK_HEIGHT;
+	static constexpr size_t FLUID_DATA_SIZE =
+		CHUNK_WIDTH * FLUID_RESOLUTION * CHUNK_HEIGHT * FLUID_RESOLUTION;
 
 	static constexpr size_t DATA_SIZE =
-		TILE_DATA_SIZE + LIGHT_DATA_SIZE;
+		TILE_DATA_SIZE + LIGHT_DATA_SIZE + FLUID_DATA_SIZE;
 
 	// What does this chunk want the world gen to do after a tick?
 	enum class TickAction {
@@ -40,7 +43,8 @@ public:
 	Chunk(ChunkPos pos): pos_(pos)
 	{
 		data_.reset(new uint8_t[DATA_SIZE]);
-		memset(getLightData(), 0, CHUNK_WIDTH * CHUNK_HEIGHT);
+		memset(getLightData(), 0, LIGHT_DATA_SIZE);
+		memset(getFluidData(), 0, FLUID_DATA_SIZE);
 	}
 
 	Tile::ID *getTileData()
@@ -59,6 +63,12 @@ public:
 	{
 		assert(isActive());
 		return data_.get() + TILE_DATA_SIZE;
+	}
+
+	Fluid::ID *getFluidData()
+	{
+		assert(isActive());
+		return data_.get() + TILE_DATA_SIZE + LIGHT_DATA_SIZE;
 	}
 
 	Tile::ID getTileID(ChunkRelPos pos) const
