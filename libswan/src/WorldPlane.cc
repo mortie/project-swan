@@ -227,10 +227,10 @@ bool WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 	}
 
 	if (oldTile.isSolid && !newTile.isSolid) {
-		automata_.clear(pos);
+		// TODO: Clear fluid tile
 	}
 	else if (!oldTile.isSolid && newTile.isSolid) {
-		automata_.fill(pos);
+		// TODO: Set fluid tile to solid
 	}
 
 	if (newTile.onSpawn) {
@@ -353,10 +353,10 @@ bool WorldPlane::placeTile(TilePos pos, Tile::ID id)
 	}
 
 	if (oldTile.isSolid && !newTile.isSolid) {
-		automata_.clear(pos);
+		// TODO: Clear fluid solid
 	}
 	else if (!oldTile.isSolid && newTile.isSolid) {
-		automata_.fill(pos);
+		// TODO: Set fluid solid
 	}
 
 	if (newTile.tileEntity) {
@@ -476,11 +476,6 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 					rnd.drawRect({chunk.pos() * size, size, {0.7, 0.1, 0.2, 1}});
 				}
 			}
-
-			{
-				ZoneScopedN("Automata chunk");
-				automata_.draw(pcpos + ChunkPos{x, y}, rnd);
-			}
 		}
 	}
 
@@ -512,7 +507,7 @@ void WorldPlane::update(float dt)
 				Tile &tile = world_->getTileByID(id);
 
 				if (tile.isSolid) {
-					automata_.fill(base.add(x, y));
+					// TODO: Fill fluid grid
 				}
 
 				if (tile.onSpawn) {
@@ -618,12 +613,6 @@ void WorldPlane::tick(float dt)
 	}
 	scheduledTileUpdates.clear();
 	scheduledTileUpdatesB_ = std::move(scheduledTileUpdates);
-
-	// Run automata
-	{
-		ZoneScopedN("Automata tick");
-		automata_.tick();
-	}
 }
 
 void WorldPlane::addLight(TilePos pos, float level)

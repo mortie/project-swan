@@ -19,7 +19,6 @@
 #include "Entity.h"
 #include "EntityCollection.h"
 #include "LightServer.h"
-#include "Automata.h"
 
 namespace Swan {
 
@@ -90,7 +89,7 @@ public:
 
 	void setWater(TilePos pos)
 	{
-		automata_.fillWater(pos);
+		// TODO
 	}
 
 	// LightingCallback implementation
@@ -135,8 +134,6 @@ private:
 	// Tiles to update the next tick
 	std::vector<TilePos> scheduledTileUpdates_;
 	std::vector<TilePos> scheduledTileUpdatesB_;
-
-	Automata automata_;
 
 	// The lighting server must destruct first. Until it has been destructed,
 	// it might call onLightChunkUpdated. If that happens after some other
