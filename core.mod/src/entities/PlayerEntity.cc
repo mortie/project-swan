@@ -327,7 +327,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 
 	if (ctx.game.isKeyPressed(GLFW_KEY_C)) {
-		ctx.plane.setWater(placePos_);
+		ctx.plane.setFluid(placePos_, ctx.world.getFluid("core::water").id);
 	}
 
 	// Toggle inventory

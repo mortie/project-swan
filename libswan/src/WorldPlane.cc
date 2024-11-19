@@ -227,10 +227,10 @@ bool WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 	}
 
 	if (oldTile.isSolid && !newTile.isSolid) {
-		// TODO: Clear fluid tile
+		setFluid(pos, World::AIR_FLUID_ID);
 	}
 	else if (!oldTile.isSolid && newTile.isSolid) {
-		// TODO: Set fluid tile to solid
+		setFluid(pos, World::SOLID_FLUID_ID);
 	}
 
 	if (newTile.onSpawn) {
@@ -353,10 +353,10 @@ bool WorldPlane::placeTile(TilePos pos, Tile::ID id)
 	}
 
 	if (oldTile.isSolid && !newTile.isSolid) {
-		// TODO: Clear fluid solid
+		setFluid(pos, World::AIR_FLUID_ID);
 	}
 	else if (!oldTile.isSolid && newTile.isSolid) {
-		// TODO: Set fluid solid
+		setFluid(pos, World::SOLID_FLUID_ID);
 	}
 
 	if (newTile.tileEntity) {
@@ -507,7 +507,7 @@ void WorldPlane::update(float dt)
 				Tile &tile = world_->getTileByID(id);
 
 				if (tile.isSolid) {
-					// TODO: Fill fluid grid
+					chunk->setFluidID({x, y}, World::SOLID_FLUID_ID);
 				}
 
 				if (tile.onSpawn) {

@@ -123,7 +123,7 @@ public:
 			.isSolid = false,
 			.onSpawn = +[] (const Swan::Context &ctx, Swan::TilePos pos) {
 				ctx.plane.setTileIDWithoutUpdate(pos, Swan::World::AIR_TILE_ID);
-				ctx.plane.setWater(pos);
+				ctx.plane.setFluid(pos, ctx.world.getFluid("core::water").id);
 				return true;
 			},
 		});
@@ -151,6 +151,11 @@ public:
 				slot.remove(1);
 				ctx.plane.spawnEntity<DynamiteEntity>(pos, dir * 15);
 			},
+		});
+
+		registerFluid({
+			.name = "water",
+			.color = {0.21, 0.78, 0.78, 0.9},
 		});
 
 		registerRecipe({

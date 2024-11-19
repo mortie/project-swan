@@ -99,6 +99,16 @@ public:
 		needLightRender_ = true;
 	}
 
+	void setFluidID(ChunkRelPos pos, Fluid::ID fluid)
+	{
+		auto xStart = pos.x * FLUID_RESOLUTION;
+		auto yStart = pos.y * FLUID_RESOLUTION;
+		for (auto y = yStart; y < yStart + FLUID_RESOLUTION; ++y) {
+			auto *row = getFluidData() + (y * CHUNK_WIDTH * FLUID_RESOLUTION);
+			memset(row + xStart, fluid, FLUID_RESOLUTION);
+		}
+	}
+
 	TilePos topLeft() const
 	{
 		return pos_ * TilePos{CHUNK_WIDTH, CHUNK_HEIGHT};

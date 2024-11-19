@@ -87,9 +87,11 @@ public:
 	void addLight(TilePos pos, float level);
 	void removeLight(TilePos pos, float level);
 
-	void setWater(TilePos pos)
+	void setFluid(TilePos pos, Fluid::ID fluid)
 	{
-		// TODO
+		auto chunkPos = tilePosToChunkPos(pos);
+		auto &chunk = getChunk(chunkPos);
+		chunk.setFluidID(tilePosToChunkRelPos(pos), fluid);
 	}
 
 	// LightingCallback implementation

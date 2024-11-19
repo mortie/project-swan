@@ -270,7 +270,7 @@ void World::buildResources()
 	static_assert(SOLID_FLUID_ID == 1);
 	fluidsMap_[SOLID_FLUID_NAME] = SOLID_FLUID_ID;
 	fluids_.emplace_back(SOLID_FLUID_ID, SOLID_FLUID_NAME, Fluid::Builder{
-		.color = Cygnet::Color{0, 0, 0, 1},
+		.color = Cygnet::Color{0, 0, 0},
 		.density = 0,
 	});
 
