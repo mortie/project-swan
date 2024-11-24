@@ -19,12 +19,12 @@ void Chunk::compress()
 
 	// We only need a fixed-length temp buffer;
 	// if the compressed data gets too big, there's no point in compressing
-	uint8_t dest[TILE_DATA_SIZE];
+	uint8_t dest[TILE_DATA_SIZE + FLUID_DATA_SIZE];
 
 	uLongf destlen = sizeof(dest);
 	int ret = compress2(
 		(Bytef *)dest, &destlen,
-		(Bytef *)data_.get(), TILE_DATA_SIZE,
+		(Bytef *)data_.get(), TILE_DATA_SIZE + FLUID_DATA_SIZE,
 		Z_BEST_COMPRESSION);
 
 	if (ret == Z_OK) {
@@ -60,7 +60,7 @@ void Chunk::decompress()
 	}
 
 	auto dest = std::make_unique<uint8_t[]>(DATA_SIZE);
-	uLongf destlen = TILE_DATA_SIZE;
+	uLongf destlen = TILE_DATA_SIZE + FLUID_DATA_SIZE;
 	int ret = uncompress(
 		dest.get(), &destlen,
 		(Bytef *)data_.get(), compressedSize_);
@@ -139,14 +139,14 @@ void Chunk::serialize(sbon::Writer w)
 		if (isCompressed()) {
 			w.key("compression").writeUInt(1);
 			static_assert(std::endian::native == std::endian::little);
-			w.key("tiles").writeBinary(
+			w.key("data").writeBinary(
 				(unsigned char *)data_.get(),
 				(size_t)compressedSize_);
 		}
 		else {
 			w.key("compression").writeUInt(0);
 			static_assert(std::endian::native == std::endian::little);
-			w.key("tiles").writeBinary(
+			w.key("data").writeBinary(
 				(unsigned char *)data_.get(),
 				CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID));
 		}
@@ -170,7 +170,7 @@ void Chunk::deserialize(sbon::Reader r, std::span<Tile::ID> tileMap)
 		else if (key == "compression") {
 			compression = (int)val.getUInt();
 		}
-		else if (key == "tiles") {
+		else if (key == "data") {
 			auto vec = val.getBinary();
 
 			if (compression == 0) {
