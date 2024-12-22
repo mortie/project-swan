@@ -189,7 +189,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	// Collide with stuff
 	bool pickedUpItem = false;
 
-	for (auto &c: ctx.plane.getCollidingEntities(physicsBody_.body)) {
+	for (auto &c: ctx.plane.entities().getColliding(physicsBody_.body)) {
 		auto *entity = c.ref.get();
 
 		// Pick it up if it's an item stack, and don't collide
@@ -208,7 +208,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 			Swan::ItemStack stack{itemStackEnt->item(), 1};
 			stack = inventory_.insert(stack);
 			if (stack.empty()) {
-				ctx.plane.despawnEntity(c.ref);
+				ctx.plane.entities().despawn(c.ref);
 				ctx.game.playSound(snapSound_);
 				pickedUpItem = true;
 			}
@@ -579,7 +579,7 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 
 	if (
 		item.tile->isSolid &&
-		!ctx.plane.getEntitiesInTile(placePos_).empty()) {
+		!ctx.plane.entities().getInTile(placePos_).empty()) {
 		return;
 	}
 
@@ -648,7 +648,7 @@ void PlayerEntity::dropItem(const Swan::Context &ctx)
 	auto vel = direction * 10.0;
 
 	auto removed = stack.remove(1);
-	ctx.plane.spawnEntity<ItemStackEntity>(pos, vel, removed.item());
+	ctx.plane.entities().spawn<ItemStackEntity>(pos, vel, removed.item());
 }
 
 }

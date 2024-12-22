@@ -15,7 +15,7 @@ void EntityRef::serialize(sbon::Writer w)
 void EntityRef::deserialize(const Context &ctx, sbon::Reader r)
 {
 	r.getArray([&](sbon::ArrayReader r) {
-		coll_ = &ctx.plane.getCollectionOf(r.next().getString());
+		coll_ = ctx.plane.entities().getCollectionOf(r.next().getString());
 		id_ = r.next().getUInt();
 	});
 }

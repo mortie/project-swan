@@ -39,7 +39,7 @@ public:
 	static constexpr char AIR_FLUID_NAME[] = "@::air";
 	static constexpr Fluid::ID SOLID_FLUID_ID = 1;
 	static constexpr char SOLID_FLUID_NAME[] = "@::solid";
-	static constexpr Fluid::ID INVALID_FLUID_ID = 255;
+	static constexpr Fluid::ID INVALID_FLUID_ID = 63;
 	static constexpr char INVALID_FLUID_NAME[] = "@::invalid";
 
 	static constexpr char INVALID_SOUND_NAME[] = "@::invalid";

@@ -10,7 +10,7 @@ namespace CoreMod {
 inline void dropItem(
 	const Swan::Context &ctx, Swan::TilePos pos, Swan::Item &item)
 {
-	ctx.plane.spawnEntity<ItemStackEntity>(
+	ctx.plane.entities().spawn<ItemStackEntity>(
 		(Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, &item);
 }
 
@@ -54,7 +54,7 @@ inline void fallIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 	if (!ctx.plane.getTile(below).isSolid) {
 		auto &tile = ctx.plane.getTile(pos);
 		ctx.plane.setTileID(pos, Swan::World::AIR_TILE_ID);
-		ctx.plane.spawnEntity<FallingTileEntity>(
+		ctx.plane.entities().spawn<FallingTileEntity>(
 			(Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, tile.id);
 	}
 }

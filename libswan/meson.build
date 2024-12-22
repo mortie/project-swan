@@ -4,6 +4,8 @@ libswan = declare_dependency(
     common, libcygnet, libglfw3, libsbon,
   ] + maybe_libtracy,
   link_with: library('swan',
+    'src/systems/EntitySystem.cc',
+    'src/systems/FluidSystem.cc',
     'src/traits/InventoryTrait.cc',
     'src/traits/PhysicsBodyTrait.cc',
     'src/Animation.cc',

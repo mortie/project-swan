@@ -59,7 +59,7 @@ void ItemPipeTileEntity::tick2(const Swan::Context &ctx, float dt)
 			}
 
 			auto pos = tileEntity_.pos + dir;
-			auto ent = ctx.plane.getTileEntity(pos);
+			auto ent = ctx.plane.entities().getTileEntity(pos);
 			if (!ent) {
 				continue;
 			}
@@ -93,7 +93,7 @@ void ItemPipeTileEntity::moveItemOut(const Swan::Context &ctx, size_t index)
 
 	auto pos = tileEntity_.pos + item.to;
 	bool ok = [&] {
-		auto ent = ctx.plane.getTileEntity(pos);
+		auto ent = ctx.plane.entities().getTileEntity(pos);
 		if (!ent) {
 			return false;
 		}
@@ -112,7 +112,7 @@ void ItemPipeTileEntity::moveItemOut(const Swan::Context &ctx, size_t index)
 		auto entPos = pos.as<float>().add(0.5, 0.5);
 		auto vel = item.to.vec().as<float>() * 2;
 		entPos -= item.to.vec().as<float>() * 0.2;
-		ctx.plane.spawnEntity<ItemStackEntity>(entPos, vel, item.item);
+		ctx.plane.entities().spawn<ItemStackEntity>(entPos, vel, item.item);
 	}
 }
 
@@ -120,11 +120,11 @@ void ItemPipeTileEntity::onDespawn(const Swan::Context &ctx)
 {
 	auto pos = tileEntity_.pos.as<float>().add(0.5, 0.5);
 	for (auto &item: contents_) {
-		ctx.plane.spawnEntity<ItemStackEntity>(pos, item.item);
+		ctx.plane.entities().spawn<ItemStackEntity>(pos, item.item);
 	}
 
 	if (inbox_.contents_) {
-		ctx.plane.spawnEntity<ItemStackEntity>(
+		ctx.plane.entities().spawn<ItemStackEntity>(
 			pos, inbox_.contents_.value().item);
 	}
 }

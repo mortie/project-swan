@@ -11,14 +11,14 @@
 #include <functional>
 
 #include "common.h"
-#include "traits/BodyTrait.h"
+#include "systems/EntitySystem.h"
+#include "systems/FluidSystem.h"
 #include "util.h"
 #include "Chunk.h"
 #include "Tile.h"
 #include "WorldGen.h"
-#include "Entity.h"
-#include "EntityCollection.h"
 #include "LightServer.h"
+#include "FastHashSet.h"
 
 namespace Swan {
 
@@ -29,30 +29,14 @@ class WorldPlane final: NonCopyable, public LightCallback {
 public:
 	using ID = uint16_t;
 
-	struct FoundEntity {
-		EntityRef ref;
-		BodyTrait::Body &body;
-	};
-
 	WorldPlane(
 		ID id, World *world, std::unique_ptr<WorldGen> gen,
 		std::vector<std::unique_ptr<EntityCollection>> &&colls);
 
 	Context getContext();
 
-	EntityRef spawnEntity(const std::string &name, sbon::ObjectReader r);
-
-	template<typename Ent, typename ... Args>
-	EntityRef spawnEntity(Args && ... args);
-
-	void despawnEntity(EntityRef ref);
-
-	std::vector<FoundEntity> &getCollidingEntities(BodyTrait::Body &body);
-	std::vector<FoundEntity> &getEntitiesInTile(TilePos pos);
-	std::vector<FoundEntity> &getEntitiesInArea(Vec2 pos, Vec2 size);
-	EntityRef getTileEntity(TilePos pos);
-
-	EntityRef currentEntity();
+	EntitySystem &entities() { return entitySystem_; }
+	FluidSystem &fluids() { return fluidSystem_; }
 
 	bool hasChunk(ChunkPos pos);
 	Chunk &getChunk(ChunkPos pos);
@@ -111,25 +95,11 @@ public:
 	std::mutex mut_;
 
 private:
-	template<typename Ent>
-	EntityCollection &getCollectionOf();
-	EntityCollection &getCollectionOf(std::string name);
-	EntityCollection &getCollectionOf(std::type_index type);
-
 	NewLightChunk computeLightChunk(const Chunk &chunk);
 
 	std::unordered_map<ChunkPos, Chunk> chunks_;
 	std::vector<Chunk *> activeChunks_;
 	std::vector<std::pair<ChunkPos, Chunk *>> tickChunks_;
-	std::vector<std::unique_ptr<EntityCollection>> entColls_;
-	std::unordered_map<std::type_index, EntityCollection *> entCollsByType_;
-	std::unordered_map<std::string, EntityCollection *> entCollsByName_;
-	EntityCollection *currentEntCol_;
-
-	std::vector<FoundEntity> foundEntitiesRet_;
-
-	std::vector<EntityRef> entDespawnList_;
-	std::vector<EntityRef> entDespawnListB_;
 
 	std::deque<Chunk *> chunkInitList_;
 
@@ -147,62 +117,12 @@ private:
 	std::vector<std::function<void(const Context &)>> nextTick_;
 	std::vector<std::function<void(const Context &)>> nextTickB_;
 
-	std::unordered_map<TilePos, EntityRef> tileEntities_;
-
-	void despawnTileEntity(TilePos pos);
-	void spawnTileEntity(TilePos pos, const std::string &name);
+	FluidSystem fluidSystem_{*this};
+	EntitySystem entitySystem_;
 
 	friend EntityRef;
+	friend Chunk;
 };
-
-/*
- * WorldPlane
- */
-
-template<typename Ent, typename ... Args>
-inline EntityRef WorldPlane::spawnEntity(Args &&... args)
-{
-	auto ent = getCollectionOf(typeid(Ent)).spawn<Ent, Args...>(
-		getContext(), std::forward<Args>(args)...);
-	ent->onSpawn(getContext());
-	return ent;
-}
-
-inline EntityRef WorldPlane::getTileEntity(TilePos pos)
-{
-	auto it = tileEntities_.find(pos);
-	if (it == tileEntities_.end()) {
-		return {};
-	} else {
-		return it->second;
-	}
-}
-
-inline EntityRef WorldPlane::currentEntity()
-{
-	return currentEntCol_->currentEntity();
-}
-
-inline void WorldPlane::despawnEntity(EntityRef ref)
-{
-	entDespawnList_.push_back(ref);
-}
-
-template<typename Ent>
-inline EntityCollection &WorldPlane::getCollectionOf()
-{
-	return *entCollsByType_.at(typeid(Ent));
-}
-
-inline EntityCollection &WorldPlane::getCollectionOf(std::string name)
-{
-	return *entCollsByName_.at(name);
-}
-
-inline EntityCollection &WorldPlane::getCollectionOf(std::type_index type)
-{
-	return *entCollsByType_.at(type);
-}
 
 inline void WorldPlane::nextTick(std::function<void(const Context &)> cb)
 {

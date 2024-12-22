@@ -149,7 +149,7 @@ public:
 				Swan::Vec2 pos, Swan::Vec2 dir)
 			{
 				slot.remove(1);
-				ctx.plane.spawnEntity<DynamiteEntity>(pos, dir * 15);
+				ctx.plane.entities().spawn<DynamiteEntity>(pos, dir * 15);
 			},
 		});
 

@@ -37,7 +37,7 @@ void FallingTileEntity::update(const Swan::Context &ctx, float dt)
 			(int)floor(physicsBody_.body.midY()),
 		};
 
-		ctx.plane.despawnEntity(ctx.plane.currentEntity());
+		ctx.plane.entities().despawn(ctx.plane.entities().current());
 		breakTileAndDropItem(ctx, pos);
 		ctx.plane.placeTile(pos, tile_);
 		return;

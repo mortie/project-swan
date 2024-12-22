@@ -53,7 +53,7 @@ static void onPipeUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 			return true;
 		}
 
-		auto ref = ctx.plane.getTileEntity(checkPos);
+		auto ref = ctx.plane.entities().getTileEntity(checkPos);
 		if (!ref) {
 			return false;
 		}

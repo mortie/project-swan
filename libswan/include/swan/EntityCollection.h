@@ -13,7 +13,7 @@
 namespace Swan {
 
 class EntityCollection;
-class WorldPlane;
+class EntitySystem;
 
 class EntityRef {
 public:
@@ -88,7 +88,7 @@ private:
 	EntityCollection *coll_;
 	uint64_t id_;
 
-	friend WorldPlane;
+	friend EntitySystem;
 	friend std::hash<EntityRef>;
 };
 

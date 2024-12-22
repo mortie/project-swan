@@ -116,7 +116,7 @@ void BasicPhysicsBody::collideWith(BodyTrait::Body &other)
 
 void BasicPhysicsBody::collideAll(WorldPlane &plane)
 {
-	for (auto &c: plane.getCollidingEntities(body)) {
+	for (auto &c: plane.entities().getColliding(body)) {
 		if (c.body.isSolid) {
 			collideWith(c.body);
 		}

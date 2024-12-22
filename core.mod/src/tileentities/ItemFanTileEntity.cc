@@ -16,7 +16,7 @@ void ItemFanTileEntity::update(const Swan::Context &ctx, float dt)
 
 	Swan::Vec2 center = tileEntity_.pos.as<float>().add(0.5, 0.5);
 
-	auto &ents = ctx.plane.getEntitiesInArea(pos, size);
+	auto ents = ctx.plane.entities().getInArea(pos, size);
 	auto force = dir_.vec().as<float>() * 500;
 	for (auto &found: ents) {
 		if (
@@ -40,7 +40,7 @@ void ItemFanTileEntity::tick(const Swan::Context &ctx, float dt)
 		return;
 	}
 
-	auto inv = ctx.plane.getTileEntity(tileEntity_.pos + dir_)
+	auto inv = ctx.plane.entities().getTileEntity(tileEntity_.pos + dir_)
 		.trait<Swan::InventoryTrait>();
 	if (!inv) {
 		return;
@@ -55,7 +55,7 @@ void ItemFanTileEntity::tick(const Swan::Context &ctx, float dt)
 	stack = inv->insert(dir_.opposite(), stack);
 
 	if (stack.empty()) {
-		ctx.plane.despawnEntity(pickup);
+		ctx.plane.entities().despawn(pickup);
 	}
 }
 

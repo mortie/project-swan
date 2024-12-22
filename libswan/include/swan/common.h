@@ -24,6 +24,7 @@ namespace Swan {
 using namespace SwanCommon;
 
 using TilePos = Vec2i;
+using FluidPos = Vector2<int64_t>;
 using ChunkPos = Vec2i;
 using ChunkRelPos = Vec2i;
 

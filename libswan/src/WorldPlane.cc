@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <math.h>
+#include <utility>
 
 #include "log.h"
 #include "World.h"
@@ -15,14 +16,9 @@ WorldPlane::WorldPlane(
 	ID id, World *world, std::unique_ptr<WorldGen> worldGen,
 	std::vector<std::unique_ptr<EntityCollection>> &&colls):
 	id_(id), world_(world), worldGen_(std::move(worldGen)),
-	entColls_(std::move(colls)),
-	lighting_(std::make_unique<LightServer>(*this))
-{
-	for (auto &coll: entColls_) {
-		entCollsByType_[coll->type()] = coll.get();
-		entCollsByName_[coll->name()] = coll.get();
-	}
-}
+	lighting_(std::make_unique<LightServer>(*this)),
+	entitySystem_(*this, std::move(colls))
+{}
 
 Context WorldPlane::getContext()
 {
@@ -31,93 +27,6 @@ Context WorldPlane::getContext()
 		.world = *world_,
 		.plane = *this,
 	};
-}
-
-EntityRef WorldPlane::spawnEntity(const std::string &name, sbon::ObjectReader r)
-{
-	auto ent = entCollsByName_.at(name)->spawn(getContext(), r);
-	ent->onSpawn(getContext());
-	return ent;
-}
-
-std::vector<WorldPlane::FoundEntity> &WorldPlane::getCollidingEntities(
-	BodyTrait::Body &body)
-{
-	constexpr float PADDING = 10;
-	auto topLeft = body.topLeft() - Vec2{PADDING, PADDING};
-	auto bottomRight = body.bottomRight() + Vec2{PADDING, PADDING};
-
-	auto topLeftTile = TilePos{(int)floor(topLeft.x), (int)floor(topLeft.y)};
-	auto bottomRightTile = TilePos{(int)ceil(bottomRight.x), (int)ceil(bottomRight.y)};
-
-	auto topLeftChunk = tilePosToChunkPos(topLeftTile);
-	auto bottomRightChunk = tilePosToChunkPos(bottomRightTile);
-	auto bottomLeftChunk = ChunkPos{topLeftChunk.x, bottomRightChunk.y};
-	auto topRightChunk = ChunkPos{bottomRightChunk.x, topLeftChunk.y};
-
-	foundEntitiesRet_.clear();
-	auto checkChunk = [&](ChunkPos pos) {
-		Chunk &chunk = getChunk(pos);
-		for (const EntityRef &constCandidate: chunk.entities_) {
-			EntityRef candidateRef = constCandidate;
-
-			// The entities_ array in a chunk should always be kept updated
-			assert(candidateRef);
-
-			BodyTrait::Body *candidateBody = candidateRef.getBody();
-			if (!candidateBody || candidateBody == &body) {
-				continue;
-			}
-
-			if (body.collidesWith(*candidateBody)) {
-				foundEntitiesRet_.push_back({candidateRef, *candidateBody});
-			}
-		}
-	};
-
-	// TODO: I'm 99% sure we can do something better here
-
-	checkChunk(topLeftChunk);
-
-	if (bottomLeftChunk != topLeftChunk) {
-		checkChunk(bottomLeftChunk);
-	}
-
-	if (bottomRightChunk != bottomLeftChunk && bottomRightChunk != topLeftChunk) {
-		checkChunk(bottomRightChunk);
-	}
-
-	if (
-		topRightChunk != bottomRightChunk && topRightChunk != bottomLeftChunk &&
-		topRightChunk != topLeftChunk) {
-		checkChunk(topRightChunk);
-	}
-
-	return foundEntitiesRet_;
-}
-
-std::vector<WorldPlane::FoundEntity> &WorldPlane::getEntitiesInTile(
-	TilePos pos)
-{
-	BodyTrait::Body body = {
-		.pos = pos,
-		.size = {1, 1},
-		.chunkPos = tilePosToChunkPos(pos),
-	};
-
-	return getCollidingEntities(body);
-}
-
-std::vector<WorldPlane::FoundEntity> &WorldPlane::getEntitiesInArea(
-	Vec2 pos, Vec2 size)
-{
-	BodyTrait::Body body = {
-		.pos = pos,
-		.size = size,
-		.chunkPos = tilePosToChunkPos(pos.as<int>()),
-	};
-
-	return getCollidingEntities(body);
 }
 
 bool WorldPlane::hasChunk(ChunkPos pos)
@@ -204,7 +113,7 @@ bool WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 	}
 
 	if (oldTile.tileEntity) {
-		despawnTileEntity(pos);
+		entitySystem_.despawnTileEntity(pos);
 	}
 
 	chunk.setTileID(rp, id);
@@ -238,7 +147,7 @@ bool WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 	}
 
 	if (newTile.tileEntity) {
-		spawnTileEntity(pos, newTile.tileEntity.value());
+		entitySystem_.spawnTileEntity(pos, newTile.tileEntity.value());
 	}
 
 	return true;
@@ -331,7 +240,7 @@ bool WorldPlane::placeTile(TilePos pos, Tile::ID id)
 		oldTile.onBreak(getContext(), pos);
 	}
 	if (oldTile.tileEntity) {
-		despawnTileEntity(pos);
+		entitySystem_.despawnTileEntity(pos);
 	}
 	chunk.setTileID(rp, id);
 
@@ -360,7 +269,7 @@ bool WorldPlane::placeTile(TilePos pos, Tile::ID id)
 	}
 
 	if (newTile.tileEntity) {
-		spawnTileEntity(pos, newTile.tileEntity.value());
+		entitySystem_.spawnTileEntity(pos, newTile.tileEntity.value());
 	}
 
 	// Run a tile update immediately
@@ -479,8 +388,9 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 		}
 	}
 
-	for (auto &coll: entColls_) {
-		coll->draw(ctx, rnd);
+	{
+		ZoneScopedN("Entities");
+		entitySystem_.draw(rnd);
 	}
 
 	{
@@ -493,7 +403,6 @@ void WorldPlane::update(float dt)
 {
 	ZoneScopedN("WorldPlane update");
 	std::lock_guard<std::mutex> lock(mut_);
-	auto ctx = getContext();
 
 	// Just init one chunk per frame
 	if (chunkInitList_.size() > 0) {
@@ -517,24 +426,10 @@ void WorldPlane::update(float dt)
 		}
 	}
 
-	for (auto &coll: entColls_) {
-		currentEntCol_ = coll.get();
-		coll->update(ctx, dt);
+	{
+		ZoneScopedN("Entities");
+		entitySystem_.update(dt);
 	}
-
-	auto despawnList = std::move(entDespawnList_);
-	entDespawnList_ = std::move(entDespawnListB_);
-
-	for (auto &ref: despawnList) {
-		if (ref) {
-			ref->onDespawn(ctx);
-		}
-
-		ref.coll_->erase(ctx, ref.id_);
-	}
-
-	despawnList.clear();
-	entDespawnListB_ = std::move(despawnList);
 }
 
 void WorldPlane::tick(float dt)
@@ -549,15 +444,7 @@ void WorldPlane::tick(float dt)
 	}
 	tickChunks_.clear();
 
-	for (auto &coll: entColls_) {
-		currentEntCol_ = coll.get();
-		coll->tick(ctx, dt);
-	}
-
-	for (auto &coll: entColls_) {
-		currentEntCol_ = coll.get();
-		coll->tick2(ctx, dt);
-	}
+	entitySystem_.tick(dt);
 
 	// Tick all chunks, figure out if any of them should be deleted or compressed
 	size_t activeChunkIndex = 0;
@@ -613,6 +500,8 @@ void WorldPlane::tick(float dt)
 	}
 	scheduledTileUpdates.clear();
 	scheduledTileUpdatesB_ = std::move(scheduledTileUpdates);
+
+	fluidSystem_.tick();
 }
 
 void WorldPlane::addLight(TilePos pos, float level)
@@ -637,6 +526,7 @@ void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos)
 
 void WorldPlane::serialize(sbon::Writer w)
 {
+	/*
 	auto ctx = getContext();
 
 	w.writeObject([&](sbon::ObjectWriter w) {
@@ -666,10 +556,12 @@ void WorldPlane::serialize(sbon::Writer w)
 			}
 		});
 	});
+	*/
 }
 
 void WorldPlane::deserialize(sbon::Reader r, std::span<Tile::ID> tileMap)
 {
+	/*
 	auto ctx = getContext();
 
 	r.readObject([&](std::string &key, sbon::Reader val) {
@@ -737,6 +629,7 @@ void WorldPlane::deserialize(sbon::Reader r, std::span<Tile::ID> tileMap)
 			val.skip();
 		}
 	});
+	*/
 }
 
 NewLightChunk WorldPlane::computeLightChunk(const Chunk &chunk)
@@ -757,42 +650,6 @@ NewLightChunk WorldPlane::computeLightChunk(const Chunk &chunk)
 	}
 
 	return lc;
-}
-
-void WorldPlane::despawnTileEntity(TilePos pos)
-{
-	auto it = tileEntities_.find(pos);
-
-	if (it == tileEntities_.end()) {
-		warn << "Didn't find expected tile entity at " << pos;
-	}
-	else {
-		despawnEntity(it->second);
-		tileEntities_.erase(pos);
-	}
-}
-
-void WorldPlane::spawnTileEntity(TilePos pos, const std::string &name)
-{
-	if (tileEntities_.contains(pos)) {
-		warn << "Tile entity already exists in " << pos;
-		return;
-	}
-
-	auto it = entCollsByName_.find(name);
-	if (it == entCollsByName_.end()) {
-		warn << "Tile entity " << name << " doesn't exist";
-		return;
-	}
-
-	auto ent = it->second->spawn(getContext());
-	auto *tileEnt = ent.trait<TileEntityTrait>();
-	if (tileEnt) {
-		tileEnt->pos = pos;
-	}
-
-	tileEntities_[pos] = ent;
-	ent->onSpawn(getContext());
 }
 
 }

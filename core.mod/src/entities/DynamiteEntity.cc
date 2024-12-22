@@ -24,7 +24,7 @@ static void explodeTile(const Swan::Context &ctx, Swan::TilePos tp, int x, int y
 	float vy = std::abs(x) * -6;
 
 	ctx.plane.setTileID(tp, Swan::World::AIR_TILE_ID);
-	auto ref = ctx.plane.spawnEntity<FallingTileEntity>(
+	auto ref = ctx.plane.entities().spawn<FallingTileEntity>(
 		(Swan::Vec2)tp + Swan::Vec2{0.5, 0.5}, id);
 	auto *body = ref.trait<Swan::PhysicsBodyTrait>();
 	body->addVelocity({vx, vy});
@@ -55,7 +55,7 @@ static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
 		.size = {R3 * 2, R3 * 2},
 	};
 
-	for (auto &collision: ctx.plane.getCollidingEntities(body)) {
+	for (auto &collision: ctx.plane.entities().getColliding(body)) {
 		auto delta = collision.body.center() - pos;
 		if (delta.squareLength() > R3 * R3) {
 			continue;
@@ -94,7 +94,7 @@ void DynamiteEntity::update(const Swan::Context &ctx, float dt)
 
 	fuse_ -= dt;
 	if (fuse_ <= 0) {
-		ctx.plane.despawnEntity(ctx.plane.currentEntity());
+		ctx.plane.entities().despawn(ctx.plane.entities().current());
 		explode(ctx, physicsBody_.body.center());
 	}
 }
