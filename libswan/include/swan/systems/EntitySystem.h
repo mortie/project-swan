@@ -56,6 +56,9 @@ private:
 
 	EntityCollection *getCollectionOf(std::string_view name);
 
+	void serialize(sbon::Writer w);
+	void deserialize(sbon::Reader r);
+
 	WorldPlane &plane_;
 
 	std::vector<FoundEntity> foundEntitiesBuf_;

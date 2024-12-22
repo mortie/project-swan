@@ -81,9 +81,6 @@ public:
 	// LightingCallback implementation
 	void onLightChunkUpdated(const LightChunk &chunk, Vec2i pos) final;
 
-	void serialize(sbon::Writer w);
-	void deserialize(sbon::Reader r, std::span<Tile::ID> tileMap);
-
 	void scheduleTileUpdate(TilePos pos)
 	{
 		scheduledTileUpdates_.push_back(pos);
@@ -96,6 +93,9 @@ public:
 
 private:
 	NewLightChunk computeLightChunk(const Chunk &chunk);
+
+	void serialize(sbon::Writer w);
+	void deserialize(sbon::Reader r, std::span<Tile::ID> tileMap);
 
 	std::unordered_map<ChunkPos, Chunk> chunks_;
 	std::vector<Chunk *> activeChunks_;
@@ -122,6 +122,7 @@ private:
 
 	friend EntityRef;
 	friend Chunk;
+	friend World;
 };
 
 inline void WorldPlane::nextTick(std::function<void(const Context &)> cb)

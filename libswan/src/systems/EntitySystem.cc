@@ -236,4 +236,81 @@ EntityCollection *EntitySystem::getCollectionOf(std::string_view name)
 	return it->second;
 }
 
+void EntitySystem::serialize(sbon::Writer w)
+{
+	auto ctx = getContext();
+
+	w.writeObject([&](sbon::ObjectWriter w) {
+		w.key("collections").writeObject([&](sbon::ObjectWriter w) {
+			for (auto &coll: collections_) {
+				coll->serialize(ctx, w.key(coll->name().c_str()));
+			}
+		});
+
+		w.key("tile-entities").writeArray([&](sbon::Writer w) {
+			for (auto &[pos, ref]: tileEntities_) {
+				w.writeObject([&](sbon::ObjectWriter w) {
+					w.key("x").writeInt(pos.x);
+					w.key("y").writeInt(pos.y);
+					ref.serialize(w.key("ref"));
+				});
+			}
+		});
+	});
+}
+
+void EntitySystem::deserialize(sbon::Reader r)
+{
+	auto ctx = getContext();
+
+	r.readObject([&](std::string &key, sbon::Reader val) {
+		if (key == "collections") {
+			val.readObject([&](std::string &key, sbon::Reader val) {
+				auto it = collectionsByName_.find(key);
+				if (it == collectionsByName_.end()) {
+					warn << "Deserialize unknown entity collection: " << key;
+					val.skip();
+					return;
+				}
+
+				it->second->deserialize(ctx, val);
+			});
+		}
+		else if (key == "tile-entities") {
+			val.readArray([&](sbon::Reader val) {
+				TilePos pos;
+				EntityRef ref;
+				val.readObject([&](std::string &key, sbon::Reader val) {
+					if (key == "x") {
+						pos.x = val.getInt();
+					}
+					else if (key == "y") {
+						pos.y = val.getInt();
+					}
+					else if (key == "ref") {
+						ref.deserialize(ctx, val);
+					}
+					else {
+						val.skip();
+					}
+				});
+
+				if (!ref) {
+					warn << "Reference to non-existent entity in " << pos;
+					return;
+				}
+
+				ref.traitThen<TileEntityTrait>([&](TileEntityTrait::TileEntity &ent) {
+					ent.pos = pos;
+				});
+
+				tileEntities_[pos] = ref;
+			});
+		}
+		else {
+			val.skip();
+		}
+	});
+}
+
 }

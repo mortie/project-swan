@@ -524,114 +524,6 @@ void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos)
 	realChunk.setLightData(chunk.lightLevels);
 }
 
-void WorldPlane::serialize(sbon::Writer w)
-{
-	/*
-	auto ctx = getContext();
-
-	w.writeObject([&](sbon::ObjectWriter w) {
-		w.key("entity-collections").writeObject([&](sbon::ObjectWriter w) {
-			for (auto &coll: entColls_) {
-				coll->serialize(ctx, w.key(coll->name().c_str()));
-			}
-		});
-
-		w.key("chunks").writeArray([&](sbon::Writer w) {
-			for (auto &[pos, chunk]: chunks_) {
-				if (!chunk.isModified()) {
-					continue;
-				}
-
-				chunk.serialize(w);
-			}
-		});
-
-		w.key("tile-entities").writeArray([&](sbon::Writer w) {
-			for (auto &[pos, ref]: tileEntities_) {
-				w.writeObject([&](sbon::ObjectWriter w) {
-					w.key("x").writeInt(pos.x);
-					w.key("y").writeInt(pos.y);
-					ref.serialize(w.key("ref"));
-				});
-			}
-		});
-	});
-	*/
-}
-
-void WorldPlane::deserialize(sbon::Reader r, std::span<Tile::ID> tileMap)
-{
-	/*
-	auto ctx = getContext();
-
-	r.readObject([&](std::string &key, sbon::Reader val) {
-		if (key == "entity-collections") {
-			val.readObject([&](std::string &key, sbon::Reader val) {
-				auto it = entCollsByName_.find(key);
-				if (it == entCollsByName_.end()) {
-					warn << "Deserialize unknown entity collection: " << key;
-					val.skip();
-					return;
-				}
-
-				it->second->deserialize(ctx, val);
-			});
-		}
-		else if (key == "chunks") {
-			chunks_.clear();
-			activeChunks_.clear();
-			chunkInitList_.clear();
-			val.readArray([&](sbon::Reader r) {
-				Chunk tempChunk({0, 0});
-				tempChunk.deserialize(r, tileMap);
-				auto [it, _] = chunks_.emplace(
-					tempChunk.pos(), std::move(tempChunk));
-				auto &chunk = it->second;
-
-				if (chunk.isActive()) {
-					lighting_->onChunkAdded(chunk.pos(), computeLightChunk(chunk));
-					activeChunks_.push_back(&chunk);
-				}
-			});
-		}
-		else if (key == "tile-entities") {
-			val.readArray([&](sbon::Reader val) {
-				TilePos pos;
-				EntityRef ref;
-				val.readObject([&](std::string &key, sbon::Reader val) {
-					if (key == "x") {
-						pos.x = val.getInt();
-					}
-					else if (key == "y") {
-						pos.y = val.getInt();
-					}
-					else if (key == "ref") {
-						ref.deserialize(ctx, val);
-					}
-					else {
-						val.skip();
-					}
-				});
-
-				if (!ref) {
-					warn << "Reference to non-existent entity in " << pos;
-					return;
-				}
-
-				ref.traitThen<TileEntityTrait>([&](TileEntityTrait::TileEntity &ent) {
-					ent.pos = pos;
-				});
-
-				tileEntities_[pos] = ref;
-			});
-		}
-		else {
-			val.skip();
-		}
-	});
-	*/
-}
-
 NewLightChunk WorldPlane::computeLightChunk(const Chunk &chunk)
 {
 	NewLightChunk lc;
@@ -650,6 +542,52 @@ NewLightChunk WorldPlane::computeLightChunk(const Chunk &chunk)
 	}
 
 	return lc;
+}
+
+void WorldPlane::serialize(sbon::Writer w)
+{
+	w.writeObject([&](sbon::ObjectWriter w) {
+		entitySystem_.serialize(w.key("entity-system"));
+
+		w.key("chunks").writeArray([&](sbon::Writer w) {
+			for (auto &[pos, chunk]: chunks_) {
+				if (!chunk.isModified()) {
+					continue;
+				}
+
+				chunk.serialize(w);
+			}
+		});
+	});
+}
+
+void WorldPlane::deserialize(sbon::Reader r, std::span<Tile::ID> tileMap)
+{
+	r.readObject([&](std::string &key, sbon::Reader val) {
+		if (key == "entity-system") {
+			entitySystem_.deserialize(val);
+		}
+		else if (key == "chunks") {
+			chunks_.clear();
+			activeChunks_.clear();
+			chunkInitList_.clear();
+			val.readArray([&](sbon::Reader r) {
+				Chunk tempChunk({0, 0});
+				tempChunk.deserialize(r, tileMap);
+				auto [it, _] = chunks_.emplace(
+					tempChunk.pos(), std::move(tempChunk));
+				auto &chunk = it->second;
+
+				if (chunk.isActive()) {
+					lighting_->onChunkAdded(chunk.pos(), computeLightChunk(chunk));
+					activeChunks_.push_back(&chunk);
+				}
+			});
+		}
+		else {
+			val.skip();
+		}
+	});
 }
 
 }
