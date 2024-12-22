@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "util.h"
+#include "common.h"
 
 namespace Swan {
 
@@ -26,11 +27,11 @@ struct SoundAsset {
 };
 
 Result<ImageAsset> loadImageAsset(
-	const std::unordered_map<std::string, std::string> &modPaths,
+	const HashMap<std::string> &modPaths,
 	std::string path);
 
 Result<SoundAsset> loadSoundAsset(
-	const std::unordered_map<std::string, std::string> &modPaths,
+	const HashMap<std::string> &modPaths,
 	std::string path);
 
 }

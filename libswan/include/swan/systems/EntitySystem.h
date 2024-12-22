@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../util.h"
+#include "../common.h"
 #include "../Entity.h"
 #include "../EntityCollection.h"
 #include "../traits/BodyTrait.h"

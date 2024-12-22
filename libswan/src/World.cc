@@ -5,6 +5,7 @@
 #include "Clock.h"
 #include "assets.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
+#include <string_view>
 
 namespace Swan {
 
@@ -437,7 +438,7 @@ void World::setCurrentPlane(WorldPlane &plane)
 	currentPlane_ = plane.id_;
 }
 
-WorldPlane &World::addPlane(const std::string &gen)
+WorldPlane &World::addPlane(std::string gen)
 {
 	WorldPlane::ID id = planes_.size();
 	auto it = worldGenFactories_.find(gen);
@@ -463,7 +464,7 @@ WorldPlane &World::addPlane(const std::string &gen)
 	return *planes_[id].plane;
 }
 
-Tile::ID World::getTileID(const std::string &name)
+Tile::ID World::getTileID(std::string_view name)
 {
 	auto iter = tilesMap_.find(name);
 
@@ -475,7 +476,7 @@ Tile::ID World::getTileID(const std::string &name)
 	return iter->second;
 }
 
-Item &World::getItem(const std::string &name)
+Item &World::getItem(std::string_view name)
 {
 	auto iter = items_.find(name);
 
@@ -487,7 +488,7 @@ Item &World::getItem(const std::string &name)
 	return iter->second;
 }
 
-Fluid::ID World::getFluidID(const std::string &name)
+Fluid::ID World::getFluidID(std::string_view name)
 {
 	auto it = fluidsMap_.find(name);
 
@@ -499,7 +500,7 @@ Fluid::ID World::getFluidID(const std::string &name)
 	return it->second;
 }
 
-Cygnet::RenderSprite &World::getSprite(const std::string &name)
+Cygnet::RenderSprite &World::getSprite(std::string_view name)
 {
 	auto iter = resources_.sprites_.find(name);
 
@@ -511,7 +512,7 @@ Cygnet::RenderSprite &World::getSprite(const std::string &name)
 	return iter->second;
 }
 
-SoundAsset *World::getSound(const std::string &name)
+SoundAsset *World::getSound(std::string_view name)
 {
 	auto iter = sounds_.find(name);
 

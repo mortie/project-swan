@@ -3,6 +3,7 @@
 // IWYU pragma: begin_exports
 #include <swan-common/trace.h>
 #include <swan-common/Vector2.h>
+#include <swan-common/HashMap.h>
 #include <swan-common/constants.h>
 // IWYU pragma: end_exports
 #include <limits.h>

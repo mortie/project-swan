@@ -58,7 +58,7 @@ public:
 		return *planes_[currentPlane_].plane;
 	}
 
-	WorldPlane &addPlane(const std::string &gen);
+	WorldPlane &addPlane(std::string gen);
 
 	WorldPlane &addPlane()
 	{
@@ -75,27 +75,27 @@ public:
 		return tiles_[id];
 	}
 
-	Tile::ID getTileID(const std::string &name);
-	Tile &getTile(const std::string &name)
+	Tile::ID getTileID(std::string_view name);
+	Tile &getTile(std::string_view name)
 	{
 		return tiles_[getTileID(name)];
 	}
 
-	Item &getItem(const std::string &name);
+	Item &getItem(std::string_view name);
 
 	Fluid &getFluidByID(Fluid::ID id)
 	{
 		return fluids_[id];
 	}
 
-	Fluid::ID getFluidID(const std::string &name);
-	Fluid &getFluid(const std::string &name)
+	Fluid::ID getFluidID(std::string_view name);
+	Fluid &getFluid(std::string_view name)
 	{
 		return fluids_[getFluidID(name)];
 	}
 
-	Cygnet::RenderSprite &getSprite(const std::string &name);
-	SoundAsset *getSound(const std::string &name);
+	Cygnet::RenderSprite &getSprite(std::string_view name);
+	SoundAsset *getSound(std::string_view name);
 
 	Cygnet::Color backgroundColor();
 	void draw(Cygnet::Renderer &rnd);
@@ -120,17 +120,17 @@ public:
 	void serialize(sbon::Writer w);
 	void deserialize(sbon::Reader r);
 
-	std::unordered_map<std::string, std::string> modPaths_;
+	HashMap<std::string> modPaths_;
 
 	// These things get filled in when the ctor loads mods.
 	std::vector<Tile> tiles_;
-	std::unordered_map<std::string, Tile::ID> tilesMap_;
-	std::unordered_map<std::string, Item> items_;
+	HashMap<Tile::ID> tilesMap_;
+	HashMap<Item> items_;
 	std::vector<Fluid> fluids_;
-	std::unordered_map<std::string, Fluid::ID> fluidsMap_;
+	HashMap<Fluid::ID> fluidsMap_;
 	std::vector<Recipe> recipes_;
-	std::unordered_map<std::string, WorldGen::Factory> worldGenFactories_;
-	std::unordered_map<std::string, EntityCollection::Factory> entCollFactories_;
+	HashMap<WorldGen::Factory> worldGenFactories_;
+	HashMap<EntityCollection::Factory> entCollFactories_;
 
 	Game *game_;
 	std::mt19937 random_;
@@ -138,7 +138,7 @@ public:
 	// Mods must be loaded before resources.
 	std::vector<ModWrapper> mods_;
 	Cygnet::ResourceManager resources_;
-	std::unordered_map<std::string, SoundAsset> sounds_;
+	HashMap<SoundAsset> sounds_;
 
 	EntityRef playerRef_;
 	BodyTrait::Body *player_;

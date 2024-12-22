@@ -6,7 +6,7 @@
 
 namespace Swan {
 
-void TileSystem::set(TilePos pos, const std::string &name)
+void TileSystem::set(TilePos pos, std::string_view name)
 {
 	setID(pos, plane_.world_->getTileID(name));
 }

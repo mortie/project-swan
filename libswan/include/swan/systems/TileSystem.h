@@ -3,6 +3,7 @@
 #include "../Tile.h"
 #include "../common.h"
 
+#include <string_view>
 #include <vector>
 
 namespace Swan {
@@ -20,7 +21,7 @@ class TileSystem {
 public:
 	TileSystem(WorldPlane &plane): plane_(plane) {}
 
-	void set(TilePos pos, const std::string &name);
+	void set(TilePos pos, std::string_view name);
 	void setID(TilePos pos, Tile::ID id);
 	bool setIDWithoutUpdate(TilePos pos, Tile::ID id);
 
