@@ -6,6 +6,7 @@ libswan = declare_dependency(
   link_with: library('swan',
     'src/systems/EntitySystem.cc',
     'src/systems/FluidSystem.cc',
+    'src/systems/LightSystem.cc',
     'src/traits/InventoryTrait.cc',
     'src/traits/PhysicsBodyTrait.cc',
     'src/Animation.cc',

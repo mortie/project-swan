@@ -16,7 +16,6 @@ WorldPlane::WorldPlane(
 	ID id, World *world, std::unique_ptr<WorldGen> worldGen,
 	std::vector<std::unique_ptr<EntityCollection>> &&colls):
 	id_(id), world_(world), worldGen_(std::move(worldGen)),
-	lighting_(std::make_unique<LightServer>(*this)),
 	entitySystem_(*this, std::move(colls))
 {}
 
@@ -64,14 +63,14 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos)
 		chunkInitList_.push_back(&chunk);
 
 		// Need to tell the light engine too
-		lighting_->onChunkAdded(pos, computeLightChunk(chunk));
+		lightSystem_.addChunk(pos, chunk);
 	}
 
 	// Otherwise, it might not be active, so let's activate it
 	else if (!iter->second.isActive()) {
 		iter->second.keepActive();
 		activeChunks_.push_back(&iter->second);
-		lighting_->onChunkAdded(pos, computeLightChunk(iter->second));
+		lightSystem_.addChunk(pos, iter->second);
 	}
 
 	return iter->second;
@@ -119,19 +118,19 @@ bool WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
 	chunk.setTileID(rp, id);
 
 	if (!oldTile.isOpaque && newTile.isOpaque) {
-		lighting_->onSolidBlockAdded(pos);
+		lightSystem_.addSolidBlock(pos);
 	}
 	else if (oldTile.isOpaque && !newTile.isOpaque) {
-		lighting_->onSolidBlockRemoved(pos);
+		lightSystem_.removeSolidBlock(pos);
 	}
 
 	if (newTile.lightLevel != oldTile.lightLevel) {
 		if (oldTile.lightLevel > 0) {
-			removeLight(pos, oldTile.lightLevel);
+			lightSystem_.removeLight(pos, oldTile.lightLevel);
 		}
 
 		if (newTile.lightLevel > 0) {
-			addLight(pos, newTile.lightLevel);
+			lightSystem_.addLight(pos, newTile.lightLevel);
 		}
 	}
 
@@ -245,19 +244,19 @@ bool WorldPlane::placeTile(TilePos pos, Tile::ID id)
 	chunk.setTileID(rp, id);
 
 	if (!oldTile.isOpaque && newTile.isOpaque) {
-		lighting_->onSolidBlockAdded(pos);
+		lightSystem_.addSolidBlock(pos);
 	}
 	else if (oldTile.isOpaque && !newTile.isOpaque) {
-		lighting_->onSolidBlockRemoved(pos);
+		lightSystem_.removeSolidBlock(pos);
 	}
 
 	if (newTile.lightLevel != oldTile.lightLevel) {
 		if (oldTile.lightLevel > 0) {
-			removeLight(pos, oldTile.lightLevel);
+			lightSystem_.removeLight(pos, oldTile.lightLevel);
 		}
 
 		if (newTile.lightLevel > 0) {
-			addLight(pos, newTile.lightLevel);
+			lightSystem_.addLight(pos, newTile.lightLevel);
 		}
 	}
 
@@ -286,7 +285,7 @@ bool WorldPlane::placeTile(TilePos pos, Tile::ID id)
 	return true;
 }
 
-WorldPlane::Raycast WorldPlane::raycast(
+Raycast WorldPlane::raycast(
 	Vec2 start, Vec2 direction, float distance)
 {
 	float squareDist = distance * distance;
@@ -359,7 +358,6 @@ Cygnet::Color WorldPlane::backgroundColor()
 void WorldPlane::draw(Cygnet::Renderer &rnd)
 {
 	ZoneScopedN("WorldPlane draw");
-	std::lock_guard<std::mutex> lock(mut_);
 	auto ctx = getContext();
 	auto &pbody = *(world_->player_);
 
@@ -395,14 +393,13 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 
 	{
 		ZoneScopedN("Lighting flip");
-		lighting_->flip();
+		lightSystem_.flip();
 	}
 }
 
 void WorldPlane::update(float dt)
 {
 	ZoneScopedN("WorldPlane update");
-	std::lock_guard<std::mutex> lock(mut_);
 
 	// Just init one chunk per frame
 	if (chunkInitList_.size() > 0) {
@@ -435,7 +432,6 @@ void WorldPlane::update(float dt)
 void WorldPlane::tick(float dt)
 {
 	ZoneScopedN("WorldPlane tick");
-	std::lock_guard<std::mutex> lock(mut_);
 	auto ctx = getContext();
 
 	// Any chunk which has been in use since last tick should be kept alive
@@ -455,7 +451,7 @@ void WorldPlane::tick(float dt)
 		switch (action) {
 		case Chunk::TickAction::DEACTIVATE:
 			info << "Compressing inactive modified chunk " << chunk->pos();
-			lighting_->onChunkRemoved(chunk->pos());
+			lightSystem_.removeChunk(chunk->pos());
 			chunk->destroyTextures(world_->game_->renderer_);
 			chunk->compress();
 			activeChunks_[activeChunkIndex] = activeChunks_.back();
@@ -464,7 +460,7 @@ void WorldPlane::tick(float dt)
 
 		case Chunk::TickAction::DELETE:
 			info << "Deleting inactive unmodified chunk " << chunk->pos();
-			lighting_->onChunkRemoved(chunk->pos());
+			lightSystem_.removeChunk(chunk->pos());
 			chunk->destroyTextures(world_->game_->renderer_);
 			chunks_.erase(chunk->pos());
 			activeChunks_[activeChunkIndex] = activeChunks_.back();
@@ -504,46 +500,6 @@ void WorldPlane::tick(float dt)
 	fluidSystem_.tick();
 }
 
-void WorldPlane::addLight(TilePos pos, float level)
-{
-	getChunk(tilePosToChunkPos(pos));
-	lighting_->onLightAdded(pos, level);
-}
-
-void WorldPlane::removeLight(TilePos pos, float level)
-{
-	getChunk(tilePosToChunkPos(pos));
-	lighting_->onLightRemoved(pos, level);
-}
-
-void WorldPlane::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos)
-{
-	std::lock_guard<std::mutex> lock(mut_);
-	Chunk &realChunk = getChunk(pos);
-
-	realChunk.setLightData(chunk.lightLevels);
-}
-
-NewLightChunk WorldPlane::computeLightChunk(const Chunk &chunk)
-{
-	NewLightChunk lc;
-
-	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
-		for (int x = 0; x < CHUNK_WIDTH; ++x) {
-			Tile::ID id = chunk.getTileID({x, y});
-			Tile &tile = world_->getTileByID(id);
-			if (tile.isOpaque) {
-				lc.blocks[y * CHUNK_HEIGHT + x] = true;
-			}
-			if (tile.lightLevel > 0) {
-				lc.lightSources[{x, y}] = tile.lightLevel;
-			}
-		}
-	}
-
-	return lc;
-}
-
 void WorldPlane::serialize(sbon::Writer w)
 {
 	w.writeObject([&](sbon::ObjectWriter w) {
@@ -579,7 +535,7 @@ void WorldPlane::deserialize(sbon::Reader r, std::span<Tile::ID> tileMap)
 				auto &chunk = it->second;
 
 				if (chunk.isActive()) {
-					lighting_->onChunkAdded(chunk.pos(), computeLightChunk(chunk));
+					lightSystem_.addChunk(chunk.pos(), chunk);
 					activeChunks_.push_back(&chunk);
 				}
 			});

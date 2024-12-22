@@ -59,6 +59,9 @@ public:
 	void onChunkRemoved(ChunkPos pos);
 	void flip();
 
+	template<typename F>
+	void getUpdates(F cb);
+
 private:
 	static constexpr int LIGHT_CUTOFF_DIST = 64;
 	static constexpr float LIGHT_CUTOFF = 0.001;

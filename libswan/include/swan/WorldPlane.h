@@ -13,11 +13,11 @@
 #include "common.h"
 #include "systems/EntitySystem.h"
 #include "systems/FluidSystem.h"
+#include "systems/LightSystem.h"
 #include "util.h"
 #include "Chunk.h"
 #include "Tile.h"
 #include "WorldGen.h"
-#include "LightServer.h"
 #include "FastHashSet.h"
 
 namespace Swan {
@@ -25,7 +25,14 @@ namespace Swan {
 class World;
 class Game;
 
-class WorldPlane final: NonCopyable, public LightCallback {
+struct Raycast {
+	bool hit;
+	Tile &tile;
+	TilePos pos;
+	Vec2i face;
+};
+
+class WorldPlane final: NonCopyable {
 public:
 	using ID = uint16_t;
 
@@ -37,6 +44,7 @@ public:
 
 	EntitySystem &entities() { return entitySystem_; }
 	FluidSystem &fluids() { return fluidSystem_; }
+	LightSystem &lights() { return lightSystem_; }
 
 	bool hasChunk(ChunkPos pos);
 	Chunk &getChunk(ChunkPos pos);
@@ -52,14 +60,10 @@ public:
 	bool breakTile(TilePos pos);
 	bool placeTile(TilePos pos, Tile::ID);
 
-	void nextTick(std::function<void(const Context &)> cb);
-
-	struct Raycast {
-		bool hit;
-		Tile &tile;
-		TilePos pos;
-		Vec2i face;
-	};
+	void nextTick(std::function<void(const Context &)> cb)
+	{
+		nextTick_.push_back(std::move(cb));
+	}
 
 	Raycast raycast(Vec2 pos, Vec2 direction, float distance);
 
@@ -68,18 +72,12 @@ public:
 	void update(float dt);
 	void tick(float dt);
 
-	void addLight(TilePos pos, float level);
-	void removeLight(TilePos pos, float level);
-
 	void setFluid(TilePos pos, Fluid::ID fluid)
 	{
 		auto chunkPos = tilePosToChunkPos(pos);
 		auto &chunk = getChunk(chunkPos);
 		chunk.setFluidID(tilePosToChunkRelPos(pos), fluid);
 	}
-
-	// LightingCallback implementation
-	void onLightChunkUpdated(const LightChunk &chunk, Vec2i pos) final;
 
 	void scheduleTileUpdate(TilePos pos)
 	{
@@ -89,11 +87,8 @@ public:
 	ID id_;
 	World *world_;
 	std::unique_ptr<WorldGen> worldGen_;
-	std::mutex mut_;
 
 private:
-	NewLightChunk computeLightChunk(const Chunk &chunk);
-
 	void serialize(sbon::Writer w);
 	void deserialize(sbon::Reader r, std::span<Tile::ID> tileMap);
 
@@ -107,27 +102,16 @@ private:
 	std::vector<TilePos> scheduledTileUpdates_;
 	std::vector<TilePos> scheduledTileUpdatesB_;
 
-	// The lighting server must destruct first. Until it has been destructed,
-	// it might call onLightChunkUpdated. If that happens after some other
-	// members have destructed, we have a problem.
-	// TODO: Rewrite this to not use a callback-based interface.
-	std::unique_ptr<LightServer> lighting_;
-
 	// Callbacks to run on next tick
 	std::vector<std::function<void(const Context &)>> nextTick_;
 	std::vector<std::function<void(const Context &)>> nextTickB_;
 
 	FluidSystem fluidSystem_{*this};
 	EntitySystem entitySystem_;
+	LightSystem lightSystem_{*this};
 
-	friend EntityRef;
 	friend Chunk;
 	friend World;
 };
-
-inline void WorldPlane::nextTick(std::function<void(const Context &)> cb)
-{
-	nextTick_.push_back(std::move(cb));
-}
 
 }
