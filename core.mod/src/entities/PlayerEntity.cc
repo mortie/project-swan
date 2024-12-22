@@ -252,7 +252,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	Swan::Vec2 facePos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.3};
 	Swan::Vec2 mousePos = ctx.game.getMousePos();
 	auto lookVector = mousePos - facePos;
-	auto raycast = ctx.plane.raycast(
+	auto raycast = ctx.plane.tiles().raycast(
 		facePos, lookVector, std::min(lookVector.length(), 6.0f));
 	breakPos_ = raycast.pos;
 	placePos_ = raycast.pos + raycast.face;
@@ -264,15 +264,15 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		(int)floor(physicsBody_.body.midX()),
 		(int)floor(physicsBody_.body.bottom() - 0.1),
 	};
-	auto &midTile = ctx.plane.getTile(midTilePos);
-	auto &topTile = ctx.plane.getTile(midTilePos.add(0, -1));
+	auto &midTile = ctx.plane.tiles().get(midTilePos);
+	auto &topTile = ctx.plane.tiles().get(midTilePos.add(0, -1));
 
 	// Figure out what tile is below us
 	auto belowTilePos = Swan::TilePos{
 		(int)floor(physicsBody_.body.midX()),
 		(int)floor(physicsBody_.body.bottom() + 0.1),
 	};
-	auto &belowTile = ctx.plane.getTile(belowTilePos);
+	auto &belowTile = ctx.plane.tiles().get(belowTilePos);
 
 	bool inLadder =
 		dynamic_cast<LadderTileTrait *>(midTile.traits.get()) ||

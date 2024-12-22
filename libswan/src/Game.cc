@@ -200,7 +200,7 @@ void Game::draw()
 			fpsLimit_ = 0;
 		}
 
-		auto &tile = world_->currentPlane().getTile(getMouseTile());
+		auto &tile = world_->currentPlane().tiles().get(getMouseTile());
 		ImGui::Text("Tile: %s\n", tile.name.c_str());
 
 		ImGui::Text("Give Item:");

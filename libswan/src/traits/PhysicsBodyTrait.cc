@@ -17,7 +17,7 @@ static void collideX(BasicPhysicsBody &phys, WorldPlane &plane)
 
 	for (int y = firstY; y <= lastY; ++y) {
 		int lx = (int)floor(phys.body.left());
-		Tile &left = plane.getTile({lx, y});
+		Tile &left = plane.tiles().get({lx, y});
 		if (left.isSolid) {
 			phys.body.pos.x = (float)lx + 1.0;
 			collided = true;
@@ -25,7 +25,7 @@ static void collideX(BasicPhysicsBody &phys, WorldPlane &plane)
 		}
 
 		int rx = (int)floor(phys.body.right());
-		Tile &right = plane.getTile({rx, y});
+		Tile &right = plane.tiles().get({rx, y});
 		if (right.isSolid) {
 			phys.body.pos.x = (float)rx - phys.body.size.x;
 			collided = true;
@@ -51,7 +51,7 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane)
 	int lastX = (int)floor(phys.body.right() - epsilon);
 	for (int x = firstX; x <= lastX; ++x) {
 		int by = (int)floor(phys.body.bottom());
-		Tile &bottom = plane.getTile({x, by});
+		Tile &bottom = plane.tiles().get({x, by});
 		if (bottom.isSolid) {
 			phys.body.pos.y = (float)by - phys.body.size.y;
 			collided = true;
@@ -60,7 +60,7 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane)
 		}
 
 		int ty = (int)floor(phys.body.top());
-		Tile &top = plane.getTile({x, ty});
+		Tile &top = plane.tiles().get({x, ty});
 		if (top.isSolid) {
 			phys.body.pos.y = (float)ty + 1.0;
 			collided = true;

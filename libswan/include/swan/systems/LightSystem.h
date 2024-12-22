@@ -9,6 +9,7 @@
 
 namespace Swan {
 
+class TileSystem;
 class WorldPlane;
 class Chunk;
 
@@ -46,6 +47,7 @@ private:
 	std::mutex mut_;
 
 	friend WorldPlane;
+	friend TileSystem;
 };
 
 }

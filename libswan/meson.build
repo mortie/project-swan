@@ -7,6 +7,7 @@ libswan = declare_dependency(
     'src/systems/EntitySystem.cc',
     'src/systems/FluidSystem.cc',
     'src/systems/LightSystem.cc',
+    'src/systems/TileSystem.cc',
     'src/traits/InventoryTrait.cc',
     'src/traits/PhysicsBodyTrait.cc',
     'src/Animation.cc',

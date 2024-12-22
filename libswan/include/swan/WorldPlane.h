@@ -14,6 +14,7 @@
 #include "systems/EntitySystem.h"
 #include "systems/FluidSystem.h"
 #include "systems/LightSystem.h"
+#include "systems/TileSystem.h"
 #include "util.h"
 #include "Chunk.h"
 #include "Tile.h"
@@ -24,13 +25,6 @@ namespace Swan {
 
 class World;
 class Game;
-
-struct Raycast {
-	bool hit;
-	Tile &tile;
-	TilePos pos;
-	Vec2i face;
-};
 
 class WorldPlane final: NonCopyable {
 public:
@@ -45,44 +39,35 @@ public:
 	EntitySystem &entities() { return entitySystem_; }
 	FluidSystem &fluids() { return fluidSystem_; }
 	LightSystem &lights() { return lightSystem_; }
+	TileSystem &tiles() { return tileSystem_; }
 
 	bool hasChunk(ChunkPos pos);
 	Chunk &getChunk(ChunkPos pos);
 	Chunk &slowGetChunk(ChunkPos pos);
-	void setTileID(TilePos pos, Tile::ID id);
-	void setTile(TilePos pos, const std::string &name);
-	bool setTileIDWithoutUpdate(TilePos pos, Tile::ID id);
-
-	Tile::ID getTileID(TilePos pos);
-	Tile &getTile(TilePos pos);
 
 	EntityRef spawnPlayer();
-	bool breakTile(TilePos pos);
-	bool placeTile(TilePos pos, Tile::ID);
+
+	bool breakTile(TilePos pos)
+	{
+		return tileSystem_.breakTile(pos);
+	}
+
+	bool placeTile(TilePos pos, Tile::ID id)
+	{
+		return tileSystem_.placeTile(pos, id);
+	}
 
 	void nextTick(std::function<void(const Context &)> cb)
 	{
-		nextTick_.push_back(std::move(cb));
+		nextTickA_.push_back(std::move(cb));
 	}
-
-	Raycast raycast(Vec2 pos, Vec2 direction, float distance);
 
 	Cygnet::Color backgroundColor();
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
 	void tick(float dt);
 
-	void setFluid(TilePos pos, Fluid::ID fluid)
-	{
-		auto chunkPos = tilePosToChunkPos(pos);
-		auto &chunk = getChunk(chunkPos);
-		chunk.setFluidID(tilePosToChunkRelPos(pos), fluid);
-	}
-
-	void scheduleTileUpdate(TilePos pos)
-	{
-		scheduledTileUpdates_.push_back(pos);
-	}
+	void setFluid(TilePos pos, Fluid::ID fluid);
 
 	ID id_;
 	World *world_;
@@ -98,17 +83,14 @@ private:
 
 	std::deque<Chunk *> chunkInitList_;
 
-	// Tiles to update the next tick
-	std::vector<TilePos> scheduledTileUpdates_;
-	std::vector<TilePos> scheduledTileUpdatesB_;
-
 	// Callbacks to run on next tick
-	std::vector<std::function<void(const Context &)>> nextTick_;
+	std::vector<std::function<void(const Context &)>> nextTickA_;
 	std::vector<std::function<void(const Context &)>> nextTickB_;
 
 	FluidSystem fluidSystem_{*this};
 	EntitySystem entitySystem_;
 	LightSystem lightSystem_{*this};
+	TileSystem tileSystem_{*this};
 
 	friend Chunk;
 	friend World;

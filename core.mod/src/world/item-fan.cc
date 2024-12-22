@@ -12,7 +12,7 @@ static void updateItemFan(const Swan::Context &ctx, Swan::TilePos pos)
 	bool hasRight = ctx.plane.entities().getTileEntity(pos + Swan::Direction::RIGHT)
 		->trait<Swan::InventoryTrait>();
 
-	auto &tile = ctx.plane.getTile(pos);
+	auto &tile = ctx.plane.tiles().get(pos);
 
 	if (tile.name.ends_with("::left") && hasLeft) {
 		return;
@@ -24,10 +24,10 @@ static void updateItemFan(const Swan::Context &ctx, Swan::TilePos pos)
 
 	Swan::Direction dir = Swan::Direction::LEFT;
 	if (hasRight) {
-		ctx.plane.setTile(pos, "core::item-fan::right");
+		ctx.plane.tiles().set(pos, "core::item-fan::right");
 		dir = Swan::Direction::RIGHT;
 	} else {
-		ctx.plane.setTile(pos, "core::item-fan::left");
+		ctx.plane.tiles().set(pos, "core::item-fan::left");
 		dir = Swan::Direction::LEFT;
 	}
 

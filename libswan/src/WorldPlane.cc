@@ -76,278 +76,9 @@ Chunk &WorldPlane::slowGetChunk(ChunkPos pos)
 	return iter->second;
 }
 
-void WorldPlane::setTileID(TilePos pos, Tile::ID id)
-{
-	if (setTileIDWithoutUpdate(pos, id)) {
-		// Update the new tile immediately
-		auto &tile = getTile(pos);
-		if (tile.onTileUpdate) {
-			tile.onTileUpdate(getContext(), pos);
-		}
-
-		// Schedule surrounding tile updates for later
-		scheduleTileUpdate(pos.add(-1, 0));
-		scheduleTileUpdate(pos.add(0, -1));
-		scheduleTileUpdate(pos.add(1, 0));
-		scheduleTileUpdate(pos.add(0, 1));
-	}
-}
-
-bool WorldPlane::setTileIDWithoutUpdate(TilePos pos, Tile::ID id)
-{
-	Chunk &chunk = getChunk(tilePosToChunkPos(pos));
-	ChunkRelPos rp = tilePosToChunkRelPos(pos);
-
-	Tile::ID old = chunk.getTileID(rp);
-
-	if (id == old) {
-		return false;
-	}
-
-	Tile &newTile = world_->getTileByID(id);
-	Tile &oldTile = world_->getTileByID(old);
-
-	if (oldTile.onBreak) {
-		oldTile.onBreak(getContext(), pos);
-	}
-
-	if (oldTile.tileEntity) {
-		entitySystem_.despawnTileEntity(pos);
-	}
-
-	chunk.setTileID(rp, id);
-
-	if (!oldTile.isOpaque && newTile.isOpaque) {
-		lightSystem_.addSolidBlock(pos);
-	}
-	else if (oldTile.isOpaque && !newTile.isOpaque) {
-		lightSystem_.removeSolidBlock(pos);
-	}
-
-	if (newTile.lightLevel != oldTile.lightLevel) {
-		if (oldTile.lightLevel > 0) {
-			lightSystem_.removeLight(pos, oldTile.lightLevel);
-		}
-
-		if (newTile.lightLevel > 0) {
-			lightSystem_.addLight(pos, newTile.lightLevel);
-		}
-	}
-
-	if (oldTile.isSolid && !newTile.isSolid) {
-		setFluid(pos, World::AIR_FLUID_ID);
-	}
-	else if (!oldTile.isSolid && newTile.isSolid) {
-		setFluid(pos, World::SOLID_FLUID_ID);
-	}
-
-	if (newTile.onSpawn) {
-		newTile.onSpawn(getContext(), pos);
-	}
-
-	if (newTile.tileEntity) {
-		entitySystem_.spawnTileEntity(pos, newTile.tileEntity.value());
-	}
-
-	return true;
-}
-
-void WorldPlane::setTile(TilePos pos, const std::string &name)
-{
-	setTileID(pos, world_->getTileID(name));
-}
-
-Tile::ID WorldPlane::getTileID(TilePos pos)
-{
-	return getChunk(tilePosToChunkPos(pos)).getTileID(tilePosToChunkRelPos(pos));
-}
-
-Tile &WorldPlane::getTile(TilePos pos)
-{
-	return world_->getTileByID(getTileID(pos));
-}
-
 EntityRef WorldPlane::spawnPlayer()
 {
 	return worldGen_->spawnPlayer(getContext());
-}
-
-bool WorldPlane::breakTile(TilePos pos)
-{
-	// If the block is already air, do nothing
-	Tile::ID id = getTileID(pos);
-
-	if (id == World::AIR_TILE_ID) {
-		return false;
-	}
-
-	Tile &tile = world_->getTileByID(id);
-
-	if (tile.breakSound) {
-		world_->game_->playSound(tile.breakSound);
-	}
-	else {
-		world_->game_->playSound(world_->getSound(World::THUD_SOUND_NAME));
-	}
-
-	// Change tile to air
-	setTileID(pos, World::AIR_TILE_ID);
-	return true;
-}
-
-bool WorldPlane::placeTile(TilePos pos, Tile::ID id)
-{
-	Chunk &chunk = getChunk(tilePosToChunkPos(pos));
-	ChunkRelPos rp = tilePosToChunkRelPos(pos);
-
-	Tile::ID old = chunk.getTileID(rp);
-	auto &oldTile = world_->getTileByID(old);
-
-	if (!oldTile.isReplacable) {
-		return false;
-	}
-
-	if (id == old) {
-		return false;
-	}
-
-	auto &newTileBeforeSpawn = world_->getTileByID(id);
-
-	// Try to run the onSpawn immediately,
-	// and revert if it returns false
-	chunk.setTileID(rp, id);
-	if (
-		newTileBeforeSpawn.onSpawn &&
-		!newTileBeforeSpawn.onSpawn(getContext(), pos)) {
-		chunk.setTileID(rp, old);
-		return false;
-	}
-
-	// The ID might've been changed after onSpawn
-	id = chunk.getTileID(rp);
-	auto &newTile = world_->getTileByID(id);
-
-	world_->game_->playSound(oldTile.breakSound);
-
-	// TODO: play a separate place sound
-	world_->game_->playSound(newTile.breakSound);
-
-	// We didn't run the onBreak and despawn tile entities yet,
-	// so let's do that
-	chunk.setTileID(rp, old);
-	if (oldTile.onBreak) {
-		oldTile.onBreak(getContext(), pos);
-	}
-	if (oldTile.tileEntity) {
-		entitySystem_.despawnTileEntity(pos);
-	}
-	chunk.setTileID(rp, id);
-
-	if (!oldTile.isOpaque && newTile.isOpaque) {
-		lightSystem_.addSolidBlock(pos);
-	}
-	else if (oldTile.isOpaque && !newTile.isOpaque) {
-		lightSystem_.removeSolidBlock(pos);
-	}
-
-	if (newTile.lightLevel != oldTile.lightLevel) {
-		if (oldTile.lightLevel > 0) {
-			lightSystem_.removeLight(pos, oldTile.lightLevel);
-		}
-
-		if (newTile.lightLevel > 0) {
-			lightSystem_.addLight(pos, newTile.lightLevel);
-		}
-	}
-
-	if (oldTile.isSolid && !newTile.isSolid) {
-		setFluid(pos, World::AIR_FLUID_ID);
-	}
-	else if (!oldTile.isSolid && newTile.isSolid) {
-		setFluid(pos, World::SOLID_FLUID_ID);
-	}
-
-	if (newTile.tileEntity) {
-		entitySystem_.spawnTileEntity(pos, newTile.tileEntity.value());
-	}
-
-	// Run a tile update immediately
-	if (newTile.onTileUpdate) {
-		newTile.onTileUpdate(getContext(), pos);
-	}
-
-	// Schedule surrounding tile updates for later
-	scheduleTileUpdate(pos.add(-1, 0));
-	scheduleTileUpdate(pos.add(0, -1));
-	scheduleTileUpdate(pos.add(1, 0));
-	scheduleTileUpdate(pos.add(0, 1));
-
-	return true;
-}
-
-Raycast WorldPlane::raycast(
-	Vec2 start, Vec2 direction, float distance)
-{
-	float squareDist = distance * distance;
-	Vec2 step = direction.norm() * 0.25;
-	Vec2 pos = start;
-	Vec2 prevPos = start;
-
-	TilePos prevTP = {0, std::numeric_limits<int>::max()};
-	TilePos tp = {(int)floor(pos.x), (int)floor(pos.y)};
-	Tile *tile = &getTile(tp);
-
-	auto isFaceValid = [&](TilePos tp, Vec2i face) {
-		tp += face;
-		return !getTile(tp).isSolid;
-	};
-
-	while (true) {
-		do {
-			prevPos = pos;
-			pos += step;
-			if ((pos - start).squareLength() > squareDist) {
-				return {
-					.hit = false,
-					.tile = *tile,
-					.pos = tp,
-					.face = Vec2i::ZERO,
-				};
-			}
-
-			tp = {(int)floor(pos.x), (int)floor(pos.y)};
-		} while (tp == prevTP);
-		prevTP = tp;
-
-		tile = &getTile(tp);
-		if (!tile->isSolid) {
-			continue;
-		}
-
-		Vec2i face = Vec2i::ZERO;
-		Vec2 rel = pos - tp;
-		Vec2 prevRel = prevPos - tp;
-
-		if (rel.y > 0 && prevRel.y < 0 && isFaceValid(tp, {0, -1})) {
-			face = {0, -1};
-		}
-		else if (rel.y < 1 && prevRel.y > 1 && isFaceValid(tp, {0, 1})) {
-			face = {0, 1};
-		}
-		else if (rel.x > 0 && prevRel.x < 0 && isFaceValid(tp, {-1, 0})) {
-			face = {-1, 0};
-		}
-		else if (rel.x < 1 && prevRel.x > 1 && isFaceValid(tp, {1, 0})) {
-			face = {1, 0};
-		}
-
-		return {
-			.hit = false,
-			.tile = *tile,
-			.pos = tp,
-			.face = face,
-		};
-	}
 }
 
 Cygnet::Color WorldPlane::backgroundColor()
@@ -440,8 +171,6 @@ void WorldPlane::tick(float dt)
 	}
 	tickChunks_.clear();
 
-	entitySystem_.tick(dt);
-
 	// Tick all chunks, figure out if any of them should be deleted or compressed
 	size_t activeChunkIndex = 0;
 	while (activeChunkIndex < activeChunks_.size()) {
@@ -473,31 +202,30 @@ void WorldPlane::tick(float dt)
 		}
 	}
 
-	// Tick callbacks and tile updates which end up scheduling more callbacks/updates
-	// shouldn't have their callbacks/updates executed until next tick
-	auto nextTick = std::move(nextTick_);
-	nextTick_ = std::move(nextTickB_);
-	auto scheduledTileUpdates = std::move(scheduledTileUpdates_);
-	scheduledTileUpdates_ = std::move(scheduledTileUpdatesB_);
+	// First swap all the A and B buffers,
+	// so that the current frame's stuff is in 'B'...
+	std::swap(nextTickA_, nextTickB_);
+	tileSystem_.beginTick();
 
-	// Run next tick callbacks
-	for (auto &cb: nextTick) {
+	// Then run through the 'B' buffers of nextTick
+	for (auto &cb: nextTickB_) {
 		cb(ctx);
 	}
-	nextTick.clear();
-	nextTickB_ = std::move(nextTick);
+	nextTickB_.clear();
 
-	// Run tile updates
-	for (auto &pos: scheduledTileUpdates) {
-		auto &tile = getTile(pos);
-		if (tile.onTileUpdate) {
-			tile.onTileUpdate(ctx, pos);
-		}
-	}
-	scheduledTileUpdates.clear();
-	scheduledTileUpdatesB_ = std::move(scheduledTileUpdates);
+	// ..and the 'B' buffers of the tile system
+	tileSystem_.endTick();
 
+	// Tick the rest
 	fluidSystem_.tick();
+	entitySystem_.tick(dt);
+}
+
+void WorldPlane::setFluid(TilePos pos, Fluid::ID fluid)
+{
+	auto chunkPos = tilePosToChunkPos(pos);
+	auto &chunk = getChunk(chunkPos);
+	chunk.setFluidID(tilePosToChunkRelPos(pos), fluid);
 }
 
 void WorldPlane::serialize(sbon::Writer w)
