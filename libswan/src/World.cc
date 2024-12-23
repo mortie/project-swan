@@ -457,7 +457,7 @@ WorldPlane &World::addPlane(std::string gen)
 	WorldGen::Factory &factory = it->second;
 	std::unique_ptr<WorldGen> g = factory.create(*this);
 	planes_.push_back({
-		.worldGen = gen,
+		.worldGen = std::move(gen),
 		.plane = std::make_unique<WorldPlane>(
 			id, this, std::move(g), std::move(colls)),
 	});

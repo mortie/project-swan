@@ -6,7 +6,7 @@
 
 namespace Swan {
 
-EntitySystem::EntitySystem(
+EntitySystemImpl::EntitySystemImpl(
 	WorldPlane &plane,
 	std::vector<std::unique_ptr<EntityCollection>> &&colls):
 	plane_(plane),
@@ -18,7 +18,7 @@ EntitySystem::EntitySystem(
 	}
 }
 
-EntityRef EntitySystem::spawn(std::string_view name, sbon::ObjectReader r)
+EntityRef EntitySystemImpl::spawn(std::string_view name, sbon::ObjectReader r)
 {
 	auto it = collectionsByName_.find(name);
 	if (it == collectionsByName_.end()) {
@@ -32,12 +32,12 @@ EntityRef EntitySystem::spawn(std::string_view name, sbon::ObjectReader r)
 	return ent;
 }
 
-void EntitySystem::despawn(EntityRef ref)
+void EntitySystemImpl::despawn(EntityRef ref)
 {
 	despawnListA_.push_back(ref);
 }
 
-std::span<EntitySystem::FoundEntity> EntitySystem::getColliding(
+std::span<FoundEntity> EntitySystemImpl::getColliding(
 	BodyTrait::Body &body)
 {
 	constexpr float PADDING = 10;
@@ -93,7 +93,7 @@ std::span<EntitySystem::FoundEntity> EntitySystem::getColliding(
 	return foundEntitiesBuf_;
 }
 
-std::span<EntitySystem::FoundEntity> EntitySystem::getInTile(
+std::span<FoundEntity> EntitySystemImpl::getInTile(
 	TilePos pos)
 {
 	BodyTrait::Body body = {
@@ -105,7 +105,7 @@ std::span<EntitySystem::FoundEntity> EntitySystem::getInTile(
 	return getColliding(body);
 }
 
-std::span<EntitySystem::FoundEntity> EntitySystem::getInArea(
+std::span<FoundEntity> EntitySystemImpl::getInArea(
 	Vec2 pos, Vec2 size)
 {
 	BodyTrait::Body body = {
@@ -117,7 +117,26 @@ std::span<EntitySystem::FoundEntity> EntitySystem::getInArea(
 	return getColliding(body);
 }
 
-void EntitySystem::spawnTileEntity(TilePos pos, std::string_view name)
+EntityRef EntitySystemImpl::getTileEntity(TilePos pos)
+{
+	auto it = tileEntities_.find(pos);
+	if (it == tileEntities_.end()) {
+		return {};
+	} else {
+		return it->second;
+	}
+}
+
+EntityRef EntitySystemImpl::current()
+{
+	if (!currentCollection_) {
+		return {};
+	}
+
+	return currentCollection_->currentEntity();
+}
+
+void EntitySystemImpl::spawnTileEntity(TilePos pos, std::string_view name)
 {
 	if (tileEntities_.contains(pos)) {
 		warn << "Tile entity already exists in " << pos;
@@ -140,17 +159,7 @@ void EntitySystem::spawnTileEntity(TilePos pos, std::string_view name)
 	ent->onSpawn(getContext());
 }
 
-EntityRef EntitySystem::getTileEntity(TilePos pos)
-{
-	auto it = tileEntities_.find(pos);
-	if (it == tileEntities_.end()) {
-		return {};
-	} else {
-		return it->second;
-	}
-}
-
-void EntitySystem::despawnTileEntity(TilePos pos)
+void EntitySystemImpl::despawnTileEntity(TilePos pos)
 {
 	auto it = tileEntities_.find(pos);
 
@@ -163,20 +172,7 @@ void EntitySystem::despawnTileEntity(TilePos pos)
 	}
 }
 
-EntityRef EntitySystem::current()
-{
-	if (!currentCollection_) {
-		return {};
-	}
-
-	return currentCollection_->currentEntity();
-}
-
-Context EntitySystem::getContext() {
-	return plane_.getContext();
-}
-
-void EntitySystem::draw(Cygnet::Renderer &rnd)
+void EntitySystemImpl::draw(Cygnet::Renderer &rnd)
 {
 	auto ctx = getContext();
 	for (auto &coll: collections_) {
@@ -184,7 +180,7 @@ void EntitySystem::draw(Cygnet::Renderer &rnd)
 	}
 }
 
-void EntitySystem::update(float dt)
+void EntitySystemImpl::update(float dt)
 {
 	auto ctx = getContext();
 	for (auto &coll: collections_) {
@@ -208,7 +204,7 @@ void EntitySystem::update(float dt)
 	despawnListB_ = std::move(despawnList);
 }
 
-void EntitySystem::tick(float dt)
+void EntitySystemImpl::tick(float dt)
 {
 	auto ctx = getContext();
 
@@ -225,7 +221,7 @@ void EntitySystem::tick(float dt)
 	currentCollection_ = nullptr;
 }
 
-EntityCollection *EntitySystem::getCollectionOf(std::string_view name)
+EntityCollection *EntitySystemImpl::getCollectionOf(std::string_view name)
 {
 	auto it = collectionsByName_.find(name);
 	if (it == collectionsByName_.end()) {
@@ -236,7 +232,7 @@ EntityCollection *EntitySystem::getCollectionOf(std::string_view name)
 	return it->second;
 }
 
-void EntitySystem::serialize(sbon::Writer w)
+void EntitySystemImpl::serialize(sbon::Writer w)
 {
 	auto ctx = getContext();
 
@@ -259,7 +255,7 @@ void EntitySystem::serialize(sbon::Writer w)
 	});
 }
 
-void EntitySystem::deserialize(sbon::Reader r)
+void EntitySystemImpl::deserialize(sbon::Reader r)
 {
 	auto ctx = getContext();
 
@@ -311,6 +307,10 @@ void EntitySystem::deserialize(sbon::Reader r)
 			val.skip();
 		}
 	});
+}
+
+Context EntitySystemImpl::getContext() {
+	return plane_.getContext();
 }
 
 }

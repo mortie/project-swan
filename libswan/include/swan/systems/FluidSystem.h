@@ -10,9 +10,13 @@ namespace Swan {
 
 class WorldPlane;
 
-class FluidSystem {
+class FluidSystemImpl {
 public:
-	FluidSystem(WorldPlane &plane): plane_(plane) {}
+	FluidSystemImpl(WorldPlane &plane): plane_(plane) {}
+
+	/*
+	 * Available to friends
+	 */
 
 	void triggerUpdate(FluidPos pos);
 	void tick();
@@ -30,6 +34,13 @@ private:
 	FastHashSet<FluidPos> updateSet_;
 	std::vector<FluidPos> updates_;
 	std::vector<FluidParticle> particles_;
+};
+
+class FluidSystem: private FluidSystemImpl {
+public:
+	using FluidSystemImpl::FluidSystemImpl;
+
+	friend WorldPlane;
 };
 
 }

@@ -17,22 +17,39 @@ class Renderer;
 namespace Swan {
 
 class WorldPlane;
+class TileSystemImpl;
 
-class EntitySystem {
+struct FoundEntity {
+	EntityRef ref;
+	BodyTrait::Body &body;
+};
+
+class EntitySystemImpl {
 public:
-	struct FoundEntity {
-		EntityRef ref;
-		BodyTrait::Body &body;
-	};
-
-	EntitySystem(
+	EntitySystemImpl(
 		WorldPlane &plane,
 		std::vector<std::unique_ptr<EntityCollection>> &&colls);
+
+	/*
+	 * Available to game logic
+	 */
 
 	EntityRef spawn(std::string_view name, sbon::ObjectReader r);
 
 	template<typename Ent, typename ...Args>
-	EntityRef spawn(Args &&...args);
+	EntityRef spawn(Args &&...args)
+	{
+		auto it = collectionsByType_.find(typeid(Ent));
+		if (it == collectionsByType_.end()) {
+			warn << "Attempt to spawn unregistered entity: " << typeid(Ent).name();
+			return {};
+		}
+
+		auto ctx = getContext();
+		auto ent = it->second->spawn<Ent, Args...>(ctx, std::forward<Args>(args)...);
+		ent->onSpawn(ctx);
+		return ent;
+	}
 
 	void despawn(EntityRef ref);
 
@@ -42,13 +59,14 @@ public:
 
 	EntityRef getTileEntity(TilePos pos);
 
-	void spawnTileEntity(TilePos pos, std::string_view name);
-	void despawnTileEntity(TilePos pos);
-
 	EntityRef current();
 
-private:
-	Context getContext();
+	/*
+	 * Available to friends
+	 */
+
+	void spawnTileEntity(TilePos pos, std::string_view name);
+	void despawnTileEntity(TilePos pos);
 
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
@@ -58,6 +76,9 @@ private:
 
 	void serialize(sbon::Writer w);
 	void deserialize(sbon::Reader r);
+
+private:
+	Context getContext();
 
 	WorldPlane &plane_;
 
@@ -72,24 +93,23 @@ private:
 
 	std::vector<EntityRef> despawnListA_;
 	std::vector<EntityRef> despawnListB_;
-
-	friend WorldPlane;
-	friend EntityRef;
 };
 
-template<typename Ent, typename ...Args>
-inline EntityRef EntitySystem::spawn(Args &&...args)
-{
-	auto it = collectionsByType_.find(typeid(Ent));
-	if (it == collectionsByType_.end()) {
-		warn << "Attempt to spawn unregistered entity: " << typeid(Ent).name();
-		return {};
-	}
+class EntitySystem: private EntitySystemImpl {
+public:
+	using EntitySystemImpl::EntitySystemImpl;
 
-	auto ctx = getContext();
-	auto ent = it->second->spawn<Ent, Args...>(ctx, std::forward<Args>(args)...);
-	ent->onSpawn(ctx);
-	return ent;
-}
+	using EntitySystemImpl::spawn;
+	using EntitySystemImpl::despawn;
+	using EntitySystemImpl::getColliding;
+	using EntitySystemImpl::getInTile;
+	using EntitySystemImpl::getInArea;
+	using EntitySystemImpl::getTileEntity;
+	using EntitySystemImpl::current;
+
+	friend WorldPlane;
+	friend TileSystemImpl;
+	friend EntityRef;
+};
 
 }

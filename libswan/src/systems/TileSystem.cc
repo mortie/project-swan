@@ -6,12 +6,12 @@
 
 namespace Swan {
 
-void TileSystem::set(TilePos pos, std::string_view name)
+void TileSystemImpl::set(TilePos pos, std::string_view name)
 {
 	setID(pos, plane_.world_->getTileID(name));
 }
 
-void TileSystem::setID(TilePos pos, Tile::ID id)
+void TileSystemImpl::setID(TilePos pos, Tile::ID id)
 {
 	if (setIDWithoutUpdate(pos, id)) {
 		// Update the new tile immediately
@@ -28,7 +28,7 @@ void TileSystem::setID(TilePos pos, Tile::ID id)
 	}
 }
 
-bool TileSystem::setIDWithoutUpdate(TilePos pos, Tile::ID id)
+bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 {
 	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
 	ChunkRelPos rp = tilePosToChunkRelPos(pos);
@@ -87,19 +87,19 @@ bool TileSystem::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 	return true;
 }
 
-Tile &TileSystem::get(TilePos pos)
+Tile &TileSystemImpl::get(TilePos pos)
 {
 	return plane_.world_->getTileByID(getID(pos));
 }
 
-Tile::ID TileSystem::getID(TilePos pos)
+Tile::ID TileSystemImpl::getID(TilePos pos)
 {
 	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
 	ChunkRelPos rp = tilePosToChunkRelPos(pos);
 	return chunk.getTileID(rp);
 }
 
-bool TileSystem::breakTile(TilePos pos)
+bool TileSystemImpl::breakTile(TilePos pos)
 {
 	// If the block is already air, do nothing
 	Tile::ID id = getID(pos);
@@ -122,7 +122,7 @@ bool TileSystem::breakTile(TilePos pos)
 	return true;
 }
 
-bool TileSystem::placeTile(TilePos pos, Tile::ID id)
+bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 {
 	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
 	ChunkRelPos rp = tilePosToChunkRelPos(pos);
@@ -212,7 +212,7 @@ bool TileSystem::placeTile(TilePos pos, Tile::ID id)
 	return true;
 }
 
-Raycast TileSystem::raycast(
+Raycast TileSystemImpl::raycast(
 	Vec2 start, Vec2 direction, float distance)
 {
 	float squareDist = distance * distance;
@@ -277,12 +277,12 @@ Raycast TileSystem::raycast(
 	}
 }
 
-void TileSystem::beginTick()
+void TileSystemImpl::beginTick()
 {
 	std::swap(scheduledUpdatesA_, scheduledUpdatesB_);
 }
 
-void TileSystem::endTick()
+void TileSystemImpl::endTick()
 {
 	auto ctx = plane_.getContext();
 	for (auto &pos: scheduledUpdatesB_) {

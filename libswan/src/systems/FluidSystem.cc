@@ -2,7 +2,7 @@
 
 namespace Swan {
 
-void FluidSystem::tick()
+void FluidSystemImpl::tick()
 {
 	// Randomize update order
 	for (size_t i = 1; i < updates_.size(); ++i) {
@@ -12,13 +12,13 @@ void FluidSystem::tick()
 		}
 	}
 
-	// Apply rules
+	// Run the updates
 	for (size_t i = 0; i < updates_.size(); ++i) {
 		applyRules(updates_[i]);
 	}
 }
 
-void FluidSystem::applyRules(FluidPos pos)
+void FluidSystemImpl::applyRules(FluidPos pos)
 {
 }
 

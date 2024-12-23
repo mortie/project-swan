@@ -9,16 +9,30 @@
 
 namespace Swan {
 
-class TileSystem;
+class TileSystemImpl;
 class WorldPlane;
 class Chunk;
 
-class LightSystem: public LightCallback {
+class LightSystemImpl: public LightCallback {
 public:
-	LightSystem(WorldPlane &plane): plane_(plane) {}
+	LightSystemImpl(WorldPlane &plane): plane_(plane) {}
+
+	/*
+	 * Available to game logic
+	 */
 
 	void addLight(TilePos pos, float level);
 	void removeLight(TilePos pos, float level);
+
+	/*
+	 * Available to friends
+	 */
+
+	void addSolidBlock(TilePos pos);
+	void removeSolidBlock(TilePos pos);
+	void addChunk(ChunkPos pos, const Chunk &chunk);
+	void removeChunk(ChunkPos pos);
+	void flip();
 
 protected:
 	// LightCallback implementation
@@ -32,12 +46,6 @@ private:
 		uint8_t levels[CHUNK_WIDTH * CHUNK_HEIGHT];
 	};
 
-	void addSolidBlock(TilePos pos);
-	void removeSolidBlock(TilePos pos);
-	void addChunk(ChunkPos pos, const Chunk &chunk);
-	void removeChunk(ChunkPos pos);
-	void flip();
-
 	NewLightChunk computeLightChunk(const Chunk &chunk);
 
 	WorldPlane &plane_;
@@ -45,9 +53,17 @@ private:
 	std::vector<LightUpdate> updates_;
 
 	std::mutex mut_;
+};
+
+class LightSystem: private LightSystemImpl {
+public:
+	using LightSystemImpl::LightSystemImpl;
+
+	using LightSystemImpl::addLight;
+	using LightSystemImpl::removeLight;
 
 	friend WorldPlane;
-	friend TileSystem;
+	friend TileSystemImpl;
 };
 
 }

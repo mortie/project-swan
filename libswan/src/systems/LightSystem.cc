@@ -5,7 +5,7 @@
 
 namespace Swan {
 
-void LightSystem::onLightChunkUpdated(const LightChunk &chunk, Vec2i pos)
+void LightSystemImpl::onLightChunkUpdated(const LightChunk &chunk, Vec2i pos)
 {
 	std::lock_guard<std::mutex> lock(mut_);
 	updates_.push_back({});
@@ -13,39 +13,39 @@ void LightSystem::onLightChunkUpdated(const LightChunk &chunk, Vec2i pos)
 	memcpy(updates_.back().levels, chunk.lightLevels, CHUNK_WIDTH * CHUNK_HEIGHT);
 }
 
-void LightSystem::addLight(TilePos pos, float level)
+void LightSystemImpl::addLight(TilePos pos, float level)
 {
 	plane_.getChunk(tilePosToChunkPos(pos));
 	server_.onLightAdded(pos, level);
 }
 
-void LightSystem::removeLight(TilePos pos, float level)
+void LightSystemImpl::removeLight(TilePos pos, float level)
 {
 	plane_.getChunk(tilePosToChunkPos(pos));
 	server_.onLightRemoved(pos, level);
 }
 
-void LightSystem::addSolidBlock(TilePos pos)
+void LightSystemImpl::addSolidBlock(TilePos pos)
 {
 	server_.onSolidBlockAdded(pos);
 }
 
-void LightSystem::removeSolidBlock(TilePos pos)
+void LightSystemImpl::removeSolidBlock(TilePos pos)
 {
 	server_.onSolidBlockRemoved(pos);
 }
 
-void LightSystem::addChunk(ChunkPos pos, const Chunk &chunk)
+void LightSystemImpl::addChunk(ChunkPos pos, const Chunk &chunk)
 {
 	server_.onChunkAdded(pos, computeLightChunk(chunk));
 }
 
-void LightSystem::removeChunk(ChunkPos pos)
+void LightSystemImpl::removeChunk(ChunkPos pos)
 {
 	server_.onChunkRemoved(pos);
 }
 
-void LightSystem::flip()
+void LightSystemImpl::flip()
 {
 	for (auto &update: updates_) {
 		auto &chunk = plane_.getChunk(update.pos);
@@ -55,7 +55,7 @@ void LightSystem::flip()
 	server_.flip();
 }
 
-NewLightChunk LightSystem::computeLightChunk(const Chunk &chunk)
+NewLightChunk LightSystemImpl::computeLightChunk(const Chunk &chunk)
 {
 	NewLightChunk lc;
 
