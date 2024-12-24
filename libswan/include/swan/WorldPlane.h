@@ -67,8 +67,6 @@ public:
 	void update(float dt);
 	void tick(float dt);
 
-	void setFluid(TilePos pos, Fluid::ID fluid);
-
 	ID id_;
 	World *world_;
 	std::unique_ptr<WorldGen> worldGen_;

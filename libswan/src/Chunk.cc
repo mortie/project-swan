@@ -110,12 +110,13 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
 		auto *row = getFluidData() + (y * CHUNK_WIDTH * FLUID_RESOLUTION);
 		float rndY = pos.y + (float(y) / FLUID_RESOLUTION);
 		for (int x = 0; x < CHUNK_WIDTH * FLUID_RESOLUTION; ++x) {
-			Fluid::ID cell = row[x];
-			if (cell == World::AIR_FLUID_ID || cell == World::SOLID_FLUID_ID) {
+			uint8_t cell = row[x];
+			Fluid::ID id = cell & 0x3f;
+			if (id == World::AIR_FLUID_ID || id == World::SOLID_FLUID_ID) {
 				continue;
 			}
 
-			Fluid &fluid = ctx.world.getFluidByID(cell);
+			Fluid &fluid = ctx.world.getFluidByID(id);
 
 			float rndX = pos.x + (float(x) / FLUID_RESOLUTION);
 			rnd.drawRect(Cygnet::Renderer::DrawRect{

@@ -123,7 +123,7 @@ public:
 			.isSolid = false,
 			.onSpawn = +[] (const Swan::Context &ctx, Swan::TilePos pos) {
 				ctx.plane.tiles().setIDWithoutUpdate(pos, Swan::World::AIR_TILE_ID);
-				ctx.plane.setFluid(pos, ctx.world.getFluid("core::water").id);
+				ctx.plane.fluids().setInTile(pos, ctx.world.getFluid("core::water").id);
 				return true;
 			},
 		});

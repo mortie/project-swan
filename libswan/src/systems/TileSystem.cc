@@ -70,10 +70,10 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 	}
 
 	if (oldTile.isSolid && !newTile.isSolid) {
-		plane_.setFluid(pos, World::AIR_FLUID_ID);
+		plane_.fluids().setInTile(pos, World::AIR_FLUID_ID);
 	}
 	else if (!oldTile.isSolid && newTile.isSolid) {
-		plane_.setFluid(pos, World::SOLID_FLUID_ID);
+		plane_.fluids().setInTile(pos, World::SOLID_FLUID_ID);
 	}
 
 	if (newTile.onSpawn) {
@@ -188,10 +188,10 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 	}
 
 	if (oldTile.isSolid && !newTile.isSolid) {
-		plane_.setFluid(pos, World::AIR_FLUID_ID);
+		plane_.fluids().setInTile(pos, World::AIR_FLUID_ID);
 	}
 	else if (!oldTile.isSolid && newTile.isSolid) {
-		plane_.setFluid(pos, World::SOLID_FLUID_ID);
+		plane_.fluids().setInTile(pos, World::SOLID_FLUID_ID);
 	}
 
 	if (newTile.tileEntity) {

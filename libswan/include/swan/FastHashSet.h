@@ -172,6 +172,10 @@ public:
 
 	bool contains(const Key &key)
 	{
+		if (cap_ == 0) {
+			return false;
+		}
+
 		size_t index = Hash{}(key) & (cap_ - 1);
 		while (true) {
 			if (!isOccupied(index)) {

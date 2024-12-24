@@ -126,6 +126,11 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 		ZoneScopedN("Lighting flip");
 		lightSystem_.flip();
 	}
+
+	{
+		ZoneScopedN("Fluids");
+		fluidSystem_.draw(rnd);
+	}
 }
 
 void WorldPlane::update(float dt)
@@ -157,6 +162,11 @@ void WorldPlane::update(float dt)
 	{
 		ZoneScopedN("Entities");
 		entitySystem_.update(dt);
+	}
+
+	{
+		ZoneScopedN("Fluids");
+		fluidSystem_.update(dt);
 	}
 }
 
@@ -217,15 +227,14 @@ void WorldPlane::tick(float dt)
 	tileSystem_.endTick();
 
 	// Tick the rest
-	fluidSystem_.tick();
-	entitySystem_.tick(dt);
-}
-
-void WorldPlane::setFluid(TilePos pos, Fluid::ID fluid)
-{
-	auto chunkPos = tilePosToChunkPos(pos);
-	auto &chunk = getChunk(chunkPos);
-	chunk.setFluidID(tilePosToChunkRelPos(pos), fluid);
+	{
+		ZoneScopedN("Fluids");
+		fluidSystem_.tick();
+	}
+	{
+		ZoneScopedN("Entities");
+		entitySystem_.tick(dt);
+	}
 }
 
 void WorldPlane::serialize(sbon::Writer w)

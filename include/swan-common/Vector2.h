@@ -189,7 +189,8 @@ template<typename T>
 struct hash<SwanCommon::Vector2<T>> {
 	std::size_t operator()(const SwanCommon::Vector2<T> &vec) const
 	{
-		return std::hash<T>{}(vec.x) ^ std::hash<T>{}(vec.y);
+		std::size_t x = vec.x, y = vec.y;
+		return std::hash<std::size_t>{}(((x + y) * (x + y + 1) / 2) + y);
 	}
 };
 
