@@ -1,11 +1,10 @@
 OUT ?= ./build
-PREFIX ?= $(abspath $(OUT)/pfx)
 MESON ?= $(abspath ./meson/meson.py)
 
 all: $(OUT)/swan
 
 $(OUT)/build.ninja: $(MESON)
-	$(MESON) setup $(OUT) -Dprefix=$(PREFIX) -Dbuildtype=debug -Ddebug=true -Doptimization=1
+	$(MESON) setup $(OUT) -Dbuildtype=debug -Ddebug=true -Doptimization=1
 
 $(OUT)/swan: $(OUT)/build.ninja phony
 	ninja -C $(OUT) swan core.mod/mod.so
@@ -17,8 +16,10 @@ SRCS = $(shell find include src core.mod libswan libcygnet -name '*.cc' -or -nam
 
 .PHONY: run
 run: $(OUT)/swan
-	ninja -C $(OUT) install
-	cd $(PREFIX) && $(CMD) ./bin/swan
+	ninja -C $(OUT)
+	ln -sf $(abspath assets) $(OUT)/
+	ln -sf $(abspath core.mod/assets) $(OUT)/core.mod/
+	cd $(OUT) && $(CMD) ./swan
 
 .PHONY: setup
 setup: $(OUT)/build.ninja
