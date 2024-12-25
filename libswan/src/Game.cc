@@ -118,7 +118,11 @@ void Game::draw()
 	if (debugShowMenu_) {
 		ImGui::Begin("Debug Menu", &debugShowMenu_, ImGuiWindowFlags_AlwaysAutoResize);
 
+		auto &fluids = world_->currentPlane().fluids();
 		ImGui::Text("FPS: %d", fps_);
+		ImGui::Text(
+			"Fluid updates: %d, particles: %d",
+			fluids.numUpdates(), fluids.numParticles());
 
 		ImGui::Checkbox("Draw collision boxes", &debugDrawCollisionBoxes_);
 		ImGui::Checkbox("Draw chunk boundaries", &debugDrawChunkBoundaries_);
@@ -200,7 +204,7 @@ void Game::draw()
 			fpsLimit_ = 0;
 		}
 
-		auto &tile = world_->currentPlane().getTile(getMouseTile());
+		auto &tile = world_->currentPlane().tiles().get(getMouseTile());
 		ImGui::Text("Tile: %s\n", tile.name.c_str());
 
 		ImGui::Text("Give Item:");

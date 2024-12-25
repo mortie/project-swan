@@ -3,6 +3,7 @@
 // IWYU pragma: begin_exports
 #include <swan-common/trace.h>
 #include <swan-common/Vector2.h>
+#include <swan-common/HashMap.h>
 #include <swan-common/constants.h>
 // IWYU pragma: end_exports
 #include <limits.h>
@@ -24,6 +25,7 @@ namespace Swan {
 using namespace SwanCommon;
 
 using TilePos = Vec2i;
+using FluidPos = Vector2<int64_t>;
 using ChunkPos = Vec2i;
 using ChunkRelPos = Vec2i;
 

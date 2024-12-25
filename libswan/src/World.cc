@@ -5,6 +5,7 @@
 #include "Clock.h"
 #include "assets.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
+#include <string_view>
 
 namespace Swan {
 
@@ -256,6 +257,49 @@ void World::buildResources()
 		}
 	}
 
+	// Load all fluids.
+
+	// Air
+	static_assert(AIR_FLUID_ID == 0);
+	fluidsMap_[AIR_FLUID_NAME] = AIR_FLUID_ID;
+	fluids_.emplace_back(AIR_FLUID_ID, AIR_FLUID_NAME, Fluid::Builder{
+		.color = Cygnet::Color{0, 0, 0, 0},
+		.density = 0,
+	});
+
+	// Solid
+	static_assert(SOLID_FLUID_ID == 1);
+	fluidsMap_[SOLID_FLUID_NAME] = SOLID_FLUID_ID;
+	fluids_.emplace_back(SOLID_FLUID_ID, SOLID_FLUID_NAME, Fluid::Builder{
+		.color = Cygnet::Color{0, 0, 0},
+		.density = 0,
+	});
+
+	// Fluids from mods
+	for (auto &mod: mods_) {
+		for (auto &fluidBuilder: mod.fluids()) {
+			std::string fluidName = cat(mod.name(), "::", fluidBuilder.name);
+
+			if (fluids_.size() >= INVALID_FLUID_ID) {
+				warn << "Can't load fluid " << fluidName << ": Fluid overflow";
+				continue;
+			}
+
+			Fluid::ID id = Fluid::ID(fluids_.size());
+			fluidsMap_[fluidName] = id;
+			fluids_.emplace_back(id, std::move(fluidName), fluidBuilder);
+		}
+	}
+
+	// Invalid
+	fluidsMap_[INVALID_FLUID_NAME] = INVALID_FLUID_ID;
+	while (fluids_.size() <= INVALID_FLUID_ID) {
+		fluids_.emplace_back(fluids_.size(), INVALID_FLUID_NAME, Fluid::Builder{
+			.color = Cygnet::Color{1, 0.19, 0.97, 1},
+			.density = 0,
+		});
+	}
+
 	// Load recipes.
 	std::vector<Recipe::Items> recipeInputs;
 	for (auto &mod: mods_) {
@@ -333,7 +377,6 @@ void World::buildResources()
 		}
 	}
 
-	invalidTile_ = &tiles_[INVALID_TILE_ID];
 	invalidItem_ = &items_.at(INVALID_TILE_NAME);
 
 	resources_ = Cygnet::ResourceManager(std::move(builder));
@@ -395,7 +438,7 @@ void World::setCurrentPlane(WorldPlane &plane)
 	currentPlane_ = plane.id_;
 }
 
-WorldPlane &World::addPlane(const std::string &gen)
+WorldPlane &World::addPlane(std::string gen)
 {
 	WorldPlane::ID id = planes_.size();
 	auto it = worldGenFactories_.find(gen);
@@ -414,14 +457,14 @@ WorldPlane &World::addPlane(const std::string &gen)
 	WorldGen::Factory &factory = it->second;
 	std::unique_ptr<WorldGen> g = factory.create(*this);
 	planes_.push_back({
-		.worldGen = gen,
+		.worldGen = std::move(gen),
 		.plane = std::make_unique<WorldPlane>(
 			id, this, std::move(g), std::move(colls)),
 	});
 	return *planes_[id].plane;
 }
 
-Tile::ID World::getTileID(const std::string &name)
+Tile::ID World::getTileID(std::string_view name)
 {
 	auto iter = tilesMap_.find(name);
 
@@ -433,14 +476,7 @@ Tile::ID World::getTileID(const std::string &name)
 	return iter->second;
 }
 
-Tile &World::getTile(const std::string &name)
-{
-	Tile::ID id = getTileID(name);
-
-	return getTileByID(id);
-}
-
-Item &World::getItem(const std::string &name)
+Item &World::getItem(std::string_view name)
 {
 	auto iter = items_.find(name);
 
@@ -452,7 +488,19 @@ Item &World::getItem(const std::string &name)
 	return iter->second;
 }
 
-Cygnet::RenderSprite &World::getSprite(const std::string &name)
+Fluid::ID World::getFluidID(std::string_view name)
+{
+	auto it = fluidsMap_.find(name);
+
+	if (it == fluidsMap_.end()) {
+		warn << "Tried to get non-existent fluid " << name << "!";
+		return INVALID_FLUID_ID;
+	}
+
+	return it->second;
+}
+
+Cygnet::RenderSprite &World::getSprite(std::string_view name)
 {
 	auto iter = resources_.sprites_.find(name);
 
@@ -464,7 +512,7 @@ Cygnet::RenderSprite &World::getSprite(const std::string &name)
 	return iter->second;
 }
 
-SoundAsset *World::getSound(const std::string &name)
+SoundAsset *World::getSound(std::string_view name)
 {
 	auto iter = sounds_.find(name);
 

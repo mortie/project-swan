@@ -189,7 +189,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	// Collide with stuff
 	bool pickedUpItem = false;
 
-	for (auto &c: ctx.plane.getCollidingEntities(physicsBody_.body)) {
+	for (auto &c: ctx.plane.entities().getColliding(physicsBody_.body)) {
 		auto *entity = c.ref.get();
 
 		// Pick it up if it's an item stack, and don't collide
@@ -208,7 +208,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 			Swan::ItemStack stack{itemStackEnt->item(), 1};
 			stack = inventory_.insert(stack);
 			if (stack.empty()) {
-				ctx.plane.despawnEntity(c.ref);
+				ctx.plane.entities().despawn(c.ref);
 				ctx.game.playSound(snapSound_);
 				pickedUpItem = true;
 			}
@@ -252,7 +252,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	Swan::Vec2 facePos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.3};
 	Swan::Vec2 mousePos = ctx.game.getMousePos();
 	auto lookVector = mousePos - facePos;
-	auto raycast = ctx.plane.raycast(
+	auto raycast = ctx.plane.tiles().raycast(
 		facePos, lookVector, std::min(lookVector.length(), 6.0f));
 	breakPos_ = raycast.pos;
 	placePos_ = raycast.pos + raycast.face;
@@ -264,15 +264,15 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		(int)floor(physicsBody_.body.midX()),
 		(int)floor(physicsBody_.body.bottom() - 0.1),
 	};
-	auto &midTile = ctx.plane.getTile(midTilePos);
-	auto &topTile = ctx.plane.getTile(midTilePos.add(0, -1));
+	auto &midTile = ctx.plane.tiles().get(midTilePos);
+	auto &topTile = ctx.plane.tiles().get(midTilePos.add(0, -1));
 
 	// Figure out what tile is below us
 	auto belowTilePos = Swan::TilePos{
 		(int)floor(physicsBody_.body.midX()),
 		(int)floor(physicsBody_.body.bottom() + 0.1),
 	};
-	auto &belowTile = ctx.plane.getTile(belowTilePos);
+	auto &belowTile = ctx.plane.tiles().get(belowTilePos);
 
 	bool inLadder =
 		dynamic_cast<LadderTileTrait *>(midTile.traits.get()) ||
@@ -327,7 +327,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 
 	if (ctx.game.isKeyPressed(GLFW_KEY_C)) {
-		ctx.plane.setWater(placePos_);
+		ctx.plane.fluids().setInTile(placePos_, ctx.world.getFluid("core::water").id);
 	}
 
 	// Toggle inventory
@@ -579,7 +579,7 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 
 	if (
 		item.tile->isSolid &&
-		!ctx.plane.getEntitiesInTile(placePos_).empty()) {
+		!ctx.plane.entities().getInTile(placePos_).empty()) {
 		return;
 	}
 
@@ -648,7 +648,7 @@ void PlayerEntity::dropItem(const Swan::Context &ctx)
 	auto vel = direction * 10.0;
 
 	auto removed = stack.remove(1);
-	ctx.plane.spawnEntity<ItemStackEntity>(pos, vel, removed.item());
+	ctx.plane.entities().spawn<ItemStackEntity>(pos, vel, removed.item());
 }
 
 }

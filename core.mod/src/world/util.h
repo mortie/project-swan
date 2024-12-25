@@ -10,7 +10,7 @@ namespace CoreMod {
 inline void dropItem(
 	const Swan::Context &ctx, Swan::TilePos pos, Swan::Item &item)
 {
-	ctx.plane.spawnEntity<ItemStackEntity>(
+	ctx.plane.entities().spawn<ItemStackEntity>(
 		(Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, &item);
 }
 
@@ -22,7 +22,7 @@ inline void dropItem(
 
 inline void breakTileAndDropItem(const Swan::Context &ctx, Swan::TilePos pos)
 {
-	auto &droppedItem = ctx.plane.getTile(pos).droppedItem;
+	auto &droppedItem = ctx.plane.tiles().get(pos).droppedItem;
 
 	if (droppedItem) {
 		dropItem(ctx, pos, *droppedItem);
@@ -35,14 +35,14 @@ inline bool denyIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	auto below = pos + Swan::TilePos{0, 1};
 
-	return ctx.plane.getTile(below).isSupportV;
+	return ctx.plane.tiles().get(below).isSupportV;
 }
 
 inline void breakIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	auto below = pos + Swan::TilePos{0, 1};
 
-	if (!ctx.plane.getTile(below).isSupportV) {
+	if (!ctx.plane.tiles().get(below).isSupportV) {
 		breakTileAndDropItem(ctx, pos);
 	}
 }
@@ -51,10 +51,10 @@ inline void fallIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 {
 	auto below = pos + Swan::TilePos{0, 1};
 
-	if (!ctx.plane.getTile(below).isSolid) {
-		auto &tile = ctx.plane.getTile(pos);
-		ctx.plane.setTileID(pos, Swan::World::AIR_TILE_ID);
-		ctx.plane.spawnEntity<FallingTileEntity>(
+	if (!ctx.plane.tiles().get(below).isSolid) {
+		auto &tile = ctx.plane.tiles().get(pos);
+		ctx.plane.tiles().setID(pos, Swan::World::AIR_TILE_ID);
+		ctx.plane.entities().spawn<FallingTileEntity>(
 			(Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, tile.id);
 	}
 }

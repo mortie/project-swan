@@ -123,7 +123,7 @@ Swan::EntityRef DefaultWorldGen::spawnPlayer(const Swan::Context &ctx)
 {
 	int x = getPlayerX(perlin_);
 
-	return ctx.plane.spawnEntity<PlayerEntity>(
+	return ctx.plane.entities().spawn<PlayerEntity>(
 		Swan::Vec2{(float)x, (float)getGrassLevel(perlin_, x) - 2});
 }
 

@@ -9,5 +9,6 @@ static constexpr int CHUNK_WIDTH = 64;
 static constexpr int PLACEHOLDER_RED = 245;
 static constexpr int PLACEHOLDER_GREEN = 66;
 static constexpr int PLACEHOLDER_BLUE = 242;
+static constexpr int FLUID_RESOLUTION = 4;
 
 }

@@ -141,7 +141,7 @@ inline bool EntityRef::exists()
  */
 
 template<typename Ent, typename ... Args>
-inline EntityRef EntityCollection::spawn(const Context &ctx, Args &&... args)
+inline EntityRef EntityCollection::spawn(const Context &ctx, Args &&...args)
 {
 	auto *impl = (EntityCollectionImpl<Ent> *)this;
 

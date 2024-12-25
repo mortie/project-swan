@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <swan-common/constants.h>
+#include <swan-common/HashMap.h>
 
 #include "Renderer.h"
 #include "TileAtlas.h"
@@ -39,7 +40,7 @@ public:
 
 private:
 	Renderer *rnd_;
-	std::unordered_map<std::string, RenderSprite> sprites_;
+	SwanCommon::HashMap<RenderSprite> sprites_;
 	std::vector<ResourceTileAnimation> tileAnims_;
 	TileAtlas atlas_;
 
@@ -58,8 +59,8 @@ public:
 	void tick();
 
 	Renderer *rnd_ = nullptr;
-	std::unordered_map<std::string, RenderSprite> sprites_;
-	std::unordered_map<std::string, Renderer::TileID> tiles_;
+	SwanCommon::HashMap<RenderSprite> sprites_;
+	SwanCommon::HashMap<Renderer::TileID> tiles_;
 	std::vector<ResourceTileAnimation> tileAnims_;
 };
 

@@ -122,8 +122,8 @@ public:
 			.image = "@::invalid",
 			.isSolid = false,
 			.onSpawn = +[] (const Swan::Context &ctx, Swan::TilePos pos) {
-				ctx.plane.setTileIDWithoutUpdate(pos, Swan::World::AIR_TILE_ID);
-				ctx.plane.setWater(pos);
+				ctx.plane.tiles().setIDWithoutUpdate(pos, Swan::World::AIR_TILE_ID);
+				ctx.plane.fluids().setInTile(pos, ctx.world.getFluid("core::water").id);
 				return true;
 			},
 		});
@@ -149,8 +149,13 @@ public:
 				Swan::Vec2 pos, Swan::Vec2 dir)
 			{
 				slot.remove(1);
-				ctx.plane.spawnEntity<DynamiteEntity>(pos, dir * 15);
+				ctx.plane.entities().spawn<DynamiteEntity>(pos, dir * 15);
 			},
+		});
+
+		registerFluid({
+			.name = "water",
+			.color = {0.21, 0.78, 0.78, 0.9},
 		});
 
 		registerRecipe({

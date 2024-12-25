@@ -10,6 +10,7 @@
 #include <sbon.h>
 
 #include "common.h"
+#include "Fluid.h"
 #include "Tile.h"
 #include "EntityCollection.h"
 
@@ -24,11 +25,18 @@ class Chunk {
 public:
 	static constexpr size_t TILE_DATA_SIZE =
 		CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID);
+	static constexpr size_t TILE_DATA_OFFSET = 0;
+
+	static constexpr size_t FLUID_DATA_SIZE =
+		CHUNK_WIDTH * FLUID_RESOLUTION * CHUNK_HEIGHT * FLUID_RESOLUTION;
+	static constexpr size_t FLUID_DATA_OFFSET = TILE_DATA_OFFSET + TILE_DATA_SIZE;
+
 	static constexpr size_t LIGHT_DATA_SIZE =
 		CHUNK_WIDTH * CHUNK_HEIGHT;
+	static constexpr size_t LIGHT_DATA_OFFSET = FLUID_DATA_OFFSET + FLUID_DATA_SIZE;
 
 	static constexpr size_t DATA_SIZE =
-		TILE_DATA_SIZE + LIGHT_DATA_SIZE;
+		TILE_DATA_SIZE + FLUID_DATA_SIZE + LIGHT_DATA_SIZE;
 
 	// What does this chunk want the world gen to do after a tick?
 	enum class TickAction {
@@ -40,25 +48,32 @@ public:
 	Chunk(ChunkPos pos): pos_(pos)
 	{
 		data_.reset(new uint8_t[DATA_SIZE]);
-		memset(getLightData(), 0, CHUNK_WIDTH * CHUNK_HEIGHT);
+		memset(getLightData(), 0, LIGHT_DATA_SIZE);
+		memset(getFluidData(), 0, FLUID_DATA_SIZE);
 	}
 
 	Tile::ID *getTileData()
 	{
 		assert(isActive());
-		return (Tile::ID *)data_.get();
+		return (Tile::ID *)(data_.get() + TILE_DATA_OFFSET);
 	}
 
 	const Tile::ID *getTileData() const
 	{
 		assert(isActive());
-		return (Tile::ID *)data_.get();
+		return (Tile::ID *)(data_.get() + TILE_DATA_OFFSET);
+	}
+
+	Fluid::ID *getFluidData()
+	{
+		assert(isActive());
+		return (Fluid::ID *)(data_.get() + FLUID_DATA_OFFSET);
 	}
 
 	uint8_t *getLightData()
 	{
 		assert(isActive());
-		return data_.get() + TILE_DATA_SIZE;
+		return data_.get() + LIGHT_DATA_OFFSET;
 	}
 
 	Tile::ID getTileID(ChunkRelPos pos) const
@@ -76,6 +91,16 @@ public:
 	void setTileData(ChunkRelPos pos, Tile::ID id)
 	{
 		getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
+	}
+
+	void setFluidID(ChunkRelPos pos, Fluid::ID fluid)
+	{
+		auto xStart = pos.x * FLUID_RESOLUTION;
+		auto yStart = pos.y * FLUID_RESOLUTION;
+		for (auto y = yStart; y < yStart + FLUID_RESOLUTION; ++y) {
+			auto *row = getFluidData() + (y * CHUNK_WIDTH * FLUID_RESOLUTION);
+			memset(row + xStart, fluid, FLUID_RESOLUTION);
+		}
 	}
 
 	uint8_t getLightLevel(ChunkRelPos pos)

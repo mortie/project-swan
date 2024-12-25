@@ -41,7 +41,7 @@ void ItemStackEntity::tick(const Swan::Context &ctx, float dt)
 {
 	lifetime_ += dt;
 	if (lifetime_ >= DESPAWN_TIME) {
-		ctx.plane.despawnEntity(ctx.plane.currentEntity());
+		ctx.plane.entities().despawn(ctx.plane.entities().current());
 	}
 }
 

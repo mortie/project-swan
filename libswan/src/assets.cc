@@ -143,7 +143,7 @@ static void makeVariant(
 }
 
 Result<ImageAsset> loadImageAsset(
-	const std::unordered_map<std::string, std::string> &modPaths,
+	const HashMap<std::string> &modPaths,
 	std::string path)
 {
 	auto sep = path.find("::");
@@ -239,7 +239,7 @@ Result<ImageAsset> loadImageAsset(
 }
 
 Result<SoundAsset> loadSoundAsset(
-	const std::unordered_map<std::string, std::string> &modPaths,
+	const HashMap<std::string> &modPaths,
 	std::string path)
 {
 	auto sep = path.find("::");

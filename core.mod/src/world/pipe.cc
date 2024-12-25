@@ -38,13 +38,13 @@ constexpr std::array<const char *, 16> DIRECTION_LUT = []() {
 
 static void onPipeUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 {
-	auto &tile = ctx.plane.getTile(pos);
+	auto &tile = ctx.plane.tiles().get(pos);
 	auto &prefix = dynamic_cast<PipeTileTrait *>(tile.traits.get())->prefix;
 
 	auto check = [&](Swan::Direction dir) {
 		auto checkPos = pos + dir;
 
-		auto tile = ctx.plane.getTile(checkPos);
+		auto tile = ctx.plane.tiles().get(checkPos);
 		auto *connectible = dynamic_cast<PipeConnectibleTileTrait *>(
 			tile.traits.get());
 		if (
@@ -53,7 +53,7 @@ static void onPipeUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 			return true;
 		}
 
-		auto ref = ctx.plane.getTileEntity(checkPos);
+		auto ref = ctx.plane.entities().getTileEntity(checkPos);
 		if (!ref) {
 			return false;
 		}
@@ -70,7 +70,7 @@ static void onPipeUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 	std::string name = Swan::cat(prefix, "::", DIRECTION_LUT[key]);
 
 	if (name != tile.name) {
-		ctx.plane.setTile(pos, name);
+		ctx.plane.tiles().set(pos, name);
 	}
 }
 

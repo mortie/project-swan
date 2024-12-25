@@ -8,7 +8,6 @@
 namespace Swan {
 
 struct Item {
-public:
 	struct Traits {
 		virtual ~Traits() = default;
 	};
