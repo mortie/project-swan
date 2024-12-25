@@ -5,6 +5,8 @@
 #include "../traits/BodyTrait.h"
 #include "../common.h"
 
+#include "swan.capnp.h"
+
 namespace Swan {
 
 struct PhysicsBodyTrait: public BodyTrait {

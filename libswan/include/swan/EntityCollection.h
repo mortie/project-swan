@@ -9,6 +9,7 @@
 #include "common.h"
 #include "Entity.h"
 #include "traits/BodyTrait.h"
+#include "swan.capnp.h"
 
 namespace Swan {
 
@@ -81,8 +82,8 @@ public:
 		return coll_;
 	}
 
-	void serialize(sbon::Writer w);
-	void deserialize(const Context &ctx, sbon::Reader r);
+	void serialize(proto::EntityRef::Builder w);
+	void deserialize(const Context &ctx, proto::EntityRef::Reader r);
 
 private:
 	EntityCollection *coll_;
@@ -121,8 +122,10 @@ public:
 	virtual void draw(const Context &ctx, Cygnet::Renderer &rnd) = 0;
 	virtual void erase(const Context &ctx, uint64_t id) = 0;
 
-	virtual void serialize(const Context &ctx, sbon::Writer w) = 0;
-	virtual void deserialize(const Context &ctx, sbon::Reader r) = 0;
+	virtual void serialize(
+		const Context &ctx, proto::EntitySystem::Collection::Builder w) = 0;
+	virtual void deserialize(
+		const Context &ctx, proto::EntitySystem::Collection::Reader r) = 0;
 
 protected:
 	uint64_t currentId_;

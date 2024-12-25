@@ -268,7 +268,7 @@ Result<SoundAsset> loadSoundAsset(
 			"Couldn't open ", oggPath, ": ", std::to_string(err))};
 	}
 
-	defer(stb_vorbis_close(vorbis));
+	SWAN_DEFER(stb_vorbis_close(vorbis));
 
 	stb_vorbis_info info = stb_vorbis_get_info(vorbis);
 	unsigned int samples = stb_vorbis_stream_length_in_samples(vorbis);

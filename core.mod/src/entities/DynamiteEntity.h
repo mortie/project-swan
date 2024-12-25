@@ -2,6 +2,8 @@
 
 #include <swan/swan.h>
 
+#include "core_mod.capnp.h"
+
 namespace CoreMod {
 
 class DynamiteEntity final: public Swan::Entity,

@@ -7,12 +7,12 @@
 #include <unordered_set>
 #include <cygnet/Renderer.h>
 #include <assert.h>
-#include <sbon.h>
 
 #include "common.h"
 #include "Fluid.h"
 #include "Tile.h"
 #include "EntityCollection.h"
+#include "swan.capnp.h"
 
 namespace Swan {
 
@@ -151,8 +151,8 @@ public:
 		return pos_;
 	}
 
-	void serialize(sbon::Writer w);
-	void deserialize(sbon::Reader r, std::span<Tile::ID> tileMap);
+	void serialize(proto::Chunk::Builder w);
+	void deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap);
 
 	std::unordered_set<EntityRef> entities_;
 

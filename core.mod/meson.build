@@ -1,3 +1,15 @@
+core_mod_proto = custom_target(
+  'core_mod_proto',
+  input: 'proto/core_mod.capnp',
+  output: ['core_mod.capnp.h', 'core_mod.capnp.c++'],
+  command: [
+    capnp_prog, 'compile', '-oc++:@OUTDIR@',
+    '--src-prefix=@CURRENT_SOURCE_DIR@/proto',
+    '-I@SOURCE_ROOT@/libswan/proto',
+    '@INPUT@',
+  ],
+)
+
 core_mod = shared_library('mod',
   'src/main.cc',
   'src/DefaultWorldGen.cc',
@@ -15,6 +27,7 @@ core_mod = shared_library('mod',
   'src/world/tree.cc',
   'src/worldgen/TallGrassDef.cc',
   'src/worldgen/TreeDef.cc',
+  core_mod_proto,
   name_prefix: '',
   name_suffix: 'so',
   install: true,

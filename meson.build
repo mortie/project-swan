@@ -11,6 +11,7 @@ project(
 cmake = import('cmake')
 
 shaderpp_prog = find_program('./scripts/shaderpp.py')
+capnp_prog = find_program('capnp')
 
 add_project_arguments('-Wno-unused-parameter', language: 'cpp')
 
@@ -41,6 +42,8 @@ portaudio_options.add_cmake_defines({
 })
 portaudio_sub = cmake.subproject('portaudio', options: portaudio_options)
 libportaudio = portaudio_sub.dependency('portaudio')
+
+libcapnp = dependency('capnp')
 
 libdl = meson.get_compiler('cpp').find_library('dl')
 libz = meson.get_compiler('cpp').find_library('z')

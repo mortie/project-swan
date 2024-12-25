@@ -3,6 +3,7 @@
 #include "EntityCollection.h"
 #include "WorldPlane.h"
 #include "Game.h"
+#include <sstream>
 
 namespace Swan {
 
@@ -65,8 +66,10 @@ public:
 	void draw(const Context &ctx, Cygnet::Renderer &rnd) override;
 	void erase(const Context &ctx, uint64_t id) override;
 
-	void serialize(const Context &ctx, sbon::Writer w) override;
-	void deserialize(const Context &ctx, sbon::Reader r) override;
+	void serialize(
+		const Context &ctx, proto::EntitySystem::Collection::Builder w) override;
+	void deserialize(
+		const Context &ctx, proto::EntitySystem::Collection::Reader r) override;
 
 	const std::string name_;
 	uint64_t nextId_ = 0;
@@ -344,80 +347,59 @@ inline void EntityCollectionImpl<Ent>::erase(const Context &ctx, uint64_t id)
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::serialize(
-	const Context &ctx, sbon::Writer w)
+	const Context &ctx, proto::EntitySystem::Collection::Builder w)
 {
-	w.writeObject([&](sbon::ObjectWriter w) {
-		w.key("next").writeUInt(nextId_);
-		w.key("entities").writeArray([&](sbon::Writer w) {
-			for (auto &wrapper: entities_) {
-				try {
-					w.writeObject([&](sbon::ObjectWriter w) {
-						w.key("$id").writeUInt(wrapper.id);
-						wrapper.ent.serialize(ctx, w);
-					});
-				} catch (std::exception &ex) {
-					warn << "Failed to serialize " << name_ << " entity: " << ex.what();
-				}
-			}
+	w.setName(name_);
+	w.setNextID(nextId_);
+	auto entities = w.initEntities(entities_.size());
+	for (size_t i = 0; i < entities_.size(); ++i) {
+		auto &wrapper = entities_[i];
+		entities[i].setId(wrapper.id);
+
+		// TODO: Migrate this part away from SBON as well
+		std::stringstream ss;
+		sbon::Writer sw(&ss);
+		sw.writeObject([&](sbon::ObjectWriter sw) {
+			wrapper.ent.serialize(ctx, sw);
 		});
-	});
+		std::string str = std::move(ss).str();
+
+		auto data = entities[i].initData(str.size());
+		memcpy(&data.front(), str.data(), str.size());
+	}
 }
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::deserialize(
-	const Context &ctx, sbon::Reader r)
+	const Context &ctx, proto::EntitySystem::Collection::Reader r)
 {
 	entities_.clear();
 	idToIndex_.clear();
-	nextId_ = 0;
+	nextId_ = r.getNextID();
 	hasTicked_ = false;
 
-	auto deserializeEntity = [&](sbon::ObjectReader r) {
-		std::optional<uint64_t> id;
-		std::string key;
-		while (true) {
-			auto val = r.next(key);
-			if (key == "$id") {
-				id = val.getUInt();
-				break;
-			}
-			else {
-				warn
-					<< "Skipping unknown key '" << key
-					<< "' while deserializing " << name_;
-			}
-		}
-
-		if (!id) {
-			warn << "Failed to deserialize " << name_ << " entity: Missing $id";
-			return;
-		}
-
+	entities_.reserve(r.getEntities().size());
+	for (auto entity: r.getEntities()) {
 		size_t index = entities_.size();
-		auto &w = entities_.emplace_back(ctx);
-		w.id = id.value();
+		auto &wrapper = entities_.emplace_back(ctx);
+		wrapper.id = entity.getId();
+
+		// TODO: Migrate this part away from SBON as well
+		auto data = entity.getData();
+		std::stringstream ss;
+		ss.write((const char *)&data.front(), data.size());
 		try {
-			w.ent.deserialize(ctx, r);
-			idToIndex_[id.value()] = index;
+			sbon::Reader sr(&ss);
+			sr.getObject([&](sbon::ObjectReader sr) {
+				wrapper.ent.deserialize(ctx, sr);
+				idToIndex_[wrapper.id] = index;
+				info << "ID: " << wrapper.id;
+			});
 		} catch (std::exception &ex) {
 			warn << "Failed to deserialize " << name_ << " entity: " << ex.what();
 			entities_.pop_back();
 		}
-	};
-
-	r.readObject([&](std::string &key, sbon::Reader val) {
-		if (key == "next") {
-			nextId_ = val.getUInt();
-		}
-		else if (key == "entities") {
-			val.readArray([&](sbon::Reader val) {
-				val.getObject(deserializeEntity);
-			});
-		}
-		else {
-			val.skip();
-		}
-	});
+	}
 }
 
 }

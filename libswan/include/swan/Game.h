@@ -4,10 +4,12 @@
 #include <chrono>
 #include <istream>
 #include <string>
+#include <span>
 #include <cygnet/Renderer.h>
 #include <cygnet/TextCache.h>
 #include <cygnet/util.h>
-#include <sbon.h>
+
+#include <kj/io.h>
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -21,10 +23,10 @@ namespace Swan {
 class Game {
 public:
 	void createWorld(
-		const std::string &worldgen, const std::vector<std::string> &modPaths);
+		const std::string &worldgen, std::span<std::string> modPaths);
 
 	void loadWorld(
-		std::istream &is, const std::vector<std::string> &modPaths);
+		kj::BufferedInputStream &is, std::span<std::string> modPaths);
 
 	void onKeyDown(int scancode, int key);
 	void onKeyUp(int scancode, int key);

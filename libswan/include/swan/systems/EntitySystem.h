@@ -5,6 +5,7 @@
 #include "../EntityCollection.h"
 #include "../traits/BodyTrait.h"
 #include "../log.h"
+#include "swan.capnp.h"
 
 #include <memory>
 #include <span>
@@ -74,8 +75,8 @@ public:
 
 	EntityCollection *getCollectionOf(std::string_view name);
 
-	void serialize(sbon::Writer w);
-	void deserialize(sbon::Reader r);
+	void serialize(proto::EntitySystem::Builder w);
+	void deserialize(proto::EntitySystem::Reader r);
 
 private:
 	Context getContext();

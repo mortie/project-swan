@@ -4,10 +4,10 @@
 #include <vector>
 #include <string>
 #include <random>
+#include <span>
 #include <cygnet/Renderer.h>
 #include <cygnet/ResourceManager.h>
 #include <cygnet/util.h>
-#include <sbon.h>
 
 #include "Fluid.h"
 #include "common.h"
@@ -21,6 +21,7 @@
 #include "Recipe.h"
 #include "assets.h"
 #include "log.h"
+#include "swan.capnp.h"
 
 namespace Swan {
 
@@ -45,7 +46,7 @@ public:
 	static constexpr char INVALID_SOUND_NAME[] = "@::invalid";
 	static constexpr char THUD_SOUND_NAME[] = "@::thud";
 
-	World(Game *game, unsigned long randSeed, std::vector<std::string> modPaths);
+	World(Game *game, unsigned long randSeed, std::span<std::string> modPaths);
 	~World();
 
 	void setWorldGen(std::string gen);
@@ -117,8 +118,8 @@ public:
 		return fluids_[INVALID_FLUID_ID];
 	}
 
-	void serialize(sbon::Writer w);
-	void deserialize(sbon::Reader r);
+	void serialize(proto::World::Builder w);
+	void deserialize(proto::World::Reader r);
 
 	HashMap<std::string> modPaths_;
 
@@ -154,7 +155,7 @@ private:
 		std::unique_ptr<WorldPlane> plane;
 	};
 
-	std::vector<ModWrapper> loadMods(std::vector<std::string> paths);
+	std::vector<ModWrapper> loadMods(std::span<std::string> paths);
 	void buildResources();
 
 	ChunkRenderer chunkRenderer_;

@@ -232,81 +232,54 @@ EntityCollection *EntitySystemImpl::getCollectionOf(std::string_view name)
 	return it->second;
 }
 
-void EntitySystemImpl::serialize(sbon::Writer w)
+void EntitySystemImpl::serialize(proto::EntitySystem::Builder w)
 {
 	auto ctx = getContext();
 
-	w.writeObject([&](sbon::ObjectWriter w) {
-		w.key("collections").writeObject([&](sbon::ObjectWriter w) {
-			for (auto &coll: collections_) {
-				coll->serialize(ctx, w.key(coll->name().c_str()));
-			}
-		});
+	auto collections = w.initCollections(collections_.size());
+	for (size_t i = 0; i < collections_.size(); ++i) {
+		collections_[i]->serialize(ctx, collections[i]);
+	}
 
-		w.key("tile-entities").writeArray([&](sbon::Writer w) {
-			for (auto &[pos, ref]: tileEntities_) {
-				w.writeObject([&](sbon::ObjectWriter w) {
-					w.key("x").writeInt(pos.x);
-					w.key("y").writeInt(pos.y);
-					ref.serialize(w.key("ref"));
-				});
-			}
-		});
-	});
+	auto tileEntities = w.initTileEntities(tileEntities_.size());
+	size_t index = 0;
+	for (auto &[pos, ref]: tileEntities_) {
+		auto entW = tileEntities[index++];
+		auto posW = entW.initPos();
+		posW.setX(pos.x);
+		posW.setY(pos.y);
+		ref.serialize(entW.initRef());
+	}
 }
 
-void EntitySystemImpl::deserialize(sbon::Reader r)
+void EntitySystemImpl::deserialize(proto::EntitySystem::Reader r)
 {
 	auto ctx = getContext();
 
-	r.readObject([&](std::string &key, sbon::Reader val) {
-		if (key == "collections") {
-			val.readObject([&](std::string &key, sbon::Reader val) {
-				auto it = collectionsByName_.find(key);
-				if (it == collectionsByName_.end()) {
-					warn << "Deserialize unknown entity collection: " << key;
-					val.skip();
-					return;
-				}
-
-				it->second->deserialize(ctx, val);
-			});
+	for (auto collection: r.getCollections()) {
+		auto name = collection.getName().cStr();
+		auto coll = collectionsByName_.find(name);
+		if (coll == collectionsByName_.end()) {
+			warn << "Deserialize unknown entity collection: " << name;
+			continue;
 		}
-		else if (key == "tile-entities") {
-			val.readArray([&](sbon::Reader val) {
-				TilePos pos;
-				EntityRef ref;
-				val.readObject([&](std::string &key, sbon::Reader val) {
-					if (key == "x") {
-						pos.x = val.getInt();
-					}
-					else if (key == "y") {
-						pos.y = val.getInt();
-					}
-					else if (key == "ref") {
-						ref.deserialize(ctx, val);
-					}
-					else {
-						val.skip();
-					}
-				});
 
-				if (!ref) {
-					warn << "Reference to non-existent entity in " << pos;
-					return;
-				}
+		coll->second->deserialize(ctx, collection);
+	}
 
-				ref.traitThen<TileEntityTrait>([&](TileEntityTrait::TileEntity &ent) {
-					ent.pos = pos;
-				});
+	tileEntities_.clear();
+	for (auto tileEnt: r.getTileEntities()) {
+		Vec2i pos = {
+			tileEnt.getPos().getX(),
+			tileEnt.getPos().getY(),
+		};
 
-				tileEntities_[pos] = ref;
-			});
-		}
-		else {
-			val.skip();
-		}
-	});
+		auto &ref = tileEntities_[pos];
+		ref.deserialize(ctx, tileEnt.getRef());
+		ref.traitThen<TileEntityTrait>([&](TileEntityTrait::TileEntity &ent) {
+			ent.pos = pos;
+		});
+	}
 }
 
 Context EntitySystemImpl::getContext() {

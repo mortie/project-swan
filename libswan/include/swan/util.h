@@ -96,12 +96,12 @@ private:
 	F f_;
 };
 
-#define DEFER_1(x, y) x ## y
-#define DEFER_2(x, y) DEFER_1(x, y)
-#define DEFER_3(x) DEFER_2(x, __COUNTER__)
+#define IMPL_SWAN_DEFER_1(x, y) x ## y
+#define IMPL_SWAN_DEFER_2(x, y) IMPL_SWAN_DEFER_1(x, y)
+#define IMPL_SWAN_DEFER_3(x) IMPL_SWAN_DEFER_2(x, __COUNTER__)
 
 /// Run some code after the end of the block.
-#define defer(code) auto DEFER_3(_defer_) = ::Swan::Defer([&]() {code;})
+#define SWAN_DEFER(code) auto IMPL_SWAN_DEFER_3(_defer_) = ::Swan::Defer([&]() {code;})
 
 inline struct ResultOk {} Ok;
 inline struct ResultErr {} Err;

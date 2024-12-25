@@ -237,50 +237,45 @@ void WorldPlane::tick(float dt)
 	}
 }
 
-void WorldPlane::serialize(sbon::Writer w)
+void WorldPlane::serialize(proto::WorldPlane::Builder w)
 {
-	w.writeObject([&](sbon::ObjectWriter w) {
-		entitySystem_.serialize(w.key("entity-system"));
+	entitySystem_.serialize(w.initEntitySystem());
 
-		w.key("chunks").writeArray([&](sbon::Writer w) {
-			for (auto &[pos, chunk]: chunks_) {
-				if (!chunk.isModified()) {
-					continue;
-				}
+	size_t chunkCount = 0;
+	for (auto &[pos, chunk]: chunks_) {
+		if (chunk.isModified()) {
+			chunkCount += 1;
+		}
+	}
 
-				chunk.serialize(w);
-			}
-		});
-	});
+	auto chunks = w.initChunks(chunkCount);
+	size_t index = 0;
+	for (auto &[pos, chunk]: chunks_) {
+		if (chunk.isModified()) {
+			chunk.serialize(chunks[index++]);
+		}
+	}
 }
 
-void WorldPlane::deserialize(sbon::Reader r, std::span<Tile::ID> tileMap)
+void WorldPlane::deserialize(proto::WorldPlane::Reader r, std::span<Tile::ID> tileMap)
 {
-	r.readObject([&](std::string &key, sbon::Reader val) {
-		if (key == "entity-system") {
-			entitySystem_.deserialize(val);
-		}
-		else if (key == "chunks") {
-			chunks_.clear();
-			activeChunks_.clear();
-			chunkInitList_.clear();
-			val.readArray([&](sbon::Reader r) {
-				Chunk tempChunk({0, 0});
-				tempChunk.deserialize(r, tileMap);
-				auto [it, _] = chunks_.emplace(
-					tempChunk.pos(), std::move(tempChunk));
-				auto &chunk = it->second;
+	entitySystem_.deserialize(r.getEntitySystem());
 
-				if (chunk.isActive()) {
-					lightSystem_.addChunk(chunk.pos(), chunk);
-					activeChunks_.push_back(&chunk);
-				}
-			});
+	chunks_.clear();
+	activeChunks_.clear();
+	chunkInitList_.clear();
+	for (auto chunkR: r.getChunks()) {
+		ChunkPos pos = {chunkR.getPos().getX(), chunkR.getPos().getY()};
+		Chunk tempChunk({0, 0});
+		tempChunk.deserialize(chunkR, tileMap);
+		auto [it, _] = chunks_.emplace(tempChunk.pos(), std::move(tempChunk));
+		auto &chunk = it->second;
+
+		if (chunk.isActive()) {
+			lightSystem_.addChunk(chunk.pos(), chunk);
+			activeChunks_.push_back(&chunk);
 		}
-		else {
-			val.skip();
-		}
-	});
+	}
 }
 
 }

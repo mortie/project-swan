@@ -8,16 +8,22 @@
 #include <filesystem>
 #include <imgui/imgui.h>
 
+#include <capnp/message.h>
+#include <capnp/serialize-packed.h>
+#include <kj/filesystem.h>
+
+#include "capnp/serialize.h"
+#include "swan.capnp.h"
+
 #include "traits/InventoryTrait.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
 
 namespace Swan {
 
 void Game::createWorld(
-	const std::string &worldgen, const std::vector<std::string> &modPaths)
+	const std::string &worldgen, std::span<std::string> modPaths)
 {
 	world_ = std::make_unique<World>(this, time(NULL), modPaths);
-
 	for (auto &mod: world_->mods_) {
 		mod.mod_->start(*world_);
 	}
@@ -28,16 +34,17 @@ void Game::createWorld(
 }
 
 void Game::loadWorld(
-	std::istream &is, const std::vector<std::string> &modPaths)
+	kj::BufferedInputStream &is, std::span<std::string> modPaths)
 {
-	world_ = std::make_unique<World>(this, time(NULL), modPaths);
+	capnp::PackedMessageReader reader(is);
 
+	world_ = std::make_unique<World>(this, time(NULL), modPaths);
 	for (auto &mod: world_->mods_) {
 		mod.mod_->start(*world_);
 	}
 
-	sbon::Reader r(&is);
-	world_->deserialize(r);
+	auto world = reader.getRoot<proto::World>();
+	world_->deserialize(world);
 }
 
 void Game::onKeyDown(int scancode, int key)
@@ -102,7 +109,7 @@ void Game::draw()
 {
 	auto now = std::chrono::steady_clock::now();
 
-	if (now > fpsUpdateTime_ + std::chrono::milliseconds(200)) {
+	if (now > fpsUpdateTime_ + std::chrono::milliseconds(200) && frameAcc_ > 0) {
 		float avgFrameTime = std::chrono::duration_cast<std::chrono::duration<float>>(frameTimeAcc_).count() / frameAcc_;
 		fps_ = std::round(1.0f / avgFrameTime);
 		frameAcc_ = 0;
@@ -262,19 +269,22 @@ void Game::tick(float dt)
 
 void Game::save()
 {
-	std::fstream f("world.sb.new", std::ios_base::out);
+	info << "Serializing world...";
+	capnp::MallocMessageBuilder mb;
+	auto world = mb.initRoot<proto::World>();
+	world_->serialize(world);
 
-	if (f) {
-		info << "Serializing to world.sb.new...";
-		sbon::Writer w(&f);
-		world_->serialize(w);
-		info << "Renaming to world.sb...";
-		std::filesystem::rename("world.sb.new", "world.sb");
-		info << "Done.";
-	}
-	else {
-		warn << "Failed to open world.sb.new!";
-	}
+	auto fs = kj::newDiskFilesystem();
+	auto &dir = fs->getCurrent();
+
+	info << "Writing to world.swan...";
+	auto replacer = dir.replaceFile(
+		kj::Path("world.swan"), kj::WriteMode::CREATE | kj::WriteMode::MODIFY);
+	auto appender = kj::newFileAppender(replacer->get().clone());
+	capnp::writePackedMessage(*appender, mb);
+
+	info << "Done!";
+	replacer->commit();
 }
 
 }
