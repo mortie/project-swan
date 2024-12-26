@@ -1,9 +1,9 @@
 OUT ?= ./build
-MESON ?= $(abspath ./meson/meson.py)
+MESON ?= meson
 
 all: $(OUT)/swan
 
-$(OUT)/build.ninja: $(MESON)
+$(OUT)/build.ninja:
 	$(MESON) setup $(OUT) -Dbuildtype=debug -Ddebug=true -Doptimization=1
 
 $(OUT)/swan: $(OUT)/build.ninja phony
@@ -43,9 +43,6 @@ format:
 .PHONY: clock
 cloc:
 	cloc $(SRCS)
-
-$(MESON):
-	git submodule update --init
 
 .PHONY: phony
 phony:
