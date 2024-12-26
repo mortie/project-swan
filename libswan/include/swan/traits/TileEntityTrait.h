@@ -1,8 +1,7 @@
 #pragma once
 
-#include <sbon.h>
-
 #include "../common.h"
+#include "swan.capnp.h"
 
 namespace Swan {
 
@@ -12,8 +11,8 @@ struct TileEntityTrait {
 	struct TileEntity {
 		TilePos pos;
 
-		void serialize(sbon::Writer w);
-		void deserialize(sbon::Reader r);
+		void serialize(proto::TileEntity::Builder w);
+		void deserialize(proto::TileEntity::Reader r);
 	};
 
 	virtual TileEntity &get(Tag) = 0;
@@ -22,20 +21,16 @@ protected:
 	~TileEntityTrait() = default;
 };
 
-inline void TileEntityTrait::TileEntity::serialize(sbon::Writer w)
+inline void TileEntityTrait::TileEntity::serialize(proto::TileEntity::Builder w)
 {
-	w.writeArray([&](sbon::Writer w) {
-		w.writeInt(pos.x);
-		w.writeInt(pos.y);
-	});
+	auto posW = w.initPos();
+	posW.setX(pos.x);
+	posW.setY(pos.y);
 }
 
-inline void TileEntityTrait::TileEntity::deserialize(sbon::Reader r)
+inline void TileEntityTrait::TileEntity::deserialize(proto::TileEntity::Reader r)
 {
-	r.getArray([&](sbon::ArrayReader r) {
-		pos.x = r.next().getInt();
-		pos.y = r.next().getInt();
-	});
+	pos = {r.getPos().getX(), r.getPos().getY()};
 }
 
 }

@@ -100,23 +100,17 @@ void DynamiteEntity::update(const Swan::Context &ctx, float dt)
 }
 
 void DynamiteEntity::serialize(
-	const Swan::Context &ctx, sbon::ObjectWriter w)
+	const Swan::Context &ctx, Proto::Builder w)
 {
-	physicsBody_.serialize(w.key("body"));
-	w.key("fuse").writeFloat(fuse_);
+	physicsBody_.serialize(w.initBody());
+	w.setFuse(fuse_);
 }
 
 void DynamiteEntity::deserialize(
-	const Swan::Context &ctx, sbon::ObjectReader r)
+	const Swan::Context &ctx, Proto::Reader r)
 {
-	r.match({
-		{"body", [&](sbon::Reader val) {
-			physicsBody_.deserialize(val);
-		}},
-		{"fuse", [&](sbon::Reader val) {
-			fuse_ = val.getFloat();
-		}},
-	});
+	physicsBody_.deserialize(r.getBody());
+	fuse_ = r.getFuse();
 }
 
 }

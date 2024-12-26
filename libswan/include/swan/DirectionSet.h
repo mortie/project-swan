@@ -3,7 +3,6 @@
 #include <assert.h>
 #include <bit>
 #include <optional>
-#include <sbon.h>
 
 #include "Direction.h"
 #include "util.h"
@@ -72,14 +71,14 @@ public:
 	constexpr Iterator begin() const;
 	constexpr Iterator end() const;
 
-	void serialize(sbon::Writer w)
+	void serialize(proto::DirectionSet::Builder w)
 	{
-		w.writeInt(value_);
+		w.setValue(value_);
 	}
 
-	void deserialize(sbon::Reader r)
+	void deserialize(proto::DirectionSet::Reader r)
 	{
-		value_ = uint8_t(r.getInt()) & 0x0f;
+		value_ = uint8_t(r.getValue()) & 0x0f;
 	}
 
 private:

@@ -18,7 +18,7 @@ EntitySystemImpl::EntitySystemImpl(
 	}
 }
 
-EntityRef EntitySystemImpl::spawn(std::string_view name, sbon::ObjectReader r)
+EntityRef EntitySystemImpl::spawn(std::string_view name, capnp::Data::Reader data)
 {
 	auto it = collectionsByName_.find(name);
 	if (it == collectionsByName_.end()) {
@@ -27,7 +27,7 @@ EntityRef EntitySystemImpl::spawn(std::string_view name, sbon::ObjectReader r)
 	}
 
 	auto ctx = getContext();
-	auto ent = it->second->spawn(ctx, r);
+	auto ent = it->second->spawn(ctx, data);
 	ent->onSpawn(ctx);
 	return ent;
 }

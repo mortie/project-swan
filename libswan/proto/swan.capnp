@@ -13,25 +13,41 @@ struct Vec2i {
 	y @1 :Int32;
 }
 
+struct Direction {
+	value @0 :UInt8;
+}
+
+struct DirectionSet {
+	value @0 :UInt8;
+}
+
 struct EntityRef {
 	collection @0 :Text;
 	id @1 :UInt32;
 }
 
-struct PhysicsBody {
+struct ItemStack {
+	item @0 :Text;
+	count @1 :UInt8;
+}
+
+struct BasicPhysicsBody {
 	pos @0 :Vec2;
 	vel @1 :Vec2;
 }
 
-struct Inventory {
+struct BasicInventory {
 	size @0 :UInt32;
 	slots @1 :List(Slot);
 
 	struct Slot {
 		index @0 :UInt32;
-		count @1 :UInt32;
-		item @2 :Text;
+		stack @1 :ItemStack;
 	}
+}
+
+struct TileEntity {
+	pos @0 :Vec2i;
 }
 
 struct World {

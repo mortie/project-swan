@@ -47,6 +47,7 @@ void LightSystemImpl::removeChunk(ChunkPos pos)
 
 void LightSystemImpl::flip()
 {
+	std::lock_guard lock(mut_);
 	for (auto &update: updates_) {
 		auto &chunk = plane_.getChunk(update.pos);
 		chunk.setLightData(update.levels);

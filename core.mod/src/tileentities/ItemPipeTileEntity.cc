@@ -130,73 +130,47 @@ void ItemPipeTileEntity::onDespawn(const Swan::Context &ctx)
 }
 
 void ItemPipeTileEntity::serialize(
-	const Swan::Context &ctx, sbon::ObjectWriter w)
+	const Swan::Context &ctx, Proto::Builder w)
 {
-	tileEntity_.serialize(w.key("ent"));
+	tileEntity_.serialize(w.initTileEntity());
 
 	if (inbox_.contents_) {
-		w.key("inbox").writeArray([&](sbon::Writer w) {
-			w.writeString(inbox_.contents_->item->name);
-			inbox_.contents_->from.serialize(w);
-		});
-	} else {
-		w.key("inbox").writeNull();
+		auto inboxW = w.initInbox();
+		inbox_.contents_->from.serialize(inboxW.initFrom());
+		inboxW.setItem(inbox_.contents_->item->name);
 	}
 
-	w.key("contents").writeArray([&](sbon::Writer w) {
-		for (auto &item: contents_) {
-			w.writeArray([&](sbon::Writer w) {
-				w.writeString(item.item->name);
-				item.from.serialize(w);
-				item.to.serialize(w);
-				w.writeInt(item.timer);
-			});
-		}
-	});
+	auto contentsW = w.initContents(contents_.size());
+	for (size_t i = 0; i < contents_.size(); ++i) {
+		contentsW[i].setItem(contents_[i].item->name);
+		contents_[i].from.serialize(contentsW[i].initFrom());
+		contents_[i].to.serialize(contentsW[i].initTo());
+		contentsW[i].setTimer(contents_[i].timer);
+	}
 }
 
 void ItemPipeTileEntity::deserialize(
-	const Swan::Context &ctx, sbon::ObjectReader r)
+	const Swan::Context &ctx, Proto::Reader r)
 {
-	std::string str;
-	r.match({
-		{"ent", [&](sbon::Reader val) {
-			tileEntity_.deserialize(val);
-		}},
-		{"inbox", [&](sbon::Reader val) {
-			if (val.getType() == sbon::Type::NIL) {
-				val.getNil();
-				inbox_.contents_ = std::nullopt;
-				return;
-			}
+	tileEntity_.deserialize(r.getTileEntity());
 
-			InboxItem item;
+	inbox_.contents_.reset();
+	if (r.hasInbox()) {
+		inbox_.contents_ = {};
+		auto &inboxContents = *inbox_.contents_;
+		inboxContents.from.deserialize(r.getInbox().getFrom());
+		inboxContents.item = &ctx.world.getItem(r.getInbox().getItem().cStr());
+	}
 
-			val.getArray([&](sbon::ArrayReader val) {
-				val.next().getString(str);
-				item.item = &ctx.world.getItem(str);
-
-				item.from.deserialize(val.next());
-
-				inbox_.contents_ = item;
-			});
-		}},
-		{"contents", [&](sbon::Reader val) {
-			contents_.clear();
-			val.readArray([&](sbon::Reader val) {
-				val.getArray([&](sbon::ArrayReader val) {
-					MovingItem item;
-
-					val.next().getString(str);
-					item.item = &ctx.world.getItem(str);
-					item.from.deserialize(val.next());
-					item.to.deserialize(val.next());
-					item.timer = val.next().getInt();
-					contents_.push_back(item);
-				});
-			});
-		}},
-	});
+	contents_.clear();
+	auto contentsR = r.getContents();
+	contents_.resize(contentsR.size());
+	for (size_t i = 0; i < contentsR.size(); ++i) {
+		contents_[i].item = &ctx.world.getItem(contentsR[i].getItem().cStr());
+		contents_[i].from.deserialize(contentsR[i].getFrom());
+		contents_[i].to.deserialize(contentsR[i].getTo());
+		contents_[i].timer = contentsR[i].getTimer();
+	}
 }
 
 Swan::ItemStack ItemPipeTileEntity::Inbox::insert(Swan::ItemStack stack)

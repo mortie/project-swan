@@ -12,7 +12,7 @@ swan_proto = custom_target(
 libswan = declare_dependency(
   include_directories: ['include', '.'],
   dependencies: [
-    common, libcygnet, libglfw3, libsbon, libcapnp,
+    common, libcygnet, libglfw3, libcapnp,
   ] + maybe_libtracy,
   link_with: library('swan',
     'src/systems/EntitySystem.cc',
@@ -38,7 +38,7 @@ libswan = declare_dependency(
     dependencies: [
       common, libcygnet, libthreads, libstb_image,
       libstb_vorbis, libcpptoml, libdl, libz, libglfw3,
-      libimgui, libportaudio, libsbon, libcapnp,
+      libimgui, libportaudio, libcapnp,
     ] + maybe_libtracy,
     install: true,
     install_rpath: get_option('libdir'),

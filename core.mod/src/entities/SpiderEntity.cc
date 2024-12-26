@@ -66,19 +66,15 @@ void SpiderEntity::tick(const Swan::Context &ctx, float dt)
 }
 
 void SpiderEntity::serialize(
-	const Swan::Context &ctx, sbon::ObjectWriter w)
+	const Swan::Context &ctx, Proto::Builder w)
 {
-	physicsBody_.serialize(w.key("body"));
+	physicsBody_.serialize(w.initBody());
 }
 
 void SpiderEntity::deserialize(
-	const Swan::Context &ctx, sbon::ObjectReader r)
+	const Swan::Context &ctx, Proto::Reader r)
 {
-	r.match({
-		{"body", [&](sbon::Reader val) {
-			physicsBody_.deserialize(val);
-		}},
-	});
+	physicsBody_.deserialize(r.getBody());
 }
 
 }

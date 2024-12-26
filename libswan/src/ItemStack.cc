@@ -54,32 +54,26 @@ ItemStack ItemStack::remove(int count)
 	return newStack;
 }
 
-void ItemStack::serialize(sbon::Writer w)
+void ItemStack::serialize(proto::ItemStack::Builder w)
 {
 	if (empty()) {
-		w.writeNull();
+		return;
 	}
-	else {
-		w.writeArray([&](sbon::Writer w) {
-			w.writeString(item_->name);
-			w.writeUInt(count_);
-		});
-	}
+
+	w.setCount(count_);
+	w.setItem(item_->name);
 }
 
-void ItemStack::deserialize(const Swan::Context &ctx, sbon::Reader r)
+void ItemStack::deserialize(const Swan::Context &ctx, proto::ItemStack::Reader r)
 {
-	if (r.getType() == sbon::Type::NIL) {
-		r.getNil();
-		item_ = nullptr;
+	if (!r.hasItem()) {
 		count_ = 0;
+		item_ = nullptr;
+		return;
 	}
-	else {
-		r.getArray([&](sbon::ArrayReader r) {
-			item_ = &ctx.world.getItem(r.next().getString());
-			count_ = r.next().getUInt();
-		});
-	}
+
+	count_ = r.getCount();
+	item_ = &ctx.world.getItem(r.getItem().cStr());
 }
 
 }

@@ -3,7 +3,11 @@
 #include "EntityCollection.h"
 #include "WorldPlane.h"
 #include "Game.h"
+#include <fstream>
 #include <sstream>
+
+#include <capnp/message.h>
+#include <capnp/serialize-packed.h>
 
 namespace Swan {
 
@@ -40,7 +44,7 @@ public:
 	EntityRef spawn(const Context &ctx, Args && ... args);
 
 	EntityRef spawn(const Context &ctx) override;
-	EntityRef spawn(const Context &ctx, sbon::ObjectReader r) override;
+	EntityRef spawn(const Context &ctx, capnp::Data::Reader data) override;
 
 	size_t size() override
 	{
@@ -197,14 +201,17 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx)
 
 template<typename Ent>
 inline EntityRef EntityCollectionImpl<Ent>::spawn(
-	const Context &ctx, sbon::ObjectReader r)
+	const Context &ctx, capnp::Data::Reader data)
 {
 	auto ent = spawn(ctx);
 
+	kj::ArrayInputStream stream(data);
+	capnp::PackedMessageReader reader(stream);
 	try {
-		ent->deserialize(ctx, r);
+		Ent *e = (Ent *)ent.get();
+		e->deserialize(ctx, reader.getRoot<typename Ent::Proto>());
 	} catch (std::exception &ex) {
-		warn << "Failed to spawn " << name_ << " from SBON: " << ex.what();
+		warn << "Failed to spawn " << name_ << ": " << ex.what();
 		erase(ctx, ent);
 		return {};
 	}
@@ -349,6 +356,9 @@ template<typename Ent>
 inline void EntityCollectionImpl<Ent>::serialize(
 	const Context &ctx, proto::EntitySystem::Collection::Builder w)
 {
+	capnp::MallocMessageBuilder mb;
+	kj::VectorOutputStream out;
+
 	w.setName(name_);
 	w.setNextID(nextId_);
 	auto entities = w.initEntities(entities_.size());
@@ -356,16 +366,15 @@ inline void EntityCollectionImpl<Ent>::serialize(
 		auto &wrapper = entities_[i];
 		entities[i].setId(wrapper.id);
 
-		// TODO: Migrate this part away from SBON as well
-		std::stringstream ss;
-		sbon::Writer sw(&ss);
-		sw.writeObject([&](sbon::ObjectWriter sw) {
-			wrapper.ent.serialize(ctx, sw);
-		});
-		std::string str = std::move(ss).str();
+		auto root = mb.initRoot<typename Ent::Proto>();
+		wrapper.ent.serialize(ctx, root);
 
-		auto data = entities[i].initData(str.size());
-		memcpy(&data.front(), str.data(), str.size());
+		out.clear();
+		capnp::writePackedMessage(out, mb);
+
+		auto arr = out.getArray();
+		auto data = entities[i].initData(arr.size());
+		memcpy(&data.front(), &arr.front(), arr.size());
 	}
 }
 
@@ -384,17 +393,13 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 		auto &wrapper = entities_.emplace_back(ctx);
 		wrapper.id = entity.getId();
 
-		// TODO: Migrate this part away from SBON as well
 		auto data = entity.getData();
-		std::stringstream ss;
-		ss.write((const char *)&data.front(), data.size());
+		kj::ArrayInputStream stream(data);
+		capnp::PackedMessageReader reader(stream);
 		try {
-			sbon::Reader sr(&ss);
-			sr.getObject([&](sbon::ObjectReader sr) {
-				wrapper.ent.deserialize(ctx, sr);
-				idToIndex_[wrapper.id] = index;
-				info << "ID: " << wrapper.id;
-			});
+			auto root = reader.getRoot<typename Ent::Proto>();
+			wrapper.ent.deserialize(ctx, root);
+			idToIndex_[wrapper.id] = index;
 		} catch (std::exception &ex) {
 			warn << "Failed to deserialize " << name_ << " entity: " << ex.what();
 			entities_.pop_back();

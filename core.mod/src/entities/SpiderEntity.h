@@ -2,11 +2,15 @@
 
 #include <swan/swan.h>
 
+#include "core_mod.capnp.h"
+
 namespace CoreMod {
 
 class SpiderEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait, public Swan::ContactDamageTrait {
 public:
+	using Proto = proto::SpiderEntity;
+
 	SpiderEntity(const Swan::Context &ctx, Swan::Vec2 pos);
 	SpiderEntity(const Swan::Context &ctx):
 		idleAnimation_(ctx, "core::entities/spider/idle", 0.8)
@@ -31,8 +35,8 @@ public:
 	void update(const Swan::Context &ctx, float dt) override;
 	void tick(const Swan::Context &ctx, float dt) override;
 
-	void serialize(const Swan::Context &ctx, sbon::ObjectWriter w) override;
-	void deserialize(const Swan::Context &ctx, sbon::ObjectReader r) override;
+	void serialize(const Swan::Context &ctx, Proto::Builder w);
+	void deserialize(const Swan::Context &ctx, Proto::Reader r);
 
 private:
 	static constexpr Swan::BasicPhysicsBody::Props PROPS = {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <sbon.h>
+#include "swan.capnp.h"
 
 namespace Swan {
 
@@ -42,8 +42,8 @@ public:
 	// Remove 'count' items from the stack, returning the removed items
 	ItemStack remove(int count);
 
-	void serialize(sbon::Writer w);
-	void deserialize(const Context &ctx, sbon::Reader r);
+	void serialize(proto::ItemStack::Builder w);
+	void deserialize(const Context &ctx, proto::ItemStack::Reader r);
 
 	friend bool operator==(const ItemStack &a, const ItemStack &b)
 	{

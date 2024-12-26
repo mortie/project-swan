@@ -35,7 +35,7 @@ public:
 	 * Available to game logic
 	 */
 
-	EntityRef spawn(std::string_view name, sbon::ObjectReader r);
+	EntityRef spawn(std::string_view name, capnp::Data::Reader data);
 
 	template<typename Ent, typename ...Args>
 	EntityRef spawn(Args &&...args)

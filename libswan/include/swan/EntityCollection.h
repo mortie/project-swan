@@ -4,7 +4,6 @@
 #include <typeindex>
 #include <functional>
 #include <stdint.h>
-#include <sbon.h>
 
 #include "common.h"
 #include "Entity.h"
@@ -115,7 +114,7 @@ public:
 	virtual BodyTrait::Body *getBody(uint64_t id) = 0;
 
 	virtual EntityRef spawn(const Context &ctx) = 0;
-	virtual EntityRef spawn(const Context &ctx, sbon::ObjectReader r) = 0;
+	virtual EntityRef spawn(const Context &ctx, capnp::Data::Reader data) = 0;
 	virtual void update(const Context &ctx, float dt) = 0;
 	virtual void tick(const Context &ctx, float dt) = 0;
 	virtual void tick2(const Context &ctx, float dt) = 0;

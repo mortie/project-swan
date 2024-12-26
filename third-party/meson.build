@@ -27,10 +27,6 @@ libimgui = declare_dependency(
   ),
 )
 
-libsbon = declare_dependency(
-  include_directories: 'sbon/cpp/include',
-)
-
 libperlinnoise = declare_dependency(
   include_directories: 'PerlinNoise',
 )

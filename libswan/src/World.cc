@@ -593,6 +593,10 @@ void World::deserialize(proto::World::Reader r)
 	currentPlane_ = r.getCurrentPlane();
 	playerRef_.deserialize(currentPlane().getContext(), r.getPlayer());
 	player_ = playerRef_.trait<BodyTrait>();
+	if (!player_) {
+		panic << "Missing player body!";
+		throw std::runtime_error("Missing player body");
+	}
 }
 
 }
