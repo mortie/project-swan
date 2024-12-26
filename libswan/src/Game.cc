@@ -143,6 +143,8 @@ void Game::draw()
 			glfwSwapInterval(0);
 		}
 
+		ImGui::Checkbox("Show fluid particles", &debugFluidParticleLocations_);
+
 		ImGui::Checkbox("Individually serialize entities", &debugOutputEntityProto_);
 		if (ImGui::Button("Save")) {
 			triggerSave_ = true;

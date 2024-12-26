@@ -2,6 +2,7 @@
 #include "common.h"
 #include "WorldPlane.h"
 #include "World.h"
+#include "Game.h"
 #include "cygnet/Renderer.h"
 
 #include <climits>
@@ -67,6 +68,16 @@ Vec2 fluidPosToWorldPos(FluidPos pos)
 
 FluidPos worldPosToFluidPos(Vec2 pos)
 {
+	if (pos.x > 0) {
+		pos.x += 1.0 / FLUID_RESOLUTION;
+	}
+
+	if (pos.y > 0) {
+		pos.y += 1.0 / FLUID_RESOLUTION;
+	}
+
+	pos.x -= 0.5 / FLUID_RESOLUTION;
+	pos.y -= 0.5 / FLUID_RESOLUTION;
 	return (pos * FLUID_RESOLUTION).as<int64_t>();
 }
 
@@ -167,16 +178,6 @@ void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 
 void FluidSystemImpl::draw(Cygnet::Renderer &rnd)
 {
-	/*
-	for (auto pos: updatesB_) {
-		rnd.drawRect(Cygnet::Renderer::DrawRect{
-			.pos = fluidPosToWorldPos(pos),
-			.size = {1.0 / FLUID_RESOLUTION, 1.0 / FLUID_RESOLUTION},
-			.outline = Cygnet::Color{0, 1, 0, 0.1},
-			.fill = Cygnet::Color{0, 1, 0, 0.1},
-		});
-	}*/
-
 	for (auto &particle: particles_) {
 		rnd.drawRect(Cygnet::Renderer::DrawRect{
 			.pos = particle.pos,
@@ -184,6 +185,18 @@ void FluidSystemImpl::draw(Cygnet::Renderer &rnd)
 			.outline = particle.color,
 			.fill = particle.color,
 		});
+	}
+
+	if (plane_.world_->game_->debugFluidParticleLocations_) {
+		for (auto &particle: particles_) {
+			rnd.drawRect(Cygnet::Renderer::DrawRect{
+				.pos = fluidPosToWorldPos(worldPosToFluidPos(particle.pos))
+					.add(-0.05, -0.05)
+					.add(0.5 / FLUID_RESOLUTION, 0.5 / FLUID_RESOLUTION),
+				.size = {0.1, 0.1},
+				.fill = {},
+			});
+		}
 	}
 }
 
@@ -370,12 +383,25 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 				self.setAir();
 				particles_.push_back({
 					.pos = fluidPosToWorldPos(pos),
-					.vel = {float(vx) * 10, 0},
+					.vel = {float(vx) * 5, 0},
 					.color = plane_.world_->getFluidByID(id).color,
 					.id = id,
 				});
 				return;
 			}
+		}
+
+		auto below2Pos = belowPos.add(0, 1);
+		FluidCellRef below2 = getFluidCell(below2Pos);
+		if (below2.isAir()) {
+			self.setAir();
+			particles_.push_back({
+				.pos = fluidPosToWorldPos(pos),
+				.vel = {0, 5},
+				.color = plane_.world_->getFluidByID(id).color,
+				.id = id,
+			});
+			return;
 		}
 
 		triggerUpdateAround(belowPos);

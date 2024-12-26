@@ -140,6 +140,7 @@ public:
 	bool debugDrawCollisionBoxes_ = false;
 	bool debugDrawChunkBoundaries_ = false;
 	bool debugOutputEntityProto_ = false;
+	bool debugFluidParticleLocations_ = false;
 	bool triggerSave_ = false;
 	bool enableVSync_ = false;
 	float timeScale_ = 1.0;
