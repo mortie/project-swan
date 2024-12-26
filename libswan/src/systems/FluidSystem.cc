@@ -171,8 +171,31 @@ void FluidSystemImpl::triggerUpdateInTile(TilePos tpos)
 void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 {
 	auto chunkPos = tilePosToChunkPos(pos);
+	auto relPos = tilePosToChunkRelPos(pos);
 	auto &chunk = plane_.getChunk(chunkPos);
-	chunk.setFluidID(tilePosToChunkRelPos(pos), fluid);
+
+	uint8_t *data = chunk.getFluidData();
+	for (size_t y = 0; y < FLUID_RESOLUTION; ++y) {
+		uint8_t *row = &data[
+			(relPos.y * FLUID_RESOLUTION + y) * CHUNK_WIDTH * FLUID_RESOLUTION];
+		for (size_t x = 0; x < FLUID_RESOLUTION; ++x) {
+			Fluid::ID id = row[relPos.x * FLUID_RESOLUTION + x] & 0x3f;
+			if (id == World::AIR_FLUID_ID || id == World::SOLID_FLUID_ID) {
+				continue;
+			}
+
+			particles_.push_back({
+				.pos = pos.as<float>().add(
+					float(x) / FLUID_RESOLUTION,
+					float(y) / FLUID_RESOLUTION),
+				.vel = {0, 0},
+				.color = plane_.world_->getFluidByID(id).color,
+				.id = id,
+			});
+		}
+	}
+
+	chunk.setFluidID(relPos, fluid);
 	triggerUpdateInTile(pos);
 }
 
@@ -261,10 +284,11 @@ void FluidSystemImpl::update(float dt)
 			particle.vel.x *= -1;
 		}
 
-		if (nearbyY.isSolid()) {
+		FluidCellRef oppositeNearbyY = getFluidCell(pos.add(0, -vy));
+		if (nearbyY.isSolid() && !oppositeNearbyY.isSolid()) {
 			particle.vel.y *= -1;
 		} else {
-			particle.vel.y = -1;
+			particle.vel.y -= 5 * dt;
 		}
 
 		particle.pos += particle.vel * dt;

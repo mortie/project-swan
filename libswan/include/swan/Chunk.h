@@ -101,6 +101,7 @@ public:
 			auto *row = getFluidData() + (y * CHUNK_WIDTH * FLUID_RESOLUTION);
 			memset(row + xStart, fluid, FLUID_RESOLUTION);
 		}
+		isFluidModified_ = true;
 	}
 
 	uint8_t getLightLevel(ChunkRelPos pos)
