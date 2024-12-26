@@ -2,11 +2,15 @@
 
 #include <swan/swan.h>
 
+#include "core_mod.capnp.h"
+
 namespace CoreMod {
 
 class PlayerEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait, public Swan::InventoryTrait {
 public:
+	using Proto = proto::PlayerEntity;
+
 	PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos);
 	PlayerEntity(const Swan::Context &ctx):
 		idleAnimation_(ctx, "core::entities/player/idle", 0.2),
@@ -38,8 +42,8 @@ public:
 	void update(const Swan::Context &ctx, float dt) override;
 	void tick(const Swan::Context &ctx, float dt) override;
 
-	void serialize(const Swan::Context &ctx, sbon::ObjectWriter w) override;
-	void deserialize(const Swan::Context &ctx, sbon::ObjectReader r) override;
+	void serialize(const Swan::Context &ctx, Proto::Builder w);
+	void deserialize(const Swan::Context &ctx, Proto::Reader r);
 
 private:
 	enum class State {

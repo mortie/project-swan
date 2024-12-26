@@ -4,11 +4,11 @@
 #include <typeindex>
 #include <functional>
 #include <stdint.h>
-#include <sbon.h>
 
 #include "common.h"
 #include "Entity.h"
 #include "traits/BodyTrait.h"
+#include "swan.capnp.h"
 
 namespace Swan {
 
@@ -81,8 +81,8 @@ public:
 		return coll_;
 	}
 
-	void serialize(sbon::Writer w);
-	void deserialize(const Context &ctx, sbon::Reader r);
+	void serialize(proto::EntityRef::Builder w);
+	void deserialize(const Context &ctx, proto::EntityRef::Reader r);
 
 private:
 	EntityCollection *coll_;
@@ -114,15 +114,17 @@ public:
 	virtual BodyTrait::Body *getBody(uint64_t id) = 0;
 
 	virtual EntityRef spawn(const Context &ctx) = 0;
-	virtual EntityRef spawn(const Context &ctx, sbon::ObjectReader r) = 0;
+	virtual EntityRef spawn(const Context &ctx, capnp::Data::Reader data) = 0;
 	virtual void update(const Context &ctx, float dt) = 0;
 	virtual void tick(const Context &ctx, float dt) = 0;
 	virtual void tick2(const Context &ctx, float dt) = 0;
 	virtual void draw(const Context &ctx, Cygnet::Renderer &rnd) = 0;
 	virtual void erase(const Context &ctx, uint64_t id) = 0;
 
-	virtual void serialize(const Context &ctx, sbon::Writer w) = 0;
-	virtual void deserialize(const Context &ctx, sbon::Reader r) = 0;
+	virtual void serialize(
+		const Context &ctx, proto::EntitySystem::Collection::Builder w) = 0;
+	virtual void deserialize(
+		const Context &ctx, proto::EntitySystem::Collection::Reader r) = 0;
 
 protected:
 	uint64_t currentId_;

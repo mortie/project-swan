@@ -46,23 +46,36 @@ ItemStack BasicInventory::insert(ItemStack stack)
 	return stack;
 }
 
-void BasicInventory::serialize(sbon::Writer w)
+void BasicInventory::serialize(proto::BasicInventory::Builder w)
 {
-	w.writeArray([&](sbon::Writer w) {
-		for (auto &stack: content) {
-			stack.serialize(w);
+	w.setSize(content.size());
+
+	size_t filledSlots = 0;
+	for (auto &slot: content) {
+		if (!slot.empty()) {
+			filledSlots += 1;
 		}
-	});
+	}
+
+	auto slotsW = w.initSlots(filledSlots);
+	for (size_t i = 0; i < content.size(); ++i) {
+		if (content[i].empty()) {
+			continue;
+		}
+
+		slotsW[i].setIndex(i);
+		content[i].serialize(slotsW[i].initStack());
+	}
 }
 
-void BasicInventory::deserialize(const Swan::Context &ctx, sbon::Reader r)
+void BasicInventory::deserialize(const Swan::Context &ctx, proto::BasicInventory::Reader r)
 {
 	content.clear();
-	r.readArray([&](sbon::Reader r) {
-		ItemStack stack;
-		stack.deserialize(ctx, r);
-		content.push_back(stack);
-	});
+	content.resize(r.getSize());
+
+	for (auto slot: r.getSlots()) {
+		content[slot.getIndex()].deserialize(ctx, slot.getStack());
+	}
 }
 
 }

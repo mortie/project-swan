@@ -1,11 +1,11 @@
 #pragma once
 
 #include <vector>
-#include <sbon.h>
 
 #include "../ItemStack.h"
 #include "../common.h"
 #include "../Direction.h"
+#include "swan.capnp.h"
 
 namespace Swan {
 
@@ -87,8 +87,8 @@ struct BasicInventory final: InventoryTrait::Inventory {
 	ItemStack insert(int slot, ItemStack stack) override;
 	ItemStack insert(ItemStack stack) override;
 
-	void serialize(sbon::Writer w);
-	void deserialize(const Swan::Context &ctx, sbon::Reader r);
+	void serialize(proto::BasicInventory::Builder w);
+	void deserialize(const Swan::Context &ctx, proto::BasicInventory::Reader r);
 };
 
 inline InventorySlot InventoryTrait::Inventory::slot(int slot)

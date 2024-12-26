@@ -2,11 +2,15 @@
 
 #include <swan/swan.h>
 
+#include "core_mod.capnp.h"
+
 namespace CoreMod {
 
 class FallingTileEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait {
 public:
+	using Proto = proto::FallingTileEntity;
+
 	FallingTileEntity(const Swan::Context &ctx, Swan::Vec2 pos, Swan::Tile::ID tile);
 	FallingTileEntity(const Swan::Context &ctx)
 	{}
@@ -24,8 +28,8 @@ public:
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
 	void update(const Swan::Context &ctx, float dt) override;
 
-	void serialize(const Swan::Context &ctx, sbon::ObjectWriter w) override;
-	void deserialize(const Swan::Context &ctx, sbon::ObjectReader r) override;
+	void serialize(const Swan::Context &ctx, Proto::Builder w);
+	void deserialize(const Swan::Context &ctx, Proto::Reader r);
 
 private:
 	static constexpr Swan::BasicPhysicsBody::Props PROPS = {

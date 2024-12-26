@@ -1,9 +1,8 @@
 #pragma once
 
-#include <sbon.h>
-
 #include "../traits/BodyTrait.h"
 #include "../common.h"
+#include "swan.capnp.h"
 
 namespace Swan {
 
@@ -78,8 +77,8 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 
 	void update(const Context &ctx, float dt);
 
-	void serialize(sbon::Writer w);
-	void deserialize(sbon::Reader r);
+	void serialize(proto::BasicPhysicsBody::Builder w);
+	void deserialize(proto::BasicPhysicsBody::Reader r);
 };
 
 /*

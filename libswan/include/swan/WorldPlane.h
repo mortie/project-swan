@@ -72,8 +72,8 @@ public:
 	std::unique_ptr<WorldGen> worldGen_;
 
 private:
-	void serialize(sbon::Writer w);
-	void deserialize(sbon::Reader r, std::span<Tile::ID> tileMap);
+	void serialize(proto::WorldPlane::Builder w);
+	void deserialize(proto::WorldPlane::Reader r, std::span<Tile::ID> tileMap);
 
 	std::unordered_map<ChunkPos, Chunk> chunks_;
 	std::vector<Chunk *> activeChunks_;

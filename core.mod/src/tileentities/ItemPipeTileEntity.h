@@ -2,12 +2,16 @@
 
 #include <swan/swan.h>
 
+#include "core_mod.capnp.h"
+
 namespace CoreMod {
 
 class ItemPipeTileEntity final: public Swan::Entity,
 	public Swan::TileEntityTrait,
 	public Swan::InventoryTrait {
 public:
+	using Proto = proto::ItemPipeTileEntity;
+
 	ItemPipeTileEntity(const Swan::Context &ctx)
 	{}
 
@@ -27,8 +31,8 @@ public:
 
 	void onDespawn(const Swan::Context &ctx) override;
 
-	void serialize(const Swan::Context &ctx, sbon::ObjectWriter w) override;
-	void deserialize(const Swan::Context &ctx, sbon::ObjectReader r) override;
+	void serialize(const Swan::Context &ctx, Proto::Builder w);
+	void deserialize(const Swan::Context &ctx, Proto::Reader r);
 
 private:
 	struct MovingItem {

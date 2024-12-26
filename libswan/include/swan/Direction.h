@@ -1,10 +1,10 @@
 #pragma once
 
+#include <ostream>
+
 #include "common.h"
 #include "util.h"
-
-#include <ostream>
-#include <sbon.h>
+#include "swan.capnp.h"
 
 namespace Swan {
 
@@ -106,14 +106,14 @@ public:
 		return Value(1 << rand);
 	}
 
-	void serialize(sbon::Writer w)
+	void serialize(proto::Direction::Builder w)
 	{
-		w.writeInt(asInt());
+		w.setValue(asInt());
 	}
 
-	void deserialize(sbon::Reader r)
+	void deserialize(proto::Direction::Reader r)
 	{
-		auto val = fromInt(r.getInt());
+		auto val = fromInt(r.getValue());
 		if (!val) {
 			throw std::runtime_error("Invalid direction value");
 		}

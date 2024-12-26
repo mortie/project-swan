@@ -517,27 +517,19 @@ void PlayerEntity::tick(const Swan::Context &ctx, float dt)
 {}
 
 void PlayerEntity::serialize(
-	const Swan::Context &ctx, sbon::ObjectWriter w)
+	const Swan::Context &ctx, Proto::Builder w)
 {
-	physicsBody_.serialize(w.key("body"));
-	inventory_.serialize(w.key("inventory"));
-	heldStack_.serialize(w.key("held-stack"));
+	physicsBody_.serialize(w.initBody());
+	inventory_.serialize(w.initInventory());
+	heldStack_.serialize(w.initHeldStack());
 }
 
 void PlayerEntity::deserialize(
-	const Swan::Context &ctx, sbon::ObjectReader r)
+	const Swan::Context &ctx, Proto::Reader r)
 {
-	r.match({
-		{"body", [&](sbon::Reader val) {
-			physicsBody_.deserialize(val);
-		}},
-		{"inventory", [&](sbon::Reader val) {
-			inventory_.deserialize(ctx, val);
-		}},
-		{"held-stack", [&](sbon::Reader val) {
-			heldStack_.deserialize(ctx, val);
-		}},
-	});
+	physicsBody_.deserialize(r.getBody());
+	inventory_.deserialize(ctx, r.getInventory());
+	heldStack_.deserialize(ctx, r.getHeldStack());
 }
 
 void PlayerEntity::onLeftClick(const Swan::Context &ctx)

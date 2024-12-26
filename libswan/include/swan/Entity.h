@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <sbon.h>
 
 #include "common.h"
 #include "util.h"
@@ -14,12 +13,6 @@ class Game;
 
 class Entity: NonCopyable {
 public:
-	struct Factory {
-		const std::string name;
-		std::unique_ptr<Entity> (*create)(
-			const Context &ctx, sbon::ObjectReader r);
-	};
-
 	Entity() = default;
 	Entity(Entity &&) = default;
 
@@ -38,11 +31,6 @@ public:
 	virtual void onSpawn(const Context &ctx)
 	{}
 	virtual void onDespawn(const Context &ctx)
-	{}
-
-	virtual void serialize(const Swan::Context &ctx, sbon::ObjectWriter w)
-	{}
-	virtual void deserialize(const Swan::Context &ctx, sbon::ObjectReader r)
 	{}
 
 	template<typename T>

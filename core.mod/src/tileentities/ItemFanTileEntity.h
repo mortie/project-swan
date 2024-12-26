@@ -2,11 +2,15 @@
 
 #include <swan/swan.h>
 
+#include "core_mod.capnp.h"
+
 namespace CoreMod {
 
 class ItemFanTileEntity final: public Swan::Entity,
 	public Swan::TileEntityTrait {
 public:
+	using Proto = proto::ItemFanTileEntity;
+
 	ItemFanTileEntity(const Swan::Context &ctx)
 	{}
 
@@ -23,8 +27,8 @@ public:
 		dir_ = dir;
 	}
 
-	void serialize(const Swan::Context &ctx, sbon::ObjectWriter w) override;
-	void deserialize(const Swan::Context &ctx, sbon::ObjectReader r) override;
+	void serialize(const Swan::Context &ctx, Proto::Builder w);
+	void deserialize(const Swan::Context &ctx, Proto::Reader r);
 
 private:
 	Swan::Direction dir_;

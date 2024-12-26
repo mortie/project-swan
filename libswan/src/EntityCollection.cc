@@ -4,20 +4,16 @@
 
 namespace Swan {
 
-void EntityRef::serialize(sbon::Writer w)
+void EntityRef::serialize(proto::EntityRef::Builder w)
 {
-	w.writeArray([&](sbon::Writer w) {
-		w.writeString(coll_->name());
-		w.writeUInt(id_);
-	});
+	w.setCollection(coll_->name());
+	w.setId(id_);
 }
 
-void EntityRef::deserialize(const Context &ctx, sbon::Reader r)
+void EntityRef::deserialize(const Context &ctx, proto::EntityRef::Reader r)
 {
-	r.getArray([&](sbon::ArrayReader r) {
-		coll_ = ctx.plane.entities().getCollectionOf(r.next().getString());
-		id_ = r.next().getUInt();
-	});
+	coll_ = ctx.plane.entities().getCollectionOf(r.getCollection().cStr());
+	id_ = r.getId();
 }
 
 }

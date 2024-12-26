@@ -59,22 +59,16 @@ void ItemFanTileEntity::tick(const Swan::Context &ctx, float dt)
 	}
 }
 
-void ItemFanTileEntity::serialize(const Swan::Context &ctx, sbon::ObjectWriter w)
+void ItemFanTileEntity::serialize(const Swan::Context &ctx, Proto::Builder w)
 {
-	dir_.serialize(w.key("dir"));
-	tileEntity_.serialize(w.key("ent"));
+	tileEntity_.serialize(w.initTileEntity());
+	dir_.serialize(w.initDirection());
 }
 
-void ItemFanTileEntity::deserialize(const Swan::Context &ctx, sbon::ObjectReader r)
+void ItemFanTileEntity::deserialize(const Swan::Context &ctx, Proto::Reader r)
 {
-	r.match({
-		{"dir", [&](sbon::Reader val) {
-			dir_.deserialize(val);
-		}},
-		{"ent", [&](sbon::Reader val) {
-			tileEntity_.deserialize(val);
-		}},
-	});
+	tileEntity_.deserialize(r.getTileEntity());
+	dir_.deserialize(r.getDirection());
 }
 
 }

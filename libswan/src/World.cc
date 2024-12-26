@@ -17,7 +17,7 @@ static void chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &d
 	}
 }
 
-std::vector<ModWrapper> World::loadMods(std::vector<std::string> paths)
+std::vector<ModWrapper> World::loadMods(std::span<std::string> paths)
 {
 	std::vector<ModWrapper> mods;
 
@@ -382,10 +382,10 @@ void World::buildResources()
 	resources_ = Cygnet::ResourceManager(std::move(builder));
 }
 
-World::World(Game *game, unsigned long randSeed, std::vector<std::string> modPaths):
+World::World(Game *game, unsigned long randSeed, std::span<std::string> modPaths):
 	game_(game), random_(randSeed)
 {
-	mods_ = loadMods(std::move(modPaths));
+	mods_ = loadMods(modPaths);
 	buildResources();
 }
 
@@ -557,74 +557,46 @@ void World::tick(float dt)
 		ChunkPos((int)player_->pos.x / CHUNK_WIDTH, (int)player_->pos.y / CHUNK_HEIGHT));
 }
 
-void World::serialize(sbon::Writer w)
+void World::serialize(proto::World::Builder w)
 {
-	w.writeObject([&](sbon::ObjectWriter w) {
-		w.key("tiles").writeArray([&](sbon::Writer w) {
-			for (auto &tile: tiles_) {
-				w.writeString(tile.name);
-			}
-		});
+	auto tilesBuilder = w.initTiles(tiles_.size());
+	for (size_t i = 0; i < tiles_.size(); ++i) {
+		tilesBuilder.set(i, tiles_[i].name);
+	}
 
-		w.key("planes").writeArray([&](sbon::Writer w) {
-			for (auto &plane: planes_) {
-				w.writeObject([&](sbon::ObjectWriter w) {
-					w.key("world-gen").writeString(plane.worldGen);
-					plane.plane->serialize(w.key("plane"));
-				});
-			}
-		});
+	auto planesBuilder = w.initPlanes(planes_.size());
+	for (size_t i = 0; i < planes_.size(); ++i) {
+		planes_[i].plane->serialize(planesBuilder[i]);
+		planesBuilder[i].setWorldGen(planes_[i].worldGen);
+	}
 
-		playerRef_.serialize(w.key("player"));
-	});
+	playerRef_.serialize(w.initPlayer());
+	w.setCurrentPlane(currentPlane_);
 }
 
-void World::deserialize(sbon::Reader r)
+void World::deserialize(proto::World::Reader r)
 {
 	std::vector<Tile::ID> tileMap;
+	auto tiles = r.getTiles();
+	tileMap.reserve(tiles.size());
+	for (auto tile: tiles) {
+		tileMap.push_back(getTileID(tile.cStr()));
+	}
 
-	auto deserializePlane = [&](sbon::ObjectReader r) {
-		WorldPlane *plane = nullptr;
+	auto planes = r.getPlanes();
+	planes_.clear();
+	planes_.reserve(planes.size());
+	for (auto plane: planes) {
+		addPlane(plane.getWorldGen().cStr()).deserialize(plane, tileMap);
+	}
 
-		r.all([&](std::string &key, sbon::Reader val) {
-			if (key == "world-gen") {
-				plane = &addPlane(val.getString());
-			}
-			else if (key == "plane") {
-				if (!plane) {
-					throw std::runtime_error("Missing data for world plane");
-				}
-
-				plane->deserialize(val, tileMap);
-			}
-			else {
-				val.skip();
-			}
-		});
-	};
-
-	r.readObject([&](std::string &key, sbon::Reader val) {
-		if (key == "tiles") {
-			tileMap.clear();
-			val.readArray([&](sbon::Reader val) {
-				tileMap.push_back(getTileID(val.getString()));
-			});
-		}
-		else if (key == "planes") {
-			planes_.clear();
-			val.readArray([&](sbon::Reader val) {
-				val.getObject(deserializePlane);
-			});
-		}
-		else if (key == "player") {
-			if (planes_.size() == 0) {
-				throw std::runtime_error("Missing planes");
-			}
-
-			playerRef_.deserialize(planes_[0].plane->getContext(), val);
-			player_ = playerRef_.trait<BodyTrait>();
-		}
-	});
+	currentPlane_ = r.getCurrentPlane();
+	playerRef_.deserialize(currentPlane().getContext(), r.getPlayer());
+	player_ = playerRef_.trait<BodyTrait>();
+	if (!player_) {
+		panic << "Missing player body!";
+		throw std::runtime_error("Missing player body");
+	}
 }
 
 }

@@ -3,6 +3,11 @@
 #include "EntityCollection.h"
 #include "WorldPlane.h"
 #include "Game.h"
+#include <fstream>
+#include <sstream>
+
+#include <capnp/message.h>
+#include <capnp/serialize-packed.h>
 
 namespace Swan {
 
@@ -39,7 +44,7 @@ public:
 	EntityRef spawn(const Context &ctx, Args && ... args);
 
 	EntityRef spawn(const Context &ctx) override;
-	EntityRef spawn(const Context &ctx, sbon::ObjectReader r) override;
+	EntityRef spawn(const Context &ctx, capnp::Data::Reader data) override;
 
 	size_t size() override
 	{
@@ -65,8 +70,10 @@ public:
 	void draw(const Context &ctx, Cygnet::Renderer &rnd) override;
 	void erase(const Context &ctx, uint64_t id) override;
 
-	void serialize(const Context &ctx, sbon::Writer w) override;
-	void deserialize(const Context &ctx, sbon::Reader r) override;
+	void serialize(
+		const Context &ctx, proto::EntitySystem::Collection::Builder w) override;
+	void deserialize(
+		const Context &ctx, proto::EntitySystem::Collection::Reader r) override;
 
 	const std::string name_;
 	uint64_t nextId_ = 0;
@@ -194,14 +201,17 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx)
 
 template<typename Ent>
 inline EntityRef EntityCollectionImpl<Ent>::spawn(
-	const Context &ctx, sbon::ObjectReader r)
+	const Context &ctx, capnp::Data::Reader data)
 {
 	auto ent = spawn(ctx);
 
+	kj::ArrayInputStream stream(data);
+	capnp::PackedMessageReader reader(stream);
 	try {
-		ent->deserialize(ctx, r);
+		Ent *e = (Ent *)ent.get();
+		e->deserialize(ctx, reader.getRoot<typename Ent::Proto>());
 	} catch (std::exception &ex) {
-		warn << "Failed to spawn " << name_ << " from SBON: " << ex.what();
+		warn << "Failed to spawn " << name_ << ": " << ex.what();
 		erase(ctx, ent);
 		return {};
 	}
@@ -344,80 +354,57 @@ inline void EntityCollectionImpl<Ent>::erase(const Context &ctx, uint64_t id)
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::serialize(
-	const Context &ctx, sbon::Writer w)
+	const Context &ctx, proto::EntitySystem::Collection::Builder w)
 {
-	w.writeObject([&](sbon::ObjectWriter w) {
-		w.key("next").writeUInt(nextId_);
-		w.key("entities").writeArray([&](sbon::Writer w) {
-			for (auto &wrapper: entities_) {
-				try {
-					w.writeObject([&](sbon::ObjectWriter w) {
-						w.key("$id").writeUInt(wrapper.id);
-						wrapper.ent.serialize(ctx, w);
-					});
-				} catch (std::exception &ex) {
-					warn << "Failed to serialize " << name_ << " entity: " << ex.what();
-				}
-			}
-		});
-	});
+	capnp::MallocMessageBuilder mb;
+	kj::VectorOutputStream out;
+
+	w.setName(name_);
+	w.setNextID(nextId_);
+	auto entities = w.initEntities(entities_.size());
+	for (size_t i = 0; i < entities_.size(); ++i) {
+		auto &wrapper = entities_[i];
+		entities[i].setId(wrapper.id);
+
+		auto root = mb.initRoot<typename Ent::Proto>();
+		wrapper.ent.serialize(ctx, root);
+
+		out.clear();
+		capnp::writePackedMessage(out, mb);
+
+		auto arr = out.getArray();
+		auto data = entities[i].initData(arr.size());
+		memcpy(&data.front(), &arr.front(), arr.size());
+	}
 }
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::deserialize(
-	const Context &ctx, sbon::Reader r)
+	const Context &ctx, proto::EntitySystem::Collection::Reader r)
 {
 	entities_.clear();
 	idToIndex_.clear();
-	nextId_ = 0;
+	nextId_ = r.getNextID();
 	hasTicked_ = false;
 
-	auto deserializeEntity = [&](sbon::ObjectReader r) {
-		std::optional<uint64_t> id;
-		std::string key;
-		while (true) {
-			auto val = r.next(key);
-			if (key == "$id") {
-				id = val.getUInt();
-				break;
-			}
-			else {
-				warn
-					<< "Skipping unknown key '" << key
-					<< "' while deserializing " << name_;
-			}
-		}
-
-		if (!id) {
-			warn << "Failed to deserialize " << name_ << " entity: Missing $id";
-			return;
-		}
-
+	entities_.reserve(r.getEntities().size());
+	for (auto entity: r.getEntities()) {
 		size_t index = entities_.size();
-		auto &w = entities_.emplace_back(ctx);
-		w.id = id.value();
+		auto &wrapper = entities_.emplace_back(ctx);
+		wrapper.id = entity.getId();
+
+		auto data = entity.getData();
+		kj::ArrayInputStream stream(data);
+		capnp::PackedMessageReader reader(stream);
 		try {
-			w.ent.deserialize(ctx, r);
-			idToIndex_[id.value()] = index;
+			auto root = reader.getRoot<typename Ent::Proto>();
+			wrapper.ent.deserialize(ctx, root);
+			idToIndex_[wrapper.id] = index;
 		} catch (std::exception &ex) {
 			warn << "Failed to deserialize " << name_ << " entity: " << ex.what();
 			entities_.pop_back();
 		}
-	};
-
-	r.readObject([&](std::string &key, sbon::Reader val) {
-		if (key == "next") {
-			nextId_ = val.getUInt();
-		}
-		else if (key == "entities") {
-			val.readArray([&](sbon::Reader val) {
-				val.getObject(deserializeEntity);
-			});
-		}
-		else {
-			val.skip();
-		}
-	});
+	}
 }
 
 }

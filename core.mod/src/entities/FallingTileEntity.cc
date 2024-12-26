@@ -45,23 +45,17 @@ void FallingTileEntity::update(const Swan::Context &ctx, float dt)
 }
 
 void FallingTileEntity::serialize(
-	const Swan::Context &ctx, sbon::ObjectWriter w)
+	const Swan::Context &ctx, Proto::Builder w)
 {
-	physicsBody_.serialize(w.key("body"));
-	w.key("tile").writeString(ctx.world.getTileByID(tile_).name);
+	physicsBody_.serialize(w.initBody());
+	w.setTile(ctx.world.getTileByID(tile_).name);
 }
 
 void FallingTileEntity::deserialize(
-	const Swan::Context &ctx, sbon::ObjectReader r)
+	const Swan::Context &ctx, Proto::Reader r)
 {
-	r.match({
-		{"body", [&](sbon::Reader val) {
-			physicsBody_.deserialize(val);
-		}},
-		{"tile", [&](sbon::Reader val) {
-			tile_ = ctx.world.getTileID(val.getString());
-		}},
-	});
+	physicsBody_.deserialize(r.getBody());
+	tile_ = ctx.world.getTileID(r.getTile().cStr());
 }
 
 }

@@ -37,6 +37,3 @@
 [submodule "meson"]
 	path = meson
 	url = https://github.com/mesonbuild/meson.git
-[submodule "third-party/sbon"]
-	path = third-party/sbon
-	url = https://github.com/mortie/sbon.git

@@ -12,6 +12,7 @@
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <cygnet/gl.h>
 #include <cygnet/Renderer.h>
+#include <kj/filesystem.h>
 
 #include <swan/swan.h>
 #include <swan/assets.h>
@@ -117,7 +118,7 @@ int main(int argc, char **argv)
 		panic << "Initializing GLFW failed.";
 		return 1;
 	}
-	defer(glfwTerminate());
+	SWAN_DEFER(glfwTerminate());
 
 	Cygnet::GLSL_PRELUDE = "#version 150\n";
 
@@ -136,14 +137,19 @@ int main(int argc, char **argv)
 	glEnable(GL_BLEND);
 	Cygnet::glCheck();
 
+
 	// Create the game and mod list
 	Game game;
 	std::vector<std::string> mods{"core.mod"};
 
 	// Load or create world
-	std::ifstream worldFile("world.sb");
-	if (worldFile) {
-		game.loadWorld(worldFile, mods);
+	auto fs = kj::newDiskFilesystem();
+	kj::Path worldPath("world.swan");
+	if (fs->getCurrent().exists(worldPath)) {
+		auto worldFile = fs->getCurrent().openFile(worldPath);
+		auto bytes = worldFile->readAllBytes();
+		auto data = kj::ArrayInputStream(bytes);
+		game.loadWorld(data, mods);
 	}
 	else {
 		game.createWorld("core::default", mods);
@@ -165,16 +171,16 @@ int main(int argc, char **argv)
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	defer(ImGui::DestroyContext());
+	SWAN_DEFER(ImGui::DestroyContext());
 
 	imguiIo = &ImGui::GetIO();
 
 	ImGui::StyleColorsDark();
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	defer(ImGui_ImplGlfw_Shutdown());
+	SWAN_DEFER(ImGui_ImplGlfw_Shutdown());
 	ImGui_ImplOpenGL3_Init("#version 150");
-	defer(ImGui_ImplOpenGL3_Shutdown());
+	SWAN_DEFER(ImGui_ImplOpenGL3_Shutdown());
 
 	{
 		int dw, dh;
