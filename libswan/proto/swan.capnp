@@ -13,6 +13,13 @@ struct Vec2i {
 	y @1 :Int32;
 }
 
+struct Color {
+	r @0 :UInt8;
+	g @1 :UInt8;
+	b @2 :UInt8;
+	a @3 :UInt8;
+}
+
 struct Direction {
 	value @0 :UInt8;
 }
@@ -97,4 +104,12 @@ struct EntitySystem {
 }
 
 struct FluidSystem {
+	updates @0 :List(Vec2i);
+	particles @1 :List(Particle);
+
+	struct Particle {
+		id @0 :UInt8;
+		pos @1 :Vec2;
+		vel @2 :Vec2;
+	}
 }

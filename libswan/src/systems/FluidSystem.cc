@@ -277,6 +277,48 @@ void FluidSystemImpl::tick()
 	}
 }
 
+void FluidSystemImpl::serialize(proto::FluidSystem::Builder w)
+{
+	auto updatesW = w.initUpdates(updatesA_.size());
+	for (size_t i = 0; i < updatesA_.size(); ++i) {
+		updatesW[i].setX(updatesA_[i].x);
+		updatesW[i].setY(updatesA_[i].y);
+	}
+
+	auto particlesW = w.initParticles(particles_.size());
+	for (size_t i = 0; i < particles_.size(); ++i) {
+		particlesW[i].setId(particles_[i].id);
+		auto posW = particlesW[i].initPos();
+		posW.setX(particles_[i].pos.x);
+		posW.setY(particles_[i].pos.y);
+		auto velW = particlesW[i].initVel();
+		velW.setX(particles_[i].vel.x);
+		velW.setY(particles_[i].vel.y);
+	}
+}
+
+void FluidSystemImpl::deserialize(proto::FluidSystem::Reader r)
+{
+	updatesA_.clear();
+	updatesA_.reserve(r.getUpdates().size());
+	for (auto update: r.getUpdates()) {
+		updatesA_.push_back({update.getX(), update.getY()});
+	}
+
+	particles_.clear();
+	particles_.reserve(r.getParticles().size());
+	for (auto particle: r.getParticles()) {
+		auto pos = particle.getPos();
+		auto vel = particle.getVel();
+		particles_.push_back({
+			.id = particle.getId(),
+			.pos = {pos.getX(), pos.getY()},
+			.vel = {vel.getX(), vel.getY()},
+			.color = plane_.world_->getFluidByID(particle.getId()).color,
+		});
+	}
+}
+
 void FluidSystemImpl::triggerUpdate(FluidPos pos)
 {
 	if (updateSet_.contains(pos)) {

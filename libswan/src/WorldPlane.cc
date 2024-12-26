@@ -240,6 +240,7 @@ void WorldPlane::tick(float dt)
 void WorldPlane::serialize(proto::WorldPlane::Builder w)
 {
 	entitySystem_.serialize(w.initEntitySystem());
+	fluidSystem_.serialize(w.initFluidSystem());
 
 	size_t chunkCount = 0;
 	for (auto &[pos, chunk]: chunks_) {
@@ -260,6 +261,7 @@ void WorldPlane::serialize(proto::WorldPlane::Builder w)
 void WorldPlane::deserialize(proto::WorldPlane::Reader r, std::span<Tile::ID> tileMap)
 {
 	entitySystem_.deserialize(r.getEntitySystem());
+	fluidSystem_.deserialize(r.getFluidSystem());
 
 	chunks_.clear();
 	activeChunks_.clear();

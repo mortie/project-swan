@@ -3,8 +3,9 @@
 #include "../FastHashSet.h"
 #include "../common.h"
 #include "../Fluid.h"
-#include "cygnet/util.h"
+#include "swan.capnp.h"
 
+#include <cygnet/util.h>
 #include <cstdint>
 #include <unordered_set>
 #include <vector>
@@ -37,6 +38,9 @@ public:
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
 	void tick();
+
+	void serialize(proto::FluidSystem::Builder w);
+	void deserialize(proto::FluidSystem::Reader r);
 
 private:
 	struct FluidParticle {

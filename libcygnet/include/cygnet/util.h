@@ -15,18 +15,29 @@ using GLfloat = float;
 
 using Mat3gf = SwanCommon::Matrix3<GLfloat>;
 
+struct ByteColor;
+
 struct Color {
 	float r = 0, g = 0, b = 0, a = 1;
+
+	operator ByteColor();
 };
 
 struct ByteColor {
 	uint8_t r = 0, g = 0, b = 0, a = 0;
 
-	operator Color()
-	{
-		return {r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f};
-	}
+	operator Color();
 };
+
+inline Color::operator ByteColor()
+{
+	return {uint8_t(r * 255), uint8_t(g * 255), uint8_t(b * 255), uint8_t(a * 255)};
+}
+
+inline ByteColor::operator Color()
+{
+	return {r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f};
+}
 
 struct GlError: public std::exception {
 	GlError(std::string msg): message(std::move(msg))
