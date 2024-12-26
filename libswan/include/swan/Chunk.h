@@ -151,6 +151,11 @@ public:
 		return pos_;
 	}
 
+	void setFluidModified()
+	{
+		isFluidModified_ = true;
+	}
+
 	void serialize(proto::Chunk::Builder w);
 	void deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap);
 
@@ -169,10 +174,12 @@ private:
 
 	ssize_t compressedSize_ = -1; // -1 if not compressed, a positive number if compressed
 	Cygnet::RenderChunk renderChunk_;
+	Cygnet::RenderChunkFluid renderChunkFluid_;
 	Cygnet::RenderChunkShadow renderChunkShadow_;
 	bool needLightRender_ = false;
 	float deactivateTimer_ = DEACTIVATE_INTERVAL;
 	bool isModified_ = false;
+	bool isFluidModified_ = false;
 	bool isRendered_ = false;
 
 	ChunkPos pos_;

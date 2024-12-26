@@ -31,6 +31,10 @@ struct RenderChunk {
 	GLuint tex = ~(GLuint)0;
 };
 
+struct RenderChunkFluid {
+	GLuint tex = ~(GLuint)0;
+};
+
 struct RenderChunkShadow {
 	GLuint tex = ~(GLuint)0;
 };
@@ -67,6 +71,11 @@ public:
 		RenderChunk chunk;
 	};
 
+	struct DrawChunkFluid {
+		SwanCommon::Vec2 pos;
+		RenderChunkFluid fluids;
+	};
+
 	struct DrawChunkShadow {
 		SwanCommon::Vec2 pos;
 		RenderChunkShadow shadow;
@@ -82,6 +91,12 @@ public:
 		Mat3gf transform;
 		RenderSprite sprite;
 		int frame = 0;
+	};
+
+	struct DrawParticle {
+		SwanCommon::Vec2 pos;
+		SwanCommon::Vec2 size = {1.0, 1.0};
+		Color color = {1.0, 0.0, 0.0, 1.0};
 	};
 
 	struct DrawRect {
@@ -118,6 +133,15 @@ public:
 		drawChunk(RenderLayer::NORMAL, chunk);
 	}
 
+	void drawChunkFluid(RenderLayer layer, DrawChunkFluid chunkFluid)
+	{
+		drawChunkFluids_[(int)layer].push_back(chunkFluid);
+	}
+	void drawChunkFluid(DrawChunkFluid chunkFluid)
+	{
+		drawChunkFluid(RenderLayer::NORMAL, chunkFluid);
+	}
+
 	void drawChunkShadow(RenderLayer layer, DrawChunkShadow chunkShadow)
 	{
 		drawChunkShadows_[(int)layer].push_back(chunkShadow);
@@ -143,6 +167,15 @@ public:
 	void drawSprite(DrawSprite ds)
 	{
 		drawSprite(RenderLayer::NORMAL, ds);
+	}
+
+	void drawParticle(RenderLayer layer, DrawParticle drawParticle)
+	{
+		drawParticles_[(int)layer].push_back(drawParticle);
+	}
+	void drawParticle(DrawParticle dp)
+	{
+		drawParticle(RenderLayer::NORMAL, dp);
 	}
 
 	void drawRect(RenderLayer layer, DrawRect drawRect)
@@ -219,20 +252,32 @@ public:
 
 	void renderUI(const RenderCamera &cam);
 
+	void uploadFluidAtlas(const void *data);
+
 	void uploadTileAtlas(const void *data, int width, int height);
 	void modifyTile(TileID id, const void *data);
 
+	static constexpr size_t CHUNK_SIZE = SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT;
 	RenderChunk createChunk(
-		TileID tiles[SwanCommon::CHUNK_WIDTH *SwanCommon::CHUNK_HEIGHT]);
+		TileID tiles[CHUNK_SIZE]);
 	void modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id);
 	void destroyChunk(RenderChunk chunk);
 
+	static constexpr size_t FLUID_CHUNK_SIZE =
+		CHUNK_SIZE * SwanCommon::FLUID_RESOLUTION * SwanCommon::FLUID_RESOLUTION;
+	RenderChunkFluid createChunkFluid(
+		uint8_t data[FLUID_CHUNK_SIZE]);
+	void modifyChunkFluid(
+		RenderChunkFluid fluid,
+		uint8_t data[FLUID_CHUNK_SIZE]);
+	void destroyChunkFluid(RenderChunkFluid fluid);
+
 	RenderChunkShadow createChunkShadow(
-		uint8_t data[SwanCommon::CHUNK_WIDTH *SwanCommon::CHUNK_HEIGHT]);
+		uint8_t data[CHUNK_SIZE]);
 	void modifyChunkShadow(
 		RenderChunkShadow shadow,
-		uint8_t data[SwanCommon::CHUNK_WIDTH *SwanCommon::CHUNK_HEIGHT]);
-	void destroyChunkShadow(RenderChunkShadow chunk);
+		uint8_t data[CHUNK_SIZE]);
+	void destroyChunkShadow(RenderChunkShadow shadow);
 
 	RenderSprite createSprite(void *data, int width, int height, int fh, int repeatFrom);
 	void destroySprite(RenderSprite sprite);
@@ -251,9 +296,11 @@ private:
 	std::unique_ptr<RendererState> state_;
 
 	std::vector<DrawChunk> drawChunks_[LAYER_COUNT];
+	std::vector<DrawChunkFluid> drawChunkFluids_[LAYER_COUNT];
 	std::vector<DrawChunkShadow> drawChunkShadows_[LAYER_COUNT];
 	std::vector<DrawTile> drawTiles_[LAYER_COUNT];
 	std::vector<DrawSprite> drawSprites_[LAYER_COUNT];
+	std::vector<DrawParticle> drawParticles_[LAYER_COUNT];
 	std::vector<DrawRect> drawRects_[LAYER_COUNT];
 	std::vector<TextSegment> drawTexts_[LAYER_COUNT];
 	std::vector<TextCache::RenderedCodepoint> textBuffer_;

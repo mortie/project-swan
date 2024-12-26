@@ -18,6 +18,7 @@ libcygnet = declare_dependency(
       'src/glsl/Blend.glsl',
       'src/glsl/Chunk.glsl',
       'src/glsl/ChunkShadow.glsl',
+      'src/glsl/ChunkFluid.glsl',
       'src/glsl/Rect.glsl',
       'src/glsl/Sprite.glsl',
       'src/glsl/Text.glsl',

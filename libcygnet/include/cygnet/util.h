@@ -21,12 +21,14 @@ struct Color {
 	float r = 0, g = 0, b = 0, a = 1;
 
 	operator ByteColor();
+	friend bool operator==(const Color &a, const Color &b) = default;
 };
 
 struct ByteColor {
 	uint8_t r = 0, g = 0, b = 0, a = 0;
 
 	operator Color();
+	friend bool operator==(const ByteColor &a, const ByteColor &b) = default;
 };
 
 inline Color::operator ByteColor()

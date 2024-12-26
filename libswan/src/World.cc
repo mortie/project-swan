@@ -266,14 +266,16 @@ void World::buildResources()
 		.color = Cygnet::Color{0, 0, 0, 0},
 		.density = 0,
 	});
+	builder.addFluid(fluids_.back().id, fluids_.back().color);
 
 	// Solid
 	static_assert(SOLID_FLUID_ID == 1);
 	fluidsMap_[SOLID_FLUID_NAME] = SOLID_FLUID_ID;
 	fluids_.emplace_back(SOLID_FLUID_ID, SOLID_FLUID_NAME, Fluid::Builder{
-		.color = Cygnet::Color{0, 0, 0},
+		.color = Cygnet::Color{0, 0, 0, 0},
 		.density = 0,
 	});
+	builder.addFluid(fluids_.back().id, fluids_.back().color);
 
 	// Fluids from mods
 	for (auto &mod: mods_) {
@@ -288,6 +290,7 @@ void World::buildResources()
 			Fluid::ID id = Fluid::ID(fluids_.size());
 			fluidsMap_[fluidName] = id;
 			fluids_.emplace_back(id, std::move(fluidName), fluidBuilder);
+			builder.addFluid(fluids_.back().id, fluids_.back().color);
 		}
 	}
 
@@ -298,6 +301,7 @@ void World::buildResources()
 			.color = Cygnet::Color{1, 0.19, 0.97, 1},
 			.density = 0,
 		});
+		builder.addFluid(fluids_.back().id, fluids_.back().color);
 	}
 
 	// Load recipes.

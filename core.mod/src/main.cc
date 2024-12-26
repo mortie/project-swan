@@ -155,7 +155,7 @@ public:
 
 		registerFluid({
 			.name = "water",
-			.color = {0.21, 0.78, 0.78, 0.9},
+			.color = {0.21, 0.78, 0.9, 0.7},
 		});
 
 		registerRecipe({

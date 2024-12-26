@@ -87,9 +87,11 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
 
 	if (!isRendered_) {
 		renderChunk_ = rnd.createChunk(getTileData());
+		renderChunkFluid_ = rnd.createChunkFluid(getFluidData());
 		renderChunkShadow_ = rnd.createChunkShadow(getLightData());
 		isRendered_ = true;
 		needLightRender_ = false;
+		isFluidModified_ = false;
 	}
 
 	for (auto &change: changeList_) {
@@ -102,31 +104,15 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
 		needLightRender_ = false;
 	}
 
+	if (isFluidModified_) {
+		rnd.modifyChunkFluid(renderChunkFluid_, getFluidData());
+		isFluidModified_ = false;
+	}
+
 	Vec2 pos = (Vec2)pos_ * Vec2{CHUNK_WIDTH, CHUNK_HEIGHT};
 	rnd.drawChunk({pos, renderChunk_});
+	rnd.drawChunkFluid({pos, renderChunkFluid_});
 	rnd.drawChunkShadow({pos, renderChunkShadow_});
-
-	for (int y = 0; y < CHUNK_HEIGHT * FLUID_RESOLUTION; ++y) {
-		auto *row = getFluidData() + (y * CHUNK_WIDTH * FLUID_RESOLUTION);
-		float rndY = pos.y + (float(y) / FLUID_RESOLUTION);
-		for (int x = 0; x < CHUNK_WIDTH * FLUID_RESOLUTION; ++x) {
-			uint8_t cell = row[x];
-			Fluid::ID id = cell & 0x3f;
-			if (id == World::AIR_FLUID_ID || id == World::SOLID_FLUID_ID) {
-				continue;
-			}
-
-			Fluid &fluid = ctx.world.getFluidByID(id);
-
-			float rndX = pos.x + (float(x) / FLUID_RESOLUTION);
-			rnd.drawRect(Cygnet::Renderer::DrawRect{
-				.pos = {rndX, rndY},
-				.size = {1.0 / FLUID_RESOLUTION, 1.0 / FLUID_RESOLUTION},
-				.outline = fluid.color,
-				.fill = fluid.color,
-			});
-		}
-	}
 }
 
 void Chunk::serialize(proto::Chunk::Builder w)

@@ -179,11 +179,10 @@ void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 void FluidSystemImpl::draw(Cygnet::Renderer &rnd)
 {
 	for (auto &particle: particles_) {
-		rnd.drawRect(Cygnet::Renderer::DrawRect{
+		rnd.drawParticle({
 			.pos = particle.pos,
 			.size = {1.0 / FLUID_RESOLUTION, 1.0 / FLUID_RESOLUTION},
-			.outline = particle.color,
-			.fill = particle.color,
+			.color = particle.color,
 		});
 	}
 
@@ -461,6 +460,7 @@ FluidSystemImpl::FluidCellRef FluidSystemImpl::getFluidCell(FluidPos pos)
 	fluidPosToWorldPos(pos, cpos, rel);
 
 	auto &chunk = plane_.getChunk(cpos);
+	chunk.setFluidModified();
 	return &chunk.getFluidData()[(rel.y * CHUNK_WIDTH * FLUID_RESOLUTION) + rel.x];
 }
 

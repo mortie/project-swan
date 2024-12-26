@@ -23,8 +23,7 @@ class ResourceManager;
 
 class ResourceBuilder {
 public:
-	ResourceBuilder(Renderer *rnd): rnd_(rnd)
-	{}
+	ResourceBuilder(Renderer *rnd);
 
 	struct SpriteMeta {
 		int width;
@@ -37,11 +36,13 @@ public:
 	RenderSprite addSprite(std::string name, void *data);
 	void addTile(Renderer::TileID id, void *data, int frames = 1);
 	void addTile(Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames = 1);
+	void addFluid(uint8_t id, ByteColor color);
 
 private:
 	Renderer *rnd_;
 	SwanCommon::HashMap<RenderSprite> sprites_;
 	std::vector<ResourceTileAnimation> tileAnims_;
+	std::unique_ptr<uint8_t[]> fluids_;
 	TileAtlas atlas_;
 
 	friend ResourceManager;
@@ -84,7 +85,8 @@ inline void ResourceBuilder::addTile(uint16_t id, void *data, int frames)
 	}
 }
 
-inline void ResourceBuilder::addTile(Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames)
+inline void ResourceBuilder::addTile(
+	Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames)
 {
 	atlas_.addTile(id, data.get());
 	if (frames > 1) {

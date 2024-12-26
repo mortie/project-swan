@@ -28,12 +28,18 @@ GlShader::GlShader(Type type, const char *source)
 
 	std::string chunkWidth = std::to_string(SwanCommon::CHUNK_WIDTH);
 	std::string chunkHeight = std::to_string(SwanCommon::CHUNK_HEIGHT);
+	std::string fluidChunkWidth = std::to_string(
+		SwanCommon::CHUNK_WIDTH * SwanCommon::FLUID_RESOLUTION);
+	std::string fluidChunkHeight = std::to_string(
+		SwanCommon::CHUNK_HEIGHT * SwanCommon::FLUID_RESOLUTION);
 	std::string tileSize = std::to_string(SwanCommon::TILE_SIZE);
 	const char *sources[] = {
 		GLSL_PRELUDE,
 		"\n",
 		"#define SWAN_CHUNK_WIDTH ", chunkWidth.c_str(), "\n",
 		"#define SWAN_CHUNK_HEIGHT ", chunkHeight.c_str(), "\n",
+		"#define SWAN_CHUNK_FLUID_WIDTH ", chunkWidth.c_str(), "\n",
+		"#define SWAN_CHUNK_FLUID_HEIGHT ", chunkHeight.c_str(), "\n",
 		"#define SWAN_TILE_SIZE ", tileSize.c_str(), "\n",
 		"\n",
 		source,
