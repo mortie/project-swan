@@ -141,6 +141,7 @@ public:
 	bool debugDrawChunkBoundaries_ = false;
 	bool debugOutputEntityProto_ = false;
 	bool debugFluidParticleLocations_ = false;
+	bool debugDisableShadows_ = false;
 	bool triggerSave_ = false;
 	bool enableVSync_ = false;
 	float timeScale_ = 1.0;

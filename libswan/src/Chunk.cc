@@ -8,6 +8,7 @@
 
 #include "log.h"
 #include "World.h"
+#include "Game.h"
 
 namespace Swan {
 
@@ -112,7 +113,10 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
 	Vec2 pos = (Vec2)pos_ * Vec2{CHUNK_WIDTH, CHUNK_HEIGHT};
 	rnd.drawChunk({pos, renderChunk_});
 	rnd.drawChunkFluid({pos, renderChunkFluid_});
-	rnd.drawChunkShadow({pos, renderChunkShadow_});
+
+	if (!ctx.game.debugDisableShadows_) {
+		rnd.drawChunkShadow({pos, renderChunkShadow_});
+	}
 }
 
 void Chunk::serialize(proto::Chunk::Builder w)
