@@ -356,8 +356,17 @@ template<typename Ent>
 inline void EntityCollectionImpl<Ent>::serialize(
 	const Context &ctx, proto::EntitySystem::Collection::Builder w)
 {
-	capnp::MallocMessageBuilder mb;
 	kj::VectorOutputStream out;
+
+	std::string sanitizedName;
+	if (ctx.game.debugOutputEntityProto_) {
+		sanitizedName = name_;
+		for (auto &ch: sanitizedName) {
+			if (ch == ':') {
+				ch = '_';
+			}
+		}
+	}
 
 	w.setName(name_);
 	w.setNextID(nextId_);
@@ -366,6 +375,7 @@ inline void EntityCollectionImpl<Ent>::serialize(
 		auto &wrapper = entities_[i];
 		entities[i].setId(wrapper.id);
 
+		capnp::MallocMessageBuilder mb;
 		auto root = mb.initRoot<typename Ent::Proto>();
 		wrapper.ent.serialize(ctx, root);
 
@@ -375,6 +385,17 @@ inline void EntityCollectionImpl<Ent>::serialize(
 		auto arr = out.getArray();
 		auto data = entities[i].initData(arr.size());
 		memcpy(&data.front(), &arr.front(), arr.size());
+
+		if (ctx.game.debugOutputEntityProto_) {
+			auto path = std::format("ent.{}.{}.bin", sanitizedName, wrapper.id);
+			std::ofstream f(path);
+			if (f) {
+				info << "Writing entity to " << path << "...";
+				f.write((char *)&arr.front(), arr.size());
+			} else {
+				warn << "Failed to open " << path << '!';
+			}
+		}
 	}
 }
 

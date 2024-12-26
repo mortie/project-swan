@@ -143,8 +143,9 @@ void Game::draw()
 			glfwSwapInterval(0);
 		}
 
+		ImGui::Checkbox("Individually serialize entities", &debugOutputEntityProto_);
 		if (ImGui::Button("Save")) {
-			save();
+			triggerSave_ = true;
 		}
 
 		ImGui::SliderFloat(
@@ -264,6 +265,11 @@ void Game::update(float dt)
 
 void Game::tick(float dt)
 {
+	if (triggerSave_) {
+		save();
+		triggerSave_ = false;
+	}
+
 	world_->tick(dt);
 }
 

@@ -139,6 +139,8 @@ public:
 	bool debugShowMenu_ = false;
 	bool debugDrawCollisionBoxes_ = false;
 	bool debugDrawChunkBoundaries_ = false;
+	bool debugOutputEntityProto_ = false;
+	bool triggerSave_ = false;
 	bool enableVSync_ = false;
 	float timeScale_ = 1.0;
 	float fpsLimit_ = 0;
