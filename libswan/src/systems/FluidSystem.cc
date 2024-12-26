@@ -184,11 +184,14 @@ void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 				continue;
 			}
 
+			float vx = (x - (FLUID_RESOLUTION / 2.0 - 0.5));
+			float vy = (y - (FLUID_RESOLUTION / 2.0 - 0.5));
+
 			particles_.push_back({
 				.pos = pos.as<float>().add(
 					float(x) / FLUID_RESOLUTION,
 					float(y) / FLUID_RESOLUTION),
-				.vel = {0, 0},
+				.vel = {vx, vy},
 				.color = plane_.world_->getFluidByID(id).color,
 				.id = id,
 			});
