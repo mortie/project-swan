@@ -58,13 +58,15 @@ void BasicInventory::serialize(proto::BasicInventory::Builder w)
 	}
 
 	auto slotsW = w.initSlots(filledSlots);
+	size_t index = 0;
 	for (size_t i = 0; i < content.size(); ++i) {
 		if (content[i].empty()) {
 			continue;
 		}
 
-		slotsW[i].setIndex(i);
-		content[i].serialize(slotsW[i].initStack());
+		slotsW[index].setIndex(i);
+		content[i].serialize(slotsW[index].initStack());
+		index += 1;
 	}
 }
 
