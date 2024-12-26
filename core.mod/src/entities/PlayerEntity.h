@@ -68,6 +68,8 @@ private:
 	static constexpr float DOWN_FORCE = 30 * PROPS.mass;
 	static constexpr float LADDER_CLIMB_FORCE = 70 * PROPS.mass;
 	static constexpr float LADDER_MAX_VEL = 5;
+	static constexpr float SWIM_FORCE_UP = 12 * PROPS.mass;
+	static constexpr float SWIM_FORCE_DOWN = 12 * PROPS.mass;
 
 	void onRightClick(const Swan::Context &ctx);
 	void onLeftClick(const Swan::Context &ctx);

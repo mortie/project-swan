@@ -5,6 +5,7 @@
 #include "Clock.h"
 #include "assets.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
+#include <limits>
 #include <string_view>
 
 namespace Swan {
@@ -273,7 +274,7 @@ void World::buildResources()
 	fluidsMap_[SOLID_FLUID_NAME] = SOLID_FLUID_ID;
 	fluids_.emplace_back(SOLID_FLUID_ID, SOLID_FLUID_NAME, Fluid::Builder{
 		.color = Cygnet::Color{0, 0, 0, 0},
-		.density = 0,
+		.density = std::numeric_limits<float>::infinity(),
 	});
 	builder.addFluid(fluids_.back().id, fluids_.back().color);
 

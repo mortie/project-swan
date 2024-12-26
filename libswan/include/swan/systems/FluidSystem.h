@@ -30,6 +30,7 @@ public:
 	void setInTile(TilePos pos, Fluid::ID fluid);
 	int numUpdates() { return updatesB_.size(); }
 	int numParticles() { return particles_.size(); }
+	Fluid &getAtPos(Vec2 pos);
 
 	/*
 	 * Available to friends
@@ -90,6 +91,7 @@ public:
 	using FluidSystemImpl::setInTile;
 	using FluidSystemImpl::numUpdates;
 	using FluidSystemImpl::numParticles;
+	using FluidSystemImpl::getAtPos;
 
 	friend WorldPlane;
 };

@@ -26,6 +26,8 @@ protected:
 };
 
 struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
+	static constexpr float GRAVITY = 20;
+
 	struct Props {
 		Vec2 size;
 		float mass;
@@ -50,17 +52,13 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 	Vec2 force{};
 	bool onGround = false;
 
+	void friction();
 	void friction(Vec2 coef);
-	void gravity(Vec2 g = Vec2(0, 20));
+	void gravity(Vec2 g = Vec2(0, GRAVITY));
 
 	void standardForces()
 	{
-		if (onGround) {
-			friction(Vec2{1000, 100});
-		}
-		else {
-			friction(Vec2{100, 100});
-		}
+		friction();
 		gravity();
 	}
 
@@ -84,6 +82,16 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 /*
  * BasicPhysics
  */
+
+inline void BasicPhysicsBody::friction()
+{
+	if (onGround) {
+		friction(Vec2{1000, 100});
+	}
+	else {
+		friction(Vec2{100, 100});
+	}
+}
 
 inline void BasicPhysicsBody::friction(Vec2 coef)
 {

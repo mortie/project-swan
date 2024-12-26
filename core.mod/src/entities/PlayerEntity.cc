@@ -278,6 +278,12 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		dynamic_cast<LadderTileTrait *>(midTile.traits.get()) ||
 		dynamic_cast<LadderTileTrait *>(topTile.traits.get());
 
+	// Figure out what fluids we're in
+	Swan::Fluid &fluid = ctx.plane.fluids().getAtPos({
+		physicsBody_.body.midX(),
+		physicsBody_.body.bottom() - 0.2f,
+	});
+
 	// Select item slots
 	if (ctx.game.wasKeyPressed(GLFW_KEY_1)) {
 		selectedInventorySlot_ = 0;
@@ -508,6 +514,19 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 	else {
 		physicsBody_.standardForces();
+		physicsBody_.friction(Swan::Vec2{200, 400} * fluid.density);
+
+		float gForce = Swan::BasicPhysicsBody::GRAVITY * physicsBody_.mass + DOWN_FORCE;
+		physicsBody_.force.y -= gForce * fluid.density * 0.8;
+
+		if (ctx.game.isKeyPressed(GLFW_KEY_SPACE)) {
+			physicsBody_.force += Swan::Vec2{0, -SWIM_FORCE_UP * fluid.density};
+		}
+		else if (
+			ctx.game.isKeyPressed(GLFW_KEY_S) ||
+			ctx.game.isKeyPressed(GLFW_KEY_DOWN)) {
+			physicsBody_.force += Swan::Vec2{0, SWIM_FORCE_DOWN * fluid.density};
+		}
 	}
 
 	physicsBody_.update(ctx, dt);

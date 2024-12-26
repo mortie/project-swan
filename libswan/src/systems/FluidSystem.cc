@@ -176,6 +176,10 @@ void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 	triggerUpdateInTile(pos);
 }
 
+Fluid &FluidSystemImpl::getAtPos(Vec2 pos) {
+	return plane_.world_->getFluidByID(getFluidCell(worldPosToFluidPos(pos)).id());
+}
+
 void FluidSystemImpl::draw(Cygnet::Renderer &rnd)
 {
 	for (auto &particle: particles_) {
