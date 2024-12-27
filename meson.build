@@ -22,17 +22,7 @@ if get_option('trace')
   add_project_arguments('-DTRACY_ENABLE', language: 'cpp')
 endif
 
-glfw_options = cmake.subproject_options()
-glfw_options.append_compile_args('c', '-w') # Disable warnings
-glfw_options.add_cmake_defines({
-  'BUILD_SHARED_LIBS': true,
-  'GLFW_BUILD_EXAMPLES': false,
-  'GLFW_BUILD_TESTS': false,
-  'GLFW_BUILD_DOCS': false,
-  'CMAKE_INSTALL_LIBDIR': get_option('libdir'),
-})
-glfw_sub = cmake.subproject('glfw', options: glfw_options)
-libglfw3 = glfw_sub.dependency('glfw')
+libglfw3 = dependency('glfw3')
 
 portaudio_options = cmake.subproject_options()
 portaudio_options.append_compile_args('c', '-w') # Disable warnings

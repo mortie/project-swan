@@ -264,6 +264,7 @@ void World::buildResources()
 	static_assert(AIR_FLUID_ID == 0);
 	fluidsMap_[AIR_FLUID_NAME] = AIR_FLUID_ID;
 	fluids_.emplace_back(AIR_FLUID_ID, AIR_FLUID_NAME, Fluid::Builder{
+		.name = "",
 		.color = Cygnet::Color{0, 0, 0, 0},
 		.density = 0,
 	});
@@ -273,6 +274,7 @@ void World::buildResources()
 	static_assert(SOLID_FLUID_ID == 1);
 	fluidsMap_[SOLID_FLUID_NAME] = SOLID_FLUID_ID;
 	fluids_.emplace_back(SOLID_FLUID_ID, SOLID_FLUID_NAME, Fluid::Builder{
+		.name = "",
 		.color = Cygnet::Color{0, 0, 0, 0},
 		.density = std::numeric_limits<float>::infinity(),
 	});
@@ -299,6 +301,7 @@ void World::buildResources()
 	fluidsMap_[INVALID_FLUID_NAME] = INVALID_FLUID_ID;
 	while (fluids_.size() <= INVALID_FLUID_ID) {
 		fluids_.emplace_back(fluids_.size(), INVALID_FLUID_NAME, Fluid::Builder{
+			.name = "",
 			.color = Cygnet::Color{1, 0.19, 0.97, 1},
 			.density = 0,
 		});

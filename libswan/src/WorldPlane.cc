@@ -267,7 +267,6 @@ void WorldPlane::deserialize(proto::WorldPlane::Reader r, std::span<Tile::ID> ti
 	activeChunks_.clear();
 	chunkInitList_.clear();
 	for (auto chunkR: r.getChunks()) {
-		ChunkPos pos = {chunkR.getPos().getX(), chunkR.getPos().getY()};
 		Chunk tempChunk({0, 0});
 		tempChunk.deserialize(chunkR, tileMap);
 		auto [it, _] = chunks_.emplace(tempChunk.pos(), std::move(tempChunk));

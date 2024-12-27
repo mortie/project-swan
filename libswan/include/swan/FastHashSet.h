@@ -36,7 +36,7 @@ public:
 	Set &operator=(const Set &other)
 	{
 		if (&other == this) {
-			return;
+			return *this;
 		}
 
 		// This is gonna be really slow, but it works
@@ -53,7 +53,7 @@ public:
 	Set &operator=(Set &&other)
 	{
 		if (&other == this) {
-			return;
+			return *this;
 		}
 
 		clear();

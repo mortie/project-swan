@@ -369,10 +369,10 @@ void FluidSystemImpl::deserialize(proto::FluidSystem::Reader r)
 		auto pos = particle.getPos();
 		auto vel = particle.getVel();
 		particles_.push_back({
-			.id = particle.getId(),
 			.pos = {pos.getX(), pos.getY()},
 			.vel = {vel.getX(), vel.getY()},
 			.color = plane_.world_->getFluidByID(particle.getId()).color,
+			.id = particle.getId(),
 			.remainingTime = particle.getRemainingTime(),
 		});
 	}

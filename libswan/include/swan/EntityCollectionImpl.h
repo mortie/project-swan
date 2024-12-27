@@ -356,8 +356,6 @@ template<typename Ent>
 inline void EntityCollectionImpl<Ent>::serialize(
 	const Context &ctx, proto::EntitySystem::Collection::Builder w)
 {
-	kj::VectorOutputStream out;
-
 	std::string sanitizedName;
 	if (ctx.game.debugOutputEntityProto_) {
 		sanitizedName = name_;
@@ -379,7 +377,7 @@ inline void EntityCollectionImpl<Ent>::serialize(
 		auto root = mb.initRoot<typename Ent::Proto>();
 		wrapper.ent.serialize(ctx, root);
 
-		out.clear();
+		kj::VectorOutputStream out;
 		capnp::writePackedMessage(out, mb);
 
 		auto arr = out.getArray();
@@ -387,7 +385,8 @@ inline void EntityCollectionImpl<Ent>::serialize(
 		memcpy(&data.front(), &arr.front(), arr.size());
 
 		if (ctx.game.debugOutputEntityProto_) {
-			auto path = std::format("ent.{}.{}.bin", sanitizedName, wrapper.id);
+			auto path = cat(
+				"ent.", sanitizedName, ".", std::to_string(wrapper.id), ".bin");
 			std::ofstream f(path);
 			if (f) {
 				info << "Writing entity to " << path << "...";

@@ -42,35 +42,35 @@ public:
 
 	constexpr Direction opposite() const
 	{
-		switch (*this) {
-		case Direction::NONE:
-			return Direction::NONE;
-		case Direction::UP:
-			return Direction::DOWN;
-		case Direction::DOWN:
-			return Direction::UP;
-		case Direction::LEFT:
-			return Direction::RIGHT;
-		case Direction::RIGHT:
-			return Direction::LEFT;
+		switch (value_) {
+		case Value::NONE:
+			return Value::NONE;
+		case Value::UP:
+			return Value::DOWN;
+		case Value::DOWN:
+			return Value::UP;
+		case Value::LEFT:
+			return Value::RIGHT;
+		case Value::RIGHT:
+			return Value::LEFT;
 		}
 
-		return Direction::NONE;
+		return Value::NONE;
 	}
 
 	template<typename T = int>
 	constexpr Vector2<T> vec()
 	{
-		switch (*this) {
-		case Direction::NONE:
+		switch (value_) {
+		case Value::NONE:
 			return {0, 0};
-		case Direction::UP:
+		case Value::UP:
 			return {0, -1};
-		case Direction::DOWN:
+		case Value::DOWN:
 			return {0, 1};
-		case Direction::LEFT:
+		case Value::LEFT:
 			return {-1, 0};
-		case Direction::RIGHT:
+		case Value::RIGHT:
 			return {1, 0};
 		}
 
