@@ -87,7 +87,7 @@ struct ChunkFluidProg: public GlProg<Shader::ChunkFluid> {
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_1D, fluidsTex);
+		glBindTexture(GL_TEXTURE_2D, fluidsTex);
 		glUniform1i(shader.uniFluids, 0);
 		glCheck();
 
