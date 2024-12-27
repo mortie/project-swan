@@ -489,21 +489,23 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 
 		auto aPos = pos.add(ax, 0);
 		auto a = getFluidCell(aPos);
-		if (a.id() != World::SOLID_FLUID_ID && a.id() != id) {
-			self.setID(a.id());
+		auto aID = a.id();
+		if (aID != World::SOLID_FLUID_ID && aID != id) {
+			self.setID(aID);
 			a.set(id, ax);
-			triggerUpdate(pos);
-			triggerUpdate(aPos);
+			triggerUpdateAround(pos);
+			triggerUpdateAround(aPos);
 			return;
 		}
 
 		auto bPos = pos.add(bx, 0);
 		auto b = getFluidCell(bPos);
-		if (b.id() != World::SOLID_FLUID_ID && b.id() != id) {
-			self.setID(b.id());
+		auto bID = b.id();
+		if (bID != World::SOLID_FLUID_ID && bID != id) {
+			self.setID(bID);
 			b.set(id, bx);
-			triggerUpdate(pos);
-			triggerUpdate(bPos);
+			triggerUpdateAround(pos);
+			triggerUpdateAround(bPos);
 			return;
 		}
 
