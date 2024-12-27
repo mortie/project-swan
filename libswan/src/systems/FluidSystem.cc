@@ -194,6 +194,7 @@ void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 				.vel = {vx, vy},
 				.color = plane_.world_->getFluidByID(id).color,
 				.id = id,
+				.remainingTime = 255,
 			});
 		}
 	}
@@ -306,6 +307,20 @@ void FluidSystemImpl::tick()
 	updatesB_.clear();
 	std::swap(updatesA_, updatesB_);
 
+	// Tick particles, and delete old ones
+	for (size_t i = 0; i < particles_.size();) {
+		if (particles_[i].remainingTime == 0) {
+			particles_[i] = particles_.back();
+			particles_.pop_back();
+			continue;
+		}
+
+		if (random() % 2) {
+			particles_[i].remainingTime -= 1;
+		}
+		i += 1;
+	}
+
 	// Randomize update order
 	for (size_t i = 1; i < updatesB_.size(); ++i) {
 		size_t newIndex = random() % (updatesB_.size() - i) + i;
@@ -358,6 +373,7 @@ void FluidSystemImpl::deserialize(proto::FluidSystem::Reader r)
 			.pos = {pos.getX(), pos.getY()},
 			.vel = {vel.getX(), vel.getY()},
 			.color = plane_.world_->getFluidByID(particle.getId()).color,
+			.remainingTime = particle.getRemainingTime(),
 		});
 	}
 }
@@ -416,6 +432,7 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 					.vel = {float(vx) * 5, 0},
 					.color = plane_.world_->getFluidByID(id).color,
 					.id = id,
+					.remainingTime = 255,
 				});
 				return;
 			}
@@ -430,6 +447,7 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 				.vel = {0, 5},
 				.color = plane_.world_->getFluidByID(id).color,
 				.id = id,
+				.remainingTime = 255,
 			});
 			return;
 		}

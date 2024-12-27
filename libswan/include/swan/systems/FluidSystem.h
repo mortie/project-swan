@@ -49,6 +49,7 @@ private:
 		Vec2 vel;
 		Cygnet::Color color;
 		Fluid::ID id;
+		uint8_t remainingTime;
 	};
 
 	class FluidCellRef {

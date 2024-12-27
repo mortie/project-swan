@@ -108,8 +108,9 @@ struct FluidSystem {
 	particles @1 :List(Particle);
 
 	struct Particle {
-		id @0 :UInt8;
-		pos @1 :Vec2;
-		vel @2 :Vec2;
+		pos @0 :Vec2;
+		vel @1 :Vec2;
+		id @2 :UInt8;
+		remainingTime @3 :UInt8;
 	}
 }
