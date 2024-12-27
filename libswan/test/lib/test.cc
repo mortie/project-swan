@@ -16,7 +16,6 @@ static const std::string COLOR_DESC = "\033[33m";
 static const std::string COLOR_MAYBE = "\033[35m";
 static const std::string COLOR_SUCCESS = "\033[32m";
 static const std::string COLOR_FAIL = "\033[31m";
-static const std::string COLOR_ERRORMSG = "\033[95m";
 
 std::string color(const std::string &color, std::string_view str)
 {
