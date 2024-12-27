@@ -47,7 +47,7 @@ private:
 		Swan::Direction from;
 	};
 
-	class Inbox: public Swan::InventoryTrait::Inventory {
+	class Inbox final: public Swan::InventoryTrait::Inventory {
 	public:
 		int size() override
 		{

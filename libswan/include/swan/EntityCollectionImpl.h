@@ -119,7 +119,7 @@ inline BodyTrait::Body *EntityRef::getBody()
 template<typename Trait>
 inline auto *EntityRef::trait()
 {
-	using Tag = Trait::Tag;
+	using Tag = typename Trait::Tag;
 	auto *t = dynamic_cast<Trait *>(get());
 	if (!t) {
 		return (decltype(&t->get(Tag{}))) nullptr;

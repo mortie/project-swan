@@ -29,6 +29,9 @@ public:
 	};
 
 	virtual void generateArea(Area &area) = 0;
+
+protected:
+	~StructureDef() = default;
 };
 
 }
