@@ -1,7 +1,7 @@
 uniform mat3 camera;
 uniform vec2 pos;
 uniform usampler2D fluidGrid;
-uniform sampler1D fluids;
+uniform sampler2D fluids;
 
 // @Vertex
 out vec2 v_texCoord;
@@ -26,5 +26,5 @@ out vec4 fragColor;
 void main() {
 	uint id = texture(fluidGrid, v_texCoord).r;
 	float pos = (float(id) + 0.5) / 256.0;
-	fragColor = texture(fluids, pos);
+	fragColor = texture(fluids, pos, 0.5);
 }
