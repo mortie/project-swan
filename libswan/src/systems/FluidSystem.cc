@@ -203,6 +203,16 @@ void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 	triggerUpdateInTile(pos);
 }
 
+void FluidSystemImpl::replaceInTile(TilePos pos, Fluid::ID fluid)
+{
+	auto chunkPos = tilePosToChunkPos(pos);
+	auto relPos = tilePosToChunkRelPos(pos);
+	auto &chunk = plane_.getChunk(chunkPos);
+
+	chunk.setFluidID(relPos, fluid);
+	triggerUpdateInTile(pos);
+}
+
 Fluid &FluidSystemImpl::getAtPos(Vec2 pos) {
 	return plane_.world_->getFluidByID(getFluidCell(worldPosToFluidPos(pos)).id());
 }
@@ -459,6 +469,19 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 		return;
 	}
 
+	if (below.id() != id) {
+		auto &fluid = plane_.world_->getFluidByID(id);
+		auto &belowFluid = plane_.world_->getFluidByID(below.id());
+		if (fluid.density > belowFluid.density) {
+			self.setID(below.id());
+			below.setID(id);
+			triggerUpdateAround(pos);
+			triggerUpdateAround(belowPos);
+			movedSet_.insert(belowPos);
+			return;
+		}
+	}
+
 	if (vx == 0) {
 		// 1 or -1
 		int ax = 1 - (random() % 2) * 2;
@@ -466,8 +489,8 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 
 		auto aPos = pos.add(ax, 0);
 		auto a = getFluidCell(aPos);
-		if (a.isAir()) {
-			self.setAir();
+		if (a.id() != World::SOLID_FLUID_ID && a.id() != id) {
+			self.setID(a.id());
 			a.set(id, ax);
 			triggerUpdateAround(pos);
 			triggerUpdateAround(aPos);
@@ -476,8 +499,8 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 
 		auto bPos = pos.add(bx, 0);
 		auto b = getFluidCell(bPos);
-		if (b.isAir()) {
-			self.setAir();
+		if (b.id() != World::SOLID_FLUID_ID && b.id() != id) {
+			self.setID(b.id());
 			b.set(id, bx);
 			triggerUpdateAround(pos);
 			triggerUpdateAround(bPos);

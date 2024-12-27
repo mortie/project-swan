@@ -28,6 +28,7 @@ public:
 
 	void triggerUpdateInTile(TilePos pos);
 	void setInTile(TilePos pos, Fluid::ID fluid);
+	void replaceInTile(TilePos pos, Fluid::ID fluid);
 	int numUpdates() { return updatesB_.size(); }
 	int numParticles() { return particles_.size(); }
 	Fluid &getAtPos(Vec2 pos);
@@ -90,6 +91,7 @@ public:
 
 	using FluidSystemImpl::triggerUpdateInTile;
 	using FluidSystemImpl::setInTile;
+	using FluidSystemImpl::replaceInTile;
 	using FluidSystemImpl::numUpdates;
 	using FluidSystemImpl::numParticles;
 	using FluidSystemImpl::getAtPos;

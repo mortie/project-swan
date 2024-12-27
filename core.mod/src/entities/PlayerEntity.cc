@@ -279,9 +279,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		dynamic_cast<LadderTileTrait *>(topTile.traits.get());
 
 	// Figure out what fluids we're in
-	Swan::Fluid &fluid = ctx.plane.fluids().getAtPos({
+	Swan::Fluid &fluidCenter = ctx.plane.fluids().getAtPos({
 		physicsBody_.body.midX(),
-		physicsBody_.body.bottom() - 0.2f,
+		physicsBody_.body.top() + 0.25f,
+	});
+	Swan::Fluid &fluidBottom = ctx.plane.fluids().getAtPos({
+		physicsBody_.body.midX(),
+		physicsBody_.body.bottom() - 0.25f,
 	});
 
 	// Select item slots
@@ -333,7 +337,9 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 
 	if (ctx.game.isKeyPressed(GLFW_KEY_C)) {
-		ctx.plane.fluids().setInTile(placePos_, ctx.world.getFluid("core::water").id);
+		ctx.plane.fluids().replaceInTile(placePos_, ctx.world.getFluid("core::water").id);
+	} else if (ctx.game.isKeyPressed(GLFW_KEY_V)) {
+		ctx.plane.fluids().replaceInTile(placePos_, ctx.world.getFluid("core::oil").id);
 	}
 
 	// Toggle inventory
@@ -513,19 +519,26 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		physicsBody_.friction({1000, 1000});
 	}
 	else {
+		float centerDensity = std::min(fluidCenter.density, 10.0f);
+		float bottomDensity = std::min(fluidBottom.density, 10.0f);
+
 		physicsBody_.standardForces();
-		physicsBody_.friction(Swan::Vec2{200, 400} * fluid.density);
+		physicsBody_.friction(Swan::Vec2{200, 400} * centerDensity);
 
 		float gForce = Swan::BasicPhysicsBody::GRAVITY * physicsBody_.mass + DOWN_FORCE;
-		physicsBody_.force.y -= gForce * fluid.density * 0.8;
 
 		if (ctx.game.isKeyPressed(GLFW_KEY_SPACE)) {
-			physicsBody_.force += Swan::Vec2{0, -SWIM_FORCE_UP * fluid.density};
+			physicsBody_.force.y -= gForce * bottomDensity * 0.8;
+			physicsBody_.force -= Swan::Vec2{0, SWIM_FORCE_UP * bottomDensity};
 		}
 		else if (
 			ctx.game.isKeyPressed(GLFW_KEY_S) ||
 			ctx.game.isKeyPressed(GLFW_KEY_DOWN)) {
-			physicsBody_.force += Swan::Vec2{0, SWIM_FORCE_DOWN * fluid.density};
+			physicsBody_.force.y -= gForce * centerDensity * 0.8;
+			physicsBody_.force += Swan::Vec2{0, SWIM_FORCE_DOWN * centerDensity};
+		}
+		else {
+			physicsBody_.force.y -= gForce * centerDensity * 0.8;
 		}
 	}
 

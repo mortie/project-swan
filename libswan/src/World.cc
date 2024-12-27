@@ -1,12 +1,13 @@
 #include "World.h"
 
+#include <limits>
+#include <string_view>
+
 #include "log.h"
 #include "Game.h"
 #include "Clock.h"
 #include "assets.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
-#include <limits>
-#include <string_view>
 
 namespace Swan {
 

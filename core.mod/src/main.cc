@@ -156,6 +156,12 @@ public:
 		registerFluid({
 			.name = "water",
 			.color = {0.21, 0.78, 0.9, 0.7},
+			.density = 1,
+		});
+		registerFluid({
+			.name = "oil",
+			.color = {0.05, 0.02, 0.0, 0.98},
+			.density = 1.5,
 		});
 
 		registerRecipe({
