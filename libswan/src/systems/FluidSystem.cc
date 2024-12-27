@@ -492,8 +492,8 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 		if (a.id() != World::SOLID_FLUID_ID && a.id() != id) {
 			self.setID(a.id());
 			a.set(id, ax);
-			triggerUpdateAround(pos);
-			triggerUpdateAround(aPos);
+			triggerUpdate(pos);
+			triggerUpdate(aPos);
 			return;
 		}
 
@@ -502,8 +502,8 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 		if (b.id() != World::SOLID_FLUID_ID && b.id() != id) {
 			self.setID(b.id());
 			b.set(id, bx);
-			triggerUpdateAround(pos);
-			triggerUpdateAround(bPos);
+			triggerUpdate(pos);
+			triggerUpdate(bPos);
 			return;
 		}
 
