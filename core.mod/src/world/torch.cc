@@ -56,6 +56,7 @@ void registerTorch(Swan::Mod &mod)
 		.isSolid = false,
 		.lightLevel = 80 / 255.0,
 		.droppedItem = "core::torch",
+		.breakableBy = Swan::Tool::HAND,
 		.onSpawn = onTorchSpawn,
 		.onTileUpdate = onTorchUpdate,
 	});
@@ -65,6 +66,7 @@ void registerTorch(Swan::Mod &mod)
 		.image = "core::tiles/torch/wall::left",
 		.isSolid = false,
 		.lightLevel = 80 / 255.0,
+		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::torch",
 		.onTileUpdate = onTorchUpdate,
 	});
@@ -74,6 +76,7 @@ void registerTorch(Swan::Mod &mod)
 		.image = "core::tiles/torch/wall::right",
 		.isSolid = false,
 		.lightLevel = 80 / 255.0,
+		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::torch",
 		.onTileUpdate = onTorchUpdate,
 	});

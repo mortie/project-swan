@@ -146,6 +146,8 @@ void Game::draw()
 		ImGui::Checkbox("Show fluid particles", &debugFluidParticleLocations_);
 		ImGui::Checkbox("Disable shadows", &debugDisableShadows_);
 
+		ImGui::Checkbox("Hand-break any tile", &debugHandBreakAny_);
+
 		ImGui::Checkbox("Individually serialize entities", &debugOutputEntityProto_);
 		if (ImGui::Button("Save")) {
 			triggerSave_ = true;

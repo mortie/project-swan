@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <stdint.h>
 #include <string>
@@ -7,6 +8,7 @@
 
 #include "common.h"
 #include "assets.h"
+#include "Tool.h"
 
 namespace Swan {
 
@@ -28,6 +30,8 @@ struct Tile {
 		bool isSupportH = isSolid;
 		bool isReplacable = false;
 		float lightLevel = 0;
+		ToolSet breakableBy = Tool::NONE;
+
 		std::optional<std::string> stepSound = std::nullopt;
 		std::optional<std::string> breakSound = std::nullopt;
 		std::optional<std::string> droppedItem = std::nullopt;
@@ -49,6 +53,8 @@ struct Tile {
 	bool isSupportH;
 	bool isReplacable;
 	float lightLevel;
+	ToolSet breakableBy;
+
 	SoundAsset *stepSounds[2] = {nullptr, nullptr};
 	SoundAsset *breakSound = nullptr;
 	Item *droppedItem = nullptr;
@@ -67,6 +73,7 @@ struct Tile {
 		isSolid(builder.isSolid), isOpaque(builder.isOpaque),
 		isSupportV(builder.isSupportV), isSupportH(builder.isSupportH),
 		isReplacable(builder.isReplacable), lightLevel(builder.lightLevel),
+		breakableBy(builder.breakableBy),
 		onSpawn(builder.onSpawn), onBreak(builder.onBreak),
 		onTileUpdate(builder.onTileUpdate),
 		tileEntity(builder.tileEntity), traits(builder.traits)

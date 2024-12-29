@@ -63,6 +63,7 @@ public:
 			.name = "glass",
 			.image = "core::tiles/glass",
 			.isOpaque = false,
+			.breakableBy = Swan::Tool::HAND,
 			.stepSound = "core::sounds/step/sand",
 		});
 		registerTile({
@@ -78,6 +79,7 @@ public:
 			.isSolid = false,
 			.isSupportV = true,
 			.droppedItem = "core::wood-pole",
+			.breakableBy = Swan::Tool::HAND,
 			.onSpawn = denyIfFloating,
 			.onTileUpdate = breakIfFloating,
 		});
@@ -96,8 +98,10 @@ public:
 			.name = "tree-leaves",
 			.image = "core::tiles/leaves",
 			.isSolid = false,
+			.breakableBy = Swan::Tool::HAND,
 			.stepSound = "core::sounds/step/grass",
 			.breakSound = "core::sounds/break/leaves",
+			.onBreak = dropRandomItemCount<"core::stick">,
 			.onTileUpdate = breakTreeLeavesIfFloating,
 			.traits = std::make_shared<TreeLeavesTrait>(),
 		});
@@ -107,6 +111,7 @@ public:
 			.image = "core::flora/tall-grass",
 			.isSolid = false,
 			.isReplacable = true,
+			.breakableBy = Swan::Tool::HAND,
 			.breakSound = "core::sounds/break/leaves",
 			.onBreak = dropRandomItemCount<"core::straw">,
 			.onTileUpdate = breakIfFloating,
@@ -115,6 +120,7 @@ public:
 			.name = "dead-shrub",
 			.image = "core::flora/dead-shrub",
 			.isSolid = false,
+			.breakableBy = Swan::Tool::HAND,
 			.breakSound = "core::sounds/break/leaves",
 			.onBreak = dropRandomItemCount<"core::stick">,
 			.onTileUpdate = breakIfFloating,

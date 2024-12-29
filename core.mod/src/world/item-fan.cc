@@ -46,6 +46,7 @@ void registerItemFan(Swan::Mod &mod)
 		.image = "core::tiles/item-fan",
 		.isSolid = false,
 		.droppedItem = "core::item-fan",
+		.breakableBy = Swan::Tool::HAND,
 		.onTileUpdate = updateItemFan,
 		.traits = std::make_shared<PipeConnectibleTileTrait>(),
 	});
@@ -55,6 +56,7 @@ void registerItemFan(Swan::Mod &mod)
 		.image = "core::tiles/item-fan::left",
 		.isSolid = false,
 		.droppedItem = "core::item-fan",
+		.breakableBy = Swan::Tool::HAND,
 		.onTileUpdate = updateItemFan,
 		.tileEntity = "core::tile::item-fan",
 		.traits = std::make_shared<PipeConnectibleTileTrait>(
@@ -66,6 +68,7 @@ void registerItemFan(Swan::Mod &mod)
 		.image = "core::tiles/item-fan::right",
 		.isSolid = false,
 		.droppedItem = "core::item-fan",
+		.breakableBy = Swan::Tool::HAND,
 		.onTileUpdate = updateItemFan,
 		.tileEntity = "core::tile::item-fan",
 		.traits = std::make_shared<PipeConnectibleTileTrait>(

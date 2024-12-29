@@ -570,6 +570,13 @@ void PlayerEntity::onLeftClick(const Swan::Context &ctx)
 		return;
 	}
 
+	const Swan::Tile &tile = ctx.plane.tiles().get(breakPos_);
+	if (!(tile.breakableBy & Swan::Tool::HAND)) {
+		if (!ctx.game.debugHandBreakAny_) {
+			return;
+		}
+	}
+
 	breakTileAndDropItem(ctx, breakPos_);
 	interactTimer_ = 0.2;
 }
