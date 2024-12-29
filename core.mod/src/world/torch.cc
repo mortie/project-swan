@@ -55,8 +55,8 @@ void registerTorch(Swan::Mod &mod)
 		.image = "core::tiles/torch/normal",
 		.isSolid = false,
 		.lightLevel = 80 / 255.0,
-		.droppedItem = "core::torch",
 		.breakableBy = Swan::Tool::HAND,
+		.droppedItem = "core::torch",
 		.onSpawn = onTorchSpawn,
 		.onTileUpdate = onTorchUpdate,
 	});

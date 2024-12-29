@@ -120,8 +120,8 @@ void registerRopeLadder(Swan::Mod &mod)
 		.name = "rope-ladder",
 		.image = "core::tiles/rope-ladder/anchor::left",
 		.isSolid = false,
-		.droppedItem = "core::rope-ladder",
 		.breakableBy = Swan::Tool::HAND,
+		.droppedItem = "core::rope-ladder",
 		.onSpawn = spawnRopeLadderAnchor,
 	});
 
@@ -130,8 +130,8 @@ void registerRopeLadder(Swan::Mod &mod)
 			.name = Swan::cat("rope-ladder::anchor::", direction),
 			.image = Swan::cat("core::tiles/rope-ladder/anchor::", direction),
 			.isSolid = false,
-			.droppedItem = "core::rope-ladder",
 			.breakableBy = Swan::Tool::HAND,
+			.droppedItem = "core::rope-ladder",
 			.onTileUpdate = cascadeRopeLadder,
 			.traits = std::make_shared<RopeLadderTileTrait>(true, direction),
 		});

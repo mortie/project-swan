@@ -78,8 +78,8 @@ public:
 			.image = "core::tiles/wood-pole",
 			.isSolid = false,
 			.isSupportV = true,
-			.droppedItem = "core::wood-pole",
 			.breakableBy = Swan::Tool::HAND,
+			.droppedItem = "core::wood-pole",
 			.onSpawn = denyIfFloating,
 			.onTileUpdate = breakIfFloating,
 		});

@@ -1,7 +1,7 @@
 project(
   'swan', 'cpp',
   default_options: [
-    'cpp_std=c++2a',
+    'cpp_std=c++20',
     'libdir=lib',
     'bindir=bin',
     'warning_level=3',
@@ -14,6 +14,9 @@ shaderpp_prog = find_program('./scripts/shaderpp.py')
 capnp_prog = find_program('capnp')
 
 add_project_arguments('-Wno-unused-parameter', language: 'cpp')
+if meson.get_compiler('cpp').get_id() == 'clang'
+  add_global_arguments('-Werror=reorder-init-list', language : 'cpp')
+endif
 
 maybe_libtracy = []
 if get_option('trace')
