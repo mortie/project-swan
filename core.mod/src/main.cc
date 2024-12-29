@@ -8,6 +8,7 @@
 #include "entities/FallingTileEntity.h"
 #include "world/item-fan.h"
 #include "world/ladder.h"
+#include "world/outcrop.h"
 #include "world/pipe.h"
 #include "world/torch.h"
 #include "world/tree.h"
@@ -108,7 +109,7 @@ public:
 
 		registerTile({
 			.name = "tall-grass",
-			.image = "core::flora/tall-grass",
+			.image = "core::tiles/flora/tall-grass",
 			.isSolid = false,
 			.isReplacable = true,
 			.breakableBy = Swan::Tool::HAND,
@@ -118,7 +119,7 @@ public:
 		});
 		registerTile({
 			.name = "dead-shrub",
-			.image = "core::flora/dead-shrub",
+			.image = "core::tiles/flora/dead-shrub",
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.breakSound = "core::sounds/break/leaves",
@@ -139,9 +140,14 @@ public:
 
 		registerItemFan(*this);
 		registerRopeLadder(*this);
+		registerOutcrop(*this, "coal");
 		registerGlassPipe(*this);
 		registerTorch(*this);
 
+		registerItem({
+			.name = "coal",
+			.image = "core::items/coal",
+		});
 		registerItem({
 			.name = "straw",
 			.image = "core::items/straw",

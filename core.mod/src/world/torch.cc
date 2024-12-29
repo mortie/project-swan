@@ -19,9 +19,8 @@ static bool onTorchSpawn(const Swan::Context &ctx, Swan::TilePos pos)
 		ctx.plane.tiles().set(pos, "core::torch::right");
 		return true;
 	}
-	else {
-		return false;
-	}
+
+	return false;
 }
 
 static void onTorchUpdate(const Swan::Context &ctx, Swan::TilePos pos)
