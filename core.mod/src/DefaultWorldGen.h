@@ -13,7 +13,6 @@ class DefaultWorldGen: public Swan::WorldGen {
 public:
 	DefaultWorldGen(Swan::World &world):
 		tGrass_(world.getTileID("core::grass")),
-		tDeadShrub1_(world.getTileID("core::dead-shrub-1")),
 		tDirt_(world.getTileID("core::dirt")),
 		tStone_(world.getTileID("core::stone")),
 		tWater_(world.getTileID("core::water")),
@@ -35,7 +34,7 @@ private:
 	void initializeTile(const Swan::Context &ctx, Swan::TilePos pos);
 
 	const uint32_t seed_ = 100;
-	Swan::Tile::ID tGrass_, tDeadShrub1_, tDirt_, tStone_, tWater_, tAir_;
+	Swan::Tile::ID tGrass_, tDirt_, tStone_, tWater_, tAir_;
 	Cygnet::RenderSprite bgCave_;
 	siv::PerlinNoise perlin_{seed_};
 

@@ -14,6 +14,10 @@ $(OUT)/libswan/libswan_test: $(OUT)/build.ninja phony
 
 SRCS = $(shell find include src core.mod libswan libcygnet -name '*.cc' -or -name '*.h')
 
+.PHONY: llrun
+llrun:
+	${MAKE} run CMD='lldb -o r'
+
 .PHONY: run
 run: $(OUT)/swan
 	ninja -C $(OUT)
