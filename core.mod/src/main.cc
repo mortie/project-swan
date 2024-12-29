@@ -101,19 +101,22 @@ public:
 			.onTileUpdate = breakTreeLeavesIfFloating,
 			.traits = std::make_shared<TreeLeavesTrait>(),
 		});
+
 		registerTile({
 			.name = "tall-grass",
-			.image = "core::tiles/tall-grass",
+			.image = "core::flora/tall-grass",
 			.isSolid = false,
 			.isReplacable = true,
 			.breakSound = "core::sounds/break/leaves",
-			.onBreak = +[] (const Swan::Context &ctx, Swan::TilePos pos) {
-				for (int i = 0; i < 3; ++i) {
-					if (Swan::randfloat() > 0.25) {
-						dropItem(ctx, pos, "core::straw");
-					}
-				}
-			},
+			.onBreak = dropRandomItemCount<"core::straw">,
+			.onTileUpdate = breakIfFloating,
+		});
+		registerTile({
+			.name = "dead-shrub",
+			.image = "core::flora/dead-shrub",
+			.isSolid = false,
+			.breakSound = "core::sounds/break/leaves",
+			.onBreak = dropRandomItemCount<"core::stick">,
 			.onTileUpdate = breakIfFloating,
 		});
 
@@ -136,6 +139,10 @@ public:
 		registerItem({
 			.name = "straw",
 			.image = "core::items/straw",
+		});
+		registerItem({
+			.name = "stick",
+			.image = "core::items/stick",
 		});
 		registerItem({
 			.name = "rope",
@@ -165,8 +172,13 @@ public:
 		});
 
 		registerRecipe({
+			.inputs = {{1, "core::stick"}},
+			.output = {1, "core::wood-pole"},
+			.kind = "crafting",
+		});
+		registerRecipe({
 			.inputs = {{1, "core::tree-trunk"}},
-			.output = {8, "core::wood-pole"},
+			.output = {8, "core::stick"},
 			.kind = "crafting",
 		});
 		registerRecipe({
@@ -180,7 +192,7 @@ public:
 			.kind = "crafting",
 		});
 		registerRecipe({
-			.inputs = {{2, "core::rope"}, {2, "core::wood-pole"}},
+			.inputs = {{2, "core::rope"}, {2, "core::stick"}},
 			.output = {1, "core::rope-ladder"},
 			.kind = "crafting",
 		});

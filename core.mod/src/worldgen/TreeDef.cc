@@ -5,6 +5,10 @@ namespace CoreMod {
 void TreeDef::spawnTree(
 	Swan::TilePos pos, Area &area)
 {
+	if (!area.hasSurface) {
+		return;
+	}
+
 	int height = 4 + Swan::random(pos.x) % 3;
 
 	for (int y = pos.y; y >= pos.y - height; --y) {

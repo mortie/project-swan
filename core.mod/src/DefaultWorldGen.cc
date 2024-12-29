@@ -99,14 +99,24 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 		rows[ry] = &buffer[ry * GEN_WIDTH];
 	}
 
+	int surfaceLevels[GEN_WIDTH];
+	area.surfaceLevels = surfaceLevels;
+
 	for (int x = area.begin.x; x <= area.end.x; ++x) {
 		int grassLevel = getGrassLevel(perlin_, x);
+		area.surfaceLevel(x) = grassLevel;
+
+		if (grassLevel >= area.begin.y && grassLevel < area.end.y) {
+			area.hasSurface = true;
+		}
+
 		int stoneLevel = getStoneLevel(perlin_, x);
 		for (int y = area.begin.y; y <= area.end.y; ++y) {
 			area({x, y}) = genTile({x, y}, grassLevel, stoneLevel);
 		}
 	}
 
+	shrubberyDef_.generateArea(area);
 	treeDef_.generateArea(area);
 	tallGrassDef_.generateArea(area);
 

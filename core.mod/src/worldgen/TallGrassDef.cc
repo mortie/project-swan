@@ -4,13 +4,13 @@ namespace CoreMod {
 
 void TallGrassDef::generateArea(Area &area)
 {
+	if (!area.hasSurface) {
+		return;
+	}
+
 	auto shouldSpawnGrass = [&](int x) {
 		return perlin_.noise2D(x / 20.6, 0) > 0.2;
 	};
-
-	if (area.end.y > 100 || area.begin.y < -100) {
-		return;
-	}
 
 	for (int x = area.begin.x; x < area.end.x; ++x) {
 		if (!shouldSpawnGrass(x)) {

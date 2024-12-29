@@ -309,4 +309,27 @@ int sign(T val)
 	return 0;
 }
 
+template<size_t N>
+struct FixedString {
+	char buf[N + 1]{};
+
+	constexpr FixedString(char const* s)
+	{
+		for (size_t i = 0; i < N; ++i) {
+			buf[i] = s[i];
+		}
+	}
+
+	constexpr operator const char *() const
+	{
+		return buf;
+	}
+
+	constexpr const char *cStr() const
+	{
+		return buf;
+	}
+};
+template<unsigned N> FixedString(char const (&)[N]) -> FixedString<N - 1>;
+
 }

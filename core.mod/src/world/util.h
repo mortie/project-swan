@@ -59,4 +59,14 @@ inline void fallIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 	}
 }
 
+template<Swan::FixedString NAME, int MAX = 3, int NUM = 1, int DEN = 4>
+void dropRandomItemCount(const Swan::Context &ctx, Swan::TilePos pos)
+{
+	for (int i = 0; i < MAX; ++i) {
+		if (Swan::randfloat() > (float(NUM) / float(DEN))) {
+			dropItem(ctx, pos, NAME.cStr());
+		}
+	}
+}
+
 }
