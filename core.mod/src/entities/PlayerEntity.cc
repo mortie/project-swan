@@ -570,15 +570,22 @@ void PlayerEntity::onLeftClick(const Swan::Context &ctx)
 		return;
 	}
 
+	Swan::ToolSet tool = Swan::Tool::HAND;
+	if (!heldStack_.empty() && heldStack_.item()->tool) {
+		tool = heldStack_.item()->tool;
+	}
+
 	auto pos = breakPos_;
 	bool canBreak = ctx.game.debugHandBreakAny_ ||
-		(ctx.plane.tiles().get(pos).breakableBy & Swan::Tool::HAND);
+		ctx.plane.tiles().get(pos).breakableBy.contains(tool);
 
 	if (!canBreak) {
 		pos = placePos_;
-		if (!(ctx.plane.tiles().get(pos).breakableBy & Swan::Tool::HAND)) {
-			return;
-		}
+		canBreak = ctx.plane.tiles().get(pos).breakableBy.contains(tool);
+	}
+
+	if (!canBreak) {
+		return;
 	}
 
 	breakTileAndDropItem(ctx, pos);

@@ -8,6 +8,7 @@ namespace Swan {
 enum class Tool: uint8_t {
 	NONE = 0,
 	HAND = 1 << 0,
+	AXE = 1 << 1,
 };
 
 class ToolSet {
@@ -16,29 +17,26 @@ public:
 	constexpr ToolSet(const ToolSet &) = default;
 	constexpr ToolSet(Tool value): value_(Int(value)) {}
 
+	ToolSet &operator=(const ToolSet &) = default;
+
 	constexpr operator bool()
 	{
 		return value_ != 0;
 	}
 
-	constexpr friend ToolSet operator|(const Tool &a, const Tool &b)
+	constexpr bool contains(ToolSet tool)
 	{
-		return Tool(Int(a) | Int(b));
+		return *this & tool;
 	}
 
-	constexpr friend ToolSet operator&(const Tool &a, const Tool &b)
+	constexpr friend ToolSet operator|(const ToolSet &a, const ToolSet &b)
 	{
-		return Tool(Int(a) & Int(b));
+		return Tool(Int(a.value_) | Int(b.value_));
 	}
 
-	constexpr friend ToolSet operator|(const ToolSet &a, const Tool &b)
+	constexpr friend ToolSet operator&(const ToolSet &a, const ToolSet &b)
 	{
-		return Tool(Int(a.value_) | Int(b));
-	}
-
-	constexpr friend ToolSet operator&(const ToolSet &a, const Tool &b)
-	{
-		return Tool(Int(a.value_) & Int(b));
+		return Tool(Int(a.value_) & Int(b.value_));
 	}
 
 private:

@@ -90,6 +90,7 @@ public:
 			.isSolid = false,
 			.isSupportV = true,
 			.isSupportH = true,
+			.breakableBy = Swan::Tool::AXE,
 			.droppedItem = "core::tree-trunk",
 			.onSpawn = denyIfFloating,
 			.onTileUpdate = breakIfFloating,
@@ -155,6 +156,7 @@ public:
 		registerItem({
 			.name = "stick",
 			.image = "core::items/stick",
+			.tool = Swan::Tool::AXE,
 		});
 		registerItem({
 			.name = "rope",
