@@ -6,7 +6,7 @@
 
 namespace CoreMod {
 
-class OreDef: public StructureDef {
+class OreDef final: public StructureDef {
 public:
 	OreDef(Swan::World &world, uint32_t seed):
 		tCoalOutcrop_(world, "core::coal-outcrop"),
