@@ -146,21 +146,9 @@ public:
 		registerTorch(*this);
 
 		registerItem({
-			.name = "coal",
-			.image = "core::items/coal",
-		});
-		registerItem({
-			.name = "straw",
-			.image = "core::items/straw",
-		});
-		registerItem({
-			.name = "stick",
-			.image = "core::items/stick",
+			.name = "axe",
+			.image = "core::items/axe",
 			.tool = Swan::Tool::AXE,
-		});
-		registerItem({
-			.name = "rope",
-			.image = "core::items/rope",
 		});
 		registerItem({
 			.name = "dynamite",
@@ -172,6 +160,23 @@ public:
 				slot.remove(1);
 				ctx.plane.entities().spawn<DynamiteEntity>(pos, dir * 15);
 			},
+		});
+
+		registerItem({
+			.name = "coal",
+			.image = "core::items/coal",
+		});
+		registerItem({
+			.name = "straw",
+			.image = "core::items/straw",
+		});
+		registerItem({
+			.name = "stick",
+			.image = "core::items/stick",
+		});
+		registerItem({
+			.name = "rope",
+			.image = "core::items/rope",
 		});
 
 		registerFluid({

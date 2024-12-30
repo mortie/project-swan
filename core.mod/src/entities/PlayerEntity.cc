@@ -80,23 +80,22 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	if (!heldStack_.empty()) {
 		rnd.drawUITile({
 			.transform = Cygnet::Mat3gf{}
-				.scale({0.7, 0.7})
+				.scale({1.5, 1.5})
 				.translate({ctx.game.getMouseUIPos()})
-				.translate({-0.3, -0.3}),
+				.translate({-0.75, -1.0}),
 			.id = heldStack_.item()->id,
 		}, Cygnet::Anchor::TOP_LEFT);
 
 		snprintf(stackSizeBuf, sizeof(stackSizeBuf), "%d", heldStack_.count());
 
-		auto &text = rnd.drawUIText({
+		rnd.drawUIText({
 			.textCache = ctx.game.smallFont_,
 			.transform = Cygnet::Mat3gf{}
 				.scale({0.7, 0.7})
 				.translate({ctx.game.getMouseUIPos()})
-				.translate({-0.6, 0.1}),
+				.translate({0, 0.5}),
 			.text = stackSizeBuf,
 		}, Cygnet::Anchor::TOP_LEFT);
-		text.drawText.transform.translate({text.size.x / 2, 0});
 	}
 
 	// Everything after this is inventory stuff
