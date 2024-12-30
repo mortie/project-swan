@@ -1,5 +1,0 @@
-[variants]
-lru = ["vflip"]
-lrd = []
-udl = ["rotate270"]
-udr = ["rotate270", "hflip"]

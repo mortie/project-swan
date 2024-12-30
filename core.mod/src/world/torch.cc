@@ -51,7 +51,7 @@ void registerTorch(Swan::Mod &mod)
 {
 	mod.registerTile({
 		.name = "torch",
-		.image = "core::tiles/torch/normal",
+		.image = "core::tiles/torch::normal",
 		.isSolid = false,
 		.lightLevel = 80 / 255.0,
 		.breakableBy = Swan::Tool::HAND,
@@ -62,7 +62,7 @@ void registerTorch(Swan::Mod &mod)
 
 	mod.registerTile({
 		.name = "torch::left",
-		.image = "core::tiles/torch/wall::left",
+		.image = "core::tiles/torch::left",
 		.isSolid = false,
 		.lightLevel = 80 / 255.0,
 		.breakableBy = Swan::Tool::HAND,
@@ -72,7 +72,7 @@ void registerTorch(Swan::Mod &mod)
 
 	mod.registerTile({
 		.name = "torch::right",
-		.image = "core::tiles/torch/wall::right",
+		.image = "core::tiles/torch::right",
 		.isSolid = false,
 		.lightLevel = 80 / 255.0,
 		.breakableBy = Swan::Tool::HAND,

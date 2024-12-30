@@ -18,20 +18,20 @@ constexpr std::array<const char *, 16> DIRECTION_LUT = []() {
 	// LEFT | RIGHT | UP | DOWN
 	std::array<const char *, 16> lut;
 	lut[0b0000] = "lone";
-	lut[0b1000] = "open::l";
-	lut[0b0100] = "open::r";
-	lut[0b0010] = "open::u";
-	lut[0b0001] = "open::d";
-	lut[0b1100] = "line::h";
-	lut[0b0011] = "line::v";
-	lut[0b1010] = "elbow::lu";
-	lut[0b1001] = "elbow::ld";
-	lut[0b0110] = "elbow::ru";
-	lut[0b0101] = "elbow::rd";
-	lut[0b1110] = "tee::lru";
-	lut[0b1101] = "tee::lrd";
-	lut[0b1011] = "tee::udl";
-	lut[0b0111] = "tee::udr";
+	lut[0b1000] = "l";
+	lut[0b0100] = "r";
+	lut[0b0010] = "u";
+	lut[0b0001] = "d";
+	lut[0b1100] = "h";
+	lut[0b0011] = "v";
+	lut[0b1010] = "lu";
+	lut[0b1001] = "ld";
+	lut[0b0110] = "ru";
+	lut[0b0101] = "rd";
+	lut[0b1110] = "lru";
+	lut[0b1101] = "lrd";
+	lut[0b1011] = "udl";
+	lut[0b0111] = "udr";
 	lut[0b1111] = "cross";
 	return lut;
 }();
@@ -83,7 +83,7 @@ void registerGlassPipe(Swan::Mod &mod)
 
 	mod.registerTile({
 		.name = "glass-pipe",
-		.image = "core::tiles/glass-pipe/cross",
+		.image = "core::tiles/glass-pipe::cross",
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::glass-pipe",
@@ -93,7 +93,7 @@ void registerGlassPipe(Swan::Mod &mod)
 
 	mod.registerTile({
 		.name = "glass-pipe::cross",
-		.image = "core::tiles/glass-pipe/cross",
+		.image = "core::tiles/glass-pipe::cross",
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::glass-pipe",
@@ -104,7 +104,7 @@ void registerGlassPipe(Swan::Mod &mod)
 
 	mod.registerTile({
 		.name = "glass-pipe::lone",
-		.image = "core::tiles/glass-pipe/lone",
+		.image = "core::tiles/glass-pipe::lone",
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::glass-pipe",
@@ -115,8 +115,8 @@ void registerGlassPipe(Swan::Mod &mod)
 
 	for (auto variant: {"lu", "ld", "ru", "rd"}) {
 		mod.registerTile({
-			.name = Swan::cat("glass-pipe::elbow::", variant),
-			.image = Swan::cat("core::tiles/glass-pipe/elbow::", variant),
+			.name = Swan::cat("glass-pipe::", variant),
+			.image = Swan::cat("core::tiles/glass-pipe::", variant),
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.droppedItem = "core::glass-pipe",
@@ -128,8 +128,8 @@ void registerGlassPipe(Swan::Mod &mod)
 
 	for (auto variant: {"h", "v"}) {
 		mod.registerTile({
-			.name = Swan::cat("glass-pipe::line::", variant),
-			.image = Swan::cat("core::tiles/glass-pipe/line::", variant),
+			.name = Swan::cat("glass-pipe::", variant),
+			.image = Swan::cat("core::tiles/glass-pipe::", variant),
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.droppedItem = "core::glass-pipe",
@@ -141,8 +141,8 @@ void registerGlassPipe(Swan::Mod &mod)
 
 	for (auto variant: {"l", "r", "u", "d"}) {
 		mod.registerTile({
-			.name = Swan::cat("glass-pipe::open::", variant),
-			.image = Swan::cat("core::tiles/glass-pipe/open::", variant),
+			.name = Swan::cat("glass-pipe::", variant),
+			.image = Swan::cat("core::tiles/glass-pipe::", variant),
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.droppedItem = "core::glass-pipe",
@@ -154,8 +154,8 @@ void registerGlassPipe(Swan::Mod &mod)
 
 	for (auto variant: {"lru", "lrd", "udl", "udr"}) {
 		mod.registerTile({
-			.name = Swan::cat("glass-pipe::tee::", variant),
-			.image = Swan::cat("core::tiles/glass-pipe/tee::", variant),
+			.name = Swan::cat("glass-pipe::", variant),
+			.image = Swan::cat("core::tiles/glass-pipe::", variant),
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.droppedItem = "core::glass-pipe",

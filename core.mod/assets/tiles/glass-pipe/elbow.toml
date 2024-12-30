@@ -1,5 +1,0 @@
-[variants]
-lu = ["vflip"]
-ld = []
-ru = ["vflip", "hflip"]
-rd = ["hflip"]

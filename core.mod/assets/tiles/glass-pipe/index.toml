@@ -1,0 +1,21 @@
+[variants]
+cross = ['img:cross.png']
+lone = ['img:lone.png']
+
+lu = ['img:elbow.png', 'vflip']
+ld = ['img:elbow.png']
+ru = ['img:elbow.png', 'vflip', 'hflip']
+rd = ['img:elbow.png', 'hflip']
+
+h = ['img:line.png']
+v = ['img:line.png', 'transpose']
+
+l = ['img:open.png', 'rotate180']
+r = ['img:open.png']
+u = ['img:open.png', 'rotate90']
+d = ['img:open.png', 'rotate270']
+
+lru = ['img:tee.png', 'vflip']
+lrd = ['img:tee.png', ]
+udl = ['img:tee.png', 'rotate270']
+udr = ['img:tee.png', 'rotate270', 'hflip']

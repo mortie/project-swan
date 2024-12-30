@@ -146,6 +146,9 @@ Result<ImageAsset> loadImageAsset(
 		assetBasePath, "/", modPath->second, "/assets/", pathPart);
 	std::string pngPath = cat(assetPath, ".png");
 	std::string tomlPath = cat(assetPath, ".toml");
+	if (!std::filesystem::exists(tomlPath)) {
+		tomlPath = cat(assetPath, "/index.toml");
+	}
 
 	std::optional<std::string> variantPngPath;
 	if (variantName) {
