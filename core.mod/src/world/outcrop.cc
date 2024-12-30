@@ -22,6 +22,10 @@ static bool onOutcropSpawn(const Swan::Context &ctx, Swan::TilePos pos)
 		ctx.plane.tiles().set(pos, Swan::cat(tile.name, "::right"));
 		return true;
 	}
+	else if (ctx.plane.tiles().get(pos.add(0, -1)).isSupportV) {
+		ctx.plane.tiles().set(pos, Swan::cat(tile.name, "::hanging"));
+		return true;
+	}
 
 	return false;
 }
@@ -37,6 +41,9 @@ static void onOutcropUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 	else if (tile.name.ends_with("::right")) {
 		isSupported = ctx.plane.tiles().get(pos.add(1, 0)).isSupportH;
 	}
+	else if (tile.name.ends_with("::hanging")) {
+		isSupported = ctx.plane.tiles().get(pos.add(0, -1)).isSupportV;
+	}
 	else {
 		isSupported = ctx.plane.tiles().get(pos.add(0, 1)).isSupportV;
 	}
@@ -50,7 +57,7 @@ void registerOutcrop(Swan::Mod &mod, const char *name)
 {
 	mod.registerTile({
 		.name = Swan::cat(name, "-outcrop"),
-		.image = Swan::cat("core::tiles/outcrops/", name, "/normal"),
+		.image = Swan::cat("core::tiles/outcrops/", name, "::normal"),
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = Swan::cat("core::", name),
@@ -59,8 +66,17 @@ void registerOutcrop(Swan::Mod &mod, const char *name)
 	});
 
 	mod.registerTile({
+		.name = Swan::cat(name, "-outcrop::hanging"),
+		.image = Swan::cat("core::tiles/outcrops/", name, "::hanging"),
+		.isSolid = false,
+		.breakableBy = Swan::Tool::HAND,
+		.droppedItem = Swan::cat("core::", name),
+		.onTileUpdate = onOutcropUpdate,
+	});
+
+	mod.registerTile({
 		.name = Swan::cat(name, "-outcrop::left"),
-		.image = Swan::cat("core::tiles/outcrops/", name, "/wall::left"),
+		.image = Swan::cat("core::tiles/outcrops/", name, "::left"),
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = Swan::cat("core::", name),
@@ -69,7 +85,7 @@ void registerOutcrop(Swan::Mod &mod, const char *name)
 
 	mod.registerTile({
 		.name = Swan::cat(name, "-outcrop::right"),
-		.image = Swan::cat("core::tiles/outcrops/", name, "/wall::right"),
+		.image = Swan::cat("core::tiles/outcrops/", name, "::right"),
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = Swan::cat("core::", name),

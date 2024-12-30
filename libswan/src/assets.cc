@@ -84,60 +84,35 @@ void applyTranspose(ImageAsset &asset)
 }
 
 static void makeVariant(
-	ImageAsset &asset, std::shared_ptr<cpptoml::table> toml, const std::string &name)
+	std::string &path, ImageAsset &asset,
+	std::vector<std::string> &ops, const std::string &name)
 {
-	if (!toml) {
-		warn << "Variant '" << name << "' requested but there's no TOML file";
-		return;
-	}
-
-	auto variants = toml->get_table("variants");
-	if (!variants) {
-		warn
-			<< "Variant '" << name << "' but "
-			<< "there's no variants in the TOML";
-		return;
-	}
-
-	auto ops = variants->get_array(name);
-	if (!ops) {
-		warn
-			<< "Variant '" << name << "' requested but"
-			<< "there's no such variant in the TOML";
-		return;
-	}
-
-	for (const auto &op: *ops) {
-		auto val = op->as<std::string>();
-		if (!val) {
-			warn << "Operation for variant '" << name << "' is not a string";
-			continue;
-		}
-
-		auto &str = val->get();
-		if (str == "hflip") {
+	for (const auto &op: ops) {
+		if (op == "hflip") {
 			applyHflip(asset);
 		}
-		else if (str == "vflip") {
+		else if (op == "vflip") {
 			applyVflip(asset);
 		}
-		else if (str == "transpose") {
+		else if (op == "transpose") {
 			applyTranspose(asset);
 		}
-		else if (str == "rotate90") {
+		else if (op == "rotate90") {
 			applyTranspose(asset);
 			applyVflip(asset);
 		}
-		else if (str == "rotate180") {
+		else if (op == "rotate180") {
 			applyHflip(asset);
 			applyVflip(asset);
 		}
-		else if (str == "rotate270") {
+		else if (op == "rotate270") {
 			applyTranspose(asset);
 			applyHflip(asset);
 		}
 		else {
-			warn << "Unknown operation '" << str << "' for variant '" << name << "'";
+			warn
+				<< path << ": Unknown operation '" << op
+				<< "' for variant '" << name << "'";
 		}
 	}
 }
@@ -155,10 +130,10 @@ Result<ImageAsset> loadImageAsset(
 	auto modPart = path.substr(0, sep);
 	auto pathPart = path.substr(sep + 2, path.size() - sep - 2);
 
-	std::optional<std::string> variantPart;
+	std::optional<std::string> variantName;
 	sep = pathPart.find("::");
 	if (sep != std::string::npos) {
-		variantPart = pathPart.substr(sep + 2, pathPart.size() - sep - 2);
+		variantName = pathPart.substr(sep + 2, pathPart.size() - sep - 2);
 		pathPart = pathPart.substr(0, sep);
 	}
 
@@ -173,16 +148,62 @@ Result<ImageAsset> loadImageAsset(
 	std::string tomlPath = cat(assetPath, ".toml");
 
 	std::optional<std::string> variantPngPath;
-	if (variantPart) {
-		variantPngPath = cat(assetPath, "/", variantPart.value(), ".png");
+	if (variantName) {
+		variantPngPath = cat(assetPath, "/", variantName.value(), ".png");
+	}
+
+	std::shared_ptr<cpptoml::table> toml;
+	std::shared_ptr<cpptoml::table> variants;
+	std::vector<std::string> variant;
+
+	// Load TOML if it exists
+	std::ifstream tomlFile(tomlPath);
+	if (tomlFile) {
+		cpptoml::parser parser(tomlFile);
+		try {
+			toml = parser.parse();
+		} catch (cpptoml::parse_exception &exc) {
+			return {Err, cat("Failed to parse toml file ", tomlPath, ": ", exc.what())};
+		}
+
+		variants = toml->get_table("variants");
+		std::shared_ptr<cpptoml::array> tomlVariant;
+
+		if (variants && variantName) {
+			tomlVariant = variants->get_array(*variantName);
+		}
+
+		if (tomlVariant) {
+			for (auto part: *tomlVariant) {
+				auto tomlStr = part->as<std::string>();
+				if (!tomlStr) {
+					continue;
+				}
+
+				variant.push_back(std::move(tomlStr->get()));
+			}
+		}
+	}
+	else if (errno != ENOENT) {
+		return {Err, cat("Couldn't open ", tomlPath, ": ", strerror(errno))};
+	}
+
+	if (variantPngPath && !std::filesystem::exists(*variantPngPath)) {
+		variantPngPath = std::nullopt;
+	}
+
+	if (variant.size() > 0 && variant[0].starts_with("img:")) {
+		std::string path = std::move(variant[0]).substr(4, variant[0].npos);
+		variantPngPath = cat(assetPath, "/", path);
+		variant.erase(variant.begin());
 	}
 
 	int w, h;
 	MallocedPtr<unsigned char> buffer;
-	if (variantPngPath && std::filesystem::exists(variantPngPath.value())) {
-		buffer.reset(stbi_load(pngPath.c_str(), &w, &h, nullptr, 4));
+	if (variantPngPath) {
+		buffer.reset(stbi_load(variantPngPath->c_str(), &w, &h, nullptr, 4));
 		if (!buffer) {
-			return {Err, cat("Loading image ", variantPngPath.value(), " failed")};
+			return {Err, cat("Loading image ", *variantPngPath, " failed")};
 		}
 	}
 	else {
@@ -202,21 +223,6 @@ Result<ImageAsset> loadImageAsset(
 
 	int frameHeight = h;
 	int repeatFrom = 0;
-	std::shared_ptr<cpptoml::table> toml;
-
-	// Load TOML if it exists
-	std::ifstream tomlFile(tomlPath);
-	if (tomlFile) {
-		cpptoml::parser parser(tomlFile);
-		try {
-			toml = parser.parse();
-		} catch (cpptoml::parse_exception &exc) {
-			return {Err, cat("Failed to parse toml file ", tomlPath, ": ", exc.what())};
-		}
-	}
-	else if (errno != ENOENT) {
-		return {Err, cat("Couldn't open ", tomlPath, ": ", strerror(errno))};
-	}
 
 	if (toml) {
 		frameHeight = toml->get_as<int>("height").value_or(frameHeight);
@@ -231,8 +237,8 @@ Result<ImageAsset> loadImageAsset(
 		.data = std::move(bufferCopy),
 	};
 
-	if (variantPart) {
-		makeVariant(asset, toml, variantPart.value());
+	if (variant.size() > 0) {
+		makeVariant(path, asset, variant, *variantName);
 	}
 
 	return {Ok, std::move(asset)};

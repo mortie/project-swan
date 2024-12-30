@@ -3,6 +3,7 @@
 #include <swan/swan.h>
 #include <PerlinNoise.hpp>
 
+#include "worldgen/OreDef.h"
 #include "worldgen/ShrubberyDef.h"
 #include "worldgen/TallGrassDef.h"
 #include "worldgen/TreeDef.h"
@@ -18,6 +19,7 @@ public:
 		tWater_(world.getTileID("core::water")),
 		tAir_(world.getTileID("@::air")),
 		bgCave_(world.getSprite("core::misc/background-cave")),
+		oreDef_(world, seed_),
 		shrubberyDef_(world, seed_),
 		tallGrassDef_(world, seed_),
 		treeDef_(world, seed_)
@@ -38,6 +40,7 @@ private:
 	Cygnet::RenderSprite bgCave_;
 	siv::PerlinNoise perlin_{seed_};
 
+	OreDef oreDef_;
 	ShrubberyDef shrubberyDef_;
 	TallGrassDef tallGrassDef_;
 	TreeDef treeDef_;

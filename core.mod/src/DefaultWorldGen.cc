@@ -116,6 +116,7 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 		}
 	}
 
+	oreDef_.generateArea(area);
 	shrubberyDef_.generateArea(area);
 	treeDef_.generateArea(area);
 	tallGrassDef_.generateArea(area);
