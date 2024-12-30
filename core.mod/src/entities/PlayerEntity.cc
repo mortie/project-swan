@@ -570,14 +570,18 @@ void PlayerEntity::onLeftClick(const Swan::Context &ctx)
 		return;
 	}
 
-	const Swan::Tile &tile = ctx.plane.tiles().get(breakPos_);
-	if (!(tile.breakableBy & Swan::Tool::HAND)) {
-		if (!ctx.game.debugHandBreakAny_) {
+	auto pos = breakPos_;
+	bool canBreak = ctx.game.debugHandBreakAny_ ||
+		(ctx.plane.tiles().get(pos).breakableBy & Swan::Tool::HAND);
+
+	if (!canBreak) {
+		pos = placePos_;
+		if (!(ctx.plane.tiles().get(pos).breakableBy & Swan::Tool::HAND)) {
 			return;
 		}
 	}
 
-	breakTileAndDropItem(ctx, breakPos_);
+	breakTileAndDropItem(ctx, pos);
 	interactTimer_ = 0.2;
 }
 
