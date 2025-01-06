@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <memory>
 
-namespace SwanCommon {
+namespace Swan {
 
 template<typename T, typename Size = size_t>
 struct LruCacheEntry {

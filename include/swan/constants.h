@@ -1,6 +1,6 @@
 #pragma once
 
-namespace SwanCommon {
+namespace Swan {
 
 static constexpr int TILE_SIZE = 32;
 static constexpr int TICK_RATE = 20;

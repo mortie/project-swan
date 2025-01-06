@@ -4,7 +4,7 @@
 #include <ostream>
 #include <cmath>
 
-namespace SwanCommon {
+namespace Swan {
 
 template<typename T>
 struct Vector2 {
@@ -186,8 +186,8 @@ using Vec2i = Vector2<int>;
 namespace std {
 
 template<typename T>
-struct hash<SwanCommon::Vector2<T>> {
-	std::size_t operator()(const SwanCommon::Vector2<T> &vec) const
+struct hash<Swan::Vector2<T>> {
+	std::size_t operator()(const Swan::Vector2<T> &vec) const
 	{
 		std::size_t x = vec.x, y = vec.y;
 		return std::hash<std::size_t>{}(((x + y) * (x + y + 1) / 2) + y);

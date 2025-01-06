@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace SwanCommon {
+namespace Swan {
 
 template<typename T, size_t Capacity>
 class ArrayVector {

@@ -23,8 +23,8 @@ void ResourceBuilder::addTile(uint16_t id, void *data, int frames)
 	}
 	else {
 		auto ptr = std::make_unique<unsigned char[]>(
-			SwanCommon::TILE_SIZE * SwanCommon::TILE_SIZE * 4 * frames);
-		memcpy(ptr.get(), data, SwanCommon::TILE_SIZE * SwanCommon::TILE_SIZE * 4 * frames);
+			Swan::TILE_SIZE * Swan::TILE_SIZE * 4 * frames);
+		memcpy(ptr.get(), data, Swan::TILE_SIZE * Swan::TILE_SIZE * 4 * frames);
 		addTile(id, std::move(ptr), frames);
 	}
 }
@@ -81,7 +81,7 @@ void ResourceManager::tick()
 	for (auto &anim: tileAnims_) {
 		anim.index = (anim.index + 1) % anim.frames;
 		unsigned char *data = anim.data.get() +
-			SwanCommon::TILE_SIZE * SwanCommon::TILE_SIZE * 4 * anim.index;
+			Swan::TILE_SIZE * Swan::TILE_SIZE * 4 * anim.index;
 		rnd_->modifyTile(anim.id, data);
 	}
 }

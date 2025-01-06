@@ -4,7 +4,7 @@
 
 #include "gl.h"
 #include "util.h"
-#include <swan-common/constants.h>
+#include <swan/constants.h>
 
 namespace Cygnet {
 
@@ -26,13 +26,13 @@ GlShader::GlShader(Type type, const char *source)
 		break;
 	}
 
-	std::string chunkWidth = std::to_string(SwanCommon::CHUNK_WIDTH);
-	std::string chunkHeight = std::to_string(SwanCommon::CHUNK_HEIGHT);
+	std::string chunkWidth = std::to_string(Swan::CHUNK_WIDTH);
+	std::string chunkHeight = std::to_string(Swan::CHUNK_HEIGHT);
 	std::string fluidChunkWidth = std::to_string(
-		SwanCommon::CHUNK_WIDTH * SwanCommon::FLUID_RESOLUTION);
+		Swan::CHUNK_WIDTH * Swan::FLUID_RESOLUTION);
 	std::string fluidChunkHeight = std::to_string(
-		SwanCommon::CHUNK_HEIGHT * SwanCommon::FLUID_RESOLUTION);
-	std::string tileSize = std::to_string(SwanCommon::TILE_SIZE);
+		Swan::CHUNK_HEIGHT * Swan::FLUID_RESOLUTION);
+	std::string tileSize = std::to_string(Swan::TILE_SIZE);
 	const char *sources[] = {
 		GLSL_PRELUDE,
 		"\n",

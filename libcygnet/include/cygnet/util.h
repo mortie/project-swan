@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "swan-common/Matrix3.h"
+#include "swan/Matrix3.h"
 
 namespace Cygnet {
 
@@ -13,7 +13,7 @@ using GLsizei = int32_t;
 using GLenum = uint32_t;
 using GLfloat = float;
 
-using Mat3gf = SwanCommon::Matrix3<GLfloat>;
+using Mat3gf = Swan::Matrix3<GLfloat>;
 
 struct ByteColor;
 

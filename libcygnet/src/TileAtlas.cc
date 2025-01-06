@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <stdio.h>
 #include <string.h>
-#include <swan-common/constants.h>
+#include <swan/constants.h>
 
 #include "gl.h"
 
@@ -23,7 +23,7 @@ TileAtlas::TileAtlas(): state_(std::make_unique<AtlasState>())
 	GLint size;
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size);
-	state_->tilesPerLine = std::min(size / SwanCommon::TILE_SIZE, 256);
+	state_->tilesPerLine = std::min(size / Swan::TILE_SIZE, 256);
 }
 
 TileAtlas::TileAtlas(TileAtlas &&) = default;
@@ -43,23 +43,23 @@ void TileAtlas::addTile(size_t tileId, const void *data)
 		state_->height = y + 1;
 	}
 
-	size_t requiredSize = state_->tilesPerLine * SwanCommon::TILE_SIZE *
-		state_->height * SwanCommon::TILE_SIZE * 4;
+	size_t requiredSize = state_->tilesPerLine * Swan::TILE_SIZE *
+		state_->height * Swan::TILE_SIZE * 4;
 	state_->data.resize(requiredSize);
 
-	for (size_t ty = 0; ty < SwanCommon::TILE_SIZE; ++ty) {
-		const unsigned char *src = bytes + ty * SwanCommon::TILE_SIZE * 4;
+	for (size_t ty = 0; ty < Swan::TILE_SIZE; ++ty) {
+		const unsigned char *src = bytes + ty * Swan::TILE_SIZE * 4;
 		unsigned char *dest = state_->data.data() +
-			(y * SwanCommon::TILE_SIZE + ty) * state_->tilesPerLine * SwanCommon::TILE_SIZE * 4 +
-			(x * SwanCommon::TILE_SIZE * 4);
-		memcpy(dest, src, SwanCommon::TILE_SIZE * 4);
+			(y * Swan::TILE_SIZE + ty) * state_->tilesPerLine * Swan::TILE_SIZE * 4 +
+			(x * Swan::TILE_SIZE * 4);
+		memcpy(dest, src, Swan::TILE_SIZE * 4);
 	}
 }
 
 const unsigned char *TileAtlas::getImage(size_t *w, size_t *h)
 {
-	*w = state_->tilesPerLine * SwanCommon::TILE_SIZE;
-	*h = state_->height * SwanCommon::TILE_SIZE;
+	*w = state_->tilesPerLine * Swan::TILE_SIZE;
+	*h = state_->height * Swan::TILE_SIZE;
 	return state_->data.data();
 }
 

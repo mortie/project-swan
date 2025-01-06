@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include <stdio.h>
-#include <swan-common/constants.h>
+#include <swan/constants.h>
 #include <string.h>
 #include <span>
 
@@ -39,7 +39,7 @@ struct BlendProg: public GlProg<Shader::Blend> {
 struct ChunkProg: public GlProg<Shader::Chunk> {
 	void draw(
 		std::span<Renderer::DrawChunk> drawChunks, const Mat3gf &cam,
-		GLuint atlasTex, SwanCommon::Vec2 atlasTexSize)
+		GLuint atlasTex, Swan::Vec2 atlasTexSize)
 	{
 		if (drawChunks.size() == 0) {
 			return;
@@ -68,7 +68,7 @@ struct ChunkProg: public GlProg<Shader::Chunk> {
 			glBindTexture(GL_TEXTURE_2D, chunk.tex);
 			glDrawArrays(
 				GL_TRIANGLES, 0,
-				6 * SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT);
+				6 * Swan::CHUNK_WIDTH * Swan::CHUNK_HEIGHT);
 			glCheck();
 		}
 	}
@@ -308,7 +308,7 @@ struct TextProg: public GlProg<Shader::Text> {
 struct TileProg: public GlProg<Shader::Tile> {
 	void draw(
 		std::span<Renderer::DrawTile> drawTiles, const Mat3gf &cam,
-		GLuint atlasTex, SwanCommon::Vec2 atlasTexSize)
+		GLuint atlasTex, Swan::Vec2 atlasTexSize)
 	{
 		if (drawTiles.size() == 0) {
 			return;
@@ -349,12 +349,12 @@ struct RendererState {
 	TextProg textProg{};
 	TileProg tileProg{};
 
-	SwanCommon::Vec2i screenSize;
+	Swan::Vec2i screenSize;
 	GLuint offscreenFramebuffer = 0;
 	GLuint offscreenTex = 0;
 	GLuint atlasTex = 0;
 	GLuint fluidAtlasTex = 0;
-	SwanCommon::Vec2 atlasTexSize;
+	Swan::Vec2 atlasTexSize;
 };
 
 Renderer::Renderer(): state_(std::make_unique<RendererState>())
@@ -478,7 +478,7 @@ void Renderer::renderUI(const RenderCamera &cam)
 		camMat.scale({cam.zoom, -cam.zoom * ratio});
 	}
 
-	SwanCommon::Vec2 scale = winScale_ / cam.zoom;
+	Swan::Vec2 scale = winScale_ / cam.zoom;
 
 	for (int i = 0; i <= (int)RenderLayer::MAX; ++i) {
 		renderUILayer(RenderLayer(i), scale, camMat);
@@ -487,11 +487,11 @@ void Renderer::renderUI(const RenderCamera &cam)
 	textUIBuffer_.clear();
 }
 
-void Renderer::renderUILayer(RenderLayer layer, SwanCommon::Vec2 scale, Mat3gf camMat)
+void Renderer::renderUILayer(RenderLayer layer, Swan::Vec2 scale, Mat3gf camMat)
 {
 	int idx = (int)layer;
 
-	auto applyAnchor = [&](Anchor anchor, Mat3gf &mat, SwanCommon::Vec2 size) {
+	auto applyAnchor = [&](Anchor anchor, Mat3gf &mat, Swan::Vec2 size) {
 		switch (anchor) {
 		case Anchor::CENTER:
 			mat.translate(size * -0.5f);
@@ -591,8 +591,8 @@ void Renderer::uploadTileAtlas(const void *data, int width, int height)
 	glCheck();
 
 	state_->atlasTexSize = {
-		(float)(int)(width / SwanCommon::TILE_SIZE),
-		(float)(int)(height / SwanCommon::TILE_SIZE)};
+		(float)(int)(width / Swan::TILE_SIZE),
+		(float)(int)(height / Swan::TILE_SIZE)};
 }
 
 void Renderer::modifyTile(TileID id, const void *data)
@@ -604,8 +604,8 @@ void Renderer::modifyTile(TileID id, const void *data)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, state_->atlasTex);
 	glTexSubImage2D(
-		GL_TEXTURE_2D, 0, x * SwanCommon::TILE_SIZE, y * SwanCommon::TILE_SIZE,
-		SwanCommon::TILE_SIZE, SwanCommon::TILE_SIZE,
+		GL_TEXTURE_2D, 0, x * Swan::TILE_SIZE, y * Swan::TILE_SIZE,
+		Swan::TILE_SIZE, Swan::TILE_SIZE,
 		GL_RGBA, GL_UNSIGNED_BYTE, data);
 	glCheck();
 }
@@ -628,14 +628,14 @@ RenderChunk Renderer::createChunk(
 
 	glTexImage2D(
 		GL_TEXTURE_2D, 0, GL_R16UI,
-		SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
+		Swan::CHUNK_WIDTH, Swan::CHUNK_HEIGHT,
 		0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, tiles);
 	glCheck();
 
 	return chunk;
 }
 
-void Renderer::modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id)
+void Renderer::modifyChunk(RenderChunk chunk, Swan::Vec2i pos, TileID id)
 {
 	assert(chunk.tex != ~(GLuint)0);
 	glActiveTexture(GL_TEXTURE0);
@@ -673,8 +673,8 @@ RenderChunkFluid Renderer::createChunkFluid(
 
 	glTexImage2D(
 		GL_TEXTURE_2D, 0, GL_R8UI,
-		SwanCommon::CHUNK_WIDTH * SwanCommon::FLUID_RESOLUTION,
-		SwanCommon::CHUNK_HEIGHT * SwanCommon::FLUID_RESOLUTION,
+		Swan::CHUNK_WIDTH * Swan::FLUID_RESOLUTION,
+		Swan::CHUNK_HEIGHT * Swan::FLUID_RESOLUTION,
 		0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, data);
 	glCheck();
 
@@ -692,8 +692,8 @@ void Renderer::modifyChunkFluid(
 
 	glTexImage2D(
 		GL_TEXTURE_2D, 0, GL_R8UI,
-		SwanCommon::CHUNK_WIDTH * SwanCommon::FLUID_RESOLUTION,
-		SwanCommon::CHUNK_HEIGHT * SwanCommon::FLUID_RESOLUTION,
+		Swan::CHUNK_WIDTH * Swan::FLUID_RESOLUTION,
+		Swan::CHUNK_HEIGHT * Swan::FLUID_RESOLUTION,
 		0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, data);
 	glCheck();
 }
@@ -723,7 +723,7 @@ RenderChunkShadow Renderer::createChunkShadow(
 
 	glTexImage2D(
 		GL_TEXTURE_2D, 0, GL_RED,
-		SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
+		Swan::CHUNK_WIDTH, Swan::CHUNK_HEIGHT,
 		0, GL_RED, GL_UNSIGNED_BYTE, data);
 	glCheck();
 
@@ -741,7 +741,7 @@ void Renderer::modifyChunkShadow(
 
 	glTexImage2D(
 		GL_TEXTURE_2D, 0, GL_RED,
-		SwanCommon::CHUNK_WIDTH, SwanCommon::CHUNK_HEIGHT,
+		Swan::CHUNK_WIDTH, Swan::CHUNK_HEIGHT,
 		0, GL_RED, GL_UNSIGNED_BYTE, data);
 	glCheck();
 }
@@ -758,8 +758,8 @@ RenderSprite Renderer::createSprite(void *data, int width, int height, int fh, i
 	RenderSprite sprite;
 
 	sprite.size = {
-		(float)width / SwanCommon::TILE_SIZE,
-		(float)fh / SwanCommon::TILE_SIZE};
+		(float)width / Swan::TILE_SIZE,
+		(float)fh / Swan::TILE_SIZE};
 	sprite.frameCount = height / fh;
 	sprite.repeatFrom = repeatFrom;
 	glGenTextures(1, &sprite.tex);

@@ -6,7 +6,7 @@
 
 #include "Vector2.h"
 
-namespace SwanCommon {
+namespace Swan {
 
 // 3D transformation matrix.
 // All the operations assume that the last row remains {0, 0, 1}.

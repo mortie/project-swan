@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include <stb/stb_truetype.h>
-#include <swan-common/cache.h>
+#include <swan/cache.h>
 
 #include "gl.h"
 #include "util.h"
@@ -172,7 +172,7 @@ const TextCache::RenderedCodepoint &TextCache::render(Codepoint codepoint)
 void TextCache::renderString(
 	std::string_view s,
 	std::vector<RenderedCodepoint> &out,
-	SwanCommon::Vec2 &size)
+	Swan::Vec2 &size)
 {
 	Codepoint prev = 0;
 

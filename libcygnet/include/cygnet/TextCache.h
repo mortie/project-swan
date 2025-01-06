@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string_view>
 #include <unordered_map>
-#include <swan-common/cache.h>
+#include <swan/cache.h>
 #include <vector>
 
 #include "util.h"
@@ -43,14 +43,14 @@ public:
 	void renderString(
 		std::string_view s,
 		std::vector<RenderedCodepoint> &out,
-		SwanCommon::Vec2 &size);
+		Swan::Vec2 &size);
 
 	void kern(Codepoint prev, RenderedCodepoint &rendered);
 
 	TextAtlas atlas_;
 
 private:
-	SwanCommon::LruCache<RenderedCodepoint, CacheIndex> cache_;
+	Swan::LruCache<RenderedCodepoint, CacheIndex> cache_;
 	std::unordered_map<Codepoint, CacheIndex> cachedCodepoints_;
 	std::unique_ptr<unsigned char[]> scratchPixelBuffer_;
 	std::shared_ptr<FontFace> face_;

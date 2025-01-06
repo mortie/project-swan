@@ -5,8 +5,8 @@
 #include <vector>
 #include <stdint.h>
 
-#include <swan-common/constants.h>
-#include <swan-common/Vector2.h>
+#include <swan/constants.h>
+#include <swan/Vector2.h>
 
 #include "util.h"
 #include "TextCache.h"
@@ -41,14 +41,14 @@ struct RenderChunkShadow {
 
 struct RenderSprite {
 	GLuint tex = ~(GLuint)0;
-	SwanCommon::Vec2 size;
+	Swan::Vec2 size;
 	int frameCount;
 	int repeatFrom;
 };
 
 struct RenderCamera {
-	SwanCommon::Vec2 pos = {0, 0};
-	SwanCommon::Vec2i size = {1, 1};
+	Swan::Vec2 pos = {0, 0};
+	Swan::Vec2i size = {1, 1};
 	float zoom = 1;
 };
 
@@ -67,17 +67,17 @@ public:
 	static constexpr int LAYER_COUNT = (int)RenderLayer::MAX + 1;
 
 	struct DrawChunk {
-		SwanCommon::Vec2 pos;
+		Swan::Vec2 pos;
 		RenderChunk chunk;
 	};
 
 	struct DrawChunkFluid {
-		SwanCommon::Vec2 pos;
+		Swan::Vec2 pos;
 		RenderChunkFluid fluids;
 	};
 
 	struct DrawChunkShadow {
-		SwanCommon::Vec2 pos;
+		Swan::Vec2 pos;
 		RenderChunkShadow shadow;
 	};
 
@@ -94,14 +94,14 @@ public:
 	};
 
 	struct DrawParticle {
-		SwanCommon::Vec2 pos;
-		SwanCommon::Vec2 size = {1.0, 1.0};
+		Swan::Vec2 pos;
+		Swan::Vec2 size = {1.0, 1.0};
 		Color color = {1.0, 0.0, 0.0, 1.0};
 	};
 
 	struct DrawRect {
-		SwanCommon::Vec2 pos;
-		SwanCommon::Vec2 size = {1.0, 1.0};
+		Swan::Vec2 pos;
+		Swan::Vec2 size = {1.0, 1.0};
 		Color outline = {0.6, 0.6, 0.6, 0.8};
 		Color fill = {0.0, 0.0, 0.0, 0.0};
 	};
@@ -116,7 +116,7 @@ public:
 	struct TextSegment {
 		DrawText drawText;
 		TextAtlas &atlas;
-		SwanCommon::Vec2 size;
+		Swan::Vec2 size;
 		size_t start;
 		size_t end;
 	};
@@ -189,7 +189,7 @@ public:
 
 	TextSegment &drawText(RenderLayer layer, DrawText drawText)
 	{
-		SwanCommon::Vec2 size;
+		Swan::Vec2 size;
 		size_t start = textBuffer_.size();
 
 		drawText.textCache.renderString(drawText.text, textBuffer_, size);
@@ -229,7 +229,7 @@ public:
 
 	TextSegment &drawUIText(RenderLayer layer, DrawText drawText, Anchor anchor = Anchor::CENTER)
 	{
-		SwanCommon::Vec2 size;
+		Swan::Vec2 size;
 		size_t start = textUIBuffer_.size();
 
 		drawText.textCache.renderString(drawText.text, textUIBuffer_, size);
@@ -257,14 +257,14 @@ public:
 	void uploadTileAtlas(const void *data, int width, int height);
 	void modifyTile(TileID id, const void *data);
 
-	static constexpr size_t CHUNK_SIZE = SwanCommon::CHUNK_WIDTH * SwanCommon::CHUNK_HEIGHT;
+	static constexpr size_t CHUNK_SIZE = Swan::CHUNK_WIDTH * Swan::CHUNK_HEIGHT;
 	RenderChunk createChunk(
 		TileID tiles[CHUNK_SIZE]);
-	void modifyChunk(RenderChunk chunk, SwanCommon::Vec2i pos, TileID id);
+	void modifyChunk(RenderChunk chunk, Swan::Vec2i pos, TileID id);
 	void destroyChunk(RenderChunk chunk);
 
 	static constexpr size_t FLUID_CHUNK_SIZE =
-		CHUNK_SIZE * SwanCommon::FLUID_RESOLUTION * SwanCommon::FLUID_RESOLUTION;
+		CHUNK_SIZE * Swan::FLUID_RESOLUTION * Swan::FLUID_RESOLUTION;
 	RenderChunkFluid createChunkFluid(
 		uint8_t data[FLUID_CHUNK_SIZE]);
 	void modifyChunkFluid(
@@ -282,16 +282,16 @@ public:
 	RenderSprite createSprite(void *data, int width, int height, int fh, int repeatFrom);
 	void destroySprite(RenderSprite sprite);
 
-	SwanCommon::Vec2 winScale()
+	Swan::Vec2 winScale()
 	{
 		return winScale_;
 	}
 
 private:
 	void renderLayer(RenderLayer layer, Mat3gf camMat);
-	void renderUILayer(RenderLayer layer, SwanCommon::Vec2 scale, Mat3gf camMat);
+	void renderUILayer(RenderLayer layer, Swan::Vec2 scale, Mat3gf camMat);
 
-	SwanCommon::Vec2 winScale_ = {1, 1};
+	Swan::Vec2 winScale_ = {1, 1};
 
 	std::unique_ptr<RendererState> state_;
 

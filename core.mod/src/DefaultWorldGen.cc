@@ -1,7 +1,7 @@
 #include "DefaultWorldGen.h"
 
 #include "entities/PlayerEntity.h"
-#include "swan-common/constants.h"
+#include "swan/constants.h"
 #include "worldgen/StructureDef.h"
 
 namespace CoreMod {
@@ -73,7 +73,7 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 	else if (pos.y == grassLevel) {
 		return tGrass_;
 	}
-	else{
+	else {
 		return tAir_;
 	}
 }
@@ -83,8 +83,8 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 	Swan::TilePos chunkTilePos = chunk.pos() *
 		Swan::TilePos{Swan::CHUNK_WIDTH, Swan::CHUNK_HEIGHT};
 
-	constexpr int GEN_WIDTH = SwanCommon::CHUNK_WIDTH + GEN_PADDING * 2;
-	constexpr int GEN_HEIGHT = SwanCommon::CHUNK_HEIGHT + GEN_PADDING * 2;
+	constexpr int GEN_WIDTH = Swan::CHUNK_WIDTH + GEN_PADDING * 2;
+	constexpr int GEN_HEIGHT = Swan::CHUNK_HEIGHT + GEN_PADDING * 2;
 
 	StructureDef::Area area;
 

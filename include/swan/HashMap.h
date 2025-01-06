@@ -4,7 +4,7 @@
 #include <string_view>
 #include <unordered_map>
 
-namespace SwanCommon {
+namespace Swan {
 
 // Inspired by:
 // https://stackoverflow.com/questions/34596768
