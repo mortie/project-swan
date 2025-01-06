@@ -37,7 +37,8 @@ public:
 
 	bool isKeyPressed(int key)
 	{
-		return pressedKeys_[glfwGetKeyScancode(key)];
+		int code = glfwGetKeyScancode(key);
+		return pressedKeys_[code] || didPressKeys_[code];
 	}
 
 	bool wasKeyPressed(int key)
@@ -77,7 +78,7 @@ public:
 
 	bool isMousePressed(int button)
 	{
-		return pressedButtons_[button];
+		return pressedButtons_[button] || didPressButtons_[button];
 	}
 
 	bool wasMousePressed(int button)
