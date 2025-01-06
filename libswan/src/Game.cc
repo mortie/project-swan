@@ -1,5 +1,6 @@
 #include "Game.h"
 
+#include <algorithm>
 #include <cmath>
 #include <fstream>
 #include <math.h>
@@ -31,6 +32,7 @@ void Game::createWorld(
 	world_->setWorldGen(worldgen);
 	world_->setCurrentPlane(world_->addPlane());
 	world_->spawnPlayer();
+	hasSortedItems_ = false;
 }
 
 void Game::loadWorld(
@@ -45,6 +47,7 @@ void Game::loadWorld(
 
 	auto world = reader.getRoot<proto::World>();
 	world_->deserialize(world);
+	hasSortedItems_ = false;
 }
 
 void Game::onKeyDown(int scancode, int key)
@@ -220,17 +223,29 @@ void Game::draw()
 		auto &tile = world_->currentPlane().tiles().get(getMouseTile());
 		ImGui::Text("Tile: %s\n", tile.name.c_str());
 
+		if (!hasSortedItems_) {
+			sortedItems_.clear();
+			sortedItems_.reserve(world_->items_.size());
+			for (auto &[name, item]: world_->items_) {
+				sortedItems_.push_back(&item);
+			}
+			std::sort(sortedItems_.begin(), sortedItems_.end(), [](Item *a, Item *b) {
+				return a->name < b->name;
+			});
+		}
+
 		ImGui::Text("Give Item:");
 		ImGui::BeginChild("Give Item", {0, 200});
-		for (auto &[name, item]: world_->items_) {
-			if (item.hidden) {
+		for (auto item: sortedItems_) {
+			if (item->hidden) {
 				continue;
 			}
 
-			if (ImGui::Button(name.c_str())) {
+			if (ImGui::Button(item->name.c_str())) {
 				auto *inventory = world_->playerRef_.trait<InventoryTrait>();
-				info << "Giving player " << name;
-				ItemStack stack(&item, 1);
+				ItemStack stack(item, 1);
+
+				info << "Giving player " << stack.count() << ' ' << item->name;
 				inventory->insert(stack);
 			}
 		}

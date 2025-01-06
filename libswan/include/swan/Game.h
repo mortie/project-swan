@@ -175,6 +175,9 @@ private:
 	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> didPressButtons_;
 	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> didReleaseButtons_;
 
+	std::vector<Item *> sortedItems_;
+	bool hasSortedItems_ = false;
+
 	SoundPlayer soundPlayer_;
 
 	double didScroll_ = 0;
