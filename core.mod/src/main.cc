@@ -38,7 +38,9 @@ public:
 		registerStepSounds("sounds/step/metal");
 		registerStepSounds("sounds/step/sand");
 		registerStepSounds("sounds/step/stone");
-		registerSound("sounds/snap");
+		registerSound("sounds/misc/snap");
+		registerSound("sounds/misc/splash");
+		registerSound("sounds/misc/splash-short");
 
 		registerTile({
 			.name = "stone",

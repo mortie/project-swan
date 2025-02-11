@@ -287,6 +287,23 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		physicsBody_.body.bottom() - 0.25f,
 	});
 
+	{ // Splash sound
+		bool oldInFluid = inFluid_;
+		if (fluidCenter.density > 0 && fluidBottom.density > 0) {
+			inFluid_ = true;
+		}
+		else if (fluidCenter.density <= 0 && fluidBottom.density <= 0) {
+			inFluid_ = false;
+		}
+
+		if (inFluid_ && !oldInFluid) {
+			ctx.game.playSound(splashSound_);
+		}
+		else if (!inFluid_ && oldInFluid) {
+			ctx.game.playSound(shortSplashSound_);
+		}
+	}
+
 	// Select item slots
 	if (ctx.game.wasKeyPressed(GLFW_KEY_1)) {
 		selectedInventorySlot_ = 0;

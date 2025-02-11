@@ -18,7 +18,9 @@ public:
 		fallingAnimation_(ctx, "core::entities/player/falling", 0.1),
 		jumpingAnimation_(ctx, "core::entities/player/jumping", 0.1),
 		landingAnimation_(ctx, "core::entities/player/landing", 0.1),
-		snapSound_(ctx.world.getSound("core::sounds/snap")),
+		snapSound_(ctx.world.getSound("core::sounds/misc/snap")),
+		splashSound_(ctx.world.getSound("core::sounds/misc/splash")),
+		shortSplashSound_(ctx.world.getSound("core::sounds/misc/splash-short")),
 		hotbarSprite_(ctx.world.getSprite("core::ui/hotbar")),
 		selectedSlotSprite_(ctx.world.getSprite("core::ui/selected-slot"))
 	{}
@@ -85,6 +87,8 @@ private:
 	Swan::Animation *currentAnimation_ = &idleAnimation_;
 
 	Swan::SoundAsset *snapSound_;
+	Swan::SoundAsset *splashSound_;
+	Swan::SoundAsset *shortSplashSound_;
 	Cygnet::RenderSprite hotbarSprite_;
 	Cygnet::RenderSprite selectedSlotSprite_;
 
@@ -94,6 +98,7 @@ private:
 	int lastDirection_ = 1;
 	bool sprinting_ = false;
 	bool showInventory_ = false;
+	bool inFluid_ = false;
 	float stepTimer_ = 0;
 	int stepIndex_ = 0;
 	float interactTimer_ = 0;
