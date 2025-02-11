@@ -303,7 +303,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 
 		if (inFluid_ && !oldInFluid) {
 			ctx.game.playSound(splashSound_);
-			for (int i = 0; i < 40; ++i) {
+			for (int i = 0; i < 60; ++i) {
 				ctx.game.spawnParticle({
 					.pos = fluidCenterPos + Swan::Vec2{
 						(Swan::randfloat() - 0.5f) * 0.2f,
@@ -320,15 +320,15 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		}
 		else if (!inFluid_ && oldInFluid) {
 			ctx.game.playSound(shortSplashSound_);
-			for (int i = 0; i < 20; ++i) {
+			for (int i = 0; i < 40; ++i) {
 				ctx.game.spawnParticle({
 					.pos = fluidBottomPos + Swan::Vec2{
-						(Swan::randfloat() - 0.5f) * 0.2f,
-						(Swan::randfloat() - 0.5f) * 0.2f,
+						(Swan::randfloat() - 0.5f) * 0.3f,
+						(Swan::randfloat() - 0.6f) * 0.3f,
 					},
 					.vel = {
 						(Swan::randfloat() * 4 - 2) + (physicsBody_.vel.x * 0.5f),
-						Swan::randfloat() * -2 - 5,
+						Swan::randfloat() * -2 - 6,
 					},
 					.color = fluidColor_,
 					.lifetime = 0.4f + Swan::randfloat() * 0.2f,
