@@ -50,7 +50,7 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane)
 	int firstX = (int)floor(phys.body.left() + epsilon);
 	int lastX = (int)floor(phys.body.right() - epsilon);
 	for (int x = firstX; x <= lastX; ++x) {
-		int by = (int)floor(phys.body.bottom() + 0.01);
+		int by = (int)floor(phys.body.bottom() + 0.04);
 		Tile &bottom = plane.tiles().get({x, by});
 		if (bottom.isSolid) {
 			phys.body.pos.y = (float)by - phys.body.size.y;
@@ -59,7 +59,7 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane)
 			break;
 		}
 
-		int ty = (int)floor(phys.body.top() - 0.01);
+		int ty = (int)floor(phys.body.top() + 0.01);
 		Tile &top = plane.tiles().get({x, ty});
 		if (top.isSolid) {
 			phys.body.pos.y = (float)ty + 1.0;
