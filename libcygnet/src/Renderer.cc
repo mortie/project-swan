@@ -377,6 +377,32 @@ Renderer::~Renderer()
 	glCheck();
 }
 
+void Renderer::update(float dt)
+{
+	constexpr float GRAVITY = 20;
+
+	for (int layer = 0; layer < LAYER_COUNT; ++layer) {
+		auto &particles = spawnedParticles_[layer];
+		auto &metas = spawnedParticleMetas_[layer];
+
+		assert(particles.size() == metas.size());
+		for (size_t i = 0; i < particles.size(); ++i) {
+			auto &meta = metas[i];
+			meta.lifetime -= dt;
+			if (meta.lifetime <= 0) {
+				particles[i] = particles.back();
+				particles.pop_back();
+				metas[i] = metas.back();
+				metas.pop_back();
+				continue;
+			}
+
+			meta.vel.y += GRAVITY * dt;
+			particles[i].pos += meta.vel * dt;
+		}
+	}
+}
+
 void Renderer::render(const RenderCamera &cam)
 {
 	Mat3gf camMat;
@@ -446,6 +472,9 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 	drawChunkFluids_[idx].clear();
 
 	state_->rectProg.drawParticles(drawParticles_[idx], camMat);
+	drawParticles_[idx].clear();
+
+	state_->rectProg.drawParticles(spawnedParticles_[idx], camMat);
 	drawParticles_[idx].clear();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

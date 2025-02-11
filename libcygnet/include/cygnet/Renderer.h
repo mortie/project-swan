@@ -99,6 +99,19 @@ public:
 		Color color = {1.0, 0.0, 0.0, 1.0};
 	};
 
+	struct ParticleMeta {
+		Swan::Vec2 vel;
+		float lifetime;
+	};
+
+	struct SpawnParticle {
+		Swan::Vec2 pos;
+		Swan::Vec2 vel;
+		Swan::Vec2 size = {0.1, 0.1};
+		Color color;
+		float lifetime = 1;
+	};
+
 	struct DrawRect {
 		Swan::Vec2 pos;
 		Swan::Vec2 size = {1.0, 1.0};
@@ -178,6 +191,23 @@ public:
 		drawParticle(RenderLayer::NORMAL, dp);
 	}
 
+	void spawnParticle(RenderLayer layer, SpawnParticle particle)
+	{
+		spawnedParticles_[(int)layer].push_back({
+			.pos = particle.pos,
+			.size = particle.size,
+			.color = particle.color,
+		});
+		spawnedParticleMetas_[(int)layer].push_back({
+			.vel = particle.vel,
+			.lifetime = particle.lifetime,
+		});
+	}
+	void spawnParticle(SpawnParticle particle)
+	{
+		spawnParticle(RenderLayer::NORMAL, particle);
+	}
+
 	void drawRect(RenderLayer layer, DrawRect drawRect)
 	{
 		drawRects_[(int)layer].push_back(drawRect);
@@ -248,8 +278,9 @@ public:
 		return drawUIText(RenderLayer::NORMAL, drawText, anchor);
 	}
 
-	void render(const RenderCamera &cam);
+	void update(float dt);
 
+	void render(const RenderCamera &cam);
 	void renderUI(const RenderCamera &cam);
 
 	void uploadFluidAtlas(const void *data);
@@ -313,6 +344,9 @@ private:
 	std::vector<TextSegment> drawUITexts_[LAYER_COUNT];
 	std::vector<Anchor> drawUITextsAnchors_[LAYER_COUNT];
 	std::vector<TextCache::RenderedCodepoint> textUIBuffer_;
+
+	std::vector<DrawParticle> spawnedParticles_[LAYER_COUNT];
+	std::vector<ParticleMeta> spawnedParticleMetas_[LAYER_COUNT];
 };
 
 }

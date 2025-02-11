@@ -272,6 +272,7 @@ void Game::update(float dt)
 		debugShowMenu_ = !debugShowMenu_;
 	}
 
+	renderer_.update(dt);
 	world_->update(dt);
 
 	didScroll_ = 0;

@@ -99,6 +99,7 @@ private:
 	bool sprinting_ = false;
 	bool showInventory_ = false;
 	bool inFluid_ = false;
+	Cygnet::Color fluidColor_;
 	float stepTimer_ = 0;
 	int stepIndex_ = 0;
 	float interactTimer_ = 0;

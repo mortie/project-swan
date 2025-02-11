@@ -116,6 +116,15 @@ public:
 		soundPlayer_.play(asset, volume, h);
 	}
 
+	void spawnParticle(Cygnet::RenderLayer layer, Cygnet::Renderer::SpawnParticle p)
+	{
+		renderer_.spawnParticle(layer, p);
+	}
+	void spawnParticle(Cygnet::Renderer::SpawnParticle p)
+	{
+		renderer_.spawnParticle(p);
+	}
+
 	Vec2 getMousePos();
 	TilePos getMouseTile();
 

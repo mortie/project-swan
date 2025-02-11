@@ -277,20 +277,25 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		dynamic_cast<LadderTileTrait *>(midTile.traits.get()) ||
 		dynamic_cast<LadderTileTrait *>(topTile.traits.get());
 
-	// Figure out what fluids we're in
-	Swan::Fluid &fluidCenter = ctx.plane.fluids().getAtPos({
+	auto fluidCenterPos = Swan::Vec2{
 		physicsBody_.body.midX(),
 		physicsBody_.body.top() + 0.25f,
-	});
-	Swan::Fluid &fluidBottom = ctx.plane.fluids().getAtPos({
+	};
+
+	auto fluidBottomPos = Swan::Vec2{
 		physicsBody_.body.midX(),
 		physicsBody_.body.bottom() - 0.25f,
-	});
+	};
+
+	// Figure out what fluids we're in
+	Swan::Fluid &fluidCenter = ctx.plane.fluids().getAtPos(fluidCenterPos);
+	Swan::Fluid &fluidBottom = ctx.plane.fluids().getAtPos(fluidBottomPos);
 
 	{ // Splash sound
 		bool oldInFluid = inFluid_;
 		if (fluidCenter.density > 0 && fluidBottom.density > 0) {
 			inFluid_ = true;
+			fluidColor_ = fluidCenter.color;
 		}
 		else if (fluidCenter.density <= 0 && fluidBottom.density <= 0) {
 			inFluid_ = false;
@@ -298,9 +303,37 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 
 		if (inFluid_ && !oldInFluid) {
 			ctx.game.playSound(splashSound_);
+			for (int i = 0; i < 40; ++i) {
+				ctx.game.spawnParticle({
+					.pos = fluidCenterPos + Swan::Vec2{
+						(Swan::randfloat() - 0.5f) * 0.2f,
+						(Swan::randfloat() - 0.5f) * 0.2f,
+					},
+					.vel = {
+						(Swan::randfloat() * 6 - 3) + (physicsBody_.vel.x * 0.5f),
+						Swan::randfloat() * -3 - 4,
+					},
+					.color = fluidColor_,
+					.lifetime = 0.4f + Swan::randfloat() * 0.2f,
+				});
+			}
 		}
 		else if (!inFluid_ && oldInFluid) {
 			ctx.game.playSound(shortSplashSound_);
+			for (int i = 0; i < 20; ++i) {
+				ctx.game.spawnParticle({
+					.pos = fluidBottomPos + Swan::Vec2{
+						(Swan::randfloat() - 0.5f) * 0.2f,
+						(Swan::randfloat() - 0.5f) * 0.2f,
+					},
+					.vel = {
+						(Swan::randfloat() * 4 - 2) + (physicsBody_.vel.x * 0.5f),
+						Swan::randfloat() * -2 - 5,
+					},
+					.color = fluidColor_,
+					.lifetime = 0.4f + Swan::randfloat() * 0.2f,
+				});
+			}
 		}
 	}
 
