@@ -127,7 +127,7 @@ SoundPlayer::SoundPlayer()
 	}
 
 	err = Pa_OpenDefaultStream(
-		&stream_, 0, 2, paFloat32, 44100, paFramesPerBufferUnspecified,
+		&stream_, 0, 2, paFloat32, 48000, paFramesPerBufferUnspecified,
 		callback, context_.get());
 	if (err) {
 		warn << "Failed to open stream: " << Pa_GetErrorText(err);
