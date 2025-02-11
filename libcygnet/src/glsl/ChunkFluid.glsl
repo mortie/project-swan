@@ -25,6 +25,10 @@ out vec4 fragColor;
 
 void main() {
 	uint id = texture(fluidGrid, v_texCoord).r;
+	if (id == 0u) {
+		discard;
+	}
+
 	float pos = (float(id) + 0.5) / 256.0;
 	fragColor = texture(fluids, vec2(pos, 0.5));
 }

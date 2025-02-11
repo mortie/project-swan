@@ -352,6 +352,7 @@ struct RendererState {
 	Swan::Vec2i screenSize;
 	GLuint offscreenFramebuffer = 0;
 	GLuint offscreenTex = 0;
+	GLuint offscreenStencilTex = 0;
 	GLuint atlasTex = 0;
 	GLuint fluidAtlasTex = 0;
 	Swan::Vec2 atlasTexSize;
@@ -367,13 +368,18 @@ Renderer::Renderer(): state_(std::make_unique<RendererState>())
 
 	glGenTextures(1, &state_->offscreenTex);
 	glCheck();
+
+	glGenTextures(1, &state_->offscreenStencilTex);
+	glCheck();
 }
 
 Renderer::~Renderer()
 {
 	glDeleteFramebuffers(1, &state_->offscreenFramebuffer);
-	glDeleteTextures(1, &state_->offscreenFramebuffer);
+	glDeleteTextures(1, &state_->offscreenStencilTex);
+	glDeleteTextures(1, &state_->offscreenTex);
 	glDeleteTextures(1, &state_->atlasTex);
+	glDeleteTextures(1, &state_->fluidAtlasTex);
 	glCheck();
 }
 
@@ -421,11 +427,23 @@ void Renderer::render(const RenderCamera &cam)
 
 	if (state_->screenSize != cam.size) {
 		state_->screenSize = cam.size;
+
+		// Generate offscreen texture
 		glBindTexture(GL_TEXTURE_2D, state_->offscreenTex);
 		glCheck();
 		glTexImage2D(
 				GL_TEXTURE_2D, 0, GL_RGBA, cam.size.x, cam.size.y, 0,
 				GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glCheck();
+
+		// Generate offscreen stencil texture
+		glBindTexture(GL_TEXTURE_2D, state_->offscreenStencilTex);
+		glCheck();
+		glTexImage2D(
+				GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, cam.size.x, cam.size.y, 0,
+				GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glCheck();
@@ -437,6 +455,9 @@ void Renderer::render(const RenderCamera &cam)
 		glFramebufferTexture2D(
 				GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
 				state_->offscreenTex, 0);
+		glFramebufferTexture2D(
+				GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
+				state_->offscreenStencilTex, 0);
 		glCheck();
 	}
 
@@ -456,7 +477,7 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
 			state_->offscreenTex, 0);
 	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glCheck();
 
 	state_->chunkProg.draw(drawChunks_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
@@ -474,8 +495,19 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 	state_->rectProg.drawParticles(drawParticles_[idx], camMat);
 	drawParticles_[idx].clear();
 
-	state_->rectProg.drawParticles(spawnedParticles_[idx], camMat);
-	drawParticles_[idx].clear();
+	// Use the stencil buffer to ensure that spawned particles don't
+	// draw over each other.
+	// Note: this uses the same stencil buffer across all layers without clearing.
+	{
+		glEnable(GL_STENCIL_TEST);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+		glStencilFunc(GL_EQUAL, 0, 0x01);
+
+		state_->rectProg.drawParticles(spawnedParticles_[idx], camMat);
+		drawParticles_[idx].clear();
+
+		glDisable(GL_STENCIL_TEST);
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	state_->blendProg.draw(state_->offscreenTex);
