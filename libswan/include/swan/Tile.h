@@ -9,6 +9,7 @@
 #include "common.h"
 #include "assets.h"
 #include "Tool.h"
+#include "cygnet/util.h"
 
 namespace Swan {
 
@@ -66,6 +67,8 @@ struct Tile {
 	void (*onTileUpdate)(const Context &ctx, TilePos pos);
 
 	std::optional<std::string> tileEntity;
+
+	Cygnet::ByteColor particles[8][8];
 
 	std::shared_ptr<Traits> traits;
 

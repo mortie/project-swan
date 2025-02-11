@@ -42,6 +42,8 @@ public:
 		scheduledUpdatesA_.push_back(pos);
 	}
 
+	void spawnTileParticles(TilePos pos, const Tile &tile);
+
 	/*
 	 * Available to friends
 	 */
@@ -71,6 +73,7 @@ public:
 	using TileSystemImpl::placeTile;
 	using TileSystemImpl::raycast;
 	using TileSystemImpl::scheduleUpdate;
+	using TileSystemImpl::spawnTileParticles;
 
 	friend WorldPlane;
 };

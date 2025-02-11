@@ -107,7 +107,7 @@ public:
 	struct SpawnParticle {
 		Swan::Vec2 pos;
 		Swan::Vec2 vel;
-		Swan::Vec2 size = {0.1, 0.1};
+		Swan::Vec2 size = {1.0/8, 1.0/8};
 		Color color;
 		float lifetime = 1;
 	};

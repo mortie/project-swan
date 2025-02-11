@@ -183,17 +183,18 @@ void World::buildResources()
 			std::string tileName = cat(mod.name(), "::", tileBuilder.name);
 			Tile::ID tileId = tiles_.size();
 
+			tilesMap_[tileName] = tileId;
+			tiles_.push_back(Tile(tileId, tileName, std::move(tileBuilder)));
+			auto &tile = tiles_.back();
+
 			if (image) {
+				buildTileParticles(tile, image.value());
 				builder.addTile(tileId, std::move(image->data));
 			}
 			else {
 				warn << image.err();
 				builder.addTile(tileId, fallbackImage.data.get());
 			}
-
-			tilesMap_[tileName] = tileId;
-			tiles_.push_back(Tile(tileId, tileName, std::move(tileBuilder)));
-			auto &tile = tiles_.back();
 
 			if (tileBuilder.placeSound) {
 				tile.placeSound = getSound(tileBuilder.placeSound.value());
@@ -421,6 +422,45 @@ World::~World()
 	recipes_.clear();
 	worldGenFactories_.clear();
 	entCollFactories_.clear();
+}
+
+void World::buildTileParticles(Tile &tile, ImageAsset &image)
+{
+	auto averageColor = [&](int x, int y) {
+		Cygnet::Color avg = {0, 0, 0, 0};
+		float count = 0;
+
+		for (int ry = 0; ry < 4; ++ry) {
+			int py = (y * 4) + ry;
+			unsigned char *row = &image.data[py * 32 * 4];
+			for (int rx = 0; rx < 4; ++rx) {
+				int px = (x * 4) + rx;
+				unsigned char *pix = &row[px * 4];
+				if (pix[3] == 0) {
+					continue;
+				}
+
+				avg.r += pix[0];
+				avg.g += pix[1];
+				avg.b += pix[2];
+				avg.a += pix[3];
+				count += 1;
+			}
+		}
+
+		return Cygnet::ByteColor{
+			uint8_t(avg.r / count),
+			uint8_t(avg.g / count),
+			uint8_t(avg.b / count),
+			uint8_t(avg.a / count),
+		};
+	};
+
+	for (int y = 0; y < 8; ++y) {
+		for (int x = 0; x < 8; ++x) {
+			tile.particles[y][x] = averageColor(x, y);
+		}
+	}
 }
 
 void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos)

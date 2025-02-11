@@ -109,6 +109,7 @@ bool TileSystemImpl::breakTile(TilePos pos)
 	}
 
 	Tile &tile = plane_.world_->getTileByID(id);
+	spawnTileParticles(pos, tile);
 
 	if (tile.breakSound) {
 		plane_.world_->game_->playSound(tile.breakSound);
@@ -272,6 +273,35 @@ Raycast TileSystemImpl::raycast(
 			.pos = tp,
 			.face = face,
 		};
+	}
+}
+
+void TileSystemImpl::spawnTileParticles(TilePos pos, const Tile &tile)
+{
+	// We normally want the particles to be drawn in front of tiles,
+	// which means using layer NORMAL.
+	// However, we also want it to be drawn behind fluids.
+	// Therefore, if the tile is in a fluid, braw it in layer BEHIND.
+	auto &fluid = plane_.fluids().getAtPos(pos.as<float>().add(0.5, 0.5));
+	auto layer = fluid.id > World::SOLID_FLUID_ID
+		? Cygnet::RenderLayer::BEHIND 
+		: Cygnet::RenderLayer::NORMAL;
+
+	for (int y = 0; y < 8; ++y) {
+		float fy = pos.y + (y / 8.0);
+		for (int x = 0; x < 8; ++x) {
+			float fx = pos.x + (x / 8.0);
+
+			plane_.world_->game_->spawnParticle(layer, {
+				.pos = {fx, fy},
+				.vel = {
+					(randfloat() - 0.5f) * 2.0f,
+					-randfloat() * 2.0f,
+				},
+				.color = tile.particles[y][x],
+				.lifetime = (randfloat() * 0.5f) + 0.1f,
+			});
+		}
 	}
 }
 
