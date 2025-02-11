@@ -138,6 +138,7 @@ void World::buildResources()
 	for (auto &tile: tiles_) {
 		tile.stepSounds[0] = fallbackSound;
 		tile.stepSounds[1] = fallbackSound;
+		tile.placeSound = fallbackSound;
 		tile.breakSound = fallbackSound;
 	}
 
@@ -194,11 +195,18 @@ void World::buildResources()
 			tiles_.push_back(Tile(tileId, tileName, std::move(tileBuilder)));
 			auto &tile = tiles_.back();
 
+			if (tileBuilder.placeSound) {
+				tile.placeSound = getSound(tileBuilder.placeSound.value());
+			}
+			else {
+				tile.placeSound = thudSound;
+			}
+
 			if (tileBuilder.breakSound) {
 				tile.breakSound = getSound(tileBuilder.breakSound.value());
 			}
 			else {
-				tile.breakSound = thudSound;
+				tile.breakSound = tile.placeSound;
 			}
 
 			if (tileBuilder.stepSound) {

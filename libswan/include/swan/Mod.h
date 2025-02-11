@@ -29,6 +29,12 @@ public:
 	void registerSprite(std::string &&sprite);
 	void registerSound(std::string &&sprite);
 
+	void registerStepSounds(std::string &&sprite)
+	{
+		registerSound(sprite + "1");
+		registerSound(sprite + "2");
+	}
+
 	template<typename WG>
 	void registerWorldGen(std::string name);
 

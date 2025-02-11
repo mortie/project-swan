@@ -33,6 +33,7 @@ struct Tile {
 		ToolSet breakableBy = Tool::NONE;
 
 		std::optional<std::string> stepSound = std::nullopt;
+		std::optional<std::string> placeSound = std::nullopt;
 		std::optional<std::string> breakSound = std::nullopt;
 		std::optional<std::string> droppedItem = std::nullopt;
 
@@ -56,6 +57,7 @@ struct Tile {
 	ToolSet breakableBy;
 
 	SoundAsset *stepSounds[2] = {nullptr, nullptr};
+	SoundAsset *placeSound = nullptr;
 	SoundAsset *breakSound = nullptr;
 	Item *droppedItem = nullptr;
 

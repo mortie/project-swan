@@ -155,9 +155,7 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 	auto &newTile = plane_.world_->getTileByID(id);
 
 	plane_.world_->game_->playSound(oldTile.breakSound);
-
-	// TODO: play a separate place sound
-	plane_.world_->game_->playSound(newTile.breakSound);
+	plane_.world_->game_->playSound(newTile.placeSound);
 
 	// We didn't run the onBreak and despawn tile entities yet,
 	// so let's do that

@@ -30,14 +30,14 @@ public:
 		registerSprite("ui/selected-slot");
 		registerSprite("ui/hotbar");
 
-		registerSound("sounds/step/grass1");
-		registerSound("sounds/step/grass2");
-		registerSound("sounds/step/stone1");
-		registerSound("sounds/step/stone2");
-		registerSound("sounds/step/sand1");
-		registerSound("sounds/step/sand2");
-		registerSound("sounds/break/dirt");
-		registerSound("sounds/break/leaves");
+		registerSound("sounds/break/glass");
+		registerSound("sounds/place/dirt");
+		registerSound("sounds/place/leaves");
+		registerStepSounds("sounds/step/glass");
+		registerStepSounds("sounds/step/grass");
+		registerStepSounds("sounds/step/metal");
+		registerStepSounds("sounds/step/sand");
+		registerStepSounds("sounds/step/stone");
 		registerSound("sounds/snap");
 
 		registerTile({
@@ -50,7 +50,7 @@ public:
 			.name = "dirt",
 			.image = "core::tiles/dirt",
 			.stepSound = "core::sounds/step/grass",
-			.breakSound = "core::sounds/break/dirt",
+			.placeSound = "core::sounds/place/dirt",
 			.droppedItem = "core::dirt",
 		});
 		registerTile({
@@ -65,13 +65,14 @@ public:
 			.image = "core::tiles/glass",
 			.isOpaque = false,
 			.breakableBy = Swan::Tool::HAND,
-			.stepSound = "core::sounds/step/sand",
+			.stepSound = "core::sounds/step/glass",
+			.breakSound = "core::sounds/break/glass",
 		});
 		registerTile({
 			.name = "grass",
 			.image = "core::tiles/grass",
 			.stepSound = "core::sounds/step/grass",
-			.breakSound = "core::sounds/break/dirt",
+			.placeSound = "core::sounds/place/dirt",
 			.droppedItem = "core::dirt",
 		});
 		registerTile({
@@ -102,7 +103,7 @@ public:
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.stepSound = "core::sounds/step/grass",
-			.breakSound = "core::sounds/break/leaves",
+			.placeSound = "core::sounds/place/leaves",
 			.onBreak = dropRandomItemCount<"core::stick">,
 			.onTileUpdate = breakTreeLeavesIfFloating,
 			.traits = std::make_shared<TreeLeavesTrait>(),
@@ -114,7 +115,7 @@ public:
 			.isSolid = false,
 			.isReplacable = true,
 			.breakableBy = Swan::Tool::HAND,
-			.breakSound = "core::sounds/break/leaves",
+			.placeSound = "core::sounds/place/leaves",
 			.onBreak = dropRandomItemCount<"core::straw">,
 			.onTileUpdate = breakIfFloating,
 		});
@@ -123,7 +124,7 @@ public:
 			.image = "core::tiles/flora/dead-shrub",
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
-			.breakSound = "core::sounds/break/leaves",
+			.placeSound = "core::sounds/place/leaves",
 			.onBreak = dropRandomItemCount<"core::stick">,
 			.onTileUpdate = breakIfFloating,
 		});
