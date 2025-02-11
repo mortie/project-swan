@@ -307,7 +307,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 				ctx.game.spawnParticle({
 					.pos = fluidCenterPos + Swan::Vec2{
 						(Swan::randfloat() - 0.5f) * 0.2f,
-						(Swan::randfloat() - 0.5f) * 0.2f,
+						(Swan::randfloat() - 0.5f) * 0.2f + 0.2f,
 					},
 					.vel = {
 						(Swan::randfloat() * 6 - 3) + (physicsBody_.vel.x * 0.5f),
@@ -324,7 +324,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 				ctx.game.spawnParticle({
 					.pos = fluidBottomPos + Swan::Vec2{
 						(Swan::randfloat() - 0.5f) * 0.3f,
-						(Swan::randfloat() - 0.6f) * 0.3f,
+						(Swan::randfloat() - 0.6f) * 0.3f + 0.4f,
 					},
 					.vel = {
 						(Swan::randfloat() * 4 - 2) + (physicsBody_.vel.x * 0.5f),
