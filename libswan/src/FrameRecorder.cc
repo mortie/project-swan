@@ -327,6 +327,7 @@ bool FrameRecorder::openEncoder(int w, int h, int fps, const char *path)
 	enc.codecCtx->time_base = AVRational(1, fps * 1000);
 	enc.codecCtx->framerate = AVRational(fps, 1);
 	enc.codecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
+	enc.codecCtx->bit_rate = 2 * 1000 * 1000;
 
 	if (avcodec_open2(enc.codecCtx, encoder, nullptr) < 0) {
 		warn << "Failed to open codec";

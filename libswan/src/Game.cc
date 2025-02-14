@@ -168,7 +168,7 @@ void Game::draw()
 				frameRecorder_.emplace();
 
 				int fps = 60;
-				int width = 720;
+				int width = 1920;
 				int height = int((float(width) / cam_.size.x) * cam_.size.y);
 
 				fixedDeltaTime_ = 1.0 / fps;
