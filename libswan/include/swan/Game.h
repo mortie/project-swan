@@ -2,7 +2,6 @@
 
 #include <bitset>
 #include <chrono>
-#include <istream>
 #include <string>
 #include <span>
 #include <cygnet/Renderer.h>
@@ -17,6 +16,7 @@
 #include "common.h"
 #include "World.h"
 #include "SoundPlayer.h"
+#include "FrameRecorder.h"
 
 namespace Swan {
 
@@ -129,13 +129,9 @@ public:
 	TilePos getMouseTile();
 
 	Cygnet::Color backgroundColor();
-	void draw();
 
-	void render()
-	{
-		renderer_.render(cam_);
-		renderer_.renderUI(uiCam_);
-	}
+	void draw();
+	void render();
 
 	void update(float dt);
 	void tick(float dt);
@@ -156,6 +152,7 @@ public:
 	bool triggerSave_ = false;
 	bool enableVSync_ = false;
 	float timeScale_ = 1.0;
+	std::optional<float> fixedDeltaTime_;
 	float fpsLimit_ = 0;
 
 	int fps_ = 0;
@@ -189,6 +186,7 @@ private:
 	bool hasSortedItems_ = false;
 
 	SoundPlayer soundPlayer_;
+	std::optional<FrameRecorder> frameRecorder_;
 
 	double didScroll_ = 0;
 };

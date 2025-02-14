@@ -9,6 +9,11 @@ swan_proto = custom_target(
   ],
 )
 
+libswan_cflags = []
+if libavcodec.found() and libavutil.found() and libswscale.found()
+  libswan_cflags += '-DSWAN_FFMPEG_AVAILABLE'
+endif
+
 libswan = declare_dependency(
   include_directories: ['include', '.'],
   dependencies: [
@@ -27,6 +32,7 @@ libswan = declare_dependency(
     'src/Clock.cc',
     'src/drawutil.cc',
     'src/EntityCollection.cc',
+    'src/FrameRecorder.cc',
     'src/Game.cc',
     'src/ItemStack.cc',
     'src/LightServer.cc',
@@ -37,9 +43,10 @@ libswan = declare_dependency(
     swan_proto,
     dependencies: [
       common, libcygnet, libthreads, libstb_image,
-      libstb_vorbis, libcpptoml, libdl, libz, libglfw3,
-      libimgui, libportaudio, libcapnp,
+      libstb_vorbis, libcpptoml, libdl, libz, libgl, libglfw3,
+      libimgui, libportaudio, libcapnp, libavcodec, libavutil, libswscale,
     ] + maybe_libtracy,
+    cpp_args: libswan_cflags,
     install: true,
     install_rpath: get_option('libdir'),
     include_directories: 'include/swan',

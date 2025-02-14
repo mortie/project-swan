@@ -61,6 +61,10 @@ enum class RenderLayer {
 	MAX = FOREGROUND,
 };
 
+struct RenderProps {
+	bool vflip = false;
+};
+
 class Renderer {
 public:
 	using TileID = uint16_t;
@@ -280,8 +284,9 @@ public:
 
 	void update(float dt);
 
-	void render(const RenderCamera &cam);
-	void renderUI(const RenderCamera &cam);
+	void clear();
+	void render(const RenderCamera &cam, RenderProps props = {});
+	void renderUI(const RenderCamera &cam, RenderProps props = {});
 
 	void uploadFluidAtlas(const void *data);
 
@@ -319,7 +324,7 @@ public:
 	}
 
 private:
-	void renderLayer(RenderLayer layer, Mat3gf camMat);
+	void renderLayer(RenderLayer layer, Mat3gf camMat, GLint screenFBO);
 	void renderUILayer(RenderLayer layer, Swan::Vec2 scale, Mat3gf camMat);
 
 	Swan::Vec2 winScale_ = {1, 1};

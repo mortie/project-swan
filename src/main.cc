@@ -243,6 +243,12 @@ int main(int argc, char **argv)
 			slowFrames = 0;
 		}
 
+		// If the game has a fixed delta time,
+		// ignore anything we've measured so far.
+		if (game.fixedDeltaTime_) {
+			dt = *game.fixedDeltaTime_;
+		}
+
 		// Scale delta time by time scale.
 		// Everything after this will use a scaled delta time
 		// rather than the real delta time.

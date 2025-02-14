@@ -2,18 +2,15 @@
 
 #include <algorithm>
 #include <cmath>
-#include <fstream>
 #include <math.h>
 #include <time.h>
 #include <memory>
-#include <filesystem>
 #include <imgui/imgui.h>
 
 #include <capnp/message.h>
 #include <capnp/serialize-packed.h>
 #include <kj/filesystem.h>
 
-#include "capnp/serialize.h"
 #include "swan.capnp.h"
 
 #include "traits/InventoryTrait.h"
@@ -156,6 +153,34 @@ void Game::draw()
 			triggerSave_ = true;
 		}
 
+		if (!FrameRecorder::isAvailable()) {
+			ImGui::Text("Screen recording unavailable");
+		}
+		else if (frameRecorder_) {
+			if (ImGui::Button("End recording")) {
+				frameRecorder_->end();
+				frameRecorder_.reset();
+				fixedDeltaTime_.reset();
+			}
+		}
+		else {
+			if (ImGui::Button("Begin recording")) {
+				frameRecorder_.emplace();
+				int fps = int(fpsLimit_);
+				if (!fps) {
+					fps = 60;
+				}
+
+				info << "Starting recording at " << fps << " FPS...";
+				fixedDeltaTime_ = 1.0 / fps;
+				if (!frameRecorder_->begin(cam_.size.x, cam_.size.y, fps, "rec.h264")) {
+					info << "Recording failed!";
+					frameRecorder_.reset();
+					fixedDeltaTime_.reset();
+				}
+			}
+		}
+
 		ImGui::SliderFloat(
 			"Time scale", &timeScale_, 0, 3.0, "%.03f",
 			ImGuiSliderFlags_Logarithmic);
@@ -255,6 +280,22 @@ void Game::draw()
 	}
 
 	world_->draw(renderer_);
+}
+
+void Game::render()
+{
+	renderer_.render(cam_);
+	renderer_.renderUI(uiCam_);
+
+	// TODO: Render only once to the frame recorder, and draw the texture to put it on the screen
+	if (frameRecorder_) {
+		frameRecorder_->beginFrame(backgroundColor());
+		renderer_.render(cam_, {.vflip = true});
+		renderer_.renderUI(uiCam_, {.vflip = true});
+		frameRecorder_->endFrame();
+	}
+
+	renderer_.clear();
 }
 
 void Game::update(float dt)

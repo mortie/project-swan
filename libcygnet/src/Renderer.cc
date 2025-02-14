@@ -409,7 +409,21 @@ void Renderer::update(float dt)
 	}
 }
 
-void Renderer::render(const RenderCamera &cam)
+void Renderer::clear()
+{
+	for (int idx = 0; idx <= (int)RenderLayer::MAX; ++idx) {
+		drawChunks_[idx].clear();
+		drawTiles_[idx].clear();
+		drawSprites_[idx].clear();
+		drawChunkFluids_[idx].clear();
+		drawParticles_[idx].clear();
+		drawChunkShadows_[idx].clear();
+		drawRects_[idx].clear();
+		drawTexts_[idx].clear();
+	}
+}
+
+void Renderer::render(const RenderCamera &cam, RenderProps props)
 {
 	Mat3gf camMat;
 	camMat.translate(-cam.pos);
@@ -424,6 +438,14 @@ void Renderer::render(const RenderCamera &cam)
 		winScale_ = {1, 1 / ratio};
 		camMat.scale({cam.zoom, -cam.zoom * ratio});
 	}
+
+	if (props.vflip) {
+		camMat.scale({1, -1});
+	}
+
+	GLint screenFBO;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &screenFBO);
+	glCheck();
 
 	if (state_->screenSize != cam.size) {
 		state_->screenSize = cam.size;
@@ -462,13 +484,13 @@ void Renderer::render(const RenderCamera &cam)
 	}
 
 	for (int i = 0; i <= (int)RenderLayer::MAX; ++i) {
-		renderLayer(RenderLayer(i), camMat);
+		renderLayer(RenderLayer(i), camMat, screenFBO);
 	}
 
 	textBuffer_.clear();
 }
 
-void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
+void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat, GLint screenFBO)
 {
 	int idx = (int)layer;
 
@@ -481,19 +503,10 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 	glCheck();
 
 	state_->chunkProg.draw(drawChunks_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
-	drawChunks_[idx].clear();
-
 	state_->tileProg.draw(drawTiles_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
-	drawTiles_[idx].clear();
-
 	state_->spriteProg.draw(drawSprites_[idx], camMat);
-	drawSprites_[idx].clear();
-
 	state_->chunkFluidProg.draw(drawChunkFluids_[idx], camMat, state_->fluidAtlasTex);
-	drawChunkFluids_[idx].clear();
-
 	state_->rectProg.drawParticles(drawParticles_[idx], camMat);
-	drawParticles_[idx].clear();
 
 	// Use the stencil buffer to ensure that spawned particles don't
 	// draw over each other.
@@ -509,22 +522,16 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 		glDisable(GL_STENCIL_TEST);
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, screenFBO);
 	state_->blendProg.draw(state_->offscreenTex);
-
 	state_->chunkShadowProg.draw(drawChunkShadows_[idx], camMat);
-	drawChunkShadows_[idx].clear();
-
 	state_->rectProg.draw(drawRects_[idx], camMat);
-	drawRects_[idx].clear();
-
 	state_->textProg.draw(drawTexts_[idx], textBuffer_, camMat, 1.0 / 128);
-	drawTexts_[idx].clear();
 
 	glCheck();
 }
 
-void Renderer::renderUI(const RenderCamera &cam)
+void Renderer::renderUI(const RenderCamera &cam, RenderProps props)
 {
 	Mat3gf camMat;
 
@@ -540,6 +547,10 @@ void Renderer::renderUI(const RenderCamera &cam)
 	}
 
 	Swan::Vec2 scale = winScale_ / cam.zoom;
+
+	if (props.vflip){ 
+		camMat.scale({1, -1});
+	}
 
 	for (int i = 0; i <= (int)RenderLayer::MAX; ++i) {
 		renderUILayer(RenderLayer(i), scale, camMat);

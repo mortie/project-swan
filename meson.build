@@ -27,6 +27,10 @@ endif
 
 libglfw3 = dependency('glfw3')
 
+libavcodec = dependency('libavcodec')
+libavutil = dependency('libavutil')
+libswscale = dependency('libswscale')
+
 portaudio_options = cmake.subproject_options()
 portaudio_options.append_compile_args('c', '-w') # Disable warnings
 portaudio_options.add_cmake_defines({
