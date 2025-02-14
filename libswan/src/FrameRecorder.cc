@@ -78,9 +78,12 @@ bool FrameRecorder::begin(int w, int h, int fps, const char *path)
 {
 	end();
 
-	// Width must be a power of 2
+	// Width and height must be a power of 2
 	if (w % 2) {
 		w -= 1;
+	}
+	if (h % 2) {
+		h -= 1;
 	}
 
 	impl_ = std::make_unique<Impl>();
