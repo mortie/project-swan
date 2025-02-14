@@ -11,6 +11,7 @@ FrameRecorder::~FrameRecorder() = default;
 
 bool FrameRecorder::isAvailable() { return false; }
 bool FrameRecorder::begin(int, int, int, const char *) { return false; }
+void FrameRecorder::end() {}
 void FrameRecorder::beginFrame(Cygnet::Color) {}
 void FrameRecorder::endFrame() {}
 void FrameRecorder::flush() {}
