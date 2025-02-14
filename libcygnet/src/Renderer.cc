@@ -517,7 +517,6 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat, GLint screenFBO)
 		glStencilFunc(GL_EQUAL, 0, 0x01);
 
 		state_->rectProg.drawParticles(spawnedParticles_[idx], camMat);
-		drawParticles_[idx].clear();
 
 		glDisable(GL_STENCIL_TEST);
 	}
