@@ -50,6 +50,15 @@ struct RenderCamera {
 	Swan::Vec2 pos = {0, 0};
 	Swan::Vec2i size = {1, 1};
 	float zoom = 1;
+
+	RenderCamera withSize(Swan::Vec2i newSize)
+	{
+		return {
+			.pos = pos,
+			.size = newSize,
+			.zoom = zoom,
+		};
+	}
 };
 
 enum class RenderLayer {

@@ -27,9 +27,20 @@ endif
 
 libglfw3 = dependency('glfw3')
 
-libavcodec = dependency('libavcodec', required: false)
-libavutil = dependency('libavutil', required: false)
-libswscale = dependency('libswscale', required: false)
+libffmpeg = [
+  dependency('libavcodec', required: false),
+  dependency('libavutil', required: false),
+  dependency('libswscale', required: false),
+  dependency('libavformat', required: false),
+]
+
+has_ffmpeg = true
+foreach lib: libffmpeg
+  if not lib.found()
+    has_ffmpeg = false
+    break
+  endif
+endforeach
 
 portaudio_options = cmake.subproject_options()
 portaudio_options.append_compile_args('c', '-w') # Disable warnings

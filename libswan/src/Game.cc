@@ -166,14 +166,14 @@ void Game::draw()
 		else {
 			if (ImGui::Button("Begin recording")) {
 				frameRecorder_.emplace();
-				int fps = int(fpsLimit_);
-				if (!fps) {
-					fps = 60;
-				}
 
-				info << "Starting recording at " << fps << " FPS...";
+				int fps = 60;
+				int width = 720;
+				int height = int((float(width) / cam_.size.x) * cam_.size.y);
+
 				fixedDeltaTime_ = 1.0 / fps;
-				if (!frameRecorder_->begin(cam_.size.x, cam_.size.y, fps, "rec.h264")) {
+				fpsLimit_ = fps;
+				if (!frameRecorder_->begin(width, height, fps, "rec.mp4")) {
 					info << "Recording failed!";
 					frameRecorder_.reset();
 					fixedDeltaTime_.reset();
@@ -287,11 +287,11 @@ void Game::render()
 	renderer_.render(cam_);
 	renderer_.renderUI(uiCam_);
 
-	// TODO: Render only once to the frame recorder, and draw the texture to put it on the screen
 	if (frameRecorder_) {
+		auto size = frameRecorder_->size();
 		frameRecorder_->beginFrame(backgroundColor());
-		renderer_.render(cam_, {.vflip = true});
-		renderer_.renderUI(uiCam_, {.vflip = true});
+		renderer_.render(cam_.withSize(size), {.vflip = true});
+		renderer_.renderUI(uiCam_.withSize(size), {.vflip = true});
 		frameRecorder_->endFrame();
 	}
 

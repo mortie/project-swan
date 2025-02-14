@@ -10,7 +10,7 @@ swan_proto = custom_target(
 )
 
 libswan_cflags = []
-if libavcodec.found() and libavutil.found() and libswscale.found()
+if has_ffmpeg
   libswan_cflags += '-DSWAN_FFMPEG_AVAILABLE'
 endif
 
@@ -44,7 +44,7 @@ libswan = declare_dependency(
     dependencies: [
       common, libcygnet, libthreads, libstb_image,
       libstb_vorbis, libcpptoml, libdl, libz, libgl, libglfw3,
-      libimgui, libportaudio, libcapnp, libavcodec, libavutil, libswscale,
+      libimgui, libportaudio, libcapnp, libffmpeg,
     ] + maybe_libtracy,
     cpp_args: libswan_cflags,
     install: true,
