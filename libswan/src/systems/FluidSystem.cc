@@ -242,6 +242,24 @@ void FluidSystemImpl::draw(Cygnet::Renderer &rnd)
 
 void FluidSystemImpl::update(float dt)
 {
+	auto spawnMist = [&](const FluidParticle &particle) {
+		for (int i = 0; i < int(randfloat() * 6); ++i) {
+			plane_.world_->game_->spawnParticle({
+				.pos = {
+					particle.pos.x + (randfloat() - 0.5f) * 0.2f,
+					particle.pos.y,
+				},
+				.vel = {
+					(randfloat() - 0.5f) * 4.0f,
+					randfloat() * -2.0f - 2.0f,
+				},
+				.size = {1.0 / 8, 1.0 / 8},
+				.color = particle.color,
+				.lifetime = randfloat() * 0.3f + 0.1f,
+			});
+		}
+	};
+
 	for (size_t i = 0; i < particles_.size();) {
 		auto &particle = particles_[i];
 
@@ -263,6 +281,7 @@ void FluidSystemImpl::update(float dt)
 		FluidCellRef self = getFluidCell(pos);
 		if (self.isAir()) {
 			self.set(particle.id, vx);
+			spawnMist(particle);
 			triggerUpdateAround(pos);
 			particles_[i] = particles_.back();
 			particles_.pop_back();
@@ -271,6 +290,7 @@ void FluidSystemImpl::update(float dt)
 
 		if (nearbyX.isAir()) {
 			nearbyX.set(particle.id, vx);
+			spawnMist(particle);
 			triggerUpdateAround(pos.add(vx, 0));
 			particles_[i] = particles_.back();
 			particles_.pop_back();
@@ -279,6 +299,7 @@ void FluidSystemImpl::update(float dt)
 
 		if (nearbyY.isAir()) {
 			nearbyY.set(particle.id, vx);
+			spawnMist(particle);
 			triggerUpdateAround(pos.add(0, vy));
 			particles_[i] = particles_.back();
 			particles_.pop_back();
@@ -288,6 +309,7 @@ void FluidSystemImpl::update(float dt)
 		auto invNearbyY = getFluidCell(pos.add(0, -vy));
 		if (invNearbyY.isAir()) {
 			invNearbyY.set(particle.id, vx);
+			spawnMist(particle);
 			triggerUpdateAround(pos.add(0, -vy));
 			particles_[i] = particles_.back();
 			particles_.pop_back();
