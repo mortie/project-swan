@@ -204,8 +204,8 @@ public:
 			.kind = "crafting",
 		});
 		registerRecipe({
-			.inputs = {{4, "core::wood-pole"}},
-			.output = {4, "core::torch"},
+			.inputs = {{1, "core::stick"}, {1, "core::coal"}},
+			.output = {2, "core::torch"},
 			.kind = "crafting",
 		});
 		registerRecipe({
