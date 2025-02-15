@@ -11,8 +11,9 @@
 
 #include "Blend.glsl.h"
 #include "Chunk.glsl.h"
-#include "ChunkShadow.glsl.h"
 #include "ChunkFluid.glsl.h"
+#include "ChunkShadow.glsl.h"
+#include "Particle.glsl.h"
 #include "Rect.glsl.h"
 #include "Sprite.glsl.h"
 #include "Text.glsl.h"
@@ -129,6 +130,47 @@ struct ChunkShadowProg: public GlProg<Shader::ChunkShadow> {
 	}
 };
 
+struct ParticleProg: public GlProg<Shader::Particle> {
+	void draw(std::span<Renderer::DrawParticle> drawParticles, const Mat3gf &cam)
+	{
+		if (drawParticles.size() == 0) {
+			return;
+		}
+
+		glUseProgram(id());
+		glCheck();
+
+		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
+		glCheck();
+
+		auto prevColor = drawParticles.front().color;
+		glUniform4f(
+			shader.uniFill, prevColor.r, prevColor.g,
+			prevColor.b, prevColor.a);
+
+		auto prevSize = drawParticles.front().size;
+		glUniform2f(shader.uniSize, prevSize.x, prevSize.y);
+
+		for (auto &particle: drawParticles) {
+			if (particle.color != prevColor) {
+				prevColor = particle.color;
+				glUniform4f(
+					shader.uniFill, prevColor.r, prevColor.g,
+					prevColor.b, prevColor.a);
+			}
+
+			if (particle.size != prevSize) {
+				prevSize = particle.size;
+				glUniform2f(shader.uniSize, prevSize.x, prevSize.y);
+			}
+
+			glUniform2f(shader.uniPos, particle.pos.x, particle.pos.y);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			glCheck();
+		}
+	}
+};
+
 struct RectProg: public GlProg<Shader::Rect> {
 	void draw(std::span<Renderer::DrawRect> drawRects, const Mat3gf &cam)
 	{
@@ -151,53 +193,6 @@ struct RectProg: public GlProg<Shader::Rect> {
 			glUniform4f(
 				shader.uniFill, rect.fill.r, rect.fill.g,
 				rect.fill.b, rect.fill.a);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-			glCheck();
-		}
-	}
-
-	// I should probably eventually make a bespoke particle renderer,
-	// but this works for now
-	void drawParticles(std::span<Renderer::DrawParticle> drawParticles, const Mat3gf &cam)
-	{
-		if (drawParticles.size() == 0) {
-			return;
-		}
-
-		glUseProgram(id());
-		glCheck();
-
-		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
-		glCheck();
-
-		auto prevColor = drawParticles.front().color;
-		glUniform4f(
-			shader.uniOutline, prevColor.r, prevColor.g,
-			prevColor.b, prevColor.a);
-		glUniform4f(
-			shader.uniFill, prevColor.r, prevColor.g,
-			prevColor.b, prevColor.a);
-
-		auto prevSize = drawParticles.front().size;
-		glUniform2f(shader.uniSize, prevSize.x, prevSize.y);
-
-		for (auto &particle: drawParticles) {
-			if (particle.color != prevColor) {
-				prevColor = particle.color;
-				glUniform4f(
-					shader.uniOutline, prevColor.r, prevColor.g,
-					prevColor.b, prevColor.a);
-				glUniform4f(
-					shader.uniFill, prevColor.r, prevColor.g,
-					prevColor.b, prevColor.a);
-			}
-
-			if (particle.size != prevSize) {
-				prevSize = particle.size;
-				glUniform2f(shader.uniSize, prevSize.x, prevSize.y);
-			}
-
-			glUniform2f(shader.uniPos, particle.pos.x, particle.pos.y);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			glCheck();
 		}
@@ -344,6 +339,7 @@ struct RendererState {
 	ChunkProg chunkProg{};
 	ChunkFluidProg chunkFluidProg{};
 	ChunkShadowProg chunkShadowProg{};
+	ParticleProg particleProg{};
 	RectProg rectProg{};
 	SpriteProg spriteProg{};
 	TextProg textProg{};
@@ -506,7 +502,7 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat, GLint screenFBO)
 	state_->tileProg.draw(drawTiles_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
 	state_->spriteProg.draw(drawSprites_[idx], camMat);
 	state_->chunkFluidProg.draw(drawChunkFluids_[idx], camMat, state_->fluidAtlasTex);
-	state_->rectProg.drawParticles(drawParticles_[idx], camMat);
+	state_->particleProg.draw(drawParticles_[idx], camMat);
 
 	// Use the stencil buffer to ensure that spawned particles don't
 	// draw over each other.
@@ -516,7 +512,7 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat, GLint screenFBO)
 		glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
 		glStencilFunc(GL_EQUAL, 0, 0x01);
 
-		state_->rectProg.drawParticles(spawnedParticles_[idx], camMat);
+		state_->particleProg.draw(spawnedParticles_[idx], camMat);
 
 		glDisable(GL_STENCIL_TEST);
 	}
