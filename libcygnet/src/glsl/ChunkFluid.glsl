@@ -25,7 +25,7 @@ out vec4 fragColor;
 
 void main() {
 	uint id = texture(fluidGrid, v_texCoord).r;
-	if (id == 0u) {
+	if (id < 2u) {
 		discard;
 	}
 
