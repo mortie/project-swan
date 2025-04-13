@@ -57,7 +57,7 @@ void registerOutcrop(Swan::Mod &mod, const char *name)
 {
 	mod.registerTile({
 		.name = Swan::cat(name, "-outcrop"),
-		.image = Swan::cat("core::tiles/outcrops/", name, "::normal"),
+		.image = Swan::cat("core::tiles/geo/", name, "-outcrop::normal"),
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = Swan::cat("core::", name),
@@ -67,7 +67,7 @@ void registerOutcrop(Swan::Mod &mod, const char *name)
 
 	mod.registerTile({
 		.name = Swan::cat(name, "-outcrop::hanging"),
-		.image = Swan::cat("core::tiles/outcrops/", name, "::hanging"),
+		.image = Swan::cat("core::tiles/geo/", name, "-outcrop::hanging"),
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = Swan::cat("core::", name),
@@ -76,7 +76,7 @@ void registerOutcrop(Swan::Mod &mod, const char *name)
 
 	mod.registerTile({
 		.name = Swan::cat(name, "-outcrop::left"),
-		.image = Swan::cat("core::tiles/outcrops/", name, "::left"),
+		.image = Swan::cat("core::tiles/geo/", name, "-outcrop::left"),
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = Swan::cat("core::", name),
@@ -85,7 +85,7 @@ void registerOutcrop(Swan::Mod &mod, const char *name)
 
 	mod.registerTile({
 		.name = Swan::cat(name, "-outcrop::right"),
-		.image = Swan::cat("core::tiles/outcrops/", name, "::right"),
+		.image = Swan::cat("core::tiles/geo/", name, "-outcrop::right"),
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = Swan::cat("core::", name),

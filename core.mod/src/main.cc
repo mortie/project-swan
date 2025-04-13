@@ -130,6 +130,13 @@ public:
 			.onBreak = dropRandomItemCount<"core::stick">,
 			.onTileUpdate = breakIfFloating,
 		});
+		registerTile({
+			.name = "boulder",
+			.image = "core::tiles/geo/boulder",
+			.isSolid = false,
+			.breakableBy = Swan::Tool::HAND,
+			.onBreak = dropRandomItemCount<"core::pebble">,
+		});
 
 		registerTile({
 			.name = "water",
@@ -165,6 +172,10 @@ public:
 			},
 		});
 
+		registerItem({
+			.name = "pebble",
+			.image = "core::items/pebble",
+		});
 		registerItem({
 			.name = "coal",
 			.image = "core::items/coal",
