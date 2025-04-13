@@ -15,6 +15,7 @@ PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
 	PlayerEntity(ctx)
 {
 	physicsBody_.body.pos = pos;
+	spawnPoint_ = pos.as<int>();
 }
 
 void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
@@ -337,6 +338,11 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		}
 	}
 
+	// Go back to spawn point
+	if (ctx.game.wasKeyPressed(GLFW_KEY_B)) {
+		physicsBody_.body.pos = spawnPoint_;
+	}
+
 	// Select item slots
 	if (ctx.game.wasKeyPressed(GLFW_KEY_1)) {
 		selectedInventorySlot_ = 0;
@@ -603,6 +609,9 @@ void PlayerEntity::serialize(
 	physicsBody_.serialize(w.initBody());
 	inventory_.serialize(w.initInventory());
 	heldStack_.serialize(w.initHeldStack());
+	auto sp = w.initSpawnPoint();
+	sp.setX(spawnPoint_.x);
+	sp.setY(spawnPoint_.y);
 }
 
 void PlayerEntity::deserialize(
@@ -611,6 +620,11 @@ void PlayerEntity::deserialize(
 	physicsBody_.deserialize(r.getBody());
 	inventory_.deserialize(ctx, r.getInventory());
 	heldStack_.deserialize(ctx, r.getHeldStack());
+
+	if (r.hasSpawnPoint()) {
+		auto sp = r.getSpawnPoint();
+		spawnPoint_ = {sp.getX(), sp.getY()};
+	}
 }
 
 void PlayerEntity::onLeftClick(const Swan::Context &ctx)

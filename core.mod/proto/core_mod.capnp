@@ -8,6 +8,7 @@ using import "/swan.capnp".BasicInventory;
 using import "/swan.capnp".TileEntity;
 using import "/swan.capnp".ItemStack;
 using import "/swan.capnp".Direction;
+using import "/swan.capnp".Vec2i;
 
 struct DynamiteEntity {
 	body @0 :BasicPhysicsBody;
@@ -29,6 +30,7 @@ struct PlayerEntity {
 	body @0 :BasicPhysicsBody;
 	inventory @1 :BasicInventory;
 	heldStack @2 :ItemStack;
+	spawnPoint @3 :Vec2i;
 }
 
 struct SpiderEntity {

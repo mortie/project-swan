@@ -103,6 +103,7 @@ private:
 	float stepTimer_ = 0;
 	int stepIndex_ = 0;
 	float interactTimer_ = 0;
+	Swan::TilePos spawnPoint_;
 
 	Swan::TilePos breakPos_;
 	Swan::TilePos placePos_;
