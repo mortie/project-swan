@@ -157,7 +157,7 @@ public:
 
 		registerItem({
 			.name = "axe",
-			.image = "core::items/axe",
+			.image = "core::tools/axe",
 			.tool = Swan::Tool::AXE,
 		});
 		registerItem({
@@ -227,6 +227,15 @@ public:
 		registerRecipe({
 			.inputs = {{2, "core::rope"}, {2, "core::stick"}},
 			.output = {1, "core::rope-ladder"},
+			.kind = "crafting",
+		});
+		registerRecipe({
+			.inputs = {
+				{1, "core::rope"},
+				{2, "core::stick"},
+				{2, "core::pebble"},
+			},
+			.output = {1, "core::axe"},
 			.kind = "crafting",
 		});
 
