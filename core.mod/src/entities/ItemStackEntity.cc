@@ -26,7 +26,10 @@ ItemStackEntity::ItemStackEntity(
 void ItemStackEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 {
 	rnd.drawTile({
-		Cygnet::Mat3gf{}.scale({0.5, 0.5}).translate(physicsBody_.body.pos),
+		Cygnet::Mat3gf{}
+			.translate({0, item_->yOffset})
+			.scale({0.5, 0.5})
+			.translate(physicsBody_.body.pos),
 		item_->id, 0.8,
 	});
 }

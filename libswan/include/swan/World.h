@@ -158,6 +158,7 @@ private:
 	std::vector<ModWrapper> loadMods(std::span<std::string> paths);
 	void buildResources();
 	void buildTileParticles(Tile &tile, ImageAsset &image);
+	float findImageYOffset(ImageAsset &image);
 
 	ChunkRenderer chunkRenderer_;
 	WorldPlane::ID currentPlane_ = 0;

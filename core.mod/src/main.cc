@@ -135,7 +135,7 @@ public:
 			.image = "core::tiles/geo/boulder",
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
-			.onBreak = dropRandomItemCount<"core::pebble">,
+			.onBreak = dropRandomItemCount<"core::pebble", 5>,
 		});
 
 		registerTile({

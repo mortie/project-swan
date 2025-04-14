@@ -31,6 +31,7 @@ struct Item {
 	ToolSet tool;
 
 	bool hidden = true;
+	float yOffset = 0;
 
 	void (*onActivate)(
 		const Context &ctx, InventorySlot slot, Vec2 pos, Vec2 dir);

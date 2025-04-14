@@ -8,6 +8,7 @@
 #include "Clock.h"
 #include "assets.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
+#include "swan/constants.h"
 
 namespace Swan {
 
@@ -172,10 +173,19 @@ void World::buildResources()
 		}
 	};
 
+	// Count number of tiles.
+	// This lets us avoid re-allocating the tiles vector
+	// while building tiles.
+	size_t tileCount = tiles_.size();
+	for (auto &mod: mods_) {
+		tileCount += mod.tiles().size();
+	}
+
 	// Need to fill in every tile before we do items,
 	// because all items will end up after all tiles in the tile atlas.
 	// In the rendering system, there's no real difference between a tile
 	// and an item.
+	tiles_.reserve(tileCount);
 	for (auto &mod: mods_) {
 		for (auto &tileBuilder: mod.tiles()) {
 			auto image = loadTileImage(tileBuilder.image);
@@ -187,8 +197,10 @@ void World::buildResources()
 			tiles_.push_back(Tile(tileId, tileName, std::move(tileBuilder)));
 			auto &tile = tiles_.back();
 
+			float yOffset = 0;
 			if (image) {
-				buildTileParticles(tile, image.value());
+				buildTileParticles(tile, *image);
+				yOffset = findImageYOffset(*image);
 				builder.addTile(tileId, std::move(image->data));
 			}
 			else {
@@ -223,16 +235,14 @@ void World::buildResources()
 				tile.stepSounds[0] = fallbackSound;
 				tile.stepSounds[1] = fallbackSound;
 			}
-		}
-	}
 
-	// Create items representing tiles.
-	for (auto &mod: mods_) {
-		for (auto &tileBuilder: mod.tiles()) {
-			auto &tile = tiles_[tilesMap_[cat(mod.name(), "::", tileBuilder.name)]];
+			/*
+			 * Create item representing the tile
+			 */
+
 			auto &item = items_[tile.name] = Item(tile.id, tile.name, {});
-
 			item.tile = &tile;
+			item.yOffset = yOffset;
 
 			// Tiles whose names contain '::' are "variants".
 			// Convention is to have one tile without a '::' which represents
@@ -242,7 +252,8 @@ void World::buildResources()
 	}
 
 	// Put all items after all the tiles
-	Tile::ID nextItemId = tiles_.size();
+	Tile::ID nextItemId = tileCount;
+	assert(nextItemId == tiles_.size());
 
 	// Load all items which aren't just tiles in disguise.
 	for (auto &mod: mods_) {
@@ -252,7 +263,9 @@ void World::buildResources()
 			std::string itemName = cat(mod.name(), "::", itemBuilder.name);
 			Tile::ID itemId = nextItemId++;
 
+			float yOffset = 0;
 			if (image) {
+				yOffset = findImageYOffset(*image);
 				builder.addTile(itemId, std::move(image->data));
 			}
 			else {
@@ -261,6 +274,7 @@ void World::buildResources()
 			}
 
 			auto &item = items_[itemName] = Item(itemId, itemName, itemBuilder);
+			item.yOffset = yOffset;
 			item.hidden = false;
 			if (itemBuilder.tile) {
 				item.tile = &getTile(itemBuilder.tile.value());
@@ -426,6 +440,11 @@ World::~World()
 
 void World::buildTileParticles(Tile &tile, ImageAsset &image)
 {
+	// This code has hard-coded assumptions that tiles are 32x32
+	// and particles are 8x8.
+	static_assert(TILE_SIZE == 32);
+	static_assert(sizeof(tile.particles) == 8 * 8 * 4);
+
 	auto averageColor = [&](int x, int y) {
 		Cygnet::Color avg = {0, 0, 0, 0};
 		float count = 0;
@@ -461,6 +480,24 @@ void World::buildTileParticles(Tile &tile, ImageAsset &image)
 			tile.particles[y][x] = averageColor(x, y);
 		}
 	}
+}
+
+float World::findImageYOffset(ImageAsset &image)
+{
+	int y;
+	bool done = false;
+	for (y = 0; y < TILE_SIZE && !done; ++y) {
+		unsigned char *row = &image.data[(TILE_SIZE - y - 1) * TILE_SIZE * 4];
+		for (int x = 0; x < TILE_SIZE; ++x) {
+			unsigned char *pix = &row[x * 4];
+			if (pix[3] > 0) {
+				done = true;
+				break;
+			}
+		}
+	}
+
+	return y / float(TILE_SIZE);
 }
 
 void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos)
