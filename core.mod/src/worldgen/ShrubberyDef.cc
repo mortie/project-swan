@@ -21,7 +21,11 @@ void ShrubberyDef::generateArea(Area &area)
 		Swan::Tile::ID tile = area({x, surfaceLevel - 1});
 		Swan::Tile::ID tileBelow = area({x, surfaceLevel});
 		if (tileBelow == tGrass_ && tile == Swan::World::AIR_TILE_ID) {
-			area({x, surfaceLevel - 1}) = tDeadShrub_;
+			if (Swan::random(seed_ + x) % 10 > 3) {
+				area({x, surfaceLevel - 1}) = tDeadShrub_;
+			} else {
+				area({x, surfaceLevel - 1}) = tBoulder_;
+			}
 		}
 	}
 }

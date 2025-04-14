@@ -13,6 +13,7 @@ public:
 	ShrubberyDef(Swan::World &world, uint32_t seed):
 		tGrass_(world.getTileID("core::grass")),
 		tDeadShrub_(world.getTileID("core::dead-shrub")),
+		tBoulder_(world.getTileID("core::boulder")),
 		seed_(seed)
 	{}
 
@@ -21,6 +22,7 @@ public:
 private:
 	Swan::Tile::ID tGrass_;
 	Swan::Tile::ID tDeadShrub_;
+	Swan::Tile::ID tBoulder_;
 
 	uint32_t seed_;
 	siv::PerlinNoise perlin_{seed_};
