@@ -19,17 +19,22 @@ void OreDef::generateArea(Area &area)
 				continue;
 			}
 
+			auto *set = &tCoalOutcrop_;
+			if (Swan::random(x * seed_) % 32 < 4) {
+				set = &tSulphurOutcrop_;
+			}
+
 			if (area({x, y + 1}) == tStone_) {
-				id = tCoalOutcrop_.normal;
+				id = set->normal;
 			}
 			else if (area({x - 1, y}) == tStone_) {
-				id = tCoalOutcrop_.left;
+				id = set->left;
 			}
 			else if (area({x + 1, y}) == tStone_) {
-				id = tCoalOutcrop_.right;
+				id = set->right;
 			}
 			else if (area({x, y - 1}) == tStone_) {
-				id = tCoalOutcrop_.hanging;
+				id = set->hanging;
 			}
 		}
 	}
