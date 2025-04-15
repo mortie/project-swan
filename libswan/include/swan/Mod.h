@@ -28,6 +28,7 @@ public:
 	void registerRecipe(Recipe::Builder &&recipe);
 	void registerSprite(std::string &&sprite);
 	void registerSound(std::string &&sprite);
+	void registerRecipeKind(std::string &&kind);
 
 	void registerStepSounds(std::string &&sprite)
 	{
@@ -54,6 +55,7 @@ private:
 	std::vector<std::string> sounds_;
 	std::vector<WorldGen::Factory> worldGens_;
 	std::vector<EntityCollection::Factory> entities_;
+	std::vector<std::string> recipeKinds_;
 
 	friend ModWrapper;
 };
@@ -106,6 +108,11 @@ public:
 	const std::vector<std::string> &sounds()
 	{
 		return mod_->sounds_;
+	}
+
+	const std::vector<std::string> &recipeKinds()
+	{
+		return mod_->recipeKinds_;
 	}
 
 	const std::vector<WorldGen::Factory> &worldGens()

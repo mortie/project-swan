@@ -137,7 +137,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	ImGui::Begin("Crafting");
 	std::string text;
 	for (const auto &recipe: ctx.world.recipes_) {
-		if (recipe.kind != "crafting") {
+		if (recipe.kind != "core::crafting") {
 			continue;
 		}
 

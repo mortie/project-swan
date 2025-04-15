@@ -36,6 +36,11 @@ inline void Mod::registerSound(std::string &&sound)
 	sounds_.push_back(std::move(sound));
 }
 
+inline void Mod::registerRecipeKind(std::string &&kind)
+{
+	recipeKinds_.push_back(std::move(kind));
+}
+
 template<typename WG>
 inline void Mod::registerWorldGen(std::string name)
 {

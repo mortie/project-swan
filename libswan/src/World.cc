@@ -332,10 +332,24 @@ void World::buildResources()
 		builder.addFluid(fluids_.back().id, fluids_.back().color);
 	}
 
+	// Load recipe kinds.
+	std::unordered_set<std::string> recipeKinds;
+	for (auto &mod: mods_) {
+		for (auto &recipeType: mod.recipeKinds()) {
+			std::string name = cat(mod.name(), "::", recipeType);
+			recipeKinds.insert(std::move(name));
+		}
+	}
+
 	// Load recipes.
 	std::vector<Recipe::Items> recipeInputs;
 	for (auto &mod: mods_) {
 		for (auto &recipeBuilder: mod.recipes()) {
+			if (!recipeKinds.contains(recipeBuilder.kind)) {
+				warn << "Unknown recipe kind: " << recipeBuilder.kind;
+				continue;
+			}
+
 			recipeInputs.clear();
 			for (const auto &inputBuilder: recipeBuilder.inputs) {
 				recipeInputs.push_back({

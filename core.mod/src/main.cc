@@ -204,30 +204,31 @@ public:
 			.density = 1.5,
 		});
 
+		registerRecipeKind("crafting");
 		registerRecipe({
 			.inputs = {{1, "core::stick"}},
 			.output = {1, "core::wood-pole"},
-			.kind = "crafting",
+			.kind = "core::crafting",
 		});
 		registerRecipe({
 			.inputs = {{1, "core::tree-trunk"}},
 			.output = {8, "core::stick"},
-			.kind = "crafting",
+			.kind = "core::crafting",
 		});
 		registerRecipe({
 			.inputs = {{1, "core::stick"}, {1, "core::coal"}},
 			.output = {2, "core::torch"},
-			.kind = "crafting",
+			.kind = "core::crafting",
 		});
 		registerRecipe({
 			.inputs = {{2, "core::straw"}},
 			.output = {1, "core::rope"},
-			.kind = "crafting",
+			.kind = "core::crafting",
 		});
 		registerRecipe({
 			.inputs = {{2, "core::rope"}, {2, "core::stick"}},
 			.output = {1, "core::rope-ladder"},
-			.kind = "crafting",
+			.kind = "core::crafting",
 		});
 		registerRecipe({
 			.inputs = {
@@ -236,7 +237,7 @@ public:
 				{2, "core::pebble"},
 			},
 			.output = {1, "core::axe"},
-			.kind = "crafting",
+			.kind = "core::crafting",
 		});
 
 		registerWorldGen<DefaultWorldGen>("default");
