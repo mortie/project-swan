@@ -1,0 +1,5 @@
+[variants]
+left = ['img:wall.png']
+right = ['img:wall.png', 'hflip']
+normal = ['img:normal.png']
+hanging = ['img:normal.png', 'vflip']

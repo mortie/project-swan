@@ -152,6 +152,7 @@ public:
 		registerItemFan(*this);
 		registerRopeLadder(*this);
 		registerOutcrop(*this, "coal");
+		registerOutcrop(*this, "sulphur");
 		registerGlassPipe(*this);
 		registerTorch(*this);
 
@@ -179,6 +180,10 @@ public:
 		registerItem({
 			.name = "coal",
 			.image = "core::items/coal",
+		});
+		registerItem({
+			.name = "sulphur",
+			.image = "core::items/sulphur",
 		});
 		registerItem({
 			.name = "straw",
@@ -237,6 +242,11 @@ public:
 				{2, "core::pebble"},
 			},
 			.output = {1, "core::axe"},
+			.kind = "core::crafting",
+		});
+		registerRecipe({
+			.inputs = {{1, "core::sulphur"}},
+			.output = {1, "core::dynamite"},
 			.kind = "core::crafting",
 		});
 
