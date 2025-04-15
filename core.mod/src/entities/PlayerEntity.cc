@@ -443,8 +443,8 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		if (physicsBody_.vel.y > LADDER_MAX_VEL) {
 			physicsBody_.vel.y = LADDER_MAX_VEL;
 		}
-		else if (physicsBody_.vel.y < -LADDER_MAX_VEL) {
-			physicsBody_.vel.y = -LADDER_MAX_VEL;
+		else if (physicsBody_.vel.y < -LADDER_MAX_VEL && physicsBody_.force.y < 0) {
+			physicsBody_.force.y = 0;
 		}
 	}
 
