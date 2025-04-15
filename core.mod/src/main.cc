@@ -118,7 +118,7 @@ public:
 			.isReplacable = true,
 			.breakableBy = Swan::Tool::HAND,
 			.placeSound = "core::sounds/place/leaves",
-			.onBreak = dropRandomItemCount<"core::straw">,
+			.onBreak = dropRandomItemCount<"core::fiber">,
 			.onTileUpdate = breakIfFloating,
 		});
 		registerTile({
@@ -186,8 +186,8 @@ public:
 			.image = "core::items/sulphur",
 		});
 		registerItem({
-			.name = "straw",
-			.image = "core::items/straw",
+			.name = "fiber",
+			.image = "core::items/fiber",
 		});
 		registerItem({
 			.name = "stick",
@@ -226,7 +226,7 @@ public:
 			.kind = "core::crafting",
 		});
 		registerRecipe({
-			.inputs = {{2, "core::straw"}},
+			.inputs = {{2, "core::fiber"}},
 			.output = {1, "core::rope"},
 			.kind = "core::crafting",
 		});
