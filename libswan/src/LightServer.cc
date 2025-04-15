@@ -508,48 +508,48 @@ void LightServer::processChunkSmoothing(LightChunk &chunk, ChunkPos cpos)
 
 	calc(1, CHUNK_WIDTH - 1, 1, CHUNK_HEIGHT - 1,
 		[&](int x, int y) {
-		return getLight(chunk, x, y - 1);
-	},
+			return getLight(chunk, x, y - 1);
+		},
 		[&](int x, int y) {
-		return getLight(chunk, x, y + 1);
-	},
+			return getLight(chunk, x, y + 1);
+		},
 		[&](int x, int y) {
-		return getLight(chunk, x - 1, y);
-	},
+			return getLight(chunk, x - 1, y);
+		},
 		[&](int x, int y) {
-		return getLight(chunk, x + 1, y);
-	});
+			return getLight(chunk, x + 1, y);
+		});
 
 	if (tc) {
 		calc(1, CHUNK_WIDTH - 1, 0, 1,
 			[&](int x, int y) {
-			return tc->lightBuffer()[(CHUNK_HEIGHT - 1) * CHUNK_WIDTH + x];
-		},
+				return tc->lightBuffer()[(CHUNK_HEIGHT - 1) * CHUNK_WIDTH + x];
+			},
 			[&](int x, int y) {
-			return getLight(chunk, x, y + 1);
-		},
+				return getLight(chunk, x, y + 1);
+			},
 			[&](int x, int y) {
-			return getLight(chunk, x - 1, y);
-		},
+				return getLight(chunk, x - 1, y);
+			},
 			[&](int x, int y) {
-			return getLight(chunk, x + 1, y);
-		});
+				return getLight(chunk, x + 1, y);
+			});
 	}
 
 	if (bc) {
 		calc(1, CHUNK_WIDTH - 1, CHUNK_HEIGHT - 1, CHUNK_HEIGHT,
 			[&](int x, int y) {
-			return getLight(chunk, x, y - 1);
-		},
+				return getLight(chunk, x, y - 1);
+			},
 			[&](int x, int y) {
-			return bc->lightBuffer()[x];
-		},
+				return bc->lightBuffer()[x];
+			},
 			[&](int x, int y) {
-			return getLight(chunk, x - 1, y);
-		},
+				return getLight(chunk, x - 1, y);
+			},
 			[&](int x, int y) {
-			return getLight(chunk, x + 1, y);
-		});
+				return getLight(chunk, x + 1, y);
+			});
 	}
 
 	if (lc) {
@@ -571,81 +571,80 @@ void LightServer::processChunkSmoothing(LightChunk &chunk, ChunkPos cpos)
 	if (rc) {
 		calc(CHUNK_WIDTH - 1, CHUNK_WIDTH, 1, CHUNK_HEIGHT - 1,
 			[&](int x, int y) {
-			return getLight(chunk, x, y - 1);
-		},
+				return getLight(chunk, x, y - 1);
+			},
 			[&](int x, int y) {
-			return getLight(chunk, x, y + 1);
-		},
+				return getLight(chunk, x, y + 1);
+			},
 			[&](int x, int y) {
-			return getLight(chunk, x - 1, y);
-		},
+				return getLight(chunk, x - 1, y);
+			},
 			[&](int x, int y) {
-			return rc->lightBuffer()[y * CHUNK_WIDTH];
-		});
+				return rc->lightBuffer()[y * CHUNK_WIDTH];
+			});
 	}
 
 	if (tc && lc) {
 		calc(0, 1, 0, 1,
 			[&](int x, int y) {
-			return tc->lightBuffer()[(CHUNK_HEIGHT - 1) * CHUNK_WIDTH + x];
-		},
+				return tc->lightBuffer()[(CHUNK_HEIGHT - 1) * CHUNK_WIDTH + x];
+			},
 			[&](int x, int y) {
-			return getLight(chunk, x, y + 1);
-		},
+				return getLight(chunk, x, y + 1);
+			},
 			[&](int x, int y) {
-			return lc->lightBuffer()[y * CHUNK_WIDTH + CHUNK_WIDTH - 1];
-		},
+				return lc->lightBuffer()[y * CHUNK_WIDTH + CHUNK_WIDTH - 1];
+			},
 			[&](int x, int y) {
-			return getLight(chunk, x + 1, y);
-		});
+				return getLight(chunk, x + 1, y);
+			});
 	}
 
 	if (tc && rc) {
 		calc(CHUNK_WIDTH - 1, CHUNK_WIDTH, 0, 1,
 			[&](int x, int y) {
-			return tc->lightBuffer()[(CHUNK_HEIGHT - 1) * CHUNK_WIDTH + x];
-		},
+				return tc->lightBuffer()[(CHUNK_HEIGHT - 1) * CHUNK_WIDTH + x];
+			},
 			[&](int x, int y) {
-			return getLight(chunk, x, y + 1);
-		},
+				return getLight(chunk, x, y + 1);
+			},
 			[&](int x, int y) {
-			return getLight(chunk, x - 1, y);
-		},
+				return getLight(chunk, x - 1, y);
+			},
 			[&](int x, int y) {
-			return rc->lightBuffer()[y * CHUNK_WIDTH];
-		});
+				return rc->lightBuffer()[y * CHUNK_WIDTH];
+			});
 	}
 
 	if (bc && lc) {
 		calc(0, 1, CHUNK_HEIGHT - 1, CHUNK_HEIGHT,
 			[&](int x, int y) {
-			return getLight(chunk, x, y - 1);
-		},
+				return getLight(chunk, x, y - 1);
+			},
 			[&](int x, int y) {
-			return bc->lightBuffer()[x];
-		},
+				return bc->lightBuffer()[x];
+			},
 			[&](int x, int y) {
-			return lc->lightBuffer()[y * CHUNK_WIDTH + CHUNK_WIDTH - 1];
-		},
+				return lc->lightBuffer()[y * CHUNK_WIDTH + CHUNK_WIDTH - 1];
+			},
 			[&](int x, int y) {
-			return getLight(chunk, x + 1, y);
-		});
+				return getLight(chunk, x + 1, y);
+			});
 	}
 
 	if (bc && rc) {
 		calc(CHUNK_WIDTH - 1, CHUNK_WIDTH, CHUNK_HEIGHT - 1, CHUNK_HEIGHT,
 			[&](int x, int y) {
-			return getLight(chunk, x, y - 1);
-		},
+				return getLight(chunk, x, y - 1);
+			},
 			[&](int x, int y) {
-			return bc->lightBuffer()[x];
-		},
+				return bc->lightBuffer()[x]; },
 			[&](int x, int y) {
-			return getLight(chunk, x - 1, y);
-		},
+				return getLight(chunk, x - 1, y);
+			},
 			[&](int x, int y) {
-			return rc->lightBuffer()[y * CHUNK_WIDTH];
-		});
+				return rc->lightBuffer()[y * CHUNK_WIDTH];
+			});
 	}
 }
 
