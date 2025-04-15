@@ -20,6 +20,8 @@ PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
 
 void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 {
+	rnd.setGamma(gamma_);
+
 	Cygnet::Mat3gf mat;
 
 	// Currently, there is no sprite for running left.
@@ -597,7 +599,23 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 }
 
 void PlayerEntity::tick(const Swan::Context &ctx, float dt)
-{}
+{
+	auto lightLevel = ctx.plane.tiles().getLightLevel(
+		physicsBody_.body.center().as<int>());
+	float desiredGamma = 1.0 / ((lightLevel / 256.0) + 1) * 2;
+
+	if (gamma_ < desiredGamma) {
+		gamma_ += 0.01;
+		if (gamma_ > desiredGamma) {
+			gamma_ = desiredGamma;
+		}
+	} else if (gamma_ > desiredGamma) {
+		gamma_ -= 0.01;
+		if (gamma_ < desiredGamma) {
+			gamma_ = desiredGamma;
+		}
+	}
+}
 
 void PlayerEntity::serialize(
 	const Swan::Context &ctx, Proto::Builder w)

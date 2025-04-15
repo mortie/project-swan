@@ -99,6 +99,13 @@ Tile::ID TileSystemImpl::getID(TilePos pos)
 	return chunk.getTileID(rp);
 }
 
+uint8_t TileSystemImpl::getLightLevel(TilePos pos)
+{
+	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
+	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+	return chunk.getLightLevel(rp);
+}
+
 bool TileSystemImpl::breakTile(TilePos pos)
 {
 	// If the block is already air, do nothing

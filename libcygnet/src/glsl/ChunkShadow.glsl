@@ -1,5 +1,6 @@
 uniform mat3 camera;
 uniform vec2 pos;
+uniform float gamma;
 uniform sampler2D tex;
 
 // @Vertex
@@ -24,5 +25,5 @@ out vec4 fragColor;
 
 void main() {
 	vec4 color = texture(tex, v_texCoord);
-	fragColor = vec4(0, 0, 0, 1.0 - color.r);
+	fragColor = vec4(0, 0, 0, 1.0f - (color.r * gamma));
 }

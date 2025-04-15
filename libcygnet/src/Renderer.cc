@@ -22,12 +22,14 @@
 namespace Cygnet {
 
 struct BlendProg: public GlProg<Shader::Blend> {
-	void draw(GLuint tex)
+	void draw(GLuint tex, float gamma)
 	{
 		glUseProgram(id());
 		glCheck();
 
 		glUniform1i(shader.uniTex, 0);
+		glCheck();
+		glUniform1f(shader.uniDesaturate, std::min(gamma - 1.0, 1.0));
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);
@@ -107,7 +109,10 @@ struct ChunkFluidProg: public GlProg<Shader::ChunkFluid> {
 };
 
 struct ChunkShadowProg: public GlProg<Shader::ChunkShadow> {
-	void draw(std::span<Renderer::DrawChunkShadow> drawChunkShadows, const Mat3gf &cam)
+	void draw(
+		std::span<Renderer::DrawChunkShadow> drawChunkShadows,
+		const Mat3gf &cam,
+		float desaturate)
 	{
 		if (drawChunkShadows.size() == 0) {
 			return;
@@ -116,6 +121,7 @@ struct ChunkShadowProg: public GlProg<Shader::ChunkShadow> {
 		glUseProgram(id());
 		glCheck();
 
+		glUniform1f(shader.uniGamma, desaturate);
 		glUniform1i(shader.uniTex, 0);
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
 		glCheck();
@@ -518,8 +524,8 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat, GLint screenFBO)
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, screenFBO);
-	state_->blendProg.draw(state_->offscreenTex);
-	state_->chunkShadowProg.draw(drawChunkShadows_[idx], camMat);
+	state_->blendProg.draw(state_->offscreenTex, gamma_);
+	state_->chunkShadowProg.draw(drawChunkShadows_[idx], camMat, gamma_);
 	state_->rectProg.draw(drawRects_[idx], camMat);
 	state_->textProg.draw(drawTexts_[idx], textBuffer_, camMat, 1.0 / 128);
 
@@ -552,6 +558,7 @@ void Renderer::renderUI(const RenderCamera &cam, RenderProps props)
 	}
 
 	textUIBuffer_.clear();
+	gamma_ = 1;
 }
 
 void Renderer::renderUILayer(RenderLayer layer, Swan::Vec2 scale, Mat3gf camMat)

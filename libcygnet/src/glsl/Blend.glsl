@@ -1,4 +1,5 @@
 uniform sampler2D tex;
+uniform float desaturate;
 
 // @Vertex
 in vec2 vertex;
@@ -21,6 +22,10 @@ in vec2 v_texCoord;
 out vec4 fragColor;
 
 void main() {
-	//gl_FragColor = vec4(v_texCoord.x, v_texCoord.y, 0, 1);
-	fragColor = texture(tex, v_texCoord);
+	vec4 color = texture(tex, v_texCoord);
+	vec3 rgb = color.rgb;
+	float avg = (rgb.r + rgb.g + rgb.b) / 3.0f;
+	vec3 grey = vec3(avg, avg, avg);
+	rgb = (rgb * (1.0 - desaturate)) + (grey * desaturate);
+	fragColor = vec4(rgb.r, rgb.g, rgb.b, color.a);
 }

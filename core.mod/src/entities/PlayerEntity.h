@@ -105,6 +105,8 @@ private:
 	float interactTimer_ = 0;
 	Swan::TilePos spawnPoint_;
 
+	float gamma_ = 1;
+
 	Swan::TilePos breakPos_;
 	Swan::TilePos placePos_;
 

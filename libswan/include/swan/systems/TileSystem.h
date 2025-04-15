@@ -31,6 +31,7 @@ public:
 
 	Tile &get(TilePos pos);
 	Tile::ID getID(TilePos pos);
+	uint8_t getLightLevel(TilePos pos);
 
 	bool breakTile(TilePos pos);
 	bool placeTile(TilePos pos, Tile::ID id);
@@ -69,6 +70,7 @@ public:
 	using TileSystemImpl::setIDWithoutUpdate;
 	using TileSystemImpl::get;
 	using TileSystemImpl::getID;
+	using TileSystemImpl::getLightLevel;
 	using TileSystemImpl::breakTile;
 	using TileSystemImpl::placeTile;
 	using TileSystemImpl::raycast;

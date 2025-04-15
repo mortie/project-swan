@@ -327,6 +327,11 @@ public:
 	RenderSprite createSprite(void *data, int width, int height, int fh, int repeatFrom);
 	void destroySprite(RenderSprite sprite);
 
+	void setGamma(float gamma)
+	{
+		gamma_ = gamma;
+	}
+
 	Swan::Vec2 winScale()
 	{
 		return winScale_;
@@ -339,6 +344,8 @@ private:
 	Swan::Vec2 winScale_ = {1, 1};
 
 	std::unique_ptr<RendererState> state_;
+
+	float gamma_;
 
 	std::vector<DrawChunk> drawChunks_[LAYER_COUNT];
 	std::vector<DrawChunkFluid> drawChunkFluids_[LAYER_COUNT];

@@ -49,11 +49,13 @@ static void onTorchUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 
 void registerTorch(Swan::Mod &mod)
 {
+	float lightLevel = 80 / 255.0;
+
 	mod.registerTile({
 		.name = "torch",
 		.image = "core::tiles/torch::normal",
 		.isSolid = false,
-		.lightLevel = 80 / 255.0,
+		.lightLevel = lightLevel,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::torch",
 		.onSpawn = onTorchSpawn,
@@ -64,7 +66,7 @@ void registerTorch(Swan::Mod &mod)
 		.name = "torch::left",
 		.image = "core::tiles/torch::left",
 		.isSolid = false,
-		.lightLevel = 80 / 255.0,
+		.lightLevel = lightLevel,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::torch",
 		.onTileUpdate = onTorchUpdate,
@@ -74,7 +76,7 @@ void registerTorch(Swan::Mod &mod)
 		.name = "torch::right",
 		.image = "core::tiles/torch::right",
 		.isSolid = false,
-		.lightLevel = 80 / 255.0,
+		.lightLevel = lightLevel,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::torch",
 		.onTileUpdate = onTorchUpdate,
