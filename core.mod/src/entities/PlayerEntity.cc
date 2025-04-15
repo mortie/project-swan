@@ -136,11 +136,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 
 	ImGui::Begin("Crafting");
 	std::string text;
-	for (const auto &recipe: ctx.world.recipes_) {
-		if (recipe.kind != "core::crafting") {
-			continue;
-		}
-
+	for (auto &recipe: ctx.world.getRecipes("core::crafting")) {
 		bool craftable = true;
 		for (const auto &input: recipe.inputs) {
 			if (!itemCounts.contains(input.item)) {

@@ -333,11 +333,10 @@ void World::buildResources()
 	}
 
 	// Load recipe kinds.
-	std::unordered_set<std::string> recipeKinds;
 	for (auto &mod: mods_) {
 		for (auto &recipeType: mod.recipeKinds()) {
 			std::string name = cat(mod.name(), "::", recipeType);
-			recipeKinds.insert(std::move(name));
+			recipes_[std::move(name)] = {};
 		}
 	}
 
@@ -345,7 +344,8 @@ void World::buildResources()
 	std::vector<Recipe::Items> recipeInputs;
 	for (auto &mod: mods_) {
 		for (auto &recipeBuilder: mod.recipes()) {
-			if (!recipeKinds.contains(recipeBuilder.kind)) {
+			auto vec = recipes_.find(recipeBuilder.kind);
+			if (vec == recipes_.end()) {
 				warn << "Unknown recipe kind: " << recipeBuilder.kind;
 				continue;
 			}
@@ -358,7 +358,7 @@ void World::buildResources()
 				});
 			}
 
-			recipes_.push_back({
+			vec->second.push_back({
 				.inputs = recipeInputs, // Copy, don't move, so we shrink to fit
 				.output = {
 					.count = recipeBuilder.output.count,

@@ -118,6 +118,17 @@ public:
 		return fluids_[INVALID_FLUID_ID];
 	}
 
+	std::span<Recipe> getRecipes(std::string_view kind)
+	{
+		auto it = recipes_.find(kind);
+		if (it == recipes_.end()) {
+			warn << "Attempt to access unknown recipe kind " << kind;
+			return {};
+		}
+
+		return it->second;
+	}
+
 	void serialize(proto::World::Builder w);
 	void deserialize(proto::World::Reader r);
 
@@ -129,7 +140,7 @@ public:
 	HashMap<Item> items_;
 	std::vector<Fluid> fluids_;
 	HashMap<Fluid::ID> fluidsMap_;
-	std::vector<Recipe> recipes_;
+	HashMap<std::vector<Recipe>> recipes_;
 	HashMap<WorldGen::Factory> worldGenFactories_;
 	HashMap<EntityCollection::Factory> entCollFactories_;
 
