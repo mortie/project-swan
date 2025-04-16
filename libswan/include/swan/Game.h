@@ -22,6 +22,8 @@ namespace Swan {
 
 class Game {
 public:
+	using SoundHandle = std::shared_ptr<SoundPlayer::Handle>;
+
 	void createWorld(
 		const std::string &worldgen, std::span<std::string> modPaths);
 
@@ -96,25 +98,14 @@ public:
 		return didScroll_;
 	}
 
-	void playSound(SoundAsset *asset)
-	{
-		soundPlayer_.play(asset, 0.5);
-	}
-
-	void playSound(SoundAsset *asset, float volume)
-	{
-		soundPlayer_.play(asset, volume);
-	}
-
-	void playSound(SoundAsset *asset, std::shared_ptr<SoundPlayer::Handle> h)
-	{
-		soundPlayer_.play(asset, 0.5, h);
-	}
-
-	void playSound(SoundAsset *asset, float volume, std::shared_ptr<SoundPlayer::Handle> h)
-	{
-		soundPlayer_.play(asset, volume, h);
-	}
+	void playSound(SoundAsset *asset);
+	void playSound(SoundAsset *asset, float volume);
+	void playSound(SoundAsset *asset, Vec2 center);
+	void playSound(SoundAsset *asset, float volume, Vec2 center);
+	void playSound(SoundAsset *asset, SoundHandle handle);
+	void playSound(SoundAsset *asset, float volume, SoundHandle handle);
+	void playSound(SoundAsset *asset, Vec2 center, SoundHandle handle);
+	void playSound(SoundAsset *asset, float volume, Vec2 center, SoundHandle handle);
 
 	void spawnParticle(Cygnet::RenderLayer layer, Cygnet::Renderer::SpawnParticle p)
 	{
@@ -190,5 +181,50 @@ private:
 
 	double didScroll_ = 0;
 };
+
+
+inline void Game::playSound(SoundAsset *asset)
+{
+	soundPlayer_.play(asset, 0.5, {});
+}
+
+inline void Game::playSound(SoundAsset *asset, float volume)
+{
+	soundPlayer_.play(asset, volume, {});
+}
+
+inline void Game::playSound(SoundAsset *asset, Vec2 center)
+{
+	soundPlayer_.play(asset, 0.5, std::pair{center.x, center.y});
+}
+
+inline void Game::playSound(SoundAsset *asset, float volume, Vec2 center)
+{
+	soundPlayer_.play(asset, volume, std::pair{center.x, center.y});
+}
+
+inline void Game::playSound(SoundAsset *asset, SoundHandle handle)
+{
+	soundPlayer_.play(asset, 0.5, {}, std::move(handle));
+}
+
+inline void Game::playSound(SoundAsset *asset, float volume, SoundHandle handle)
+{
+	soundPlayer_.play(asset, volume, {}, std::move(handle));
+}
+
+inline void Game::playSound(SoundAsset *asset, Vec2 center, SoundHandle handle)
+{
+	soundPlayer_.play(
+		asset, 0.5, std::pair{center.x, center.y}, std::move(handle));
+}
+
+inline void Game::playSound(
+	SoundAsset *asset, float volume, Vec2 center, SoundHandle handle)
+{
+	soundPlayer_.play(
+		asset, volume, std::pair{center.x, center.y}, std::move(handle));
+}
+
 
 }

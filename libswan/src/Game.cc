@@ -316,6 +316,8 @@ void Game::update(float dt)
 	renderer_.update(dt);
 	world_->update(dt);
 
+	soundPlayer_.setCenter(cam_.pos.x, cam_.pos.y);
+
 	didScroll_ = 0;
 	didPressKeys_.reset();
 	didReleaseKeys_.reset();

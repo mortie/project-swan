@@ -2,6 +2,7 @@
 
 #include <portaudio.h>
 #include <thread>
+#include <utility>
 
 #include "log.h"
 #include "RingBuffer.h"
@@ -16,6 +17,7 @@ struct Playback {
 	SoundAsset *asset;
 	float volume;
 	size_t position;
+	std::optional<std::pair<float, float>> center;
 };
 
 struct SoundPlayer::Context {
@@ -26,6 +28,8 @@ struct SoundPlayer::Context {
 	AtomicRingBuffer<Playback, MAX_NEW_PLAYBACKS> newPlaybacks;
 	std::atomic<bool> end = false;
 	std::atomic<float> volume = 0.5;
+	std::atomic<float> centerX = 0;
+	std::atomic<float> centerY = 0;
 };
 
 static int callback(
@@ -41,6 +45,8 @@ static int callback(
 
 	float *output = (float *)outputBuffer;
 	float volume = ctx->volume;
+	float centerX = ctx->centerX;
+	float centerY = ctx->centerY;
 
 	// Zero out the playback buffer
 	memset(outputBuffer, 0, samples * CHANNELS * sizeof(*output));
@@ -63,6 +69,21 @@ static int callback(
 	while (idx < ctx->playbackCount) {
 		auto &playback = ctx->playbacks[idx];
 
+		float attL = playback.volume;
+		float attR = playback.volume;
+		if (playback.center) {
+			float distXL = std::abs(playback.center->first - (centerX - 0.8));
+			float distXR = std::abs(playback.center->first - (centerX + 0.8));
+			float distY = std::abs(playback.center->second - centerY);
+			float distL = std::sqrt(distXL * distXL + distY * distY);
+			float distR = std::sqrt(distXR * distXR + distY * distY);
+			attL *= 4 / (distL + 2);
+			attR *= 4 / (distR + 2);
+			if (attL < 0.01 || attR < 0.01) {
+				continue;
+			}
+		}
+
 		bool done = false;
 		size_t end = playback.position + samples;
 		if (end >= playback.asset->length) {
@@ -73,8 +94,8 @@ static int callback(
 		// PortAudio output is interleaved
 		float *dest = output;
 		for (size_t i = playback.position; i < end; ++i) {
-			*(dest++) += playback.asset->l[i] * playback.volume;
-			*(dest++) += playback.asset->r[i] * playback.volume;
+			*(dest++) += playback.asset->l[i] * attL;
+			*(dest++) += playback.asset->r[i] * attR;
 		}
 
 		// Clear out the playback if it's done
@@ -178,7 +199,10 @@ float SoundPlayer::volume()
 	return context_->volume;
 }
 
-void SoundPlayer::play(SoundAsset *asset, float volume, std::shared_ptr<Handle> handle)
+void SoundPlayer::play(
+	SoundAsset *asset, float volume,
+	std::optional<std::pair<float, float>> center,
+	std::shared_ptr<Handle> handle)
 {
 	if (!asset) {
 		warn << "Attempt to play null asset";
@@ -201,7 +225,14 @@ void SoundPlayer::play(SoundAsset *asset, float volume, std::shared_ptr<Handle> 
 		.asset = asset,
 		.volume = volume,
 		.position = 0,
+		.center = center,
 	});
+}
+
+void SoundPlayer::setCenter(float x, float y)
+{
+	context_->centerX = x;
+	context_->centerY = y;
 }
 
 }

@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <memory>
+#include <optional>
 
 #include "assets.h"
 
@@ -26,12 +27,19 @@ public:
 	void volume(float volume);
 	float volume();
 
-	void play(SoundAsset *asset, float volume)
+	void play(
+		SoundAsset *asset, float volume,
+		std::optional<std::pair<float, float>> center)
 	{
-		play(asset, volume, nullHandle_);
+		play(asset, volume, center, nullHandle_);
 	}
 
-	void play(SoundAsset *asset, float volume, std::shared_ptr<Handle> handle);
+	void play(
+		SoundAsset *asset, float volume,
+		std::optional<std::pair<float, float>> center,
+		std::shared_ptr<Handle> handle);
+
+	void setCenter(float x, float y);
 
 private:
 	std::shared_ptr<Handle> nullHandle_;

@@ -119,10 +119,11 @@ bool TileSystemImpl::breakTile(TilePos pos)
 	spawnTileParticles(pos, tile);
 
 	if (tile.breakSound) {
-		plane_.world_->game_->playSound(tile.breakSound);
+		plane_.world_->game_->playSound(tile.breakSound, pos);
 	}
 	else {
-		plane_.world_->game_->playSound(plane_.world_->getSound(World::THUD_SOUND_NAME));
+		plane_.world_->game_->playSound(
+			plane_.world_->getSound(World::THUD_SOUND_NAME), pos);
 	}
 
 	// Change tile to air
@@ -162,8 +163,8 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 	id = chunk.getTileID(rp);
 	auto &newTile = plane_.world_->getTileByID(id);
 
-	plane_.world_->game_->playSound(oldTile.breakSound);
-	plane_.world_->game_->playSound(newTile.placeSound);
+	plane_.world_->game_->playSound(oldTile.breakSound, pos);
+	plane_.world_->game_->playSound(newTile.placeSound, pos);
 
 	// We didn't run the onBreak and despawn tile entities yet,
 	// so let's do that
