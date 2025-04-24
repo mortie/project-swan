@@ -1,5 +1,6 @@
 uniform mat3 camera;
 uniform mat3 transform;
+uniform vec2 translate;
 uniform vec2 frameSize;
 uniform vec2 frameInfo; // frame count, frame index
 uniform sampler2D tex;
@@ -25,7 +26,10 @@ void main() {
 		(frameSize.y * frameInfo.y + (frameSize.y * vertex.y)) /
 		(frameSize.y * frameInfo.x) + pixoffset);
 
-	vec3 pos = camera * transform * vec3(vertex * frameSize, 1);
+	vec3 pos = transform * vec3(vertex * frameSize, 1);
+	pos.x += translate.x;
+	pos.y += translate.y;
+	pos = camera * pos;
 	gl_Position = vec4(pos.xy, 0, 1);
 }
 

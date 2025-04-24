@@ -1,6 +1,7 @@
 #include "Renderer.h"
 
 #include <cassert>
+#include <iostream>
 #include <stdio.h>
 #include <swan/constants.h>
 #include <string.h>
@@ -215,6 +216,7 @@ struct SpriteProg: public GlProg<Shader::Sprite> {
 		glUseProgram(id());
 		glCheck();
 
+		glUniform2f(shader.uniTranslate, 0, 0);
 		glUniform1i(shader.uniTex, 0);
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
 		glCheck();
@@ -228,6 +230,65 @@ struct SpriteProg: public GlProg<Shader::Sprite> {
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			glCheck();
 		}
+	}
+
+	void drawGrids(std::span<Renderer::DrawGrid> drawGrids, const Mat3gf &cam)
+	{
+		if (drawGrids.size() == 0) {
+			return;
+		}
+
+		glUseProgram(id());
+		glCheck();
+
+		glUniform1i(shader.uniTex, 0);
+		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
+		glCheck();
+
+		glActiveTexture(GL_TEXTURE0);
+		for (auto &[mat, sprite, w, h]: drawGrids) {
+			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, mat.data());
+			glUniform2f(shader.uniFrameSize, sprite.size.x, sprite.size.y);
+			glBindTexture(GL_TEXTURE_2D, sprite.tex);
+
+			// Draw top left, top middle, top right (0, 1, 2)
+			drawStrip(sprite, w, 0, 0, 1, 2);
+			glCheck();
+
+			// Draw center left, center, center right (3, 4, 5)
+			for (int y = 0; y < h; ++y) {
+				drawStrip(sprite, w, y + 1, 3, 4, 5);
+				glCheck();
+			}
+
+			// Draw bottom left, bottom middle, bottom right (6, 7, 8)
+			drawStrip(sprite, w, h + 1, 6, 7, 8);
+			glCheck();
+		}
+	}
+
+private:
+	void drawStrip(RenderSprite &sprite, int w, int y, int l, int m, int r)
+	{
+		// Left
+		glUniform2f(shader.uniFrameInfo, sprite.frameCount, l);
+		glUniform2f(shader.uniTranslate, 0, y);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glCheck();
+
+		// Middle
+		glUniform2f(shader.uniFrameInfo, sprite.frameCount, m);
+		for (int x = 0; x < w; ++x) {
+			glUniform2f(shader.uniTranslate, x + 1, y);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			glCheck();
+		}
+
+		// Right
+		glUniform2f(shader.uniFrameInfo, sprite.frameCount, r);
+		glUniform2f(shader.uniTranslate, w + 1, y);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glCheck();
 	}
 };
 
@@ -605,6 +666,16 @@ void Renderer::renderUILayer(RenderLayer layer, Swan::Vec2 scale, Mat3gf camMat)
 		}
 	};
 
+	assert(drawUIGrids_[idx].size() == drawUIGridsAnchors_[idx].size());
+	for (size_t i = 0; i < drawUISprites_[idx].size(); ++i) {
+		auto &dg = drawUIGrids_[idx][i];
+		auto anchor = drawUIGridsAnchors_[idx][i];
+		applyAnchor(
+			anchor, dg.transform,
+			dg.sprite.size.scale(dg.w + 2, dg.h + 2));
+	}
+	drawUIGridsAnchors_[idx].clear();
+
 	assert(drawUISprites_[idx].size() == drawUISpritesAnchors_[idx].size());
 	for (size_t i = 0; i < drawUISprites_[idx].size(); ++i) {
 		auto &ds = drawUISprites_[idx][i];
@@ -628,6 +699,9 @@ void Renderer::renderUILayer(RenderLayer layer, Swan::Vec2 scale, Mat3gf camMat)
 		applyAnchor(anchor, dt.drawText.transform, dt.size);
 	}
 	drawUITextsAnchors_[idx].clear();
+
+	state_->spriteProg.drawGrids(drawUIGrids_[idx], camMat);
+	drawUIGrids_[idx].clear();
 
 	state_->spriteProg.draw(drawUISprites_[idx], camMat);
 	drawUISprites_[idx].clear();

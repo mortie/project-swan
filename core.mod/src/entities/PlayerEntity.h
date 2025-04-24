@@ -21,7 +21,7 @@ public:
 		snapSound_(ctx.world.getSound("core::sounds/misc/snap")),
 		splashSound_(ctx.world.getSound("core::sounds/misc/splash")),
 		shortSplashSound_(ctx.world.getSound("core::sounds/misc/splash-short")),
-		hotbarSprite_(ctx.world.getSprite("core::ui/hotbar")),
+		inventorySprite_(ctx.world.getSprite("core::ui/inventory")),
 		selectedSlotSprite_(ctx.world.getSprite("core::ui/selected-slot"))
 	{}
 
@@ -89,7 +89,7 @@ private:
 	Swan::SoundAsset *snapSound_;
 	Swan::SoundAsset *splashSound_;
 	Swan::SoundAsset *shortSplashSound_;
-	Cygnet::RenderSprite hotbarSprite_;
+	Cygnet::RenderSprite inventorySprite_;
 	Cygnet::RenderSprite selectedSlotSprite_;
 
 	Swan::Clock jumpTimer_;

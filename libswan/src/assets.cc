@@ -3,6 +3,7 @@
 #include "log.h"
 #include "util.h"
 
+#include <cstdio>
 #include <limits> // IWYU pragma: keep -- needed for cpptoml.h
 #include <memory>
 #include <optional>
@@ -17,7 +18,7 @@ namespace Swan {
 
 std::string assetBasePath = ".";
 
-void applyHflip(ImageAsset &asset)
+static void applyHflip(ImageAsset &asset)
 {
 	size_t rowWidth = asset.width * 4;
 	unsigned char tmp[4];
@@ -35,7 +36,7 @@ void applyHflip(ImageAsset &asset)
 	}
 }
 
-void applyVflip(ImageAsset &asset)
+static void applyVflip(ImageAsset &asset)
 {
 	size_t rowWidth = asset.width * 4;
 	unsigned char tmp[4];
@@ -57,7 +58,7 @@ void applyVflip(ImageAsset &asset)
 	}
 }
 
-void applyTranspose(ImageAsset &asset)
+static void applyTranspose(ImageAsset &asset)
 {
 	if (asset.width != asset.frameHeight) {
 		warn << "Can't transpose non-square frames";
@@ -81,6 +82,30 @@ void applyTranspose(ImageAsset &asset)
 			}
 		}
 	}
+}
+
+static void collapseGrid(ImageAsset &asset, int frameWidth)
+{
+	int nx = asset.width / frameWidth;
+	int ny = asset.frameCount;
+	auto newData = std::make_unique<unsigned char[]>(
+		size_t(nx) * frameWidth * size_t(ny) * asset.frameHeight * 4);
+	size_t destRowIdx = 0;
+	for (int fy = 0; fy < ny; ++fy) {
+		unsigned char *srcRow = &asset.data[fy * asset.width * asset.frameHeight * 4];
+		for (int fx = 0; fx < nx; ++fx) {
+			unsigned char *srcCell = &srcRow[fx * frameWidth * 4];
+			for (int y = 0; y < asset.frameHeight; ++y) {
+				unsigned char *src = &srcCell[y * asset.width * 4];
+				unsigned char *dest = &newData[destRowIdx++ * frameWidth * 4];
+				memcpy(dest, src, frameWidth * 4);
+			}
+		}
+	}
+
+	asset.data = std::move(newData);
+	asset.width = frameWidth;
+	asset.frameCount = nx * ny;
 }
 
 static void makeVariant(
@@ -239,6 +264,13 @@ Result<ImageAsset> loadImageAsset(
 		.repeatFrom = repeatFrom,
 		.data = std::move(bufferCopy),
 	};
+
+	if (toml) {
+		auto frameWidth = toml->get_as<int>("width");
+		if (frameWidth) {
+			collapseGrid(asset, *frameWidth);
+		}
+	}
 
 	if (variant.size() > 0) {
 		makeVariant(path, asset, variant, *variantName);
