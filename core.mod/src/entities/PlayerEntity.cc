@@ -41,9 +41,10 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	rnd.drawRect({Swan::Vec2(placePos_).add(0.1, 0.1), {0.8, 0.8}});
 	rnd.drawRect({breakPos_, {1, 1}});
 
-	rnd.drawUISprite({
-		.transform = Cygnet::Mat3gf{}.translate({0, -1}),
-		.sprite = hotbarSprite_,
+	rnd.drawUIGrid({
+		.sprite = inventorySprite_,
+		.w = 10,
+		.h = 1,
 	}, Cygnet::Anchor::BOTTOM);
 
 	rnd.drawUISprite({

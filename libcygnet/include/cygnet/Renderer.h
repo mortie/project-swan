@@ -106,6 +106,13 @@ public:
 		int frame = 0;
 	};
 
+	struct DrawGrid {
+		Mat3gf transform{};
+		RenderSprite sprite;
+		int w;
+		int h;
+	};
+
 	struct DrawParticle {
 		Swan::Vec2 pos;
 		Swan::Vec2 size = {1.0, 1.0};
@@ -250,6 +257,16 @@ public:
 		return drawText(RenderLayer::NORMAL, dt);
 	}
 
+	void drawUIGrid(RenderLayer layer, DrawGrid drawGrid, Anchor anchor = Anchor::CENTER)
+	{
+		drawUIGrids_[(int)layer].push_back(drawGrid);
+		drawUIGridsAnchors_[(int)layer].push_back(anchor);
+	}
+	void drawUIGrid(DrawGrid drawGrid, Anchor anchor = Anchor::CENTER)
+	{
+		drawUIGrid(RenderLayer::NORMAL, drawGrid, anchor);
+	}
+
 	void drawUISprite(RenderLayer layer, DrawSprite drawSprite, Anchor anchor = Anchor::CENTER)
 	{
 		drawUISprites_[(int)layer].push_back(drawSprite);
@@ -357,6 +374,8 @@ private:
 	std::vector<TextSegment> drawTexts_[LAYER_COUNT];
 	std::vector<TextCache::RenderedCodepoint> textBuffer_;
 
+	std::vector<DrawGrid> drawUIGrids_[LAYER_COUNT];
+	std::vector<Anchor> drawUIGridsAnchors_[LAYER_COUNT];
 	std::vector<DrawSprite> drawUISprites_[LAYER_COUNT];
 	std::vector<Anchor> drawUISpritesAnchors_[LAYER_COUNT];
 
