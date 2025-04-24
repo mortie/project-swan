@@ -28,7 +28,6 @@ public:
 		registerSprite("entities/spider/idle");
 		registerSprite("misc/background-cave");
 		registerSprite("ui/selected-slot");
-		registerSprite("ui/hotbar");
 		registerSprite("ui/inventory");
 
 		registerSound("sounds/break/glass");
