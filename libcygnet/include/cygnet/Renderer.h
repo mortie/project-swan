@@ -259,8 +259,10 @@ public:
 
 	void drawUIGrid(RenderLayer layer, DrawGrid drawGrid, Anchor anchor = Anchor::CENTER)
 	{
+		applyAnchor(
+			anchor, drawGrid.transform,
+			drawGrid.sprite.size.scale(drawGrid.w + 2, drawGrid.h + 2));
 		drawUIGrids_[(int)layer].push_back(drawGrid);
-		drawUIGridsAnchors_[(int)layer].push_back(anchor);
 	}
 	void drawUIGrid(DrawGrid drawGrid, Anchor anchor = Anchor::CENTER)
 	{
@@ -269,8 +271,8 @@ public:
 
 	void drawUISprite(RenderLayer layer, DrawSprite drawSprite, Anchor anchor = Anchor::CENTER)
 	{
+		applyAnchor(anchor, drawSprite.transform, drawSprite.sprite.size);
 		drawUISprites_[(int)layer].push_back(drawSprite);
-		drawUISpritesAnchors_[(int)layer].push_back(anchor);
 	}
 	void drawUISprite(DrawSprite drawSprite, Anchor anchor = Anchor::CENTER)
 	{
@@ -279,8 +281,8 @@ public:
 
 	void drawUITile(RenderLayer layer, DrawTile drawTile, Anchor anchor = Anchor::CENTER)
 	{
+		applyAnchor(anchor, drawTile.transform, {1, 1});
 		drawUITiles_[(int)layer].push_back(drawTile);
-		drawUITilesAnchors_[(int)layer].push_back(anchor);
 	}
 	void drawUITile(DrawTile drawTile, Anchor anchor = Anchor::CENTER)
 	{
@@ -289,18 +291,20 @@ public:
 
 	TextSegment &drawUIText(RenderLayer layer, DrawText drawText, Anchor anchor = Anchor::CENTER)
 	{
-		Swan::Vec2 size;
 		size_t start = textUIBuffer_.size();
 
+		Swan::Vec2 size;
 		drawText.textCache.renderString(drawText.text, textUIBuffer_, size);
+		size /= 64;
+
+		applyAnchor(anchor, drawText.transform, size);
 		drawUITexts_[(int)layer].push_back({
 			.drawText = drawText,
 			.atlas = drawText.textCache.atlas_,
-			.size = size / 64,
+			.size = size,
 			.start = start,
 			.end = textUIBuffer_.size(),
 		});
-		drawUITextsAnchors_[(int)layer].push_back(anchor);
 		return drawUITexts_[(int)layer].back();
 	}
 	TextSegment &drawUIText(DrawText drawText, Anchor anchor = Anchor::CENTER)
@@ -356,9 +360,11 @@ public:
 
 private:
 	void renderLayer(RenderLayer layer, Mat3gf camMat, GLint screenFBO);
-	void renderUILayer(RenderLayer layer, Swan::Vec2 scale, Mat3gf camMat);
+	void renderUILayer(RenderLayer layer, Mat3gf camMat);
+	void applyAnchor(Anchor anchor, Mat3gf &mat, Swan::Vec2 size);
 
 	Swan::Vec2 winScale_ = {1, 1};
+	Swan::Vec2 uiScale_ = {1, 1};
 
 	std::unique_ptr<RendererState> state_;
 
@@ -375,14 +381,9 @@ private:
 	std::vector<TextCache::RenderedCodepoint> textBuffer_;
 
 	std::vector<DrawGrid> drawUIGrids_[LAYER_COUNT];
-	std::vector<Anchor> drawUIGridsAnchors_[LAYER_COUNT];
 	std::vector<DrawSprite> drawUISprites_[LAYER_COUNT];
-	std::vector<Anchor> drawUISpritesAnchors_[LAYER_COUNT];
-
 	std::vector<DrawTile> drawUITiles_[LAYER_COUNT];
-	std::vector<Anchor> drawUITilesAnchors_[LAYER_COUNT];
 	std::vector<TextSegment> drawUITexts_[LAYER_COUNT];
-	std::vector<Anchor> drawUITextsAnchors_[LAYER_COUNT];
 	std::vector<TextCache::RenderedCodepoint> textUIBuffer_;
 
 	std::vector<DrawParticle> spawnedParticles_[LAYER_COUNT];

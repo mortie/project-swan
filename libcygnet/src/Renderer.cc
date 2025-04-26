@@ -483,7 +483,15 @@ void Renderer::clear()
 		drawChunkShadows_[idx].clear();
 		drawRects_[idx].clear();
 		drawTexts_[idx].clear();
+
+		drawUIGrids_[idx].clear();
+		drawUISprites_[idx].clear();
+		drawUITiles_[idx].clear();
+		drawUITexts_[idx].clear();
 	}
+
+	textBuffer_.clear();
+	textUIBuffer_.clear();
 }
 
 void Renderer::render(const RenderCamera &cam, RenderProps props)
@@ -608,114 +616,72 @@ void Renderer::renderUI(const RenderCamera &cam, RenderProps props)
 		camMat.scale({cam.zoom, -cam.zoom * ratio});
 	}
 
-	Swan::Vec2 scale = winScale_ / cam.zoom;
+	uiScale_ = winScale_ / cam.zoom;
 
 	if (props.vflip){ 
 		camMat.scale({1, -1});
 	}
 
 	for (int i = 0; i <= (int)RenderLayer::MAX; ++i) {
-		renderUILayer(RenderLayer(i), scale, camMat);
+		renderUILayer(RenderLayer(i), camMat);
 	}
 
-	textUIBuffer_.clear();
 	gamma_ = 1;
 }
 
-void Renderer::renderUILayer(RenderLayer layer, Swan::Vec2 scale, Mat3gf camMat)
+void Renderer::renderUILayer(RenderLayer layer, Mat3gf camMat)
 {
 	int idx = (int)layer;
 
-	auto applyAnchor = [&](Anchor anchor, Mat3gf &mat, Swan::Vec2 size) {
-		switch (anchor) {
-		case Anchor::CENTER:
-			mat.translate(size * -0.5f);
-			break;
-
-		case Anchor::LEFT:
-			mat.translate({-scale.x, size.y * -0.5f});
-			break;
-
-		case Anchor::RIGHT:
-			mat.translate({scale.x - size.x, size.y * -0.5f});
-			break;
-
-		case Anchor::TOP:
-			mat.translate({size.x * -0.5f, -scale.y});
-			break;
-
-		case Anchor::BOTTOM:
-			mat.translate({size.x * -0.5f, scale.y - size.y});
-			break;
-
-		case Anchor::TOP_LEFT:
-			mat.translate({-scale.x, -scale.y});
-			break;
-
-		case Anchor::TOP_RIGHT:
-			mat.translate({scale.x - size.x, -scale.y});
-			break;
-
-		case Anchor::BOTTOM_LEFT:
-			mat.translate({-scale.x, scale.y - size.y});
-			break;
-
-		case Anchor::BOTTOM_RIGHT:
-			mat.translate({scale.x - size.x, scale.y - size.y});
-			break;
-		}
-	};
-
-	assert(drawUIGrids_[idx].size() == drawUIGridsAnchors_[idx].size());
-	for (size_t i = 0; i < drawUISprites_[idx].size(); ++i) {
-		auto &dg = drawUIGrids_[idx][i];
-		auto anchor = drawUIGridsAnchors_[idx][i];
-		applyAnchor(
-			anchor, dg.transform,
-			dg.sprite.size.scale(dg.w + 2, dg.h + 2));
-	}
-	drawUIGridsAnchors_[idx].clear();
-
-	assert(drawUISprites_[idx].size() == drawUISpritesAnchors_[idx].size());
-	for (size_t i = 0; i < drawUISprites_[idx].size(); ++i) {
-		auto &ds = drawUISprites_[idx][i];
-		auto anchor = drawUISpritesAnchors_[idx][i];
-		applyAnchor(anchor, ds.transform, ds.sprite.size);
-	}
-	drawUISpritesAnchors_[idx].clear();
-
-	assert(drawUITiles_[idx].size() == drawUITilesAnchors_[idx].size());
-	for (size_t i = 0; i < drawUITiles_[idx].size(); ++i) {
-		auto &dt = drawUITiles_[idx][i];
-		auto anchor = drawUITilesAnchors_[idx][i];
-		applyAnchor(anchor, dt.transform, {1, 1});
-	}
-	drawUITilesAnchors_[idx].clear();
-
-	assert(drawUITexts_[idx].size() == drawUITextsAnchors_[idx].size());
-	for (size_t i = 0; i < drawUITexts_[idx].size(); ++i) {
-		auto &dt = drawUITexts_[idx][i];
-		auto anchor = drawUITextsAnchors_[idx][i];
-		applyAnchor(anchor, dt.drawText.transform, dt.size);
-	}
-	drawUITextsAnchors_[idx].clear();
-
 	state_->spriteProg.drawGrids(drawUIGrids_[idx], camMat);
-	drawUIGrids_[idx].clear();
-
 	state_->spriteProg.draw(drawUISprites_[idx], camMat);
-	drawUISprites_[idx].clear();
-
 	state_->tileProg.draw(
 		drawUITiles_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
-	drawUITiles_[idx].clear();
-
 	state_->textProg.draw(
 		drawUITexts_[idx], textUIBuffer_, camMat, 1.0 / 64);
-	drawUITexts_[idx].clear();
-
 	glCheck();
 }
+
+void Renderer::applyAnchor(Anchor anchor, Mat3gf &mat, Swan::Vec2 size)
+{
+	switch (anchor) {
+	case Anchor::CENTER:
+		mat.translate(size * -0.5f);
+		break;
+
+	case Anchor::LEFT:
+		mat.translate({-uiScale_.x, size.y * -0.5f});
+		break;
+
+	case Anchor::RIGHT:
+		mat.translate({uiScale_.x - size.x, size.y * -0.5f});
+		break;
+
+	case Anchor::TOP:
+		mat.translate({size.x * -0.5f, -uiScale_.y});
+		break;
+
+	case Anchor::BOTTOM:
+		mat.translate({size.x * -0.5f, uiScale_.y - size.y});
+		break;
+
+	case Anchor::TOP_LEFT:
+		mat.translate({-uiScale_.x, -uiScale_.y});
+		break;
+
+	case Anchor::TOP_RIGHT:
+		mat.translate({uiScale_.x - size.x, -uiScale_.y});
+		break;
+
+	case Anchor::BOTTOM_LEFT:
+		mat.translate({-uiScale_.x, uiScale_.y - size.y});
+		break;
+
+	case Anchor::BOTTOM_RIGHT:
+		mat.translate({uiScale_.x - size.x, uiScale_.y - size.y});
+		break;
+	}
+};
 
 void Renderer::uploadFluidAtlas(const void *data)
 {
