@@ -274,39 +274,39 @@ public:
 	void popUIView();
 	bool assertUIViewStackEmpty();
 
-	void drawUIGrid(RenderLayer layer, DrawGrid drawGrid, Anchor anchor = Anchor::CENTER)
+	void drawUIGrid(RenderLayer layer, DrawGrid drawGrid, Anchor anchor = Anchor::TOP_LEFT)
 	{
 		applyAnchor(
 			anchor, drawGrid.transform,
 			drawGrid.sprite.size.scale(drawGrid.w + 2, drawGrid.h + 2));
 		drawUIGrids_[(int)layer].push_back(drawGrid);
 	}
-	void drawUIGrid(DrawGrid drawGrid, Anchor anchor = Anchor::CENTER)
+	void drawUIGrid(DrawGrid drawGrid, Anchor anchor = Anchor::TOP_LEFT)
 	{
 		drawUIGrid(RenderLayer::NORMAL, drawGrid, anchor);
 	}
 
-	void drawUISprite(RenderLayer layer, DrawSprite drawSprite, Anchor anchor = Anchor::CENTER)
+	void drawUISprite(RenderLayer layer, DrawSprite drawSprite, Anchor anchor = Anchor::TOP_LEFT)
 	{
 		applyAnchor(anchor, drawSprite.transform, drawSprite.sprite.size);
 		drawUISprites_[(int)layer].push_back(drawSprite);
 	}
-	void drawUISprite(DrawSprite drawSprite, Anchor anchor = Anchor::CENTER)
+	void drawUISprite(DrawSprite drawSprite, Anchor anchor = Anchor::TOP_LEFT)
 	{
 		drawUISprite(RenderLayer::NORMAL, drawSprite, anchor);
 	}
 
-	void drawUITile(RenderLayer layer, DrawTile drawTile, Anchor anchor = Anchor::CENTER)
+	void drawUITile(RenderLayer layer, DrawTile drawTile, Anchor anchor = Anchor::TOP_LEFT)
 	{
 		applyAnchor(anchor, drawTile.transform, {1, 1});
 		drawUITiles_[(int)layer].push_back(drawTile);
 	}
-	void drawUITile(DrawTile drawTile, Anchor anchor = Anchor::CENTER)
+	void drawUITile(DrawTile drawTile, Anchor anchor = Anchor::TOP_LEFT)
 	{
 		drawUITile(RenderLayer::NORMAL, drawTile, anchor);
 	}
 
-	TextSegment &drawUIText(RenderLayer layer, DrawText drawText, Anchor anchor = Anchor::CENTER)
+	TextSegment &drawUIText(RenderLayer layer, DrawText drawText, Anchor anchor = Anchor::TOP_LEFT)
 	{
 		size_t start = textUIBuffer_.size();
 
@@ -324,7 +324,7 @@ public:
 		});
 		return drawUITexts_[(int)layer].back();
 	}
-	TextSegment &drawUIText(DrawText drawText, Anchor anchor = Anchor::CENTER)
+	TextSegment &drawUIText(DrawText drawText, Anchor anchor = Anchor::TOP_LEFT)
 	{
 		return drawUIText(RenderLayer::NORMAL, drawText, anchor);
 	}

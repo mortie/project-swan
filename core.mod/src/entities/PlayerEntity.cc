@@ -45,41 +45,13 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	rnd.uiView({
 		.size = {12, 3},
 	}, [&] {
-		rnd.drawUIGrid({
-			.sprite = inventorySprite_,
-			.w = 10,
-			.h = 1,
-		}, Cygnet::Anchor::LEFT);
+		Swan::Draw::inventory(ctx, rnd, {10, 1}, inventorySprite_, inventory_.content);
 
 		rnd.drawUISprite({
 			.transform = Cygnet::Mat3gf{}.translate(
 				{float(selectedInventorySlot_), 0}),
 			.sprite = selectedSlotSprite_,
 		}, Cygnet::Anchor::TOP_LEFT);
-
-		for (int i = 0; i < 10; ++i) {
-			auto &stack = inventory_.content[i];
-			if (stack.empty()) {
-				continue;
-			}
-
-			rnd.drawUITile({
-				.transform = Cygnet::Mat3gf{}
-					.scale({0.6, 0.6})
-					.translate({0.2, 0.2})
-					.translate({1.0f + i, 0}),
-				.id = stack.item()->id,
-			}, Cygnet::Anchor::LEFT);
-
-			rnd.drawUIText({
-				.textCache = ctx.game.smallFont_,
-				.transform = Cygnet::Mat3gf{}
-					.scale({0.5, 0.5})
-					.translate({1.1, 0.39})
-					.translate({float(i), 0}),
-				.text = std::to_string(stack.count()).c_str(),
-			}, Cygnet::Anchor::LEFT);
-		}
 	}, Cygnet::Anchor::BOTTOM);
 
 	if (!heldStack_.empty()) {
@@ -106,15 +78,14 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		return;
 	}
 
-	rnd.pushUIView({
-		.size = {5, 5},
-	}, Cygnet::Anchor::BOTTOM_RIGHT);
-	rnd.drawUIGrid({
-		.sprite = inventorySprite_,
-		.w = 1,
-		.h = 1,
-	}, Cygnet::Anchor::TOP_LEFT);
-	rnd.popUIView();
+	rnd.uiView({
+		.pos = {0, -2},
+		.size = {12, 5},
+	}, [&] {
+		Swan::Draw::inventory(
+			ctx, rnd, {10, 3}, inventorySprite_,
+			{inventory_.content.begin() + 10, inventory_.content.end()});
+	}, Cygnet::Anchor::BOTTOM);
 
 	// This whole method is stupid inefficient and does a bunch of memory allocation every frame.
 	// TODO: fix.

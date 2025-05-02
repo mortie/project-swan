@@ -62,7 +62,7 @@ private:
 		.bounciness = 0,
 	};
 
-	static constexpr int INVENTORY_SIZE = 18;
+	static constexpr int INVENTORY_SIZE = 30;
 	static constexpr float SPRINT_FORCE_GROUND = 125 * PROPS.mass;
 	static constexpr float MOVE_FORCE_GROUND = 75 * PROPS.mass;
 	static constexpr float MOVE_FORCE_AIR = 10 * PROPS.mass;

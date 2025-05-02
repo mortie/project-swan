@@ -1,4 +1,6 @@
 #include "drawutil.h"
+#include "Game.h"
+#include "Item.h"
 
 #include <algorithm>
 
@@ -44,6 +46,64 @@ Cygnet::Color linearGradient(
 	}
 
 	return arr[size - 1].second;
+}
+
+void inventory(
+	const Context &ctx, Cygnet::Renderer &rnd, Vec2i size, Cygnet::RenderSprite sprite,
+	std::span<ItemStack> content)
+{
+	rnd.drawUIGrid({
+		.sprite = sprite,
+		.w = size.x,
+		.h = size.y,
+	});
+
+	int x = -1;
+	int y = 0;
+	for (auto &stack: content) {
+		x += 1;
+		if (x >= size.x) {
+			y += 1;
+			if (y >= size.y) {
+				break;
+			}
+		}
+
+		if (stack.empty()) {
+			continue;
+		}
+
+		rnd.drawUITile({
+			.transform = Cygnet::Mat3gf{}
+				.scale({0.6, 0.6})
+				.translate({1.2, 1.2})
+				.translate({float(x), float(y)}),
+			.id = stack.item()->id,
+		});
+
+		rnd.drawUIText({
+			.textCache = ctx.game.smallFont_,
+			.transform = Cygnet::Mat3gf{}
+				.scale({0.5, 0.5})
+				.translate({1.1, 1.6})
+				.translate({float(x), float(y)}),
+			.text = std::to_string(stack.count()).c_str(),
+		});
+	}
+
+	for (; y < size.y; ++y) {
+		for (; x < size.x; ++x) {
+			rnd.drawUIText({
+				.textCache = ctx.game.smallFont_,
+				.transform = Cygnet::Mat3gf{}
+					.translate({1.25, 1.2})
+					.translate({float(x), float(y)}),
+				.text = "X",
+				.color = {1.0, 0.0, 0.0},
+			});
+		}
+		x = 0;
+	}
 }
 
 }
