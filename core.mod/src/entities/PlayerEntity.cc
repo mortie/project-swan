@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <stdio.h>
 #include <imgui/imgui.h>
+#include <string>
 #include <unordered_map>
 
 #include "ItemStackEntity.h"
@@ -41,45 +42,45 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	rnd.drawRect({Swan::Vec2(placePos_).add(0.1, 0.1), {0.8, 0.8}});
 	rnd.drawRect({breakPos_, {1, 1}});
 
-	rnd.drawUIGrid({
-		.sprite = inventorySprite_,
-		.w = 10,
-		.h = 1,
-	}, Cygnet::Anchor::BOTTOM);
+	rnd.uiView({
+		.size = {12, 3},
+	}, [&] {
+		rnd.drawUIGrid({
+			.sprite = inventorySprite_,
+			.w = 10,
+			.h = 1,
+		}, Cygnet::Anchor::LEFT);
 
-	rnd.drawUISprite({
-		.transform = Cygnet::Mat3gf{}.translate({
-			-4.5f + selectedInventorySlot_, -1 + 2 / 32.0}),
-		.sprite = selectedSlotSprite_,
-	}, Cygnet::Anchor::BOTTOM);
+		rnd.drawUISprite({
+			.transform = Cygnet::Mat3gf{}.translate(
+				{float(selectedInventorySlot_), 0}),
+			.sprite = selectedSlotSprite_,
+		}, Cygnet::Anchor::TOP_LEFT);
 
-	char stackSizeBuf[8];
+		for (int i = 0; i < 10; ++i) {
+			auto &stack = inventory_.content[i];
+			if (stack.empty()) {
+				continue;
+			}
 
-	for (int i = 0; i < 10; ++i) {
-		auto &stack = inventory_.content[i];
-		if (stack.empty()) {
-			continue;
+			rnd.drawUITile({
+				.transform = Cygnet::Mat3gf{}
+					.scale({0.6, 0.6})
+					.translate({0.2, 0.2})
+					.translate({1.0f + i, 0}),
+				.id = stack.item()->id,
+			}, Cygnet::Anchor::LEFT);
+
+			rnd.drawUIText({
+				.textCache = ctx.game.smallFont_,
+				.transform = Cygnet::Mat3gf{}
+					.scale({0.5, 0.5})
+					.translate({1.1, 0.39})
+					.translate({float(i), 0}),
+				.text = std::to_string(stack.count()).c_str(),
+			}, Cygnet::Anchor::LEFT);
 		}
-
-		rnd.drawUITile({
-			.transform = Cygnet::Mat3gf{}
-				.scale({0.6, 0.6})
-				.translate({0.2, 0.2})
-				.translate({-4.5f + i, -1}),
-			.id = stack.item()->id,
-		}, Cygnet::Anchor::BOTTOM);
-
-		snprintf(stackSizeBuf, sizeof(stackSizeBuf), "%d", stack.count());
-
-		auto &text = rnd.drawUIText({
-			.textCache = ctx.game.smallFont_,
-			.transform = Cygnet::Mat3gf{}
-				.scale({0.7, 0.7})
-				.translate({-4.875f + i, -0.95}),
-			.text = stackSizeBuf,
-		}, Cygnet::Anchor::BOTTOM);
-		text.drawText.transform.translate({text.size.x / 2, 0});
-	}
+	}, Cygnet::Anchor::BOTTOM);
 
 	if (!heldStack_.empty()) {
 		rnd.drawUITile({
@@ -90,15 +91,13 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 			.id = heldStack_.item()->id,
 		}, Cygnet::Anchor::TOP_LEFT);
 
-		snprintf(stackSizeBuf, sizeof(stackSizeBuf), "%d", heldStack_.count());
-
 		rnd.drawUIText({
 			.textCache = ctx.game.smallFont_,
 			.transform = Cygnet::Mat3gf{}
 				.scale({0.7, 0.7})
 				.translate({ctx.game.getMouseUIPos()})
 				.translate({0, 0.5}),
-			.text = stackSizeBuf,
+			.text = std::to_string(heldStack_.count()).c_str(),
 		}, Cygnet::Anchor::TOP_LEFT);
 	}
 
@@ -106,6 +105,16 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	if (!showInventory_) {
 		return;
 	}
+
+	rnd.pushUIView({
+		.size = {5, 5},
+	}, Cygnet::Anchor::BOTTOM_RIGHT);
+	rnd.drawUIGrid({
+		.sprite = inventorySprite_,
+		.w = 1,
+		.h = 1,
+	}, Cygnet::Anchor::TOP_LEFT);
+	rnd.popUIView();
 
 	// This whole method is stupid inefficient and does a bunch of memory allocation every frame.
 	// TODO: fix.

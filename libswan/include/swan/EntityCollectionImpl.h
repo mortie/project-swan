@@ -318,6 +318,10 @@ inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Cygnet::Renderer
 			}
 		}
 	}
+
+	if (!rnd.assertUIViewStackEmpty()) {
+		warn << "UI view stack is not empty after drawing " << name() << '!';
+	}
 }
 
 template<typename Ent>

@@ -616,7 +616,9 @@ void Renderer::renderUI(const RenderCamera &cam, RenderProps props)
 		camMat.scale({cam.zoom, -cam.zoom * ratio});
 	}
 
-	uiScale_ = winScale_ / cam.zoom;
+	Swan::Vec2 scale = winScale_ / cam.zoom;
+	uiViewStack_.resize(1);
+	uiViewStack_[0].size = scale;
 
 	if (props.vflip){ 
 		camMat.scale({1, -1});
@@ -644,44 +646,112 @@ void Renderer::renderUILayer(RenderLayer layer, Mat3gf camMat)
 
 void Renderer::applyAnchor(Anchor anchor, Mat3gf &mat, Swan::Vec2 size)
 {
+	auto &view = uiViewStack_.back();
+	mat.translate(view.pos);
+
 	switch (anchor) {
 	case Anchor::CENTER:
 		mat.translate(size * -0.5f);
 		break;
 
 	case Anchor::LEFT:
-		mat.translate({-uiScale_.x, size.y * -0.5f});
+		mat.translate({-view.size.x, size.y * -0.5f});
 		break;
 
 	case Anchor::RIGHT:
-		mat.translate({uiScale_.x - size.x, size.y * -0.5f});
+		mat.translate({view.size.x - size.x, size.y * -0.5f});
 		break;
 
 	case Anchor::TOP:
-		mat.translate({size.x * -0.5f, -uiScale_.y});
+		mat.translate({size.x * -0.5f, -view.size.y});
 		break;
 
 	case Anchor::BOTTOM:
-		mat.translate({size.x * -0.5f, uiScale_.y - size.y});
+		mat.translate({size.x * -0.5f, view.size.y - size.y});
 		break;
 
 	case Anchor::TOP_LEFT:
-		mat.translate({-uiScale_.x, -uiScale_.y});
+		mat.translate({-view.size.x, -view.size.y});
 		break;
 
 	case Anchor::TOP_RIGHT:
-		mat.translate({uiScale_.x - size.x, -uiScale_.y});
+		mat.translate({view.size.x - size.x, -view.size.y});
 		break;
 
 	case Anchor::BOTTOM_LEFT:
-		mat.translate({-uiScale_.x, uiScale_.y - size.y});
+		mat.translate({-view.size.x, view.size.y - size.y});
 		break;
 
 	case Anchor::BOTTOM_RIGHT:
-		mat.translate({uiScale_.x - size.x, uiScale_.y - size.y});
+		mat.translate({view.size.x - size.x, view.size.y - size.y});
 		break;
 	}
 };
+
+void Renderer::pushUIView(Rect rect, Anchor anchor)
+{
+	auto &view = uiViewStack_.back();
+	rect.size /= 2;
+	rect.pos += view.pos;
+	switch (anchor) {
+	case Anchor::CENTER:
+		break;
+
+	case Anchor::LEFT:
+		rect.pos += {-view.size.x + rect.size.x, 0};
+		break;
+
+	case Anchor::RIGHT:
+		rect.pos += {view.size.x - rect.size.x, 0};
+		break;
+
+	case Anchor::TOP:
+		rect.pos += {0, -view.size.y + rect.size.x};
+		break;
+
+	case Anchor::BOTTOM:
+		rect.pos += {0, view.size.y - rect.size.y};
+		break;
+
+	case Anchor::TOP_LEFT:
+		rect.pos += {-view.size.x + rect.size.x, -view.size.y + rect.size.y};
+		break;
+
+	case Anchor::TOP_RIGHT:
+		rect.pos += {view.size.x - rect.size.x, -view.size.y + rect.size.y};
+		break;
+
+	case Anchor::BOTTOM_LEFT:
+		rect.pos += {-view.size.x + rect.size.x, view.size.y - rect.size.y};
+		break;
+
+	case Anchor::BOTTOM_RIGHT:
+		rect.pos += {view.size.x - rect.size.x, view.size.y - rect.size.y};
+		break;
+	}
+
+	uiViewStack_.push_back(rect);
+}
+
+void Renderer::popUIView()
+{
+	if (uiViewStack_.size() <= 1) {
+		std::cerr << "Cygnet: View push/pop mismatch\n";
+		return;
+	}
+
+	uiViewStack_.pop_back();
+}
+
+bool Renderer::assertUIViewStackEmpty()
+{
+	if (uiViewStack_.size() > 1) {
+		uiViewStack_.resize(1);
+		return false;
+	}
+
+	return true;
+}
 
 void Renderer::uploadFluidAtlas(const void *data)
 {

@@ -79,6 +79,11 @@ public:
 	using TileID = uint16_t;
 	static constexpr int LAYER_COUNT = (int)RenderLayer::MAX + 1;
 
+	struct Rect {
+		Swan::Vec2 pos;
+		Swan::Vec2 size;
+	};
+
 	struct DrawChunk {
 		Swan::Vec2 pos;
 		RenderChunk chunk;
@@ -257,6 +262,18 @@ public:
 		return drawText(RenderLayer::NORMAL, dt);
 	}
 
+	template<typename Func>
+	void uiView(Rect rect, Func func, Anchor anchor = Anchor::CENTER)
+	{
+		pushUIView(rect, anchor);
+		func();
+		popUIView();
+	}
+
+	void pushUIView(Rect rect, Anchor anchor = Anchor::CENTER);
+	void popUIView();
+	bool assertUIViewStackEmpty();
+
 	void drawUIGrid(RenderLayer layer, DrawGrid drawGrid, Anchor anchor = Anchor::CENTER)
 	{
 		applyAnchor(
@@ -363,12 +380,11 @@ private:
 	void renderUILayer(RenderLayer layer, Mat3gf camMat);
 	void applyAnchor(Anchor anchor, Mat3gf &mat, Swan::Vec2 size);
 
-	Swan::Vec2 winScale_ = {1, 1};
-	Swan::Vec2 uiScale_ = {1, 1};
-
 	std::unique_ptr<RendererState> state_;
-
+	Swan::Vec2 winScale_ = {1, 1};
 	float gamma_;
+
+	std::vector<Rect> uiViewStack_ = {{{0, 0}, {1, 1}}};
 
 	std::vector<DrawChunk> drawChunks_[LAYER_COUNT];
 	std::vector<DrawChunkFluid> drawChunkFluids_[LAYER_COUNT];

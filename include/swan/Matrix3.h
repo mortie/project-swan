@@ -20,12 +20,15 @@ struct Matrix3 {
 
 	constexpr Matrix3(): vals(identity)
 	{}
+	constexpr Matrix3(std::array<T, 9> vals): vals(vals)
+	{}
 	constexpr Matrix3(const Matrix3 &mat): vals(mat.vals)
 	{}
 
 	constexpr Matrix3 &operator=(const Matrix3 &mat)
 	{
 		vals = mat.vals;
+		return *this;
 	}
 
 	constexpr T *data()
@@ -46,6 +49,16 @@ struct Matrix3 {
 	constexpr const T &at(int x, int y) const
 	{
 		return vals[y * 3 + x];
+	}
+
+	constexpr T &operator()(int x, int y)
+	{
+		return at(x, y);
+	}
+
+	constexpr const T &operator()(int x, int y) const
+	{
+		return at(x, y);
 	}
 
 	constexpr Matrix3<T> &set(std::initializer_list<T> vals)
@@ -90,6 +103,29 @@ struct Matrix3 {
 		at(0, 1) = s * old00 + c * at(0, 1);
 		at(1, 1) = s * old10 + c * at(1, 1);
 		at(2, 1) = s * old20 + c * at(2, 1);
+		return *this;
+	}
+
+	constexpr friend Matrix3<T> operator*(const Matrix3<T> &a, const Matrix3<T> &b)
+	{
+		return Matrix3<T>({
+			a(0, 0) * b(0, 0) + a(0, 1) * b(1, 0) + a(0, 2) * b(2, 0),
+			a(0, 0) * b(0, 1) + a(0, 1) * b(1, 1) + a(0, 2) * b(2, 1),
+			a(0, 0) * b(0, 2) + a(0, 1) * b(1, 2) + a(0, 2) * b(2, 2),
+
+			a(1, 0) * b(0, 0) + a(1, 1) * b(1, 0) + a(1, 2) * b(2, 0),
+			a(1, 0) * b(0, 1) + a(1, 1) * b(1, 1) + a(1, 2) * b(2, 1),
+			a(1, 0) * b(0, 2) + a(1, 1) * b(1, 2) + a(1, 2) * b(2, 2),
+
+			a(2, 0) * b(0, 0) + a(2, 1) * b(1, 0) + a(2, 2) * b(2, 0),
+			a(2, 0) * b(0, 1) + a(2, 1) * b(1, 1) + a(2, 2) * b(2, 1),
+			a(2, 0) * b(0, 2) + a(2, 1) * b(1, 2) + a(2, 2) * b(2, 2),
+		});
+	}
+
+	constexpr Matrix3<T> operator*=(const Matrix3<T> &other)
+	{
+		*this = *this * other;
 		return *this;
 	}
 
