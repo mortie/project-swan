@@ -732,25 +732,17 @@ void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
 
 	// Navigate left/right/up/down
 	if (ctx.game.wasKeyPressed(GLFW_KEY_LEFT)) {
-		int lim = 10;
-		if (showInventory_) {
-			lim = INVENTORY_SIZE;
-		}
-
-		selectedInventorySlot_ -= 1;
-		if (selectedInventorySlot_ < 0) {
-			selectedInventorySlot_ += lim;
+		if (selectedInventorySlot_ % 10 == 0) {
+			selectedInventorySlot_ += 9;
+		} else {
+			selectedInventorySlot_ -= 1;
 		}
 	}
 	else if (ctx.game.wasKeyPressed(GLFW_KEY_RIGHT)) {
-		int lim = 10;
-		if (showInventory_) {
-			lim = INVENTORY_SIZE;
-		}
-
-		selectedInventorySlot_ += 1;
-		if (selectedInventorySlot_ >= lim) {
-			selectedInventorySlot_ -= lim;
+		if (selectedInventorySlot_ % 10 == 9) {
+			selectedInventorySlot_ -= 9;
+		} else {
+			selectedInventorySlot_ += 1;
 		}
 	}
 	else if (
