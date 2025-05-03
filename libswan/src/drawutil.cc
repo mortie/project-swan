@@ -84,8 +84,8 @@ void inventory(
 		rnd.drawUIText({
 			.textCache = ctx.game.smallFont_,
 			.transform = Cygnet::Mat3gf{}
-				.scale({0.5, 0.5})
-				.translate({1.1, 1.6})
+				.scale({0.7, 0.7})
+				.translate({1.1, 1.5})
 				.translate({float(x), float(y)}),
 			.text = std::to_string(stack.count()).c_str(),
 		});
