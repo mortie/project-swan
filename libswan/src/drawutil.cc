@@ -58,19 +58,11 @@ void inventory(
 		.h = size.y,
 	});
 
-	int x = -1;
+	int x = 0;
 	int y = 0;
 	for (auto &stack: content) {
-		x += 1;
-		if (x >= size.x) {
-			y += 1;
-			if (y >= size.y) {
-				break;
-			}
-		}
-
 		if (stack.empty()) {
-			continue;
+			goto next;
 		}
 
 		rnd.drawUITile({
@@ -89,6 +81,17 @@ void inventory(
 				.translate({float(x), float(y)}),
 			.text = std::to_string(stack.count()).c_str(),
 		});
+
+	next:
+		x += 1;
+		if (x >= size.x) {
+			y += 1;
+			x = 0;
+			if (y >= size.y) {
+				break;
+			}
+		}
+
 	}
 
 	for (; y < size.y; ++y) {

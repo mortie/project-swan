@@ -42,16 +42,21 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	rnd.drawRect({Swan::Vec2(placePos_).add(0.1, 0.1), {0.8, 0.8}});
 	rnd.drawRect({breakPos_, {1, 1}});
 
+	// Draw hotbar
 	rnd.uiView({
 		.size = {12, 3},
 	}, [&] {
+		// Hotbar content
 		Swan::Draw::inventory(ctx, rnd, {10, 1}, inventorySprite_, inventory_.content);
 
-		rnd.drawUISprite({
-			.transform = Cygnet::Mat3gf{}.translate(
-				{float(selectedInventorySlot_), 0}),
-			.sprite = selectedSlotSprite_,
-		}, Cygnet::Anchor::TOP_LEFT);
+		// Selection
+		if (selectedInventorySlot_ < 10) {
+			rnd.drawUISprite({
+				.transform = Cygnet::Mat3gf{}.translate(
+					{float(selectedInventorySlot_), 0}),
+				.sprite = selectedSlotSprite_,
+			}, Cygnet::Anchor::TOP_LEFT);
+		}
 	}, Cygnet::Anchor::BOTTOM);
 
 	if (!heldStack_.empty()) {
@@ -78,27 +83,31 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		return;
 	}
 
+	// Draw the rest of the inventory
 	rnd.uiView({
 		.pos = {0, -2},
 		.size = {12, 5},
 	}, [&] {
+		// Inventory content
 		Swan::Draw::inventory(
 			ctx, rnd, {10, 3}, inventorySprite_,
 			{inventory_.content.begin() + 10, inventory_.content.end()});
+
+		// Selection
+		if (selectedInventorySlot_ >= 10) {
+			int slot = selectedInventorySlot_ - 10;
+			int y = slot / 10;
+			int x = slot % 10;
+			rnd.drawUISprite({
+				.transform = Cygnet::Mat3gf{}.translate(
+					{float(x), float(y)}),
+				.sprite = selectedSlotSprite_,
+			}, Cygnet::Anchor::TOP_LEFT);
+		}
 	}, Cygnet::Anchor::BOTTOM);
 
 	// This whole method is stupid inefficient and does a bunch of memory allocation every frame.
 	// TODO: fix.
-
-	ImGui::Begin("Inventory");
-	auto &selectedStack = inventory_.content[selectedInventorySlot_];
-	if (selectedStack.empty()) {
-		ImGui::Text("Selected: [%d]: Empty", selectedInventorySlot_ + 1);
-	}
-	else {
-		ImGui::Text("Selected: [%d]: %d x %s", selectedInventorySlot_ + 1,
-			selectedStack.count(), selectedStack.item()->name.c_str());
-	}
 
 	std::unordered_map<Swan::Item *, int> itemCounts;
 	for (size_t i = 0; i < inventory_.content.size(); ++i) {
@@ -108,14 +117,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		}
 
 		itemCounts[stack.item()] += stack.count();
-		char sel = ' ';
-		if (i == (size_t)selectedInventorySlot_) {
-			sel = 'x';
-		}
-
-		ImGui::Text("%c %zu: %d x %s", sel, i + 1, stack.count(), stack.item()->name.c_str());
 	}
-	ImGui::End();
 
 	ImGui::Begin("Crafting");
 	std::string text;
@@ -322,64 +324,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		physicsBody_.body.pos = spawnPoint_;
 	}
 
-	// Select item slots
-	if (ctx.game.wasKeyPressed(GLFW_KEY_1)) {
-		selectedInventorySlot_ = 0;
-	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_2)) {
-		selectedInventorySlot_ = 1;
-	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_3)) {
-		selectedInventorySlot_ = 2;
-	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_4)) {
-		selectedInventorySlot_ = 3;
-	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_5)) {
-		selectedInventorySlot_ = 4;
-	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_6)) {
-		selectedInventorySlot_ = 5;
-	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_7)) {
-		selectedInventorySlot_ = 6;
-	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_8)) {
-		selectedInventorySlot_ = 7;
-	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_9)) {
-		selectedInventorySlot_ = 8;
-	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_0)) {
-		selectedInventorySlot_ = 9;
-	}
-
-	if (ctx.game.wasKeyPressed(GLFW_KEY_X)) {
-		Swan::ItemStack &slot = inventory_.content[selectedInventorySlot_];
-		if (heldStack_.empty()) {
-			heldStack_ = slot;
-			slot = {};
-		}
-		else {
-			auto tmp = heldStack_;
-			heldStack_ = slot.insert(heldStack_);
-			if (heldStack_ == tmp) {
-				heldStack_ = slot;
-				slot = tmp;
-			}
-		}
-	}
-
-	if (ctx.game.isKeyPressed(GLFW_KEY_C)) {
-		ctx.plane.fluids().replaceInTile(placePos_, ctx.world.getFluid("core::water").id);
-	} else if (ctx.game.isKeyPressed(GLFW_KEY_V)) {
-		ctx.plane.fluids().replaceInTile(placePos_, ctx.world.getFluid("core::oil").id);
-	}
-
-	// Toggle inventory
-	if (ctx.game.wasKeyPressed(GLFW_KEY_E)) {
-		showInventory_ = !showInventory_;
-	}
+	handleInventorySelection(ctx);
 
 	// Break block
 	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
@@ -403,23 +348,19 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 
 	// Handle left/right key press
 	int runDirection = 0;
-	if (ctx.game.isKeyPressed(GLFW_KEY_A) || ctx.game.isKeyPressed(GLFW_KEY_LEFT)) {
+	if (ctx.game.isKeyPressed(GLFW_KEY_A)) {
 		runDirection -= 1;
 	}
-	if (ctx.game.isKeyPressed(GLFW_KEY_D) || ctx.game.isKeyPressed(GLFW_KEY_RIGHT)) {
+	if (ctx.game.isKeyPressed(GLFW_KEY_D)) {
 		runDirection += 1;
 	}
 
 	// Handle ladder climb
 	if (inLadder) {
-		if (
-			ctx.game.isKeyPressed(GLFW_KEY_W) ||
-			ctx.game.isKeyPressed(GLFW_KEY_UP)) {
+		if (ctx.game.isKeyPressed(GLFW_KEY_W)) {
 			physicsBody_.force += Swan::Vec2{0, -LADDER_CLIMB_FORCE};
 		}
-		else if (
-			ctx.game.isKeyPressed(GLFW_KEY_S) ||
-			ctx.game.isKeyPressed(GLFW_KEY_DOWN)) {
+		else if (ctx.game.isKeyPressed(GLFW_KEY_S)) {
 			physicsBody_.force += Swan::Vec2{0, LADDER_CLIMB_FORCE};
 		}
 
@@ -749,6 +690,120 @@ void PlayerEntity::dropItem(const Swan::Context &ctx)
 
 	auto removed = stack.remove(1);
 	ctx.plane.entities().spawn<ItemStackEntity>(pos, vel, removed.item());
+}
+
+void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
+{
+	// Select item slots directly
+	auto selectSlot = [&](int slot) {
+		int delta = slot - (selectedInventorySlot_ % 10);
+		selectedInventorySlot_ += delta;
+	};
+	if (ctx.game.wasKeyPressed(GLFW_KEY_1)) {
+		selectSlot(0);
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_2)) {
+		selectSlot(1);
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_3)) {
+		selectSlot(2);
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_4)) {
+		selectSlot(3);
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_5)) {
+		selectSlot(4);
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_6)) {
+		selectSlot(5);
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_7)) {
+		selectSlot(6);
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_8)) {
+		selectSlot(7);
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_9)) {
+		selectSlot(8);
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_0)) {
+		selectSlot(9);
+	}
+
+	// Navigate left/right/up/down
+	if (ctx.game.wasKeyPressed(GLFW_KEY_LEFT)) {
+		int lim = 10;
+		if (showInventory_) {
+			lim = INVENTORY_SIZE;
+		}
+
+		selectedInventorySlot_ -= 1;
+		if (selectedInventorySlot_ < 0) {
+			selectedInventorySlot_ += lim;
+		}
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_RIGHT)) {
+		int lim = 10;
+		if (showInventory_) {
+			lim = INVENTORY_SIZE;
+		}
+
+		selectedInventorySlot_ += 1;
+		if (selectedInventorySlot_ >= lim) {
+			selectedInventorySlot_ -= lim;
+		}
+	}
+	else if (
+		showInventory_ && (
+			ctx.game.wasKeyPressed(GLFW_KEY_UP) ||
+			ctx.game.wasKeyPressed(GLFW_KEY_V))) {
+		if (selectedInventorySlot_ < 10) {
+			selectedInventorySlot_ += INVENTORY_SIZE - 10;
+		} else {
+			selectedInventorySlot_ -= 10;
+		}
+		if (selectedInventorySlot_ < 0) {
+			selectedInventorySlot_ += 10;
+		}
+	}
+	else if (
+		showInventory_ && (
+			ctx.game.wasKeyPressed(GLFW_KEY_DOWN) ||
+			ctx.game.wasKeyPressed(GLFW_KEY_C))) {
+		if (selectedInventorySlot_ >= INVENTORY_SIZE - 10) {
+			selectedInventorySlot_ -= INVENTORY_SIZE - 10;
+		} else {
+			selectedInventorySlot_ += 10;
+		}
+		if (selectedInventorySlot_ >= INVENTORY_SIZE) {
+			selectedInventorySlot_ -= INVENTORY_SIZE;
+		}
+	}
+
+	// Handle held items
+	if (ctx.game.wasKeyPressed(GLFW_KEY_X)) {
+		Swan::ItemStack &slot = inventory_.content[selectedInventorySlot_];
+		if (heldStack_.empty()) {
+			heldStack_ = slot;
+			slot = {};
+		}
+		else {
+			auto tmp = heldStack_;
+			heldStack_ = slot.insert(heldStack_);
+			if (heldStack_ == tmp) {
+				heldStack_ = slot;
+				slot = tmp;
+			}
+		}
+	}
+
+	// Toggle inventory
+	if (ctx.game.wasKeyPressed(GLFW_KEY_E)) {
+		showInventory_ = !showInventory_;
+		if (!showInventory_) {
+			selectedInventorySlot_ %= 10;
+		}
+	}
 }
 
 }

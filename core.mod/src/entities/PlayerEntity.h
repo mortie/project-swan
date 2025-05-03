@@ -78,6 +78,8 @@ private:
 	void craft(const Swan::Recipe &recipe);
 	void dropItem(const Swan::Context &ctx);
 
+	void handleInventorySelection(const Swan::Context &ctx);
+
 	State state_ = State::IDLE;
 	Swan::Animation idleAnimation_;
 	Swan::Animation runningAnimation_;
