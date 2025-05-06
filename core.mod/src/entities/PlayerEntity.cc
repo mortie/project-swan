@@ -325,6 +325,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 
 	handleInventorySelection(ctx);
+	handleInventoryHover(ctx);
 
 	// Break block, or click UI
 	if (ctx.game.wasMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
@@ -333,7 +334,9 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		}
 	}
 	else if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
-		onLeftClick(ctx);
+		if (ui_.hoveredInventorySlot < 0) {
+			onLeftClick(ctx);
+		}
 	}
 
 	// Place block, or activate item
@@ -699,29 +702,32 @@ void PlayerEntity::dropItem(const Swan::Context &ctx)
 	ctx.plane.entities().spawn<ItemStackEntity>(pos, vel, removed.item());
 }
 
-bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
+void PlayerEntity::handleInventoryHover(const Swan::Context &ctx)
 {
-	int clickedSlot = -1;
+	ui_.hoveredInventorySlot = -1;
 
 	auto mousePos = ctx.game.getMouseUIPos();
 	auto hotbarPos = Swan::UI::inventoryCellPos(mousePos, ui_.hotbarRect);
 	if (hotbarPos) {
-		clickedSlot = hotbarPos->x;
+		ui_.hoveredInventorySlot = hotbarPos->x;
 	} else if (ui_.showInventory) {
 		auto invPos = Swan::UI::inventoryCellPos(mousePos, ui_.inventoryRect);
 		if (invPos) {
-			clickedSlot = 10 + invPos->y * 10 + invPos->x;
+			ui_.hoveredInventorySlot = 10 + invPos->y * 10 + invPos->x;
 		}
 	}
+}
 
-	if (clickedSlot < 0) {
+bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
+{
+	if (ui_.hoveredInventorySlot < 0) {
 		return false;
 	}
 
 	// I don't understand what this does anymore,
 	// but it's the same as what happens when you press 'x'
 	// and I think I want to keep that behavior..
-	Swan::ItemStack &slot = inventory_.content[clickedSlot];
+	Swan::ItemStack &slot = inventory_.content[ui_.hoveredInventorySlot];
 	if (heldStack_.empty() && !slot.empty()) {
 		ctx.game.playSound(sounds_.snap);
 		heldStack_ = slot;
@@ -737,7 +743,7 @@ bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 		}
 	}
 
-	return false;
+	return true;
 }
 
 void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)

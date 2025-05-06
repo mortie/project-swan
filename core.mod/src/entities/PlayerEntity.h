@@ -78,6 +78,7 @@ private:
 
 	struct UI {
 		int selectedInventorySlot = 0;
+		int hoveredInventorySlot = -1;
 		bool showInventory = false;
 		Cygnet::Renderer::Rect hotbarRect;
 		Cygnet::Renderer::Rect inventoryRect;
@@ -115,6 +116,7 @@ private:
 
 	bool handleInventoryClick(const Swan::Context &ctx);
 	void handleInventorySelection(const Swan::Context &ctx);
+	void handleInventoryHover(const Swan::Context &ctx);
 
 	State state_ = State::IDLE;
 	Animations animations_;
