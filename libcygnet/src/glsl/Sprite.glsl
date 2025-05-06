@@ -4,6 +4,7 @@ uniform vec2 translate;
 uniform vec2 frameSize;
 uniform vec2 frameInfo; // frame count, frame index
 uniform sampler2D tex;
+uniform float opacity;
 
 // @Vertex
 out vec2 v_texCoord;
@@ -38,5 +39,5 @@ in vec2 v_texCoord;
 out vec4 fragColor;
 
 void main() {
-	fragColor = texture(tex, v_texCoord);
+	fragColor = texture(tex, v_texCoord) * opacity;
 }

@@ -221,8 +221,17 @@ struct SpriteProg: public GlProg<Shader::Sprite> {
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
 		glCheck();
 
+		glUniform1f(shader.uniOpacity, 1.0);
+		glCheck();
+		float prevOpacity = 1;
+
 		glActiveTexture(GL_TEXTURE0);
-		for (auto &[mat, sprite, frame]: drawSprites) {
+		for (auto &[mat, sprite, frame, opacity]: drawSprites) {
+			if (opacity != prevOpacity) {
+				glUniform1f(shader.uniOpacity, opacity);
+				prevOpacity = opacity;
+			}
+
 			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, mat.data());
 			glUniform2f(shader.uniFrameSize, sprite.size.x, sprite.size.y);
 			glUniform2f(shader.uniFrameInfo, sprite.frameCount, frame);
@@ -243,6 +252,9 @@ struct SpriteProg: public GlProg<Shader::Sprite> {
 
 		glUniform1i(shader.uniTex, 0);
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
+		glCheck();
+
+		glUniform1f(shader.uniOpacity, 1.0);
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);

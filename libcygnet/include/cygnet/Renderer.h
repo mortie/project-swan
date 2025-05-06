@@ -109,6 +109,7 @@ public:
 		Mat3gf transform;
 		RenderSprite sprite;
 		int frame = 0;
+		float opacity = 1.0;
 	};
 
 	struct DrawGrid {

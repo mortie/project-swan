@@ -26,7 +26,31 @@ static int getPlayerX(const siv::PerlinNoise &perlin)
 void DefaultWorldGen::drawBackground(
 	const Swan::Context &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos)
 {
-	// TODO: Do something interesting?
+	float opacity = 1;
+	float y = pos.y;
+	if (y < 6) {
+		return;
+	}
+
+	if (y < 20) {
+		opacity = (y - 6) / (20 - 6);
+	}
+
+	pos -= {2.5, 2.5};
+	pos /= 8;
+	Swan::Vec2i whole = pos.as<int>();
+	Swan::Vec2 frac = pos - whole.as<float>();
+
+	pos = whole.as<float>() * 8 + frac * 4;
+	for (int y = -10; y <= 10; ++y) {
+		for (int x = -15; x <= 15; ++x) {
+			rnd.drawSprite(Cygnet::RenderLayer::BACKGROUND, {
+				.transform = Cygnet::Mat3gf{}.translate(pos.add(x * 4, y * 4)),
+				.sprite = bgCave_,
+				.opacity = opacity,
+			});
+		}
+	}
 }
 
 Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos)
