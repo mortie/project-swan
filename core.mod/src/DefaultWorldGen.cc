@@ -28,12 +28,12 @@ void DefaultWorldGen::drawBackground(
 {
 	float opacity = 1;
 	float y = pos.y;
-	if (y < 6) {
+	if (y < 15) {
 		return;
 	}
 
-	if (y < 20) {
-		opacity = (y - 6) / (20 - 6);
+	if (y < 35) {
+		opacity = (y - 15) / (35 - 15);
 	}
 
 	pos -= {2.5, 2.5};
