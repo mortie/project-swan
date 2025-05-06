@@ -718,17 +718,17 @@ bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 		return false;
 	}
 
-	ctx.game.playSound(sounds_.snap);
-
 	// I don't understand what this does anymore,
 	// but it's the same as what happens when you press 'x'
 	// and I think I want to keep that behavior..
 	Swan::ItemStack &slot = inventory_.content[clickedSlot];
-	if (heldStack_.empty()) {
+	if (heldStack_.empty() && !slot.empty()) {
+		ctx.game.playSound(sounds_.snap);
 		heldStack_ = slot;
 		slot = {};
 	}
-	else {
+	else if (!heldStack_.empty()) {
+		ctx.game.playSound(sounds_.snap);
 		auto tmp = heldStack_;
 		heldStack_ = slot.insert(heldStack_);
 		if (heldStack_ == tmp) {
@@ -822,13 +822,14 @@ void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
 
 	// Handle held items
 	if (ctx.game.wasKeyPressed(GLFW_KEY_X)) {
-		ctx.game.playSound(sounds_.snap);
 		Swan::ItemStack &slot = inventory_.content[ui_.selectedInventorySlot];
-		if (heldStack_.empty()) {
+		if (heldStack_.empty() && !slot.empty()) {
+			ctx.game.playSound(sounds_.snap);
 			heldStack_ = slot;
 			slot = {};
 		}
-		else {
+		else if (!heldStack_.empty()) {
+			ctx.game.playSound(sounds_.snap);
 			auto tmp = heldStack_;
 			heldStack_ = slot.insert(heldStack_);
 			if (heldStack_ == tmp) {
