@@ -190,7 +190,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 			stack = inventory_.insert(stack);
 			if (stack.empty()) {
 				ctx.plane.entities().despawn(c.ref);
-				ctx.game.playSound(snapSound_);
+				ctx.game.playSound(sounds_.snap);
 				pickedUpItem = true;
 			}
 			continue;
@@ -284,7 +284,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		}
 
 		if (inFluid_ && !oldInFluid) {
-			ctx.game.playSound(splashSound_);
+			ctx.game.playSound(sounds_.splash);
 			for (int i = 0; i < 60; ++i) {
 				ctx.game.spawnParticle({
 					.pos = fluidCenterPos + Swan::Vec2{
@@ -301,7 +301,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 			}
 		}
 		else if (!inFluid_ && oldInFluid) {
-			ctx.game.playSound(shortSplashSound_);
+			ctx.game.playSound(sounds_.shortSplash);
 			for (int i = 0; i < 40; ++i) {
 				ctx.game.spawnParticle({
 					.pos = fluidBottomPos + Swan::Vec2{
@@ -326,8 +326,13 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 
 	handleInventorySelection(ctx);
 
-	// Break block
-	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+	// Break block, or click UI
+	if (ctx.game.wasMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+		if (!handleInventoryClick(ctx)) {
+			onLeftClick(ctx);
+		}
+	}
+	else if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
 		onLeftClick(ctx);
 	}
 
@@ -400,7 +405,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 
 	// Adjust running speed based on sprinting
-	runningAnimation_.setInterval(sprinting_ ? 0.07 : 0.1);
+	animations_.running.setInterval(sprinting_ ? 0.07 : 0.1);
 
 	// If we hit the ground, override the desired state to be landing
 	if (physicsBody_.onGround && (oldState == State::FALLING || oldState == State::JUMPING)) {
@@ -408,7 +413,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 
 	// Don't switch away from landing unless it's done!
-	if (oldState == State::LANDING && !landingAnimation_.done()) {
+	if (oldState == State::LANDING && !animations_.landing.done()) {
 		state_ = State::LANDING;
 	}
 
@@ -443,23 +448,23 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	if (state_ != oldState) {
 		switch (state_) {
 		case State::IDLE:
-			currentAnimation_ = &idleAnimation_;
+			currentAnimation_ = &animations_.idle;
 			break;
 
 		case State::RUNNING:
-			currentAnimation_ = &runningAnimation_;
+			currentAnimation_ = &animations_.running;
 			break;
 
 		case State::FALLING:
-			currentAnimation_ = &fallingAnimation_;
+			currentAnimation_ = &animations_.falling;
 			break;
 
 		case State::JUMPING:
-			currentAnimation_ = &jumpingAnimation_;
+			currentAnimation_ = &animations_.jumping;
 			break;
 
 		case State::LANDING:
-			currentAnimation_ = &landingAnimation_;
+			currentAnimation_ = &animations_.landing;
 			break;
 		}
 		currentAnimation_->reset();
@@ -668,7 +673,7 @@ void PlayerEntity::craft(const Swan::Context &ctx, const Swan::Recipe &recipe)
 	Swan::ItemStack stack(recipe.output.item, recipe.output.count);
 	stack = inventory_.insert(stack);
 	if (stack.empty()) {
-		ctx.game.playSound(craftingSound_, 0.2);
+		ctx.game.playSound(sounds_.crafting, 0.2);
 	} else {
 		Swan::info
 			<< "Attempted to craft " << recipe.output.item->name
@@ -692,6 +697,12 @@ void PlayerEntity::dropItem(const Swan::Context &ctx)
 
 	auto removed = stack.remove(1);
 	ctx.plane.entities().spawn<ItemStackEntity>(pos, vel, removed.item());
+}
+
+bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
+{
+	Swan::info << "Mouse UI pos: " << ctx.game.getMouseUIPos();
+	return false;
 }
 
 void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
@@ -794,11 +805,11 @@ void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
 	// Toggle inventory
 	if (ctx.game.wasKeyPressed(GLFW_KEY_E)) {
 		if (showInventory_) {
-			ctx.game.playSound(inventoryCloseSound_, 0.2);
+			ctx.game.playSound(sounds_.inventoryClose, 0.2);
 			showInventory_ = false;
 			selectedInventorySlot_ %= 10;
 		} else {
-			ctx.game.playSound(inventoryOpenSound_);
+			ctx.game.playSound(sounds_.inventoryOpen);
 			showInventory_ = true;
 		}
 	}

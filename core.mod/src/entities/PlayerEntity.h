@@ -13,17 +13,8 @@ public:
 
 	PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos);
 	PlayerEntity(const Swan::Context &ctx):
-		idleAnimation_(ctx, "core::entities/player/idle", 0.2),
-		runningAnimation_(ctx, "core::entities/player/running", 0),
-		fallingAnimation_(ctx, "core::entities/player/falling", 0.1),
-		jumpingAnimation_(ctx, "core::entities/player/jumping", 0.1),
-		landingAnimation_(ctx, "core::entities/player/landing", 0.1),
-		snapSound_(ctx.world.getSound("core::sounds/misc/snap")),
-		splashSound_(ctx.world.getSound("core::sounds/misc/splash")),
-		shortSplashSound_(ctx.world.getSound("core::sounds/misc/splash-short")),
-		inventoryOpenSound_(ctx.world.getSound("core::sounds/ui/inventory-open")),
-		inventoryCloseSound_(ctx.world.getSound("core::sounds/ui/inventory-close")),
-		craftingSound_(ctx.world.getSound("core::sounds/ui/crafting")),
+		animations_(ctx),
+		sounds_(ctx),
 		inventorySprite_(ctx.world.getSprite("core::ui/inventory")),
 		selectedSlotSprite_(ctx.world.getSprite("core::ui/selected-slot"))
 	{}
@@ -51,6 +42,40 @@ public:
 	void deserialize(const Swan::Context &ctx, Proto::Reader r);
 
 private:
+	struct Sounds {
+		Sounds(const Swan::Context &ctx):
+			snap(ctx.world.getSound("core::sounds/ui/snap")),
+			splash(ctx.world.getSound("core::sounds/ui/splash")),
+			shortSplash(ctx.world.getSound("core::sounds/ui/splash-short")),
+			inventoryOpen(ctx.world.getSound("core::sounds/ui/inventory-open")),
+			inventoryClose(ctx.world.getSound("core::sounds/ui/inventory-close")),
+			crafting(ctx.world.getSound("core::sounds/ui/crafting"))
+		{}
+
+		Swan::SoundAsset *snap;
+		Swan::SoundAsset *splash;
+		Swan::SoundAsset *shortSplash;
+		Swan::SoundAsset *inventoryOpen;
+		Swan::SoundAsset *inventoryClose;
+		Swan::SoundAsset *crafting;
+	};
+
+	struct Animations {
+		Animations(const Swan::Context &ctx):
+			idle(ctx, "core::entities/player/idle", 0.2),
+			running(ctx, "core::entities/player/running", 0),
+			falling(ctx, "core::entities/player/falling", 0.1),
+			jumping(ctx, "core::entities/player/jumping", 0.1),
+			landing(ctx, "core::entities/player/landing", 0.1)
+		{}
+
+		Swan::Animation idle;
+		Swan::Animation running;
+		Swan::Animation falling;
+		Swan::Animation jumping;
+		Swan::Animation landing;
+	};
+
 	enum class State {
 		IDLE,
 		RUNNING,
@@ -81,22 +106,14 @@ private:
 	void craft(const Swan::Context &ctx, const Swan::Recipe &recipe);
 	void dropItem(const Swan::Context &ctx);
 
+	bool handleInventoryClick(const Swan::Context &ctx);
 	void handleInventorySelection(const Swan::Context &ctx);
 
 	State state_ = State::IDLE;
-	Swan::Animation idleAnimation_;
-	Swan::Animation runningAnimation_;
-	Swan::Animation fallingAnimation_;
-	Swan::Animation jumpingAnimation_;
-	Swan::Animation landingAnimation_;
-	Swan::Animation *currentAnimation_ = &idleAnimation_;
+	Animations animations_;
+	Swan::Animation *currentAnimation_ = &animations_.idle;
 
-	Swan::SoundAsset *snapSound_;
-	Swan::SoundAsset *splashSound_;
-	Swan::SoundAsset *shortSplashSound_;
-	Swan::SoundAsset *inventoryOpenSound_;
-	Swan::SoundAsset *inventoryCloseSound_;
-	Swan::SoundAsset *craftingSound_;
+	Sounds sounds_;
 	Cygnet::RenderSprite inventorySprite_;
 	Cygnet::RenderSprite selectedSlotSprite_;
 
