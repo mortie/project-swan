@@ -688,7 +688,7 @@ void Renderer::applyAnchor(Anchor anchor, Mat3gf &mat, Swan::Vec2 size)
 	}
 };
 
-void Renderer::pushUIView(Rect rect, Anchor anchor)
+Renderer::Rect Renderer::pushUIView(Rect rect, Anchor anchor)
 {
 	auto &view = uiViewStack_.back();
 	rect.size /= 2;
@@ -731,6 +731,7 @@ void Renderer::pushUIView(Rect rect, Anchor anchor)
 	}
 
 	uiViewStack_.push_back(rect);
+	return rect;
 }
 
 void Renderer::popUIView()

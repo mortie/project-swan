@@ -44,9 +44,9 @@ public:
 private:
 	struct Sounds {
 		Sounds(const Swan::Context &ctx):
-			snap(ctx.world.getSound("core::sounds/ui/snap")),
-			splash(ctx.world.getSound("core::sounds/ui/splash")),
-			shortSplash(ctx.world.getSound("core::sounds/ui/splash-short")),
+			snap(ctx.world.getSound("core::sounds/misc/snap")),
+			splash(ctx.world.getSound("core::sounds/misc/splash")),
+			shortSplash(ctx.world.getSound("core::sounds/misc/splash-short")),
 			inventoryOpen(ctx.world.getSound("core::sounds/ui/inventory-open")),
 			inventoryClose(ctx.world.getSound("core::sounds/ui/inventory-close")),
 			crafting(ctx.world.getSound("core::sounds/ui/crafting"))
@@ -74,6 +74,13 @@ private:
 		Swan::Animation falling;
 		Swan::Animation jumping;
 		Swan::Animation landing;
+	};
+
+	struct UI {
+		int selectedInventorySlot = 0;
+		bool showInventory = false;
+		Cygnet::Renderer::Rect hotbarRect;
+		Cygnet::Renderer::Rect inventoryRect;
 	};
 
 	enum class State {
@@ -117,12 +124,12 @@ private:
 	Cygnet::RenderSprite inventorySprite_;
 	Cygnet::RenderSprite selectedSlotSprite_;
 
+	UI ui_;
+
 	Swan::Clock jumpTimer_;
 	float invincibleTimer_ = 0;
-	int selectedInventorySlot_ = 0;
 	int lastDirection_ = 1;
 	bool sprinting_ = false;
-	bool showInventory_ = false;
 	bool inFluid_ = false;
 	Cygnet::Color fluidColor_;
 	float stepTimer_ = 0;

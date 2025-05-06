@@ -263,50 +263,51 @@ public:
 	}
 
 	template<typename Func>
-	void uiView(Rect rect, Func func, Anchor anchor = Anchor::CENTER)
+	Rect uiView(Rect rect, Func func, Anchor anchor = Anchor::CENTER)
 	{
-		pushUIView(rect, anchor);
+		rect = pushUIView(rect, anchor);
 		func();
 		popUIView();
+		return rect;
 	}
 
-	void pushUIView(Rect rect, Anchor anchor = Anchor::CENTER);
+	Rect pushUIView(Rect rect, Anchor anchor = Anchor::CENTER);
 	void popUIView();
 	bool assertUIViewStackEmpty();
 
-	void drawUIGrid(RenderLayer layer, DrawGrid drawGrid, Anchor anchor = Anchor::TOP_LEFT)
+	void drawUIGrid(RenderLayer layer, DrawGrid drawGrid, Anchor anchor = Anchor::CENTER)
 	{
 		applyAnchor(
 			anchor, drawGrid.transform,
 			drawGrid.sprite.size.scale(drawGrid.w + 2, drawGrid.h + 2));
 		drawUIGrids_[(int)layer].push_back(drawGrid);
 	}
-	void drawUIGrid(DrawGrid drawGrid, Anchor anchor = Anchor::TOP_LEFT)
+	void drawUIGrid(DrawGrid drawGrid, Anchor anchor = Anchor::CENTER)
 	{
 		drawUIGrid(RenderLayer::NORMAL, drawGrid, anchor);
 	}
 
-	void drawUISprite(RenderLayer layer, DrawSprite drawSprite, Anchor anchor = Anchor::TOP_LEFT)
+	void drawUISprite(RenderLayer layer, DrawSprite drawSprite, Anchor anchor = Anchor::CENTER)
 	{
 		applyAnchor(anchor, drawSprite.transform, drawSprite.sprite.size);
 		drawUISprites_[(int)layer].push_back(drawSprite);
 	}
-	void drawUISprite(DrawSprite drawSprite, Anchor anchor = Anchor::TOP_LEFT)
+	void drawUISprite(DrawSprite drawSprite, Anchor anchor = Anchor::CENTER)
 	{
 		drawUISprite(RenderLayer::NORMAL, drawSprite, anchor);
 	}
 
-	void drawUITile(RenderLayer layer, DrawTile drawTile, Anchor anchor = Anchor::TOP_LEFT)
+	void drawUITile(RenderLayer layer, DrawTile drawTile, Anchor anchor = Anchor::CENTER)
 	{
 		applyAnchor(anchor, drawTile.transform, {1, 1});
 		drawUITiles_[(int)layer].push_back(drawTile);
 	}
-	void drawUITile(DrawTile drawTile, Anchor anchor = Anchor::TOP_LEFT)
+	void drawUITile(DrawTile drawTile, Anchor anchor = Anchor::CENTER)
 	{
 		drawUITile(RenderLayer::NORMAL, drawTile, anchor);
 	}
 
-	TextSegment &drawUIText(RenderLayer layer, DrawText drawText, Anchor anchor = Anchor::TOP_LEFT)
+	TextSegment &drawUIText(RenderLayer layer, DrawText drawText, Anchor anchor = Anchor::CENTER)
 	{
 		size_t start = textUIBuffer_.size();
 
@@ -324,7 +325,7 @@ public:
 		});
 		return drawUITexts_[(int)layer].back();
 	}
-	TextSegment &drawUIText(DrawText drawText, Anchor anchor = Anchor::TOP_LEFT)
+	TextSegment &drawUIText(DrawText drawText, Anchor anchor = Anchor::CENTER)
 	{
 		return drawUIText(RenderLayer::NORMAL, drawText, anchor);
 	}

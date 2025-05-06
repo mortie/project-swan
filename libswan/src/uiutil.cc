@@ -1,4 +1,4 @@
-#include "drawutil.h"
+#include "uiutil.h"
 #include "Game.h"
 #include "Item.h"
 
@@ -6,7 +6,7 @@
 
 namespace Swan {
 
-namespace Draw {
+namespace UI {
 
 static float linearLine(float from, float to, float frac)
 {
@@ -71,7 +71,7 @@ void inventory(
 				.translate({1.2, 1.2})
 				.translate({float(x), float(y)}),
 			.id = stack.item()->id,
-		});
+		}, Cygnet::Anchor::TOP_LEFT);
 
 		rnd.drawUIText({
 			.textCache = ctx.game.smallFont_,
@@ -80,7 +80,7 @@ void inventory(
 				.translate({1.1, 1.5})
 				.translate({float(x), float(y)}),
 			.text = std::to_string(stack.count()).c_str(),
-		});
+		}, Cygnet::Anchor::TOP_LEFT);
 
 	next:
 		x += 1;
@@ -103,10 +103,36 @@ void inventory(
 					.translate({float(x), float(y)}),
 				.text = "X",
 				.color = {1.0, 0.0, 0.0},
-			});
+			}, Cygnet::Anchor::TOP_LEFT);
 		}
 		x = 0;
 	}
+}
+
+Vec2 relativePos(Vec2 pos, Cygnet::Renderer::Rect rect)
+{
+	pos -= rect.pos;
+	pos += rect.size;
+	return pos;
+}
+
+std::optional<Vec2i> inventoryCellPos(Vec2 pos, Cygnet::Renderer::Rect rect)
+{
+	pos = relativePos(pos, rect);
+
+	// The rectangle has a 2-tile padding
+	pos -= {1, 1};
+	rect.size *= 2;
+	rect.size -= {2, 2};
+
+	if (pos.x < 0 || pos.x > rect.size.x) {
+		return std::nullopt;
+	}
+	if (pos.y < 0 || pos.y > rect.size.y) {
+		return std::nullopt;
+	}
+
+	return pos.as<int>();
 }
 
 }

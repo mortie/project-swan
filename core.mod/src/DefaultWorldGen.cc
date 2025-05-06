@@ -33,7 +33,7 @@ Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos)
 {
 	float y = pos.y;
 
-	return Swan::Draw::linearGradient(y, {
+	return Swan::UI::linearGradient(y, {
 		{0, Cygnet::ByteColor{128, 220, 250}},
 		{70, Cygnet::ByteColor{107, 87, 5}},
 		{100, Cygnet::ByteColor{107, 87, 5}},

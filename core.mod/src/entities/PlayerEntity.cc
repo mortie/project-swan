@@ -43,59 +43,59 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	rnd.drawRect({breakPos_, {1, 1}});
 
 	// Draw hotbar
-	rnd.uiView({
+	ui_.hotbarRect = rnd.uiView({
 		.size = {12, 3},
 	}, [&] {
 		// Hotbar content
-		Swan::Draw::inventory(ctx, rnd, {10, 1}, inventorySprite_, inventory_.content);
+		Swan::UI::inventory(ctx, rnd, {10, 1}, inventorySprite_, inventory_.content);
 
 		// Selection
-		if (selectedInventorySlot_ < 10) {
+		if (ui_.selectedInventorySlot < 10) {
 			rnd.drawUISprite({
 				.transform = Cygnet::Mat3gf{}.translate(
-					{float(selectedInventorySlot_), 0}),
+					{float(ui_.selectedInventorySlot), 0}),
 				.sprite = selectedSlotSprite_,
 			}, Cygnet::Anchor::TOP_LEFT);
 		}
 	}, Cygnet::Anchor::BOTTOM);
 
 	if (!heldStack_.empty()) {
-		rnd.drawUITile({
+		rnd.drawUITile(Cygnet::RenderLayer::FOREGROUND, {
 			.transform = Cygnet::Mat3gf{}
 				.scale({1.5, 1.5})
 				.translate({ctx.game.getMouseUIPos()})
-				.translate({-0.75, -1.0}),
+				.translate({-0.25, -0.5}),
 			.id = heldStack_.item()->id,
-		}, Cygnet::Anchor::TOP_LEFT);
+		});
 
-		rnd.drawUIText({
+		rnd.drawUIText(Cygnet::RenderLayer::FOREGROUND, {
 			.textCache = ctx.game.smallFont_,
 			.transform = Cygnet::Mat3gf{}
 				.scale({0.7, 0.7})
 				.translate({ctx.game.getMouseUIPos()})
-				.translate({0, 0.5}),
+				.translate({0.1, 0.8}),
 			.text = std::to_string(heldStack_.count()).c_str(),
-		}, Cygnet::Anchor::TOP_LEFT);
+		});
 	}
 
 	// Everything after this is inventory stuff
-	if (!showInventory_) {
+	if (!ui_.showInventory) {
 		return;
 	}
 
 	// Draw the rest of the inventory
-	rnd.uiView({
+	ui_.inventoryRect = rnd.uiView({
 		.pos = {0, -2},
 		.size = {12, 5},
 	}, [&] {
 		// Inventory content
-		Swan::Draw::inventory(
+		Swan::UI::inventory(
 			ctx, rnd, {10, 3}, inventorySprite_,
 			{inventory_.content.begin() + 10, inventory_.content.end()});
 
 		// Selection
-		if (selectedInventorySlot_ >= 10) {
-			int slot = selectedInventorySlot_ - 10;
+		if (ui_.selectedInventorySlot >= 10) {
+			int slot = ui_.selectedInventorySlot - 10;
 			int y = slot / 10;
 			int x = slot % 10;
 			rnd.drawUISprite({
@@ -602,7 +602,7 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 		return;
 	}
 
-	Swan::InventorySlot slot = inventory_.slot(selectedInventorySlot_);
+	Swan::InventorySlot slot = inventory_.slot(ui_.selectedInventorySlot);
 	Swan::ItemStack stack = slot.get();
 
 	if (stack.empty()) {
@@ -684,7 +684,7 @@ void PlayerEntity::craft(const Swan::Context &ctx, const Swan::Recipe &recipe)
 
 void PlayerEntity::dropItem(const Swan::Context &ctx)
 {
-	auto &stack = inventory_.content[selectedInventorySlot_];
+	auto &stack = inventory_.content[ui_.selectedInventorySlot];
 
 	if (stack.empty()) {
 		return;
@@ -701,7 +701,42 @@ void PlayerEntity::dropItem(const Swan::Context &ctx)
 
 bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 {
-	Swan::info << "Mouse UI pos: " << ctx.game.getMouseUIPos();
+	int clickedSlot = -1;
+
+	auto mousePos = ctx.game.getMouseUIPos();
+	auto hotbarPos = Swan::UI::inventoryCellPos(mousePos, ui_.hotbarRect);
+	if (hotbarPos) {
+		clickedSlot = hotbarPos->x;
+	} else if (ui_.showInventory) {
+		auto invPos = Swan::UI::inventoryCellPos(mousePos, ui_.inventoryRect);
+		if (invPos) {
+			clickedSlot = 10 + invPos->y * 10 + invPos->x;
+		}
+	}
+
+	if (clickedSlot < 0) {
+		return false;
+	}
+
+	ctx.game.playSound(sounds_.snap);
+
+	// I don't understand what this does anymore,
+	// but it's the same as what happens when you press 'x'
+	// and I think I want to keep that behavior..
+	Swan::ItemStack &slot = inventory_.content[clickedSlot];
+	if (heldStack_.empty()) {
+		heldStack_ = slot;
+		slot = {};
+	}
+	else {
+		auto tmp = heldStack_;
+		heldStack_ = slot.insert(heldStack_);
+		if (heldStack_ == tmp) {
+			heldStack_ = slot;
+			slot = tmp;
+		}
+	}
+
 	return false;
 }
 
@@ -709,8 +744,8 @@ void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
 {
 	// Select item slots directly
 	auto selectSlot = [&](int slot) {
-		int delta = slot - (selectedInventorySlot_ % 10);
-		selectedInventorySlot_ += delta;
+		int delta = slot - (ui_.selectedInventorySlot % 10);
+		ui_.selectedInventorySlot += delta;
 	};
 	if (ctx.game.wasKeyPressed(GLFW_KEY_1)) {
 		selectSlot(0);
@@ -745,49 +780,50 @@ void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
 
 	// Navigate left/right/up/down
 	if (ctx.game.wasKeyPressed(GLFW_KEY_LEFT)) {
-		if (selectedInventorySlot_ % 10 == 0) {
-			selectedInventorySlot_ += 9;
+		if (ui_.selectedInventorySlot % 10 == 0) {
+			ui_.selectedInventorySlot += 9;
 		} else {
-			selectedInventorySlot_ -= 1;
+			ui_.selectedInventorySlot -= 1;
 		}
 	}
 	else if (ctx.game.wasKeyPressed(GLFW_KEY_RIGHT)) {
-		if (selectedInventorySlot_ % 10 == 9) {
-			selectedInventorySlot_ -= 9;
+		if (ui_.selectedInventorySlot % 10 == 9) {
+			ui_.selectedInventorySlot -= 9;
 		} else {
-			selectedInventorySlot_ += 1;
+			ui_.selectedInventorySlot += 1;
 		}
 	}
 	else if (
-		showInventory_ && (
+		ui_.showInventory && (
 			ctx.game.wasKeyPressed(GLFW_KEY_UP) ||
 			ctx.game.wasKeyPressed(GLFW_KEY_V))) {
-		if (selectedInventorySlot_ < 10) {
-			selectedInventorySlot_ += INVENTORY_SIZE - 10;
+		if (ui_.selectedInventorySlot < 10) {
+			ui_.selectedInventorySlot += INVENTORY_SIZE - 10;
 		} else {
-			selectedInventorySlot_ -= 10;
+			ui_.selectedInventorySlot -= 10;
 		}
-		if (selectedInventorySlot_ < 0) {
-			selectedInventorySlot_ += 10;
+		if (ui_.selectedInventorySlot < 0) {
+			ui_.selectedInventorySlot += 10;
 		}
 	}
 	else if (
-		showInventory_ && (
+		ui_.showInventory && (
 			ctx.game.wasKeyPressed(GLFW_KEY_DOWN) ||
 			ctx.game.wasKeyPressed(GLFW_KEY_C))) {
-		if (selectedInventorySlot_ >= INVENTORY_SIZE - 10) {
-			selectedInventorySlot_ -= INVENTORY_SIZE - 10;
+		if (ui_.selectedInventorySlot >= INVENTORY_SIZE - 10) {
+			ui_.selectedInventorySlot -= INVENTORY_SIZE - 10;
 		} else {
-			selectedInventorySlot_ += 10;
+			ui_.selectedInventorySlot += 10;
 		}
-		if (selectedInventorySlot_ >= INVENTORY_SIZE) {
-			selectedInventorySlot_ -= INVENTORY_SIZE;
+		if (ui_.selectedInventorySlot >= INVENTORY_SIZE) {
+			ui_.selectedInventorySlot -= INVENTORY_SIZE;
 		}
 	}
 
 	// Handle held items
 	if (ctx.game.wasKeyPressed(GLFW_KEY_X)) {
-		Swan::ItemStack &slot = inventory_.content[selectedInventorySlot_];
+		ctx.game.playSound(sounds_.snap);
+		Swan::ItemStack &slot = inventory_.content[ui_.selectedInventorySlot];
 		if (heldStack_.empty()) {
 			heldStack_ = slot;
 			slot = {};
@@ -804,13 +840,13 @@ void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
 
 	// Toggle inventory
 	if (ctx.game.wasKeyPressed(GLFW_KEY_E)) {
-		if (showInventory_) {
+		if (ui_.showInventory) {
 			ctx.game.playSound(sounds_.inventoryClose, 0.2);
-			showInventory_ = false;
-			selectedInventorySlot_ %= 10;
+			ui_.showInventory = false;
+			ui_.selectedInventorySlot %= 10;
 		} else {
 			ctx.game.playSound(sounds_.inventoryOpen);
-			showInventory_ = true;
+			ui_.showInventory = true;
 		}
 	}
 }

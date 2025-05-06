@@ -67,8 +67,10 @@ void Game::onKeyUp(int scancode, int key)
 
 void Game::onMouseMove(float x, float y)
 {
-	mousePos_ = (Vec2{x, y} / (Vec2)cam_.size) * renderer_.winScale();
-	mouseUIPos_ = (Vec2{x, y} / uiCam_.size / uiCam_.zoom * 2) * renderer_.winScale();
+	Vec2 pixPos{x, y};
+	mousePos_ = (pixPos / cam_.size.as<float>()) * renderer_.winScale();
+	pixPos -= uiCam_.size / 2;
+	mouseUIPos_ = (pixPos / uiCam_.size / uiCam_.zoom * 2) * renderer_.winScale();
 }
 
 void Game::onMouseDown(int button)
