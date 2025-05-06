@@ -159,7 +159,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		}
 
 		if (ImGui::Button(text.c_str())) {
-			craft(recipe);
+			craft(ctx, recipe);
 		}
 	}
 	ImGui::End();
@@ -636,7 +636,7 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 	slot.remove(1);
 }
 
-void PlayerEntity::craft(const Swan::Recipe &recipe)
+void PlayerEntity::craft(const Swan::Context &ctx, const Swan::Recipe &recipe)
 {
 	// Back up the state of the inventory,
 	// so that we can undo everything if it turns out we don't have enough items
@@ -667,7 +667,9 @@ void PlayerEntity::craft(const Swan::Recipe &recipe)
 
 	Swan::ItemStack stack(recipe.output.item, recipe.output.count);
 	stack = inventory_.insert(stack);
-	if (!stack.empty()) {
+	if (stack.empty()) {
+		ctx.game.playSound(craftingSound_, 0.2);
+	} else {
 		Swan::info
 			<< "Attempted to craft " << recipe.output.item->name
 			<< ", but there wasn't enough space in the inventory to put the result";
@@ -791,9 +793,13 @@ void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
 
 	// Toggle inventory
 	if (ctx.game.wasKeyPressed(GLFW_KEY_E)) {
-		showInventory_ = !showInventory_;
-		if (!showInventory_) {
+		if (showInventory_) {
+			ctx.game.playSound(inventoryCloseSound_, 0.2);
+			showInventory_ = false;
 			selectedInventorySlot_ %= 10;
+		} else {
+			ctx.game.playSound(inventoryOpenSound_);
+			showInventory_ = true;
 		}
 	}
 }

@@ -21,6 +21,9 @@ public:
 		snapSound_(ctx.world.getSound("core::sounds/misc/snap")),
 		splashSound_(ctx.world.getSound("core::sounds/misc/splash")),
 		shortSplashSound_(ctx.world.getSound("core::sounds/misc/splash-short")),
+		inventoryOpenSound_(ctx.world.getSound("core::sounds/ui/inventory-open")),
+		inventoryCloseSound_(ctx.world.getSound("core::sounds/ui/inventory-close")),
+		craftingSound_(ctx.world.getSound("core::sounds/ui/crafting")),
 		inventorySprite_(ctx.world.getSprite("core::ui/inventory")),
 		selectedSlotSprite_(ctx.world.getSprite("core::ui/selected-slot"))
 	{}
@@ -75,7 +78,7 @@ private:
 
 	void onRightClick(const Swan::Context &ctx);
 	void onLeftClick(const Swan::Context &ctx);
-	void craft(const Swan::Recipe &recipe);
+	void craft(const Swan::Context &ctx, const Swan::Recipe &recipe);
 	void dropItem(const Swan::Context &ctx);
 
 	void handleInventorySelection(const Swan::Context &ctx);
@@ -91,6 +94,9 @@ private:
 	Swan::SoundAsset *snapSound_;
 	Swan::SoundAsset *splashSound_;
 	Swan::SoundAsset *shortSplashSound_;
+	Swan::SoundAsset *inventoryOpenSound_;
+	Swan::SoundAsset *inventoryCloseSound_;
+	Swan::SoundAsset *craftingSound_;
 	Cygnet::RenderSprite inventorySprite_;
 	Cygnet::RenderSprite selectedSlotSprite_;
 
