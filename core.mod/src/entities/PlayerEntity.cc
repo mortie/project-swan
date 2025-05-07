@@ -31,13 +31,22 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		mat.translate({-0.9, 0}).scale({-1, 1}).translate({0.9, 0});
 	}
 
+	// Teleportation animation..
+	if (teleportTimer_ > 0) {
+		float frac = teleportTimer_ / 0.2;
+		mat.scale({frac, 1});
+		mat.translate({(1.0f - frac) * 0.9f, 0});
+	}
+
 	// The running animation dips into the ground a bit
 	if (state_ == State::RUNNING) {
 		mat.translate({0, 4.0 / 32.0});
 	}
 
-	currentAnimation_->draw(rnd, mat.translate(
-		physicsBody_.body.pos - Swan::Vec2{0.6, 0.5}));
+	// Position
+	mat.translate(physicsBody_.body.pos - Swan::Vec2{0.6, 0.5});
+
+	currentAnimation_->draw(rnd, mat);
 
 	rnd.drawRect({Swan::Vec2(placePos_).add(0.1, 0.1), {0.8, 0.8}});
 	rnd.drawRect({breakPos_, {1, 1}});
@@ -320,8 +329,15 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 
 	// Go back to spawn point
-	if (ctx.game.wasKeyPressed(GLFW_KEY_B)) {
-		physicsBody_.body.pos = spawnPoint_;
+	if (teleportTimer_ > 0) {
+		teleportTimer_ -= dt;
+		if (teleportTimer_ <= 0) {
+			physicsBody_.body.pos = spawnPoint_;
+		}
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_B)) {
+		ctx.game.playSound(sounds_.teleport);
+		teleportTimer_ = 0.2;
 	}
 
 	handleInventorySelection(ctx);

@@ -41,6 +41,7 @@ public:
 		registerSound("sounds/misc/snap");
 		registerSound("sounds/misc/splash");
 		registerSound("sounds/misc/splash-short");
+		registerSound("sounds/misc/teleport");
 		registerSound("sounds/ui/crafting");
 		registerSound("sounds/ui/inventory-open");
 		registerSound("sounds/ui/inventory-close");

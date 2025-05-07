@@ -47,6 +47,7 @@ private:
 			snap(ctx.world.getSound("core::sounds/misc/snap")),
 			splash(ctx.world.getSound("core::sounds/misc/splash")),
 			shortSplash(ctx.world.getSound("core::sounds/misc/splash-short")),
+			teleport(ctx.world.getSound("core::sounds/misc/teleport")),
 			inventoryOpen(ctx.world.getSound("core::sounds/ui/inventory-open")),
 			inventoryClose(ctx.world.getSound("core::sounds/ui/inventory-close")),
 			crafting(ctx.world.getSound("core::sounds/ui/crafting"))
@@ -55,6 +56,7 @@ private:
 		Swan::SoundAsset *snap;
 		Swan::SoundAsset *splash;
 		Swan::SoundAsset *shortSplash;
+		Swan::SoundAsset *teleport;
 		Swan::SoundAsset *inventoryOpen;
 		Swan::SoundAsset *inventoryClose;
 		Swan::SoundAsset *crafting;
@@ -138,6 +140,7 @@ private:
 	int stepIndex_ = 0;
 	float interactTimer_ = 0;
 	Swan::TilePos spawnPoint_;
+	float teleportTimer_ = 0;
 
 	float gamma_ = 1;
 
