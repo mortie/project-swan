@@ -150,6 +150,8 @@ private:
 	int stepIndex_ = 0;
 	float interactTimer_ = 0;
 	Swan::TilePos spawnPoint_;
+
+	int teleState_ = 0;
 	float teleportTimer_ = 0;
 
 	float gamma_ = 1;

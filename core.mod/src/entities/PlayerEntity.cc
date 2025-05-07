@@ -32,7 +32,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	}
 
 	// Teleportation animation..
-	if (teleportTimer_ > 0) {
+	if (teleState_ != 0) {
 		float frac = teleportTimer_ / 0.2;
 		mat.scale({frac, 1});
 		mat.translate({(1.0f - frac) * 0.9f, 0});
@@ -328,16 +328,25 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		}
 	}
 
-	// Go back to spawn point
-	if (teleportTimer_ > 0) {
+	// Handle teleporting back to spawn point + animation
+	if (teleState_ == 1) {
 		teleportTimer_ -= dt;
 		if (teleportTimer_ <= 0) {
 			physicsBody_.body.pos = spawnPoint_;
+			teleportTimer_ = 0;
+			teleState_ = 2;
+		}
+	}
+	else if (teleState_ == 2) {
+		teleportTimer_ += dt * 2;
+		if (teleportTimer_ >= 0.2) {
+			teleState_ = 0;
 		}
 	}
 	else if (ctx.game.wasKeyPressed(GLFW_KEY_B)) {
 		ctx.game.playSound(sounds_.teleport);
 		teleportTimer_ = 0.2;
+		teleState_ = 1;
 	}
 
 	handleInventorySelection(ctx);
