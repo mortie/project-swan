@@ -546,8 +546,11 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 
 void PlayerEntity::tick(const Swan::Context &ctx, float dt)
 {
-	auto lightLevel = ctx.plane.tiles().getLightLevel(
-		physicsBody_.body.center().as<int>());
+	auto lightPos = physicsBody_.body.topMid().as<int>();
+	if (lightPos.x < 0) lightPos.x -= 1;
+	if (lightPos.y < 0) lightPos.y -= 1;
+
+	auto lightLevel = ctx.plane.tiles().getLightLevel(lightPos);
 	float desiredGamma = 1.0 / ((lightLevel / 256.0) + 1) * 2;
 
 	if (gamma_ < desiredGamma) {
@@ -676,6 +679,14 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 		return;
 	}
 
+	// If we were holding a light emitting item,
+	// and that stack is now empty,
+	// remove the light from the held item
+	if (heldStack_.count() == 1 && heldLight_) {
+		ctx.plane.lights().removeLight(heldLight_->pos, heldLight_->level);
+		heldLight_ = std::nullopt;
+	}
+
 	interactTimer_ = 0.2;
 	stack.remove(1);
 }
@@ -723,7 +734,9 @@ void PlayerEntity::craft(const Swan::Context &ctx, const Swan::Recipe &recipe)
 
 void PlayerEntity::dropItem(const Swan::Context &ctx)
 {
-	auto &stack = inventory_.content[ui_.selectedInventorySlot];
+	Swan::ItemStack &stack = heldStack_.empty()
+		? inventory_.content[ui_.selectedInventorySlot]
+		: heldStack_;
 
 	if (stack.empty()) {
 		return;
