@@ -169,10 +169,10 @@ public:
 			.name = "dynamite",
 			.image = "core::items/dynamite",
 			.onActivate = [](
-				const Swan::Context &ctx, Swan::InventorySlot slot,
+				const Swan::Context &ctx, Swan::ItemStack &stack,
 				Swan::Vec2 pos, Swan::Vec2 dir)
 			{
-				slot.remove(1);
+				stack.remove(1);
 				ctx.plane.entities().spawn<DynamiteEntity>(pos, dir * 15);
 			},
 		});

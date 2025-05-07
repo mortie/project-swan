@@ -574,7 +574,6 @@ void PlayerEntity::tick(const Swan::Context &ctx, float dt)
 	// If the actual held light is different than what we expect,
 	// tell the light system to remove and add lights as needed
 	if (heldLight_ != light) {
-		Swan::info << "Updating held light";
 		if (heldLight_) {
 			ctx.plane.lights().removeLight(heldLight_->pos, heldLight_->level);
 		}
@@ -645,8 +644,9 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 		return;
 	}
 
-	Swan::InventorySlot slot = inventory_.slot(ui_.selectedInventorySlot);
-	Swan::ItemStack stack = slot.get();
+	Swan::ItemStack &stack = heldStack_.empty()
+		? inventory_.content[ui_.selectedInventorySlot]
+		: heldStack_;
 
 	if (stack.empty()) {
 		return;
@@ -657,7 +657,7 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 	if (item.onActivate) {
 		Swan::Vec2 origin = physicsBody_.body.topMid().add(0, 0.25);
 		Swan::Vec2 mouse = ctx.game.getMousePos();
-		item.onActivate(ctx, slot, origin, (mouse - origin).norm());
+		item.onActivate(ctx, stack, origin, (mouse - origin).norm());
 		interactTimer_ = 0.5;
 		return;
 	}
@@ -672,16 +672,12 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 		return;
 	}
 
-	if (slot.get().empty()) {
-		return;
-	}
-
 	if (!ctx.plane.placeTile(placePos_, item.tile->id)) {
 		return;
 	}
 
 	interactTimer_ = 0.2;
-	slot.remove(1);
+	stack.remove(1);
 }
 
 void PlayerEntity::craft(const Swan::Context &ctx, const Swan::Recipe &recipe)
