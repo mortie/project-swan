@@ -243,7 +243,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	Swan::Vec2 mousePos = ctx.game.getMousePos();
 	auto lookVector = mousePos - facePos;
 	auto raycast = ctx.plane.tiles().raycast(
-		facePos, lookVector, std::min(lookVector.length(), 6.0f));
+		facePos, lookVector, std::min(lookVector.length(), 5.9f));
 	breakPos_ = raycast.pos;
 	placePos_ = raycast.pos + raycast.face;
 
