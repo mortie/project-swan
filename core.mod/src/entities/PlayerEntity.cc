@@ -507,16 +507,15 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		stepTimer_ -= dt;
 		if (stepTimer_ <= 0) {
 			auto *sound = belowTile.stepSounds[stepIndex_];
-			ctx.game.playSound(sound);
-
+			ctx.game.playSound(sound, 0.2);
 			stepIndex_ = (stepIndex_ + 1) % 2;
 			stepTimer_ += sprinting_ ? 0.28 : 0.4;
 		}
 	}
 	else if (state_ == State::LANDING && oldState != State::LANDING) {
-		auto *sound = belowTile.stepSounds[1];
-		stepIndex_ = 0;
-		ctx.game.playSound(sound);
+		auto *sound = belowTile.stepSounds[stepIndex_];
+		stepIndex_ = (stepIndex_ + 1) % 2;
+		ctx.game.playSound(sound, 0.2);
 		stepTimer_ = 0.2;
 	}
 	else {
