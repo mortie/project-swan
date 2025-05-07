@@ -561,6 +561,30 @@ void PlayerEntity::tick(const Swan::Context &ctx, float dt)
 			gamma_ = desiredGamma;
 		}
 	}
+
+	// Calculate the held light we would expect to produce
+	std::optional<HeldLight> light;
+	if (!heldStack_.empty() && heldStack_.item()->lightLevel) {
+		light = {
+			.pos = placePos_,
+			.level = heldStack_.item()->lightLevel,
+		};
+	}
+
+	// If the actual held light is different than what we expect,
+	// tell the light system to remove and add lights as needed
+	if (heldLight_ != light) {
+		Swan::info << "Updating held light";
+		if (heldLight_) {
+			ctx.plane.lights().removeLight(heldLight_->pos, heldLight_->level);
+		}
+
+		if (light) {
+			ctx.plane.lights().addLight(light->pos, light->level);
+		}
+
+		heldLight_ = light;
+	};
 }
 
 void PlayerEntity::serialize(

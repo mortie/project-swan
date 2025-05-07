@@ -240,7 +240,9 @@ void World::buildResources()
 			 * Create item representing the tile
 			 */
 
-			auto &item = items_[tile.name] = Item(tile.id, tile.name, {});
+			auto &item = items_[tile.name] = Item(tile.id, tile.name, {
+				.lightLevel = tile.lightLevel,
+			});
 			item.tile = &tile;
 			item.yOffset = yOffset;
 

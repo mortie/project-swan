@@ -86,6 +86,16 @@ private:
 		Cygnet::Renderer::Rect inventoryRect;
 	};
 
+	struct HeldLight {
+		Swan::TilePos pos;
+		float level;
+
+		friend bool operator==(const HeldLight &a, const HeldLight &b)
+		{
+			return a.pos == b.pos && a.level == b.level;
+		}
+	};
+
 	enum class State {
 		IDLE,
 		RUNNING,
@@ -148,6 +158,7 @@ private:
 	Swan::TilePos placePos_;
 
 	Swan::ItemStack heldStack_;
+	std::optional<HeldLight> heldLight_;
 
 	Swan::BasicInventory inventory_{INVENTORY_SIZE};
 	Swan::BasicPhysicsBody physicsBody_{PROPS};

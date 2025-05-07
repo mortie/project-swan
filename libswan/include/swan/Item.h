@@ -19,6 +19,7 @@ struct Item {
 		int maxStack = 64;
 		std::optional<std::string> tile = std::nullopt;
 		ToolSet tool = Tool::NONE;
+		float lightLevel = 0;
 
 		void (*onActivate)(
 			const Context &ctx, InventorySlot slot, Vec2 pos, Vec2 dir) = nullptr;
@@ -29,6 +30,7 @@ struct Item {
 	int maxStack;
 	Tile *tile;
 	ToolSet tool;
+	float lightLevel;
 
 	bool hidden = true;
 	float yOffset = 0;
@@ -39,7 +41,7 @@ struct Item {
 	Item() = default;
 	Item(Tile::ID id, std::string name, const Builder &builder):
 		id(id), name(name), maxStack(builder.maxStack), tile(nullptr),
-		tool(builder.tool),
+		tool(builder.tool), lightLevel(builder.lightLevel),
 		onActivate(builder.onActivate)
 	{}
 };
