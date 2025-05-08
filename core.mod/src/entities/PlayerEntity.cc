@@ -364,7 +364,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		}
 	}
 
-	// Place block, or activate item
+	// Place block, or activate tile or item
 	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_RIGHT)) {
 		onRightClick(ctx);
 	}
@@ -652,6 +652,14 @@ void PlayerEntity::onLeftClick(const Swan::Context &ctx)
 void PlayerEntity::onRightClick(const Swan::Context &ctx)
 {
 	if (interactTimer_ > 0) {
+		return;
+	}
+
+	// First priority: activate the hovered tile if it can be activated
+	Swan::Tile &hoveredTile = ctx.plane.tiles().get(placePos_);
+	if (hoveredTile.onActivate) {
+		hoveredTile.onActivate(ctx, placePos_);
+		interactTimer_ = 0.5;
 		return;
 	}
 

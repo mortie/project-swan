@@ -42,6 +42,8 @@ public:
 		registerSound("sounds/misc/splash");
 		registerSound("sounds/misc/splash-short");
 		registerSound("sounds/misc/teleport");
+		registerSound("sounds/misc/lock-open");
+		registerSound("sounds/misc/lock-close");
 		registerSound("sounds/ui/crafting");
 		registerSound("sounds/ui/inventory-open");
 		registerSound("sounds/ui/inventory-close");
@@ -143,10 +145,33 @@ public:
 		});
 
 		registerTile({
+			.name = "chest",
+			.image = "core::tiles/chest::closed",
+			.isSolid = false,
+			.breakableBy = Swan::Tool::HAND,
+			.droppedItem = "core::chest",
+			.onActivate = +[](const Swan::Context &ctx, Swan::TilePos pos) {
+				ctx.game.playSound(ctx.world.getSound("core::sounds/misc/lock-open"));
+				ctx.plane.tiles().set(pos, "core::chest::open");
+			},
+		});
+		registerTile({
+			.name = "chest::open",
+			.image = "core::tiles/chest::open",
+			.isSolid = false,
+			.breakableBy = Swan::Tool::HAND,
+			.droppedItem = "core::chest",
+			.onActivate = +[](const Swan::Context &ctx, Swan::TilePos pos) {
+				ctx.game.playSound(ctx.world.getSound("core::sounds/misc/lock-close"));
+				ctx.plane.tiles().set(pos, "core::chest");
+			},
+		});
+
+		registerTile({
 			.name = "water",
 			.image = "@::invalid",
 			.isSolid = false,
-			.onSpawn = +[] (const Swan::Context &ctx, Swan::TilePos pos) {
+			.onSpawn = +[](const Swan::Context &ctx, Swan::TilePos pos) {
 				ctx.plane.tiles().setIDWithoutUpdate(pos, Swan::World::AIR_TILE_ID);
 				ctx.plane.fluids().setInTile(pos, ctx.world.getFluid("core::water").id);
 				return true;

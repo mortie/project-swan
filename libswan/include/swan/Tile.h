@@ -41,6 +41,7 @@ struct Tile {
 		bool (*onSpawn)(const Context &ctx, TilePos pos) = nullptr;
 		void (*onBreak)(const Context &ctx, TilePos pos) = nullptr;
 		void (*onTileUpdate)(const Context &ctx, TilePos pos) = nullptr;
+		void (*onActivate)(const Context &ctx, TilePos pos) = nullptr;
 
 		std::optional<std::string> tileEntity = std::nullopt;
 
@@ -65,6 +66,7 @@ struct Tile {
 	bool (*onSpawn)(const Context &ctx, TilePos pos);
 	void (*onBreak)(const Context &ctx, TilePos pos);
 	void (*onTileUpdate)(const Context &ctx, TilePos pos);
+	void (*onActivate)(const Context &ctx, TilePos pos);
 
 	std::optional<std::string> tileEntity;
 
@@ -80,7 +82,7 @@ struct Tile {
 		isReplacable(builder.isReplacable), lightLevel(builder.lightLevel),
 		breakableBy(builder.breakableBy),
 		onSpawn(builder.onSpawn), onBreak(builder.onBreak),
-		onTileUpdate(builder.onTileUpdate),
+		onTileUpdate(builder.onTileUpdate), onActivate(builder.onActivate),
 		tileEntity(builder.tileEntity), traits(builder.traits)
 	{}
 };
