@@ -137,68 +137,9 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 
 void PlayerEntity::update(const Swan::Context &ctx, float dt)
 {
-	// Collide with stuff
-	bool pickedUpItem = false;
-
-	for (auto &c: ctx.plane.entities().getColliding(physicsBody_.body)) {
-		auto *entity = c.ref.get();
-
-		// Pick it up if it's an item stack, and don't collide
-		auto *itemStackEnt = dynamic_cast<ItemStackEntity *>(entity);
-		if (itemStackEnt) {
-			// Don't pick up immediately
-			if (itemStackEnt->lifetime_ < 0.2) {
-				continue;
-			}
-
-			// Only one per update
-			if (pickedUpItem) {
-				continue;
-			}
-
-			Swan::ItemStack stack{itemStackEnt->item(), 1};
-			stack = inventory_.insert(stack);
-			if (stack.empty()) {
-				ctx.plane.entities().despawn(c.ref);
-				ctx.game.playSound(sounds_.snap);
-				pickedUpItem = true;
-			}
-			continue;
-		}
-
-		if (c.body.isSolid) {
-			physicsBody_.collideWith(c.body);
-		}
-
-		// Get damaged if it's something which deals contact damage
-		auto *damage = entity->trait<Swan::ContactDamageTrait>();
-		bool damaged = false;
-		if (damage && invincibleTimer_ <= 0) {
-			Swan::Vec2 direction;
-			direction.y = -0.5;
-			if (physicsBody_.body.center().x < c.body.center().x) {
-				direction.x = -1;
-			}
-			else {
-				direction.x = 1;
-			}
-
-			physicsBody_.vel += direction * damage->knockback;
-			damaged = true;
-		}
-
-		if (damaged) {
-			invincibleTimer_ = 0.5;
-		}
-	}
-
 	if (interactTimer_ >= 0) {
 		interactTimer_ -= dt;
 	}
-
-	State oldState = state_;
-
-	state_ = State::IDLE;
 
 	Swan::Vec2 facePos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.3};
 	Swan::Vec2 mousePos = ctx.game.getMousePos();
@@ -209,85 +150,6 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	placePos_ = raycast.pos + raycast.face;
 
 	jumpTimer_.tick(dt);
-
-	// Figure out what tile we're in
-	auto midTilePos = Swan::TilePos{
-		(int)floor(physicsBody_.body.midX()),
-		(int)floor(physicsBody_.body.bottom() - 0.1),
-	};
-	auto &midTile = ctx.plane.tiles().get(midTilePos);
-	auto &topTile = ctx.plane.tiles().get(midTilePos.add(0, -1));
-
-	// Figure out what tile is below us
-	auto belowTilePos = Swan::TilePos{
-		(int)floor(physicsBody_.body.midX()),
-		(int)floor(physicsBody_.body.bottom() + 0.1),
-	};
-	auto &belowTile = ctx.plane.tiles().get(belowTilePos);
-
-	bool inLadder =
-		dynamic_cast<LadderTileTrait *>(midTile.traits.get()) ||
-		dynamic_cast<LadderTileTrait *>(topTile.traits.get());
-
-	auto fluidCenterPos = Swan::Vec2{
-		physicsBody_.body.midX(),
-		physicsBody_.body.top() + 0.25f,
-	};
-
-	auto fluidBottomPos = Swan::Vec2{
-		physicsBody_.body.midX(),
-		physicsBody_.body.bottom() - 0.25f,
-	};
-
-	// Figure out what fluids we're in
-	Swan::Fluid &fluidCenter = ctx.plane.fluids().getAtPos(fluidCenterPos);
-	Swan::Fluid &fluidBottom = ctx.plane.fluids().getAtPos(fluidBottomPos);
-
-	{ // Splash sound
-		bool oldInFluid = inFluid_;
-		if (fluidCenter.density > 0 && fluidBottom.density > 0) {
-			inFluid_ = true;
-			fluidColor_ = fluidCenter.color;
-		}
-		else if (fluidCenter.density <= 0 && fluidBottom.density <= 0) {
-			inFluid_ = false;
-		}
-
-		if (inFluid_ && !oldInFluid) {
-			ctx.game.playSound(sounds_.splash);
-			for (int i = 0; i < 60; ++i) {
-				ctx.game.spawnParticle({
-					.pos = fluidCenterPos + Swan::Vec2{
-						(Swan::randfloat() - 0.5f) * 0.2f,
-						(Swan::randfloat() - 0.5f) * 0.2f + 0.2f,
-					},
-					.vel = {
-						(Swan::randfloat() * 6 - 3) + (physicsBody_.vel.x * 0.5f),
-						Swan::randfloat() * -3 - 4,
-					},
-					.color = fluidColor_,
-					.lifetime = 0.4f + Swan::randfloat() * 0.2f,
-				});
-			}
-		}
-		else if (!inFluid_ && oldInFluid) {
-			ctx.game.playSound(sounds_.shortSplash);
-			for (int i = 0; i < 40; ++i) {
-				ctx.game.spawnParticle({
-					.pos = fluidBottomPos + Swan::Vec2{
-						(Swan::randfloat() - 0.5f) * 0.3f,
-						(Swan::randfloat() - 0.6f) * 0.3f + 0.4f,
-					},
-					.vel = {
-						(Swan::randfloat() * 4 - 2) + (physicsBody_.vel.x * 0.5f),
-						Swan::randfloat() * -2 - 6,
-					},
-					.color = fluidColor_,
-					.lifetime = 0.4f + Swan::randfloat() * 0.2f,
-				});
-			}
-		}
-	}
 
 	// Handle teleporting back to spawn point + animation
 	if (teleState_ == 1) {
@@ -337,182 +199,29 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 		dropItem(ctx);
 	}
 
-	// Handle sprint press
-	if (ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
-		sprinting_ = true;
-	}
+	// God mode, or normal physics
+	if (ctx.game.debugGodMode_) {
+		physicsBody_.onGround = false;
+		physicsBody_.friction();
 
-	// Handle left/right key press
-	int runDirection = 0;
-	if (ctx.game.isKeyPressed(GLFW_KEY_A)) {
-		runDirection -= 1;
-	}
-	if (ctx.game.isKeyPressed(GLFW_KEY_D)) {
-		runDirection += 1;
-	}
-
-	// Handle ladder climb
-	if (inLadder) {
 		if (ctx.game.isKeyPressed(GLFW_KEY_W)) {
-			physicsBody_.force += Swan::Vec2{0, -LADDER_CLIMB_FORCE};
+			physicsBody_.force += {0, -MOVE_FORCE_GROUND};
 		}
-		else if (ctx.game.isKeyPressed(GLFW_KEY_S)) {
-			physicsBody_.force += Swan::Vec2{0, LADDER_CLIMB_FORCE};
+		if (ctx.game.isKeyPressed(GLFW_KEY_A)) {
+			physicsBody_.force += {-MOVE_FORCE_GROUND, 0};
+		}
+		if (ctx.game.isKeyPressed(GLFW_KEY_S)) {
+			physicsBody_.force += {0, MOVE_FORCE_GROUND};
+		}
+		if (ctx.game.isKeyPressed(GLFW_KEY_D)) {
+			physicsBody_.force += {MOVE_FORCE_GROUND, 0};
 		}
 
-		if (physicsBody_.vel.y > LADDER_MAX_VEL) {
-			physicsBody_.vel.y = LADDER_MAX_VEL;
-		}
-		else if (physicsBody_.vel.y < -LADDER_MAX_VEL && physicsBody_.force.y < 0) {
-			physicsBody_.force.y = 0;
-		}
+		physicsBody_.updateNoclip(ctx, dt);
+	} else  {
+		handlePhysics(ctx, dt);
+		physicsBody_.update(ctx, dt);
 	}
-
-	float moveForce;
-	if (physicsBody_.onGround && sprinting_) {
-		moveForce = SPRINT_FORCE_GROUND;
-	}
-	else if (physicsBody_.onGround) {
-		moveForce = MOVE_FORCE_GROUND;
-	}
-	else {
-		moveForce = MOVE_FORCE_AIR;
-	}
-
-	// Act on run direction
-	if (runDirection < 0) {
-		state_ = State::RUNNING;
-		lastDirection_ = -1;
-		physicsBody_.force += Swan::Vec2(-moveForce, 0);
-	}
-	else if (runDirection > 0) {
-		state_ = State::RUNNING;
-		lastDirection_ = 1;
-		physicsBody_.force += Swan::Vec2(moveForce, 0);
-	}
-	else {
-		state_ = State::IDLE;
-		sprinting_ = false;
-	}
-
-	// Adjust running speed based on sprinting
-	animations_.running.setInterval(sprinting_ ? 0.07 : 0.1);
-
-	// If we hit the ground, override the desired state to be landing
-	if (physicsBody_.onGround && (oldState == State::FALLING || oldState == State::JUMPING)) {
-		state_ = State::LANDING;
-	}
-
-	// Don't switch away from landing unless it's done!
-	if (oldState == State::LANDING && !animations_.landing.done()) {
-		state_ = State::LANDING;
-	}
-
-	bool jumpPressed = ctx.game.isKeyPressed(GLFW_KEY_SPACE);
-
-	// Jump
-	if (physicsBody_.onGround && jumpPressed && jumpTimer_.periodic(0.5)) {
-		physicsBody_.vel.y = -JUMP_VEL;
-	}
-
-	// Fall down faster than we went up
-	if (
-		!inLadder &&
-		!physicsBody_.onGround &&
-		(!jumpPressed || physicsBody_.vel.y > 0)) {
-		physicsBody_.force += Swan::Vec2(0, DOWN_FORCE);
-	}
-
-	// Show falling or jumping animation depending on whether we're going up or down
-	if (!physicsBody_.onGround) {
-		if (oldState == State::JUMPING || oldState == State::FALLING) {
-			state_ = oldState;
-		}
-		else if (physicsBody_.vel.y < -0.1) {
-			state_ = State::JUMPING;
-		}
-		else {
-			state_ = State::FALLING;
-		}
-	}
-
-	if (state_ != oldState) {
-		switch (state_) {
-		case State::IDLE:
-			currentAnimation_ = &animations_.idle;
-			break;
-
-		case State::RUNNING:
-			currentAnimation_ = &animations_.running;
-			break;
-
-		case State::FALLING:
-			currentAnimation_ = &animations_.falling;
-			break;
-
-		case State::JUMPING:
-			currentAnimation_ = &animations_.jumping;
-			break;
-
-		case State::LANDING:
-			currentAnimation_ = &animations_.landing;
-			break;
-		}
-		currentAnimation_->reset();
-	}
-	currentAnimation_->tick(dt);
-
-	if (invincibleTimer_ >= 0) {
-		invincibleTimer_ -= dt;
-	}
-
-	if (state_ == State::RUNNING) {
-		stepTimer_ -= dt;
-		if (stepTimer_ <= 0) {
-			auto *sound = belowTile.stepSounds[stepIndex_];
-			ctx.game.playSound(sound, 0.2);
-			stepIndex_ = (stepIndex_ + 1) % 2;
-			stepTimer_ += sprinting_ ? 0.28 : 0.4;
-		}
-	}
-	else if (state_ == State::LANDING && oldState != State::LANDING) {
-		auto *sound = belowTile.stepSounds[stepIndex_];
-		stepIndex_ = (stepIndex_ + 1) % 2;
-		ctx.game.playSound(sound, 0.2);
-		stepTimer_ = 0.2;
-	}
-	else {
-		stepTimer_ = 0.15;
-	}
-
-	if (inLadder && ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
-		physicsBody_.friction({1000, 1000});
-	}
-	else {
-		float centerDensity = std::min(fluidCenter.density, 10.0f);
-		float bottomDensity = std::min(fluidBottom.density, 10.0f);
-
-		physicsBody_.standardForces();
-		physicsBody_.friction(Swan::Vec2{200, 400} * centerDensity);
-
-		float gForce = Swan::BasicPhysicsBody::GRAVITY * physicsBody_.mass + DOWN_FORCE;
-
-		if (ctx.game.isKeyPressed(GLFW_KEY_SPACE)) {
-			physicsBody_.force.y -= gForce * bottomDensity * 0.8;
-			physicsBody_.force -= Swan::Vec2{0, SWIM_FORCE_UP * bottomDensity};
-		}
-		else if (
-			ctx.game.isKeyPressed(GLFW_KEY_S) ||
-			ctx.game.isKeyPressed(GLFW_KEY_DOWN)) {
-			physicsBody_.force.y -= gForce * centerDensity * 0.8;
-			physicsBody_.force += Swan::Vec2{0, SWIM_FORCE_DOWN * centerDensity};
-		}
-		else {
-			physicsBody_.force.y -= gForce * centerDensity * 0.8;
-		}
-	}
-
-	physicsBody_.update(ctx, dt);
 }
 
 void PlayerEntity::tick(const Swan::Context &ctx, float dt)
@@ -739,6 +448,320 @@ void PlayerEntity::handleInventoryHover(const Swan::Context &ctx)
 	if (auxInventory_) {
 		ui_.hoveredAuxInventorySlot = Swan::UI::inventoryCellIndex(
 			mousePos, ui_.auxInventoryRect);
+	}
+}
+
+void PlayerEntity::handlePhysics(const Swan::Context &ctx, float dt)
+{
+	// Collide with stuff
+	bool pickedUpItem = false;
+	for (auto &c: ctx.plane.entities().getColliding(physicsBody_.body)) {
+		auto *entity = c.ref.get();
+
+		// Pick it up if it's an item stack, and don't collide
+		auto *itemStackEnt = dynamic_cast<ItemStackEntity *>(entity);
+		if (itemStackEnt) {
+			// Don't pick up immediately
+			if (itemStackEnt->lifetime_ < 0.2) {
+				continue;
+			}
+
+			// Only one per update
+			if (pickedUpItem) {
+				continue;
+			}
+
+			Swan::ItemStack stack{itemStackEnt->item(), 1};
+			stack = inventory_.insert(stack);
+			if (stack.empty()) {
+				ctx.plane.entities().despawn(c.ref);
+				ctx.game.playSound(sounds_.snap);
+				pickedUpItem = true;
+			}
+			continue;
+		}
+
+		if (c.body.isSolid) {
+			physicsBody_.collideWith(c.body);
+		}
+
+		// Get damaged if it's something which deals contact damage
+		auto *damage = entity->trait<Swan::ContactDamageTrait>();
+		bool damaged = false;
+		if (damage && invincibleTimer_ <= 0) {
+			Swan::Vec2 direction;
+			direction.y = -0.5;
+			if (physicsBody_.body.center().x < c.body.center().x) {
+				direction.x = -1;
+			}
+			else {
+				direction.x = 1;
+			}
+
+			physicsBody_.vel += direction * damage->knockback;
+			damaged = true;
+		}
+
+		if (damaged) {
+			invincibleTimer_ = 0.5;
+		}
+	}
+
+	// Figure out what tile we're in
+	auto midTilePos = Swan::TilePos{
+		(int)floor(physicsBody_.body.midX()),
+		(int)floor(physicsBody_.body.bottom() - 0.1),
+	};
+	auto &midTile = ctx.plane.tiles().get(midTilePos);
+	auto &topTile = ctx.plane.tiles().get(midTilePos.add(0, -1));
+
+	// Figure out what tile is below us
+	auto belowTilePos = Swan::TilePos{
+		(int)floor(physicsBody_.body.midX()),
+		(int)floor(physicsBody_.body.bottom() + 0.1),
+	};
+	auto &belowTile = ctx.plane.tiles().get(belowTilePos);
+
+	bool inLadder =
+		dynamic_cast<LadderTileTrait *>(midTile.traits.get()) ||
+		dynamic_cast<LadderTileTrait *>(topTile.traits.get());
+
+	auto fluidCenterPos = Swan::Vec2{
+		physicsBody_.body.midX(),
+		physicsBody_.body.top() + 0.25f,
+	};
+
+	auto fluidBottomPos = Swan::Vec2{
+		physicsBody_.body.midX(),
+		physicsBody_.body.bottom() - 0.25f,
+	};
+
+	// Figure out what fluids we're in
+	Swan::Fluid &fluidCenter = ctx.plane.fluids().getAtPos(fluidCenterPos);
+	Swan::Fluid &fluidBottom = ctx.plane.fluids().getAtPos(fluidBottomPos);
+
+	{ // Splash sound
+		bool oldInFluid = inFluid_;
+		if (fluidCenter.density > 0 && fluidBottom.density > 0) {
+			inFluid_ = true;
+			fluidColor_ = fluidCenter.color;
+		}
+		else if (fluidCenter.density <= 0 && fluidBottom.density <= 0) {
+			inFluid_ = false;
+		}
+
+		if (inFluid_ && !oldInFluid) {
+			ctx.game.playSound(sounds_.splash);
+			for (int i = 0; i < 60; ++i) {
+				ctx.game.spawnParticle({
+					.pos = fluidCenterPos + Swan::Vec2{
+						(Swan::randfloat() - 0.5f) * 0.2f,
+						(Swan::randfloat() - 0.5f) * 0.2f + 0.2f,
+					},
+					.vel = {
+						(Swan::randfloat() * 6 - 3) + (physicsBody_.vel.x * 0.5f),
+						Swan::randfloat() * -3 - 4,
+					},
+					.color = fluidColor_,
+					.lifetime = 0.4f + Swan::randfloat() * 0.2f,
+				});
+			}
+		}
+		else if (!inFluid_ && oldInFluid) {
+			ctx.game.playSound(sounds_.shortSplash);
+			for (int i = 0; i < 40; ++i) {
+				ctx.game.spawnParticle({
+					.pos = fluidBottomPos + Swan::Vec2{
+						(Swan::randfloat() - 0.5f) * 0.3f,
+						(Swan::randfloat() - 0.6f) * 0.3f + 0.4f,
+					},
+					.vel = {
+						(Swan::randfloat() * 4 - 2) + (physicsBody_.vel.x * 0.5f),
+						Swan::randfloat() * -2 - 6,
+					},
+					.color = fluidColor_,
+					.lifetime = 0.4f + Swan::randfloat() * 0.2f,
+				});
+			}
+		}
+	}
+
+	// Handle sprint press
+	if (ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+		sprinting_ = true;
+	}
+
+	// Handle left/right key press
+	int runDirection = 0;
+	if (ctx.game.isKeyPressed(GLFW_KEY_A)) {
+		runDirection -= 1;
+	}
+	if (ctx.game.isKeyPressed(GLFW_KEY_D)) {
+		runDirection += 1;
+	}
+
+	// Handle ladder climb
+	if (inLadder) {
+		if (ctx.game.isKeyPressed(GLFW_KEY_W)) {
+			physicsBody_.force += Swan::Vec2{0, -LADDER_CLIMB_FORCE};
+		}
+		else if (ctx.game.isKeyPressed(GLFW_KEY_S)) {
+			physicsBody_.force += Swan::Vec2{0, LADDER_CLIMB_FORCE};
+		}
+
+		if (physicsBody_.vel.y > LADDER_MAX_VEL) {
+			physicsBody_.vel.y = LADDER_MAX_VEL;
+		}
+		else if (physicsBody_.vel.y < -LADDER_MAX_VEL && physicsBody_.force.y < 0) {
+			physicsBody_.force.y = 0;
+		}
+	}
+
+	float moveForce;
+	if (physicsBody_.onGround && sprinting_) {
+		moveForce = SPRINT_FORCE_GROUND;
+	}
+	else if (physicsBody_.onGround) {
+		moveForce = MOVE_FORCE_GROUND;
+	}
+	else {
+		moveForce = MOVE_FORCE_AIR;
+	}
+
+	State oldState = state_;
+	state_ = State::IDLE;
+
+	// Act on run direction
+	if (runDirection < 0) {
+		state_ = State::RUNNING;
+		lastDirection_ = -1;
+		physicsBody_.force += Swan::Vec2(-moveForce, 0);
+	}
+	else if (runDirection > 0) {
+		state_ = State::RUNNING;
+		lastDirection_ = 1;
+		physicsBody_.force += Swan::Vec2(moveForce, 0);
+	}
+	else {
+		state_ = State::IDLE;
+		sprinting_ = false;
+	}
+
+	// Adjust running speed based on sprinting
+	animations_.running.setInterval(sprinting_ ? 0.07 : 0.1);
+
+	// If we hit the ground, override the desired state to be landing
+	if (physicsBody_.onGround && (oldState == State::FALLING || oldState == State::JUMPING)) {
+		state_ = State::LANDING;
+	}
+
+	// Don't switch away from landing unless it's done!
+	if (oldState == State::LANDING && !animations_.landing.done()) {
+		state_ = State::LANDING;
+	}
+
+	bool jumpPressed = ctx.game.isKeyPressed(GLFW_KEY_SPACE);
+
+	// Jump
+	if (physicsBody_.onGround && jumpPressed && jumpTimer_.periodic(0.5)) {
+		physicsBody_.vel.y = -JUMP_VEL;
+	}
+
+	// Fall down faster than we went up
+	if (
+		!inLadder &&
+		!physicsBody_.onGround &&
+		(!jumpPressed || physicsBody_.vel.y > 0)) {
+		physicsBody_.force += Swan::Vec2(0, DOWN_FORCE);
+	}
+
+	// Show falling or jumping animation depending on whether we're going up or down
+	if (!physicsBody_.onGround) {
+		if (oldState == State::JUMPING || oldState == State::FALLING) {
+			state_ = oldState;
+		}
+		else if (physicsBody_.vel.y < -0.1) {
+			state_ = State::JUMPING;
+		}
+		else {
+			state_ = State::FALLING;
+		}
+	}
+
+	if (state_ != oldState) {
+		switch (state_) {
+		case State::IDLE:
+			currentAnimation_ = &animations_.idle;
+			break;
+
+		case State::RUNNING:
+			currentAnimation_ = &animations_.running;
+			break;
+
+		case State::FALLING:
+			currentAnimation_ = &animations_.falling;
+			break;
+
+		case State::JUMPING:
+			currentAnimation_ = &animations_.jumping;
+			break;
+
+		case State::LANDING:
+			currentAnimation_ = &animations_.landing;
+			break;
+		}
+		currentAnimation_->reset();
+	}
+	currentAnimation_->tick(dt);
+
+	if (invincibleTimer_ >= 0) {
+		invincibleTimer_ -= dt;
+	}
+
+	if (state_ == State::RUNNING) {
+		stepTimer_ -= dt;
+		if (stepTimer_ <= 0) {
+			auto *sound = belowTile.stepSounds[stepIndex_];
+			ctx.game.playSound(sound, 0.2);
+			stepIndex_ = (stepIndex_ + 1) % 2;
+			stepTimer_ += sprinting_ ? 0.28 : 0.4;
+		}
+	}
+	else if (state_ == State::LANDING && oldState != State::LANDING) {
+		auto *sound = belowTile.stepSounds[stepIndex_];
+		stepIndex_ = (stepIndex_ + 1) % 2;
+		ctx.game.playSound(sound, 0.2);
+		stepTimer_ = 0.2;
+	}
+	else {
+		stepTimer_ = 0.15;
+	}
+
+	if (inLadder && ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+		physicsBody_.friction({1000, 1000});
+	}
+	else {
+		float centerDensity = std::min(fluidCenter.density, 10.0f);
+		float bottomDensity = std::min(fluidBottom.density, 10.0f);
+
+		physicsBody_.standardForces();
+		physicsBody_.friction(Swan::Vec2{200, 400} * centerDensity);
+
+		float gForce = Swan::BasicPhysicsBody::GRAVITY * physicsBody_.mass + DOWN_FORCE;
+
+		if (ctx.game.isKeyPressed(GLFW_KEY_SPACE)) {
+			physicsBody_.force.y -= gForce * bottomDensity * 0.8;
+			physicsBody_.force -= Swan::Vec2{0, SWIM_FORCE_UP * bottomDensity};
+		}
+		else if (
+			ctx.game.isKeyPressed(GLFW_KEY_S) ||
+			ctx.game.isKeyPressed(GLFW_KEY_DOWN)) {
+			physicsBody_.force.y -= gForce * centerDensity * 0.8;
+			physicsBody_.force += Swan::Vec2{0, SWIM_FORCE_DOWN * centerDensity};
+		}
+		else {
+			physicsBody_.force.y -= gForce * centerDensity * 0.8;
+		}
 	}
 }
 

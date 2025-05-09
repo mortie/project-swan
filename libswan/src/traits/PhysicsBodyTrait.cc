@@ -151,6 +151,13 @@ void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 	collideX(*this, ctx.plane);
 }
 
+void BasicPhysicsBody::updateNoclip(const Swan::Context &ctx, float dt)
+{
+	vel += (force / mass) * dt;
+	force = {0, 0};
+	body.pos += vel * dt;
+}
+
 void BasicPhysicsBody::serialize(proto::BasicPhysicsBody::Builder w)
 {
 	auto posB = w.initPos();

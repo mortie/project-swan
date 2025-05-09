@@ -149,6 +149,7 @@ void Game::draw()
 		ImGui::Checkbox("Disable shadows", &debugDisableShadows_);
 
 		ImGui::Checkbox("Hand-break any tile", &debugHandBreakAny_);
+		ImGui::Checkbox("God mode", &debugGodMode_);
 
 		ImGui::Checkbox("Individually serialize entities", &debugOutputEntityProto_);
 		if (ImGui::Button("Save")) {
@@ -308,13 +309,14 @@ void Game::render()
 
 void Game::update(float dt)
 {
+	float zoomLim = debugGodMode_ ? 0.002 : 0.0175;
 	// Zoom the window using the scroll wheel
 	cam_.zoom += (float)wasWheelScrolled() * 0.05f * cam_.zoom;
 	if (cam_.zoom > 1) {
 		cam_.zoom = 1;
 	}
-	else if (cam_.zoom < 0.025) {
-		cam_.zoom = 0.025;
+	else if (cam_.zoom < zoomLim) {
+		cam_.zoom = zoomLim;
 	}
 
 	if (wasLiteralKeyPressed(GLFW_KEY_F3)) {

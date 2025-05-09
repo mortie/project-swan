@@ -135,6 +135,7 @@ private:
 	void onLeftClick(const Swan::Context &ctx);
 	void dropItem(const Swan::Context &ctx);
 
+	void handlePhysics(const Swan::Context &ctx, float dt);
 	void handleInventoryClick(const Swan::Context &ctx);
 	void handleInventorySelection(const Swan::Context &ctx);
 	void handleInventoryHover(const Swan::Context &ctx);

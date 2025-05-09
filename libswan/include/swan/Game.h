@@ -140,6 +140,7 @@ public:
 	bool debugDisableShadows_ = false;
 	bool debugHandBreakAny_ = false;
 	bool debugOutputEntityProto_ = false;
+	bool debugGodMode_ = false;
 	bool triggerSave_ = false;
 	bool enableVSync_ = false;
 	float timeScale_ = 1.0;
