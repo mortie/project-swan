@@ -241,6 +241,7 @@ void World::buildResources()
 			 */
 
 			auto &item = items_[tile.name] = Item(tile.id, tile.name, {
+				.name = "",
 				.lightLevel = tile.lightLevel,
 			});
 			item.tile = &tile;

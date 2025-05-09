@@ -9,7 +9,7 @@ struct TileEntityTrait {
 	struct Tag {};
 
 	struct TileEntity {
-		TilePos pos;
+		TilePos pos{};
 		bool keep = false;
 
 		void serialize(proto::TileEntity::Builder w);

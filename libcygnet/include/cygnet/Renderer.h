@@ -80,7 +80,7 @@ public:
 	static constexpr int LAYER_COUNT = (int)RenderLayer::MAX + 1;
 
 	struct Rect {
-		Swan::Vec2 pos;
+		Swan::Vec2 pos{};
 		Swan::Vec2 size;
 	};
 
