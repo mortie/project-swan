@@ -499,6 +499,7 @@ void Renderer::clear()
 		drawUIGrids_[idx].clear();
 		drawUISprites_[idx].clear();
 		drawUITiles_[idx].clear();
+		drawUIRects_[idx].clear();
 		drawUITexts_[idx].clear();
 	}
 
@@ -651,6 +652,7 @@ void Renderer::renderUILayer(RenderLayer layer, Mat3gf camMat)
 	state_->spriteProg.draw(drawUISprites_[idx], camMat);
 	state_->tileProg.draw(
 		drawUITiles_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
+	state_->rectProg.draw(drawUIRects_[idx], camMat);
 	state_->textProg.draw(
 		drawUITexts_[idx], textUIBuffer_, camMat, 1.0 / 64);
 	glCheck();

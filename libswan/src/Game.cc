@@ -290,6 +290,12 @@ void Game::render()
 	renderer_.renderUI(uiCam_);
 
 	if (frameRecorder_) {
+		renderer_.drawUIRect(Cygnet::RenderLayer::FOREGROUND, {
+			.pos = mouseUIPos_.add(-0.05, -0.05),
+			.size = {0.1, 0.1},
+			.outline = {1, 1, 1, 1},
+			.fill = {0, 0, 0, 1},
+		});
 		auto size = frameRecorder_->size();
 		frameRecorder_->beginFrame(backgroundColor());
 		renderer_.render(cam_.withSize(size), {.vflip = true});

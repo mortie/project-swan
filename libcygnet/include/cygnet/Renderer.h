@@ -308,6 +308,15 @@ public:
 		drawUITile(RenderLayer::NORMAL, drawTile, anchor);
 	}
 
+	void drawUIRect(RenderLayer layer, DrawRect drawRect)
+	{
+		drawUIRects_[(int)layer].push_back(drawRect);
+	}
+	void drawUIRect(DrawRect dr)
+	{
+		drawUIRect(RenderLayer::NORMAL, dr);
+	}
+
 	TextSegment &drawUIText(RenderLayer layer, DrawText drawText, Anchor anchor = Anchor::CENTER)
 	{
 		size_t start = textUIBuffer_.size();
@@ -401,6 +410,7 @@ private:
 	std::vector<DrawGrid> drawUIGrids_[LAYER_COUNT];
 	std::vector<DrawSprite> drawUISprites_[LAYER_COUNT];
 	std::vector<DrawTile> drawUITiles_[LAYER_COUNT];
+	std::vector<DrawRect> drawUIRects_[LAYER_COUNT];
 	std::vector<TextSegment> drawUITexts_[LAYER_COUNT];
 	std::vector<TextCache::RenderedCodepoint> textUIBuffer_;
 
