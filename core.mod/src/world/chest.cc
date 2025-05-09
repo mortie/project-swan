@@ -8,7 +8,7 @@ namespace CoreMod {
 static void closeCallback(const Swan::Context &ctx, Swan::EntityRef ref)
 {
 	auto pos = ref->trait<Swan::TileEntityTrait>()->pos;
-	ctx.game.playSound(ctx.world.getSound("core::sounds/misc/lock-open"), pos);
+	ctx.game.playSound(ctx.world.getSound("core::sounds/misc/lock-close"), pos);
 	ctx.plane.tiles().set(pos, "core::chest");
 }
 
