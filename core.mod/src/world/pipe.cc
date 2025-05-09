@@ -101,8 +101,8 @@ void registerGlassPipe(Swan::Mod &mod)
 		.stepSound = "core::sounds/step/glass",
 		.breakSound = "core::sounds/break/glass",
 		.droppedItem = "core::glass-pipe",
-		.onTileUpdate = onPipeUpdate,
 		.tileEntity = "core::tile::item-pipe",
+		.onTileUpdate = onPipeUpdate,
 		.traits = traits,
 	});
 
@@ -114,8 +114,8 @@ void registerGlassPipe(Swan::Mod &mod)
 		.stepSound = "core::sounds/step/glass",
 		.breakSound = "core::sounds/break/glass",
 		.droppedItem = "core::glass-pipe",
-		.onTileUpdate = onPipeUpdate,
 		.tileEntity = "core::tile::item-pipe",
+		.onTileUpdate = onPipeUpdate,
 		.traits = traits,
 	});
 
@@ -128,8 +128,8 @@ void registerGlassPipe(Swan::Mod &mod)
 			.stepSound = "core::sounds/step/glass",
 			.breakSound = "core::sounds/break/glass",
 			.droppedItem = "core::glass-pipe",
-			.onTileUpdate = onPipeUpdate,
 			.tileEntity = "core::tile::item-pipe",
+			.onTileUpdate = onPipeUpdate,
 			.traits = traits,
 		});
 	}
@@ -143,8 +143,8 @@ void registerGlassPipe(Swan::Mod &mod)
 			.stepSound = "core::sounds/step/glass",
 			.breakSound = "core::sounds/break/glass",
 			.droppedItem = "core::glass-pipe",
-			.onTileUpdate = onPipeUpdate,
 			.tileEntity = "core::tile::item-pipe",
+			.onTileUpdate = onPipeUpdate,
 			.traits = traits,
 		});
 	}
@@ -158,8 +158,8 @@ void registerGlassPipe(Swan::Mod &mod)
 			.stepSound = "core::sounds/step/glass",
 			.breakSound = "core::sounds/break/glass",
 			.droppedItem = "core::glass-pipe",
-			.onTileUpdate = onPipeUpdate,
 			.tileEntity = "core::tile::item-pipe",
+			.onTileUpdate = onPipeUpdate,
 			.traits = traits,
 		});
 	}
@@ -173,8 +173,8 @@ void registerGlassPipe(Swan::Mod &mod)
 			.stepSound = "core::sounds/step/glass",
 			.breakSound = "core::sounds/break/glass",
 			.droppedItem = "core::glass-pipe",
-			.onTileUpdate = onPipeUpdate,
 			.tileEntity = "core::tile::item-pipe",
+			.onTileUpdate = onPipeUpdate,
 			.traits = traits,
 		});
 	}

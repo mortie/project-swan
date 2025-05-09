@@ -37,6 +37,11 @@ struct SpiderEntity {
 	body @0 :BasicPhysicsBody;
 }
 
+struct ChestTileEntity {
+	tileEntity @0 :TileEntity;
+	inventory @1 :BasicInventory;
+}
+
 struct ItemFanTileEntity {
 	tileEntity @0 :TileEntity;
 	direction @1 :Direction;

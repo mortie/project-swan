@@ -10,6 +10,7 @@ struct TileEntityTrait {
 
 	struct TileEntity {
 		TilePos pos;
+		bool keep = false;
 
 		void serialize(proto::TileEntity::Builder w);
 		void deserialize(proto::TileEntity::Reader r);

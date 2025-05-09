@@ -658,7 +658,7 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 	// First priority: activate the hovered tile if it can be activated
 	Swan::Tile &hoveredTile = ctx.plane.tiles().get(placePos_);
 	if (hoveredTile.onActivate) {
-		hoveredTile.onActivate(ctx, placePos_);
+		hoveredTile.onActivate(ctx, placePos_, ctx.plane.entities().current());
 		interactTimer_ = 0.5;
 		return;
 	}

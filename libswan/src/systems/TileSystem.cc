@@ -3,6 +3,8 @@
 #include "WorldPlane.h"
 #include "World.h"
 #include "Game.h"
+#include "EntityCollectionImpl.h"
+#include "traits/TileEntityTrait.h"
 
 namespace Swan {
 
@@ -42,11 +44,17 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 	Tile &newTile = plane_.world_->getTileByID(id);
 	Tile &oldTile = plane_.world_->getTileByID(old);
 
+	bool keepTileEntity = false;
+	if (oldTile.tileEntity && oldTile.tileEntity == newTile.tileEntity) {
+		auto te = plane_.entities().getTileEntity(pos);
+		keepTileEntity = te.trait<TileEntityTrait>()->keep;
+	}
+
 	if (oldTile.onBreak) {
 		oldTile.onBreak(plane_.getContext(), pos);
 	}
 
-	if (oldTile.tileEntity) {
+	if (oldTile.tileEntity && !keepTileEntity) {
 		plane_.entities().despawnTileEntity(pos);
 	}
 
@@ -80,8 +88,8 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 		newTile.onSpawn(plane_.getContext(), pos);
 	}
 
-	if (newTile.tileEntity) {
-		plane_.entities().spawnTileEntity(pos, newTile.tileEntity.value());
+	if (newTile.tileEntity && !keepTileEntity) {
+		plane_.entities().spawnTileEntity(pos, *newTile.tileEntity);
 	}
 
 	return true;

@@ -6,6 +6,7 @@
 #include "entities/ItemStackEntity.h"
 #include "entities/SpiderEntity.h"
 #include "entities/FallingTileEntity.h"
+#include "world/chest.h"
 #include "world/item-fan.h"
 #include "world/ladder.h"
 #include "world/outcrop.h"
@@ -145,29 +146,6 @@ public:
 		});
 
 		registerTile({
-			.name = "chest",
-			.image = "core::tiles/chest::closed",
-			.isSolid = false,
-			.breakableBy = Swan::Tool::HAND,
-			.droppedItem = "core::chest",
-			.onActivate = +[](const Swan::Context &ctx, Swan::TilePos pos) {
-				ctx.game.playSound(ctx.world.getSound("core::sounds/misc/lock-open"));
-				ctx.plane.tiles().set(pos, "core::chest::open");
-			},
-		});
-		registerTile({
-			.name = "chest::open",
-			.image = "core::tiles/chest::open",
-			.isSolid = false,
-			.breakableBy = Swan::Tool::HAND,
-			.droppedItem = "core::chest",
-			.onActivate = +[](const Swan::Context &ctx, Swan::TilePos pos) {
-				ctx.game.playSound(ctx.world.getSound("core::sounds/misc/lock-close"));
-				ctx.plane.tiles().set(pos, "core::chest");
-			},
-		});
-
-		registerTile({
 			.name = "water",
 			.image = "@::invalid",
 			.isSolid = false,
@@ -178,6 +156,7 @@ public:
 			},
 		});
 
+		registerChest(*this);
 		registerItemFan(*this);
 		registerRopeLadder(*this);
 		registerOutcrop(*this, "coal");

@@ -9,6 +9,7 @@
 #include "common.h"
 #include "assets.h"
 #include "Tool.h"
+#include "EntityCollection.h"
 #include "cygnet/util.h"
 
 namespace Swan {
@@ -37,13 +38,12 @@ struct Tile {
 		std::optional<std::string> placeSound = std::nullopt;
 		std::optional<std::string> breakSound = std::nullopt;
 		std::optional<std::string> droppedItem = std::nullopt;
+		std::optional<std::string> tileEntity = std::nullopt;
 
 		bool (*onSpawn)(const Context &ctx, TilePos pos) = nullptr;
 		void (*onBreak)(const Context &ctx, TilePos pos) = nullptr;
 		void (*onTileUpdate)(const Context &ctx, TilePos pos) = nullptr;
-		void (*onActivate)(const Context &ctx, TilePos pos) = nullptr;
-
-		std::optional<std::string> tileEntity = std::nullopt;
+		void (*onActivate)(const Context &ctx, TilePos pos, EntityRef activator) = nullptr;
 
 		std::shared_ptr<Traits> traits = nullptr;
 	};
@@ -62,13 +62,12 @@ struct Tile {
 	SoundAsset *placeSound = nullptr;
 	SoundAsset *breakSound = nullptr;
 	Item *droppedItem = nullptr;
+	std::optional<std::string> tileEntity;
 
 	bool (*onSpawn)(const Context &ctx, TilePos pos);
 	void (*onBreak)(const Context &ctx, TilePos pos);
 	void (*onTileUpdate)(const Context &ctx, TilePos pos);
-	void (*onActivate)(const Context &ctx, TilePos pos);
-
-	std::optional<std::string> tileEntity;
+	void (*onActivate)(const Context &ctx, TilePos pos, EntityRef activator);
 
 	Cygnet::ByteColor particles[8][8];
 
@@ -80,10 +79,10 @@ struct Tile {
 		isSolid(builder.isSolid), isOpaque(builder.isOpaque),
 		isSupportV(builder.isSupportV), isSupportH(builder.isSupportH),
 		isReplacable(builder.isReplacable), lightLevel(builder.lightLevel),
-		breakableBy(builder.breakableBy),
+		breakableBy(builder.breakableBy), tileEntity(builder.tileEntity),
 		onSpawn(builder.onSpawn), onBreak(builder.onBreak),
 		onTileUpdate(builder.onTileUpdate), onActivate(builder.onActivate),
-		tileEntity(builder.tileEntity), traits(builder.traits)
+		traits(builder.traits)
 	{}
 };
 
