@@ -225,9 +225,6 @@ inline Entity *EntityCollectionImpl<Ent>::get(uint64_t id)
 	auto indexIt = idToIndex_.find(id);
 
 	if (indexIt == idToIndex_.end()) {
-		Swan::info
-			<< "Looked for non-existent '" << typeid(Ent).name()
-			<< "' entity with ID " << id;
 		return nullptr;
 	}
 
@@ -240,9 +237,6 @@ inline BodyTrait::Body *EntityCollectionImpl<Ent>::getBody(uint64_t id)
 	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 		auto indexIt = idToIndex_.find(id);
 		if (indexIt == idToIndex_.end()) {
-			Swan::info
-				<< "Looked for non-existent '" << typeid(Ent).name()
-				<< "' entity with ID " << id;
 			return nullptr;
 		}
 
