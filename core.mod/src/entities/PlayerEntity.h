@@ -86,11 +86,12 @@ private:
 	struct UI {
 		int selectedInventorySlot = 0;
 		int hoveredInventorySlot = -1;
-		int hoveredOpenInventorySlot = -1;
 		bool showInventory = false;
 		Cygnet::Renderer::Rect hotbarRect;
 		Cygnet::Renderer::Rect inventoryRect;
-		Cygnet::Renderer::Rect openInventoryRect;
+
+		int hoveredAuxInventorySlot = -1;
+		Cygnet::Renderer::Rect auxInventoryRect;
 	};
 
 	struct HeldLight {
@@ -147,8 +148,8 @@ private:
 
 	UI ui_;
 
-	// Entity which has an inventory which the player has opened
-	Swan::EntityRef currentOpenInventory_;
+	Swan::InventoryTrait::Inventory *auxInventory_ = nullptr;
+	Swan::EntityRef auxInventoryEntity_;
 	CloseInventoryCallback *closeInventoryCallback_ = nullptr;
 
 	Swan::Clock jumpTimer_;

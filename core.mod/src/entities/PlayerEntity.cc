@@ -87,21 +87,25 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		});
 	}
 
-	// Draw current open other inventory
-	if (!currentOpenInventory_.isNil()) {
-		auto openInventory = currentOpenInventory_->trait<Swan::InventoryTrait>();
-		if (openInventory) {
-			auto content = openInventory->content();
-			auto size = Swan::UI::calcInventorySize(content.size());
-			ui_.openInventoryRect = rnd.uiView({
-				.pos = {0, 0},
-				.size = size.add(2, 2),
-			}, [&] {
-				Swan::UI::inventory(ctx, rnd, size, inventorySprite_, content);
-			}, Cygnet::Anchor::TOP);
-		} else {
-			currentOpenInventory_ = {};
+	// Do we have another inventory?
+	if (!auxInventoryEntity_.isNil()) {
+		auxInventory_ = auxInventoryEntity_->trait<Swan::InventoryTrait>();
+		if (!auxInventory_) {
+			auxInventoryEntity_ = {};
+			closeInventoryCallback_ = nullptr;
 		}
+	}
+
+	// Draw current open other inventory
+	if (auxInventory_) {
+		auto content = auxInventory_->content();
+		auto size = Swan::UI::calcInventorySize(content.size());
+		ui_.auxInventoryRect = rnd.uiView({
+			.pos = {0, 0},
+			.size = size.add(2, 2),
+		}, [&] {
+			Swan::UI::inventory(ctx, rnd, size, inventorySprite_, content);
+		}, Cygnet::Anchor::TOP);
 	}
 
 	// Everything after this is inventory stuff
@@ -371,14 +375,14 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 
 	// Break block, or click UI
 	if (ctx.game.wasMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
-		if (ui_.hoveredInventorySlot >= 0 || ui_.hoveredOpenInventorySlot >= 0) {
+		if (ui_.hoveredInventorySlot >= 0 || ui_.hoveredAuxInventorySlot >= 0) {
 			handleInventoryClick(ctx);
 		} else {
 			onLeftClick(ctx);
 		}
 	}
 	else if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
-		if (ui_.hoveredInventorySlot < 0 && ui_.hoveredOpenInventorySlot < 0) {
+		if (ui_.hoveredInventorySlot < 0 && ui_.hoveredAuxInventorySlot < 0) {
 			onLeftClick(ctx);
 		}
 	}
@@ -643,26 +647,35 @@ void PlayerEntity::deserialize(
 bool PlayerEntity::askToOpenInventory(
 	Swan::EntityRef ent, CloseInventoryCallback cb)
 {
-	if (currentOpenInventory_)
+	if (auxInventory_)
 	{
 		return false;
 	}
 
-	currentOpenInventory_ = ent;
+	auxInventory_ = ent->trait<InventoryTrait>();
+	if (!auxInventory_) {
+		return false;
+	}
+
+	auxInventoryEntity_ = ent;
 	closeInventoryCallback_ = cb;
 	return true;
 }
 
 void PlayerEntity::askToCloseInventory(const Swan::Context &ctx, Swan::EntityRef ent)
 {
-	if (!currentOpenInventory_ || currentOpenInventory_ != ent) {
+	if (auxInventoryEntity_ != ent) {
+		Swan::info << "refusing to close inventory";
 		return;
 	}
 
-	if (closeInventoryCallback_) {
-		closeInventoryCallback_(ctx, currentOpenInventory_);
+	auxInventory_ = nullptr;
+	auxInventoryEntity_ = {};
+	auto cb = closeInventoryCallback_;
+	closeInventoryCallback_ = nullptr;
+	if (cb) {
+		cb(ctx, ent);
 	}
-	currentOpenInventory_ = {};
 }
 
 void PlayerEntity::onLeftClick(const Swan::Context &ctx)
@@ -819,10 +832,10 @@ void PlayerEntity::handleInventoryHover(const Swan::Context &ctx)
 	if (ui_.hoveredInventorySlot < 0) {
 		ui_.hoveredInventorySlot = Swan::UI::inventoryCellIndex(mousePos, ui_.inventoryRect, 10);
 	}
-	ui_.hoveredOpenInventorySlot = -1;
-	if (!currentOpenInventory_.isNil()) {
-		ui_.hoveredOpenInventorySlot = Swan::UI::inventoryCellIndex(
-			mousePos, ui_.openInventoryRect);
+	ui_.hoveredAuxInventorySlot = -1;
+	if (auxInventory_) {
+		ui_.hoveredAuxInventorySlot = Swan::UI::inventoryCellIndex(
+			mousePos, ui_.auxInventoryRect);
 	}
 }
 
@@ -853,7 +866,7 @@ void PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 		}
 	};
 
-	if (ui_.hoveredInventorySlot < 0 && ui_.hoveredOpenInventorySlot < 0) {
+	if (ui_.hoveredInventorySlot < 0 && ui_.hoveredAuxInventorySlot < 0) {
 		return;
 	}
 
@@ -866,23 +879,21 @@ void PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 		return;
 	}
 
-	auto *openInv = currentOpenInventory_.trait<Swan::InventoryTrait>();
-
 	// Shift-click from player inventory to open inventory
-	if (shift && openInv && ui_.hoveredInventorySlot >= 0) {
+	if (shift && auxInventory_ && ui_.hoveredInventorySlot >= 0) {
 		int index = ui_.hoveredInventorySlot;
-		inventory_.set(index, openInv->insert(inventory_.get(index)));
+		inventory_.set(index, auxInventory_->insert(inventory_.get(index)));
 		ctx.game.playSound(sounds_.snap);
 		return;
 	}
 
 	// Shift click from open inventory to player inventory
-	if (shift && openInv && ui_.hoveredOpenInventorySlot >= 0) {
-		int index = ui_.hoveredOpenInventorySlot;
+	if (shift && auxInventory_ && ui_.hoveredAuxInventorySlot >= 0) {
+		int index = ui_.hoveredAuxInventorySlot;
 		if (ui_.showInventory) {
-			openInv->set(index, inventory_.insert(openInv->get(index), 10));
+			auxInventory_->set(index, inventory_.insert(auxInventory_->get(index), 10));
 		}
-		openInv->set(index, inventory_.insert(openInv->get(index)));
+		auxInventory_->set(index, inventory_.insert(auxInventory_->get(index)));
 		ctx.game.playSound(sounds_.snap);
 		return;
 	}
@@ -903,8 +914,8 @@ void PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 	}
 
 	// Non-shift click on the open inventory
-	if (!shift && openInv && ui_.hoveredOpenInventorySlot >= 0) {
-		clickInventory(*openInv, ui_.hoveredOpenInventorySlot);
+	if (!shift && auxInventory_ && ui_.hoveredAuxInventorySlot >= 0) {
+		clickInventory(*auxInventory_, ui_.hoveredAuxInventorySlot);
 		ctx.game.playSound(sounds_.snap);
 		return;
 	}
@@ -1015,11 +1026,13 @@ void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
 			ctx.game.playSound(sounds_.inventoryClose, 0.2);
 			ui_.showInventory = false;
 			ui_.selectedInventorySlot %= 10;
-			if (currentOpenInventory_) {
-				if (closeInventoryCallback_) {
-					closeInventoryCallback_(ctx, currentOpenInventory_);
+			if (auxInventory_) {
+				if (closeInventoryCallback_ && auxInventoryEntity_) {
+					closeInventoryCallback_(ctx, auxInventoryEntity_);
 				}
-				currentOpenInventory_ = {};
+				auxInventoryEntity_ = {};
+				closeInventoryCallback_ = nullptr;
+				auxInventory_ = nullptr;
 			}
 		}
 		else {
