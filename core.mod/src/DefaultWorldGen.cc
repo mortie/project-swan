@@ -68,33 +68,61 @@ Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos)
 	});
 }
 
+bool DefaultWorldGen::isCave(Swan::TilePos pos, int grassLevel)
+{
+	return
+		pos.y > grassLevel + 7 &&
+		perlin_.noise2D(pos.x / 43.37, pos.y / 16.37) > 0.2;
+}
+
+bool DefaultWorldGen::isLake(Swan::TilePos pos, int grassLevel)
+{
+	return
+		pos.y >= grassLevel &&
+		pos.y <= grassLevel + 10 &&
+		perlin_.noise2D(pos.x / 20.6, pos.y / 14.565) > 0.4;
+}
+
+bool DefaultWorldGen::isOil(Swan::TilePos pos, int grassLevel)
+{
+	return
+		pos.y > grassLevel + 30 &&
+		pos.y <= grassLevel + 500 &&
+		perlin_.noise2D(pos.x / 70.6, pos.y / 40.565) > 0.4;
+}
+
 Swan::Tile::ID DefaultWorldGen::genTile(
 	Swan::TilePos pos,
 	int grassLevel,
 	int stoneLevel)
 {
-	// Caves
-	if (
-		pos.y > grassLevel + 7 &&
-		perlin_.noise2D(pos.x / 43.37, pos.y / 16.37) > 0.2) {
-		return Swan::World::AIR_TILE_ID;
+	// Oil lakes leading into caves tanks performance,
+	// so only produce cave air if we're not next to oil
+	bool spawnCave =
+		isCave(pos, grassLevel) &&
+		!isOil(pos.add(-1, 0), grassLevel) &&
+		!isOil(pos.add(1, 0), grassLevel) &&
+		!isOil(pos.add(0, -1), grassLevel) &&
+		!isOil(pos.add(0, 1), grassLevel);
+	if (spawnCave) {
+		return tAir_;
 	}
 
-	// Lakes
-	if (
-		pos.y >= grassLevel &&
-		pos.y <= grassLevel + 10 &&
-		perlin_.noise2D(pos.x / 20.6, pos.y / 14.565) > 0.4) {
+	if (isLake(pos, grassLevel)) {
 		return tWater_;
+	}
+
+	if (isOil(pos, grassLevel)) {
+		return tOil_;
 	}
 
 	if (pos.y > stoneLevel) {
 		return tStone_;
 	}
-	else if (pos.y > grassLevel) {
+	if (pos.y > grassLevel) {
 		return tDirt_;
 	}
-	else if (pos.y == grassLevel) {
+	if (pos.y == grassLevel) {
 		return tGrass_;
 	}
 	else {

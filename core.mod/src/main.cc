@@ -156,6 +156,16 @@ public:
 				return true;
 			},
 		});
+		registerTile({
+			.name = "oil",
+			.image = "@::invalid",
+			.isSolid = false,
+			.onSpawn = +[](const Swan::Context &ctx, Swan::TilePos pos) {
+				ctx.plane.tiles().setIDWithoutUpdate(pos, Swan::World::AIR_TILE_ID);
+				ctx.plane.fluids().setInTile(pos, ctx.world.getFluid("core::oil").id);
+				return true;
+			},
+		});
 
 		registerChest(*this);
 		registerItemFan(*this);
