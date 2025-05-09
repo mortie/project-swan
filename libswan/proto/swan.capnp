@@ -72,7 +72,7 @@ struct WorldPlane {
 }
 
 struct Chunk {
-	pos @0 :Vec2i ;
+	pos @0 :Vec2i;
 	compression @1 :Compression;
 	data @2 :Data;
 

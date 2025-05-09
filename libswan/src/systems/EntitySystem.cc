@@ -264,6 +264,7 @@ void EntitySystemImpl::deserialize(proto::EntitySystem::Reader r)
 			continue;
 		}
 
+		currentCollection_ = coll->second;
 		coll->second->deserialize(ctx, collection);
 	}
 

@@ -718,7 +718,7 @@ Renderer::Rect Renderer::pushUIView(Rect rect, Anchor anchor)
 		break;
 
 	case Anchor::TOP:
-		rect.pos += {0, -view.size.y + rect.size.x};
+		rect.pos += {0, -view.size.y + rect.size.y};
 		break;
 
 	case Anchor::BOTTOM:

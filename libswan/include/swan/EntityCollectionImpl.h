@@ -4,7 +4,6 @@
 #include "WorldPlane.h"
 #include "Game.h"
 #include <fstream>
-#include <sstream>
 
 #include <capnp/message.h>
 #include <capnp/serialize-packed.h>
@@ -408,6 +407,7 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 	entities_.reserve(r.getEntities().size());
 	for (auto entity: r.getEntities()) {
 		size_t index = entities_.size();
+		currentId_ = entity.getId();
 		auto &wrapper = entities_.emplace_back(ctx);
 		wrapper.id = entity.getId();
 

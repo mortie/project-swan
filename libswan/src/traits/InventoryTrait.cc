@@ -2,15 +2,6 @@
 
 namespace Swan {
 
-ItemStack BasicInventory::get(int slot)
-{
-	if ((size_t)slot >= content_.size()) {
-		return ItemStack{};
-	}
-
-	return content_[slot];
-}
-
 ItemStack BasicInventory::take(int slot)
 {
 	if ((size_t)slot >= content_.size()) {

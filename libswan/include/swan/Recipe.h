@@ -1,30 +1,26 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
-#include "Item.h"
+#include "ItemStack.h"
 
 namespace Swan {
 
 struct Recipe {
-	struct Items {
-		struct Builder {
+	struct Builder {
+		struct Items {
 			int count;
 			std::string item;
 		};
 
-		int count;
-		Item *item;
-	};
-
-	struct Builder {
-		std::vector<Items::Builder> inputs;
-		Items::Builder output;
+		std::vector<Items> inputs;
+		Items output;
 		std::string kind;
 	};
 
-	std::vector<Items> inputs;
-	Items output;
+	std::vector<ItemStack> inputs;
+	ItemStack output;
 	std::string kind;
 };
 

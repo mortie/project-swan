@@ -1,10 +1,8 @@
 #include "PlayerEntity.h"
 
 #include <algorithm>
-#include <stdio.h>
 #include <imgui/imgui.h>
 #include <string>
-#include <unordered_map>
 
 #include "ItemStackEntity.h"
 #include "world/util.h"
@@ -135,64 +133,6 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 			}, Cygnet::Anchor::TOP_LEFT);
 		}
 	}, Cygnet::Anchor::BOTTOM);
-
-	// This whole method is stupid inefficient and does a bunch of memory allocation every frame.
-	// TODO: fix.
-
-	std::unordered_map<Swan::Item *, int> itemCounts;
-	for (size_t i = 0; i < inventory_.content_.size(); ++i) {
-		auto &stack = inventory_.content_[i];
-		if (stack.empty()) {
-			continue;
-		}
-
-		itemCounts[stack.item()] += stack.count();
-	}
-
-	ImGui::Begin("Crafting");
-	std::string text;
-	for (auto &recipe: ctx.world.getRecipes("core::crafting")) {
-		bool craftable = true;
-		for (const auto &input: recipe.inputs) {
-			if (!itemCounts.contains(input.item)) {
-				craftable = false;
-				break;
-			}
-
-			if (itemCounts[input.item] < input.count) {
-				craftable = false;
-				break;
-			}
-		}
-
-		if (!craftable) {
-			continue;
-		}
-
-		text.clear();
-		text += "Craft ";
-		text += std::to_string(recipe.output.count);
-		text += ' ';
-		text += recipe.output.item->name;
-		text += " from ";
-
-		bool first = true;
-		for (const auto &input: recipe.inputs) {
-			if (!first) {
-				text += ", ";
-			}
-			first = false;
-
-			text += std::to_string(input.count);
-			text += ' ';
-			text += input.item->name;
-		}
-
-		if (ImGui::Button(text.c_str())) {
-			craft(ctx, recipe);
-		}
-	}
-	ImGui::End();
 }
 
 void PlayerEntity::update(const Swan::Context &ctx, float dt)
@@ -618,6 +558,10 @@ void PlayerEntity::tick(const Swan::Context &ctx, float dt)
 
 		heldLight_ = light;
 	};
+
+	if (auxInventory_ == &craftingInventory_) {
+		craftingInventory_.recompute(ctx, inventory_.content());
+	}
 }
 
 void PlayerEntity::serialize(
@@ -647,7 +591,7 @@ void PlayerEntity::deserialize(
 bool PlayerEntity::askToOpenInventory(
 	Swan::EntityRef ent, CloseInventoryCallback cb)
 {
-	if (auxInventory_)
+	if (auxInventory_ && auxInventory_ != &craftingInventory_)
 	{
 		return false;
 	}
@@ -762,47 +706,6 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 
 	interactTimer_ = 0.2;
 	stack.remove(1);
-}
-
-void PlayerEntity::craft(const Swan::Context &ctx, const Swan::Recipe &recipe)
-{
-	// Back up the state of the inventory,
-	// so that we can undo everything if it turns out we don't have enough items
-	Swan::BasicInventory backup = inventory_;
-
-	for (const auto &input: recipe.inputs) {
-		int needed = input.count;
-		for (auto &slot: inventory_.content_) {
-			if (slot.empty() || slot.item() != input.item) {
-				continue;
-			}
-
-			auto got = slot.remove(needed);
-			needed -= got.count();
-			if (needed == 0) {
-				break;
-			}
-		}
-
-		if (needed != 0) {
-			Swan::info
-				<< "Attempted to craft " << recipe.output.item->name
-				<< ", but missing " << needed << ' ' << input.item;
-			inventory_ = backup;
-			return;
-		}
-	}
-
-	Swan::ItemStack stack(recipe.output.item, recipe.output.count);
-	stack = inventory_.insert(stack);
-	if (stack.empty()) {
-		ctx.game.playSound(sounds_.crafting, 0.2);
-	} else {
-		Swan::info
-			<< "Attempted to craft " << recipe.output.item->name
-			<< ", but there wasn't enough space in the inventory to put the result";
-		inventory_ = backup;
-	}
 }
 
 void PlayerEntity::dropItem(const Swan::Context &ctx)
@@ -1038,6 +941,16 @@ void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
 		else {
 			ctx.game.playSound(sounds_.inventoryOpen);
 			ui_.showInventory = true;
+		}
+	}
+
+	// Toggle crafting menu
+	if (ctx.game.wasKeyPressed(GLFW_KEY_F)) {
+		if (auxInventory_ == &craftingInventory_) {
+			auxInventory_ = nullptr;
+		} else if (!auxInventory_) {
+			auxInventory_ = &craftingInventory_;
+			craftingInventory_.recompute(ctx, inventory_.content());
 		}
 	}
 }

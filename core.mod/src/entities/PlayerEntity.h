@@ -3,6 +3,7 @@
 #include <swan/swan.h>
 
 #include "core_mod.capnp.h"
+#include "util/CraftingInventory.h"
 
 namespace CoreMod {
 
@@ -18,7 +19,8 @@ public:
 		animations_(ctx),
 		sounds_(ctx),
 		inventorySprite_(ctx.world.getSprite("core::ui/inventory")),
-		selectedSlotSprite_(ctx.world.getSprite("core::ui/selected-slot"))
+		selectedSlotSprite_(ctx.world.getSprite("core::ui/selected-slot")),
+		craftingInventory_(ctx.plane.entities().current())
 	{}
 
 	Body &get(BodyTrait::Tag) override
@@ -131,7 +133,6 @@ private:
 
 	void onRightClick(const Swan::Context &ctx);
 	void onLeftClick(const Swan::Context &ctx);
-	void craft(const Swan::Context &ctx, const Swan::Recipe &recipe);
 	void dropItem(const Swan::Context &ctx);
 
 	void handleInventoryClick(const Swan::Context &ctx);
@@ -175,6 +176,7 @@ private:
 	std::optional<HeldLight> heldLight_;
 
 	Swan::BasicInventory inventory_{INVENTORY_SIZE};
+	CraftingInventory craftingInventory_;
 	Swan::BasicPhysicsBody physicsBody_{PROPS};
 };
 

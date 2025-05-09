@@ -344,7 +344,7 @@ void World::buildResources()
 	}
 
 	// Load recipes.
-	std::vector<Recipe::Items> recipeInputs;
+	std::vector<ItemStack> recipeInputs;
 	for (auto &mod: mods_) {
 		for (auto &recipeBuilder: mod.recipes()) {
 			auto vec = recipes_.find(recipeBuilder.kind);
@@ -356,16 +356,16 @@ void World::buildResources()
 			recipeInputs.clear();
 			for (const auto &inputBuilder: recipeBuilder.inputs) {
 				recipeInputs.push_back({
-					.count = inputBuilder.count,
-					.item = &getItem(inputBuilder.item),
+					&getItem(inputBuilder.item),
+					inputBuilder.count,
 				});
 			}
 
 			vec->second.push_back({
 				.inputs = recipeInputs, // Copy, don't move, so we shrink to fit
 				.output = {
-					.count = recipeBuilder.output.count,
-					.item = &getItem(recipeBuilder.output.item),
+					&getItem(recipeBuilder.output.item),
+					recipeBuilder.output.count,
 				},
 				.kind = recipeBuilder.kind,
 			});

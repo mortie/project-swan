@@ -1,10 +1,7 @@
 #include "tree.h"
 #include "world/util.h"
 
-#include <algorithm>
 #include <queue>
-#include <set>
-#include <utility>
 
 namespace CoreMod {
 

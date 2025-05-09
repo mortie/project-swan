@@ -49,16 +49,6 @@ private:
 
 	class Inbox final: public Swan::InventoryTrait::Inventory {
 	public:
-		int size() override
-		{
-			return 0;
-		}
-
-		Swan::ItemStack get(int slot) override
-		{
-			return {};
-		}
-
 		Swan::ItemStack take(int slot) override
 		{
 			return {};

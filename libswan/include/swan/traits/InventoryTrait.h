@@ -17,8 +17,21 @@ struct InventoryTrait {
 	struct Tag {};
 
 	struct Inventory {
-		virtual int size() = 0;
-		virtual ItemStack get(int slot) = 0;
+		int size()
+		{
+			return content().size();
+		}
+
+		ItemStack get(int slot)
+		{
+			auto c = content();
+			if (slot < 0 || slot >= int(c.size())) {
+				return {};
+			}
+
+			return c[slot];
+		}
+
 		virtual ItemStack take(int slot) = 0;
 		virtual ItemStack set(int slot, ItemStack stack) = 0;
 		virtual ItemStack insertInto(ItemStack stack, int from, int to) = 0;
@@ -100,12 +113,6 @@ public:
 		return content_;
 	}
 
-	int size() override
-	{
-		return content_.size();
-	}
-
-	ItemStack get(int slot) override;
 	ItemStack take(int slot) override;
 	ItemStack set(int slot, ItemStack stack) override;
 	ItemStack insertInto(ItemStack stack, int from, int to) override;
