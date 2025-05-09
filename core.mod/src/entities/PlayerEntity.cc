@@ -750,7 +750,12 @@ void PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 			return;
 		}
 
-		if (heldStack_.empty() && !slot.empty()) {
+		if (&inv == &craftingInventory_ && heldStack_.item() == slot.item()) {
+			if (heldStack_.count() + slot.count() <= slot.item()->maxStack) {
+				heldStack_.insert(inv.take(index));
+			}
+		}
+		else if (heldStack_.empty() && !slot.empty()) {
 			heldStack_ = inv.take(index);
 			slot = {};
 		}
@@ -793,9 +798,9 @@ void PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 	if (shift && auxInventory_ && ui_.hoveredAuxInventorySlot >= 0) {
 		int index = ui_.hoveredAuxInventorySlot;
 		if (ui_.showInventory) {
-			auxInventory_->set(index, inventory_.insert(auxInventory_->get(index), 10));
+			auxInventory_->set(index, inventory_.insert(auxInventory_->take(index), 10));
 		}
-		auxInventory_->set(index, inventory_.insert(auxInventory_->get(index)));
+		auxInventory_->set(index, inventory_.insert(auxInventory_->take(index)));
 		ctx.game.playSound(sounds_.snap);
 		return;
 	}
@@ -947,7 +952,13 @@ void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
 	if (ctx.game.wasKeyPressed(GLFW_KEY_F)) {
 		if (auxInventory_ == &craftingInventory_) {
 			auxInventory_ = nullptr;
-		} else if (!auxInventory_) {
+		}
+		else {
+			if (closeInventoryCallback_ && auxInventoryEntity_) {
+				closeInventoryCallback_(ctx, auxInventoryEntity_);
+			}
+			auxInventoryEntity_ = {};
+			closeInventoryCallback_ = nullptr;
 			auxInventory_ = &craftingInventory_;
 			craftingInventory_.recompute(ctx, inventory_.content());
 		}

@@ -47,8 +47,12 @@ public:
 		}
 
 		auto ctx = getContext();
+		auto coll = it->second;
+		auto *prevCurrentColl = currentCollection_;
+		currentCollection_ = coll;
 		auto ent = it->second->spawn<Ent, Args...>(ctx, std::forward<Args>(args)...);
 		ent->onSpawn(ctx);
+		currentCollection_ = prevCurrentColl;
 		return ent;
 	}
 

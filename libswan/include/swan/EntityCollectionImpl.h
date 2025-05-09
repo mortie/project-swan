@@ -168,6 +168,9 @@ template<typename ... Args>
 inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, Args &&... args)
 {
 	uint64_t id = nextId_++;
+	auto prevCurrentId = currentId_;
+	currentId_ = id;
+
 	size_t index = entities_.size();
 	auto &w = entities_.emplace_back(ctx, std::forward<Args>(args)...);
 
@@ -182,6 +185,7 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, Args &&...
 		chunk.entities_.insert({this, id});
 	}
 
+	currentId_ = prevCurrentId;
 	return {this, id};
 }
 
@@ -189,12 +193,16 @@ template<typename Ent>
 inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx)
 {
 	uint64_t id = nextId_++;
+	auto prevCurrentId = currentId_;
+	currentId_ = id;
+
 	size_t index = entities_.size();
 	auto &w = entities_.emplace_back(ctx);
 
 	w.id = id;
 	idToIndex_[id] = index;
 
+	currentId_ = prevCurrentId;
 	return {this, id};
 }
 
@@ -203,6 +211,9 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(
 	const Context &ctx, capnp::Data::Reader data)
 {
 	auto ent = spawn(ctx);
+
+	auto prevCurrentId = currentId_;
+	currentId_ = ent.id();
 
 	kj::ArrayInputStream stream(data);
 	capnp::PackedMessageReader reader(stream);
@@ -215,6 +226,7 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(
 		return {};
 	}
 
+	currentId_ = prevCurrentId;
 	return ent;
 }
 

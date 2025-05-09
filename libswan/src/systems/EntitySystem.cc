@@ -27,8 +27,14 @@ EntityRef EntitySystemImpl::spawn(std::string_view name, capnp::Data::Reader dat
 	}
 
 	auto ctx = getContext();
+	auto coll = it->second;
+	auto *prevCurrentColl = currentCollection_;
+	currentCollection_ = coll;
+
 	auto ent = it->second->spawn(ctx, data);
 	ent->onSpawn(ctx);
+
+	currentCollection_ = prevCurrentColl;
 	return ent;
 }
 
