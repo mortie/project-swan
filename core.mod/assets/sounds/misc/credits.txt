@@ -1,4 +1,9 @@
 splash.ogg, splash-short.ogg:
-Derived from: https://pixabay.com/sound-effects/splash-6213/.
+Derived from: https://pixabay.com/sound-effects/splash-6213/
 Author: swordofkings128 (Freesound)
+License: Pixabay Content License
+
+explosion.ogg:
+From: https://pixabay.com/sound-effects/explosion-312361/
+Author: ahmed_abdulaal (Ahmed_Abdulaal)
 License: Pixabay Content License

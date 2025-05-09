@@ -786,15 +786,17 @@ void PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 		return;
 	}
 
-	// Shift-click from player inventory to open inventory
-	if (shift && auxInventory_ && ui_.hoveredInventorySlot >= 0) {
+	// Shift-click from player inventory to aux inventory
+	if (
+			shift && auxInventory_ && ui_.hoveredInventorySlot >= 0 &&
+			auxInventory_ != &craftingInventory_) {
 		int index = ui_.hoveredInventorySlot;
 		inventory_.set(index, auxInventory_->insert(inventory_.get(index)));
 		ctx.game.playSound(sounds_.snap);
 		return;
 	}
 
-	// Shift click from open inventory to player inventory
+	// Shift click from aux inventory to player inventory
 	if (shift && auxInventory_ && ui_.hoveredAuxInventorySlot >= 0) {
 		int index = ui_.hoveredAuxInventorySlot;
 		if (ui_.showInventory) {
@@ -933,7 +935,7 @@ void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
 			ctx.game.playSound(sounds_.inventoryClose, 0.2);
 			ui_.showInventory = false;
 			ui_.selectedInventorySlot %= 10;
-			if (auxInventory_) {
+			if (auxInventory_ && auxInventory_ != &craftingInventory_) {
 				if (closeInventoryCallback_ && auxInventoryEntity_) {
 					closeInventoryCallback_(ctx, auxInventoryEntity_);
 				}

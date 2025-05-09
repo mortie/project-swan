@@ -8,44 +8,25 @@
 
 namespace CoreMod {
 
-static void explodeTile(const Swan::Context &ctx, Swan::TilePos tp, int x, int y)
-{
-	auto id = ctx.plane.tiles().getID(tp);
-
-	if (id == Swan::World::AIR_TILE_ID) {
-		return;
-	}
-
-	float vx = 0;
-	if (x != 0) {
-		vx = 1.0 / x;
-	}
-
-	float vy = std::abs(x) * -6;
-
-	ctx.plane.tiles().setID(tp, Swan::World::AIR_TILE_ID);
-	auto ref = ctx.plane.entities().spawn<FallingTileEntity>(
-		(Swan::Vec2)tp + Swan::Vec2{0.5, 0.5}, id);
-	auto *body = ref.trait<Swan::PhysicsBodyTrait>();
-	body->addVelocity({vx, vy});
-}
-
 static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
 {
-	constexpr int R1 = 2;
-	constexpr int R2 = 3;
-	constexpr int R3 = 6;
+	constexpr float R1 = 2;
+	constexpr float R2 = 3;
+	constexpr float R3 = 6;
 
 	for (int y = -R2; y <= R2; ++y) {
 		for (int x = -R2; x <= R2; ++x) {
-			Swan::TilePos tp = {(int)round(pos.x + x), (int)round(pos.y + y)};
+			Swan::TilePos tp = {(int)round(pos.x + x - 0.5), (int)round(pos.y + y - 0.5)};
 			float squareDist = y * y + x * x;
 
 			if (squareDist <= R1 * R1) {
-				breakTileAndDropItem(ctx, tp);
+				ctx.plane.tiles().setID(tp, Swan::World::AIR_TILE_ID);
 			}
 			else if (squareDist <= R2 * R2) {
-				explodeTile(ctx, tp, x, y);
+				auto &tile = ctx.plane.tiles().get(tp);
+				if (tile.breakableBy.contains(Swan::Tool::HAND)) {
+					breakTileAndDropItem(ctx, tp);
+				}
 			}
 		}
 	}
@@ -94,6 +75,9 @@ void DynamiteEntity::update(const Swan::Context &ctx, float dt)
 
 	fuse_ -= dt;
 	if (fuse_ <= 0) {
+		ctx.game.playSound(
+			ctx.world.getSound("core::sounds/misc/explosion"),
+			physicsBody_.body.center());
 		ctx.plane.entities().despawn(ctx.plane.entities().current());
 		explode(ctx, physicsBody_.body.center());
 	}
