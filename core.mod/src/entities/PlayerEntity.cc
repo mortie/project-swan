@@ -838,7 +838,7 @@ bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 			slot = {};
 		}
 		else if (!heldStack_.empty() && slot.empty()) {
-			heldStack_ = inv.insert(index, heldStack_);
+			heldStack_ = inv.insert(heldStack_, index);
 		}
 		else if (slot.item() == heldStack_.item()) {
 			int freeSpace = slot.item()->maxStack - slot.count();
@@ -852,16 +852,54 @@ bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 		}
 	};
 
-	if (ui_.hoveredInventorySlot >= 0) {
+	if (ui_.hoveredInventorySlot < 0 && ui_.hoveredOpenInventorySlot < 0) {
+		return false;
+	}
+
+	bool shift = ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT);
+
+	// Non-shift click on the player inventory
+	if (!shift && ui_.hoveredInventorySlot >= 0) {
 		clickInventory(inventory_, ui_.hoveredInventorySlot);
 		return true;
 	}
 
-	if (ui_.hoveredOpenInventorySlot >= 0) {
-		auto *inv = currentOpenInventory_.trait<Swan::InventoryTrait>();
-		if (inv) {
-			clickInventory(*inv, ui_.hoveredOpenInventorySlot);
+	auto *openInv = currentOpenInventory_.trait<Swan::InventoryTrait>();
+
+	// Shift-click from player inventory to open inventory
+	if (shift && openInv && ui_.hoveredInventorySlot >= 0) {
+		int index = ui_.hoveredInventorySlot;
+		inventory_.set(index, openInv->insert(inventory_.get(index)));
+		return true;
+	}
+
+	// Shift click from open inventory to player inventory
+	if (shift && openInv && ui_.hoveredOpenInventorySlot >= 0) {
+		int index = ui_.hoveredOpenInventorySlot;
+		if (ui_.showInventory) {
+			openInv->set(index, inventory_.insert(openInv->get(index), 10));
 		}
+		openInv->set(index, inventory_.insert(openInv->get(index)));
+		return true;
+	}
+
+	// Shift click from player inventory to player inventory
+	if (shift && ui_.hoveredInventorySlot >= 0) {
+		int index = ui_.hoveredInventorySlot;
+		auto stack = inventory_.take(index);
+		Swan::ItemStack leftover;
+		if (index < 10) {
+			leftover = inventory_.insert(stack, 10);
+		} else {
+			leftover = inventory_.insert(stack, 0, 10);
+		}
+		inventory_.insert(leftover);
+		return true;
+	}
+
+	// Non-shift click on the open inventory
+	if (!shift && openInv && ui_.hoveredOpenInventorySlot >= 0) {
+		clickInventory(*openInv, ui_.hoveredOpenInventorySlot);
 		return true;
 	}
 

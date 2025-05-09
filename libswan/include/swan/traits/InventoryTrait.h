@@ -21,14 +21,9 @@ struct InventoryTrait {
 		virtual ItemStack get(int slot) = 0;
 		virtual ItemStack take(int slot) = 0;
 		virtual ItemStack set(int slot, ItemStack stack) = 0;
-		virtual ItemStack insert(ItemStack stack) = 0;
+		virtual ItemStack insertInto(ItemStack stack, int from, int to) = 0;
 
-		virtual ItemStack insert(int slot, ItemStack stack)
-		{
-			return insert(stack);
-		}
-
-		virtual ItemStack insert(Direction dir, ItemStack stack)
+		virtual ItemStack insertSided(Direction dir, ItemStack stack)
 		{
 			return insert(stack);
 		}
@@ -36,6 +31,21 @@ struct InventoryTrait {
 		InventorySlot slot(int slot);
 
 		virtual std::span<const ItemStack> content() const = 0;
+
+		ItemStack insert(ItemStack stack, int from = 0)
+		{
+			return insertInto(stack, from, size());
+		}
+
+		ItemStack insert(ItemStack stack, int from, int to)
+		{
+			return insertInto(stack, from, size());
+		}
+
+		ItemStack insert(Direction dir, ItemStack stack)
+		{
+			return insertSided(dir, stack);
+		}
 
 	protected:
 		~Inventory() = default;
@@ -68,7 +78,7 @@ struct InventorySlot {
 
 	ItemStack insert(ItemStack stack)
 	{
-		return inventory->insert(slot, stack);
+		return inventory->insert(stack, slot, slot + 1);
 	}
 
 	ItemStack remove(int n)
@@ -98,8 +108,7 @@ public:
 	ItemStack get(int slot) override;
 	ItemStack take(int slot) override;
 	ItemStack set(int slot, ItemStack stack) override;
-	ItemStack insert(int slot, ItemStack stack) override;
-	ItemStack insert(ItemStack stack) override;
+	ItemStack insertInto(ItemStack stack, int from, int to) override;
 
 	void serialize(proto::BasicInventory::Builder w);
 	void deserialize(const Swan::Context &ctx, proto::BasicInventory::Reader r);

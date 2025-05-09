@@ -33,24 +33,21 @@ ItemStack BasicInventory::set(int slot, ItemStack stack)
 	return st;
 }
 
-ItemStack BasicInventory::insert(int slot, ItemStack stack)
+ItemStack BasicInventory::insertInto(ItemStack stack, int from, int to)
 {
-	return content_[slot].insert(stack);
-}
-
-ItemStack BasicInventory::insert(ItemStack stack)
-{
-	int s = size();
+	if (to < 0 || to > size()) {
+		to = size();
+	}
 
 	// First try to insert into an existing stack
-	for (int i = 0; i < s && !stack.empty(); ++i) {
+	for (int i = from; i < to && !stack.empty(); ++i) {
 		if (content_[i].item() == stack.item()) {
 			stack = content_[i].insert(stack);
 		}
 	}
 
 	// Then find a new slot
-	for (int i = 0; i < s && !stack.empty(); ++i) {
+	for (int i = from; i < to && !stack.empty(); ++i) {
 		stack = content_[i].insert(stack);
 	}
 

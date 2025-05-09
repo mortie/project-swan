@@ -69,8 +69,8 @@ private:
 			return stack;
 		}
 
-		Swan::ItemStack insert(Swan::ItemStack stack) override;
-		Swan::ItemStack insert(
+		Swan::ItemStack insertInto(Swan::ItemStack stack, int from, int to) override;
+		Swan::ItemStack insertSided(
 			Swan::Direction dir, Swan::ItemStack stack) override;
 
 		std::span<const Swan::ItemStack> content() const override

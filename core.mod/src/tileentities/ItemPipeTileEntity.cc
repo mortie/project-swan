@@ -173,12 +173,13 @@ void ItemPipeTileEntity::deserialize(
 	}
 }
 
-Swan::ItemStack ItemPipeTileEntity::Inbox::insert(Swan::ItemStack stack)
+Swan::ItemStack ItemPipeTileEntity::Inbox::insertInto(
+	Swan::ItemStack stack, int from, int to)
 {
 	return insert(Swan::Direction::random(), stack);
 }
 
-Swan::ItemStack ItemPipeTileEntity::Inbox::insert(
+Swan::ItemStack ItemPipeTileEntity::Inbox::insertSided(
 	Swan::Direction from, Swan::ItemStack stack)
 {
 	if (content_) {
