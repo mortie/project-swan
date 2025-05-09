@@ -10,12 +10,12 @@ static constexpr int GEN_PADDING = 16;
 
 static int getGrassLevel(const siv::PerlinNoise &perlin, int x)
 {
-	return (int)(perlin.noise2D(x / 50.0, 0) * 13);
+	return int(perlin.noise2D(x / 47.3265, 0) * 13 + perlin.noise2D(x / 74.32, 0) * 10);
 }
 
 static int getStoneLevel(const siv::PerlinNoise &perlin, int x)
 {
-	return (int)(perlin.noise2D(x / 50.0, 10) * 10) + 10;
+	return getGrassLevel(perlin, x) + int((perlin.noise2D(x / 54.3, 0.2) * 20) + 10);
 }
 
 static int getPlayerX(const siv::PerlinNoise &perlin)
@@ -71,16 +71,16 @@ Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos)
 bool DefaultWorldGen::isCave(Swan::TilePos pos, int grassLevel)
 {
 	return
-		pos.y > grassLevel + 7 &&
+		pos.y > grassLevel + 4 &&
 		perlin_.noise2D(pos.x / 43.37, pos.y / 16.37) > 0.2;
 }
 
-bool DefaultWorldGen::isLake(Swan::TilePos pos, int grassLevel)
+bool DefaultWorldGen::isLake(Swan::TilePos pos, int grassLevel,  int stoneLevel)
 {
 	return
 		pos.y >= grassLevel &&
-		pos.y <= grassLevel + 10 &&
-		perlin_.noise2D(pos.x / 20.6, pos.y / 14.565) > 0.4;
+		pos.y <= stoneLevel + 10 &&
+		perlin_.noise2D(pos.x / 32.6, pos.y / 21.565) > 0.4;
 }
 
 bool DefaultWorldGen::isOil(Swan::TilePos pos, int grassLevel)
@@ -98,21 +98,30 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 {
 	// Oil lakes leading into caves tanks performance,
 	// so only produce cave air if we're not next to oil
-	bool spawnCave =
-		isCave(pos, grassLevel) &&
-		!isOil(pos.add(-1, 0), grassLevel) &&
-		!isOil(pos.add(1, 0), grassLevel) &&
-		!isOil(pos.add(0, -1), grassLevel) &&
-		!isOil(pos.add(0, 1), grassLevel);
+	bool spawnCave = isCave(pos, grassLevel) && (
+		pos.y < stoneLevel + 200 || (
+			!isOil(pos.add(-1, 0), grassLevel) &&
+			!isOil(pos.add(1, 0), grassLevel) &&
+			!isOil(pos.add(0, -1), grassLevel) &&
+			!isOil(pos.add(0, 1), grassLevel)));
 	if (spawnCave) {
 		return tAir_;
 	}
 
-	if (isLake(pos, grassLevel)) {
+	if (isLake(pos, grassLevel, stoneLevel)) {
 		return tWater_;
 	}
 
-	if (isOil(pos, grassLevel)) {
+	// Same thing as with spawnCave,
+	// except that below stoneLevel + 200, we want oil to take precedence
+	// over caves
+	bool spawnOil = isOil(pos, grassLevel) &&
+		(pos.y >= stoneLevel + 200 || (
+			!isCave(pos.add(-1, 0), grassLevel) &&
+			!isCave(pos.add(1, 0), grassLevel) &&
+			!isCave(pos.add(0, -1), grassLevel) &&
+			!isCave(pos.add(0, 1), grassLevel)));
+	if (spawnOil) {
 		return tOil_;
 	}
 

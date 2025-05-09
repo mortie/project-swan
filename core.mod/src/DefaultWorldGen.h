@@ -34,7 +34,7 @@ public:
 
 private:
 	bool isCave(Swan::TilePos pos, int grassLevel);
-	bool isLake(Swan::TilePos pos, int grassLevel);
+	bool isLake(Swan::TilePos pos, int grassLevel, int stoneLevel);
 	bool isOil(Swan::TilePos pos, int grassLevel);
 
 	Swan::Tile::ID genTile(Swan::TilePos pos, int grassLevel, int stoneLevel);
