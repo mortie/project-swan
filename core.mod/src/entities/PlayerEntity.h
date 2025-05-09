@@ -133,7 +133,7 @@ private:
 	void craft(const Swan::Context &ctx, const Swan::Recipe &recipe);
 	void dropItem(const Swan::Context &ctx);
 
-	bool handleInventoryClick(const Swan::Context &ctx);
+	void handleInventoryClick(const Swan::Context &ctx);
 	void handleInventorySelection(const Swan::Context &ctx);
 	void handleInventoryHover(const Swan::Context &ctx);
 

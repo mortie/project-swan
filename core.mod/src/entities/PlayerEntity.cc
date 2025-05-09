@@ -371,7 +371,9 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 
 	// Break block, or click UI
 	if (ctx.game.wasMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
-		if (!handleInventoryClick(ctx)) {
+		if (ui_.hoveredInventorySlot >= 0 || ui_.hoveredOpenInventorySlot >= 0) {
+			handleInventoryClick(ctx);
+		} else {
 			onLeftClick(ctx);
 		}
 	}
@@ -824,7 +826,7 @@ void PlayerEntity::handleInventoryHover(const Swan::Context &ctx)
 	}
 }
 
-bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
+void PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 {
 	auto clickInventory = [&](Swan::InventoryTrait::Inventory &inv, int index) {
 		auto slot = inv.get(index);
@@ -852,7 +854,7 @@ bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 	};
 
 	if (ui_.hoveredInventorySlot < 0 && ui_.hoveredOpenInventorySlot < 0) {
-		return false;
+		return;
 	}
 
 	bool shift = ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT);
@@ -861,7 +863,7 @@ bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 	if (!shift && ui_.hoveredInventorySlot >= 0) {
 		clickInventory(inventory_, ui_.hoveredInventorySlot);
 		ctx.game.playSound(sounds_.snap);
-		return true;
+		return;
 	}
 
 	auto *openInv = currentOpenInventory_.trait<Swan::InventoryTrait>();
@@ -871,7 +873,7 @@ bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 		int index = ui_.hoveredInventorySlot;
 		inventory_.set(index, openInv->insert(inventory_.get(index)));
 		ctx.game.playSound(sounds_.snap);
-		return true;
+		return;
 	}
 
 	// Shift click from open inventory to player inventory
@@ -882,7 +884,7 @@ bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 		}
 		openInv->set(index, inventory_.insert(openInv->get(index)));
 		ctx.game.playSound(sounds_.snap);
-		return true;
+		return;
 	}
 
 	// Shift click from player inventory to player inventory
@@ -897,17 +899,15 @@ bool PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 		}
 		inventory_.insert(leftover);
 		ctx.game.playSound(sounds_.snap);
-		return true;
+		return;
 	}
 
 	// Non-shift click on the open inventory
 	if (!shift && openInv && ui_.hoveredOpenInventorySlot >= 0) {
 		clickInventory(*openInv, ui_.hoveredOpenInventorySlot);
 		ctx.game.playSound(sounds_.snap);
-		return true;
+		return;
 	}
-
-	return false;
 }
 
 void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
