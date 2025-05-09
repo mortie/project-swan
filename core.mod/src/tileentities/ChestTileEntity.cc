@@ -5,6 +5,13 @@ namespace CoreMod {
 
 void ChestTileEntity::serialize(const Swan::Context &ctx, Proto::Builder w)
 {
+	// Close the chest on load if it's open
+	auto &tile = ctx.plane.tiles().get(tileEntity_.pos);
+	if (tile.name.ends_with("::open")) {
+		auto newName = tile.name.substr(0, tile.name.length() - 6);
+		ctx.plane.tiles().set(tileEntity_.pos, newName);
+	}
+
 	tileEntity_.serialize(w.initTileEntity());
 	inventory_.serialize(w.initInventory());
 }
