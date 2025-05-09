@@ -257,6 +257,15 @@ public:
 			.output = {1, "core::dynamite"},
 			.kind = "core::crafting",
 		});
+		registerRecipe({
+			.inputs = {
+				{4, "core::tree-trunk"},
+				{2, "core::pebble"},
+				{1, "core::rope"},
+			},
+			.output = {1, "core::chest"},
+			.kind = "core::crafting",
+		});
 
 		registerWorldGen<DefaultWorldGen>("default");
 
