@@ -59,6 +59,11 @@ private:
 			return {};
 		}
 
+		Swan::ItemStack take(int slot) override
+		{
+			return {};
+		}
+
 		Swan::ItemStack set(int slot, Swan::ItemStack stack) override
 		{
 			return stack;
@@ -68,14 +73,19 @@ private:
 		Swan::ItemStack insert(
 			Swan::Direction dir, Swan::ItemStack stack) override;
 
-		std::optional<InboxItem> contents_;
+		std::span<const Swan::ItemStack> content() const override
+		{
+			return {};
+		}
+
+		std::optional<InboxItem> content_;
 	};
 
 	void moveItemOut(const Swan::Context &ctx, size_t index);
 
 	TileEntity tileEntity_;
 	Inbox inbox_;
-	std::vector<MovingItem> contents_;
+	std::vector<MovingItem> content_;
 };
 
 }

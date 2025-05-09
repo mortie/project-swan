@@ -5,6 +5,15 @@
 
 namespace Swan {
 
+bool ItemStack::full() const
+{
+	if (empty()) {
+		return false;
+	}
+
+	return count_ >= item_->maxStack;
+}
+
 ItemStack ItemStack::insert(ItemStack st)
 {
 	// If this is an empty item stack, just copy over st

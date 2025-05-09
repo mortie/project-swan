@@ -17,11 +17,14 @@ Cygnet::Color linearGradient(
 
 void inventory(
 	const Context &ctx, Cygnet::Renderer &rnd, Vec2i size, Cygnet::RenderSprite sprite,
-	std::span<ItemStack> content);
+	std::span<const ItemStack> content);
+
+Vec2i calcInventorySize(int size);
 
 Vec2 relativePos(Vec2 pos, Cygnet::Renderer::Rect rect);
 
 std::optional<Vec2i> inventoryCellPos(Vec2 pos, Cygnet::Renderer::Rect rect);
+int inventoryCellIndex(Vec2 pos, Cygnet::Renderer::Rect rect, int offset = 0);
 
 }
 

@@ -37,6 +37,11 @@ public:
 		return exists();
 	}
 
+	bool isNil()
+	{
+		return coll_ == nullptr;
+	}
+
 	Entity *operator->()
 	{
 		return get();

@@ -11,6 +11,8 @@ class PlayerEntity final: public Swan::Entity,
 public:
 	using Proto = proto::PlayerEntity;
 
+	using CloseInventoryCallback = void(const Swan::Context &, Swan::EntityRef);
+
 	PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos);
 	PlayerEntity(const Swan::Context &ctx):
 		animations_(ctx),
@@ -40,6 +42,9 @@ public:
 
 	void serialize(const Swan::Context &ctx, Proto::Builder w);
 	void deserialize(const Swan::Context &ctx, Proto::Reader r);
+
+	bool askToOpenInventory(Swan::EntityRef ent, CloseInventoryCallback cb);
+	void askToCloseInventory(const Swan::Context &ctx, Swan::EntityRef ent);
 
 private:
 	struct Sounds {
@@ -81,9 +86,11 @@ private:
 	struct UI {
 		int selectedInventorySlot = 0;
 		int hoveredInventorySlot = -1;
+		int hoveredOpenInventorySlot = -1;
 		bool showInventory = false;
 		Cygnet::Renderer::Rect hotbarRect;
 		Cygnet::Renderer::Rect inventoryRect;
+		Cygnet::Renderer::Rect openInventoryRect;
 	};
 
 	struct HeldLight {
@@ -139,6 +146,10 @@ private:
 	Cygnet::RenderSprite selectedSlotSprite_;
 
 	UI ui_;
+
+	// Entity which has an inventory which the player has opened
+	Swan::EntityRef currentOpenInventory_;
+	CloseInventoryCallback *closeInventoryCallback_ = nullptr;
 
 	Swan::Clock jumpTimer_;
 	float invincibleTimer_ = 0;

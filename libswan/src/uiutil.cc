@@ -50,7 +50,7 @@ Cygnet::Color linearGradient(
 
 void inventory(
 	const Context &ctx, Cygnet::Renderer &rnd, Vec2i size, Cygnet::RenderSprite sprite,
-	std::span<ItemStack> content)
+	std::span<const ItemStack> content)
 {
 	rnd.drawUIGrid({
 		.sprite = sprite,
@@ -109,6 +109,19 @@ void inventory(
 	}
 }
 
+Vec2i calcInventorySize(int size)
+{
+	if (size < 10) {
+		return {size, 1};
+	} else {
+		int y = size / 10;
+		if (size % 10) {
+			y += 1;
+		}
+		return {10, y};
+	}
+}
+
 Vec2 relativePos(Vec2 pos, Cygnet::Renderer::Rect rect)
 {
 	pos -= rect.pos;
@@ -133,6 +146,17 @@ std::optional<Vec2i> inventoryCellPos(Vec2 pos, Cygnet::Renderer::Rect rect)
 	}
 
 	return pos.as<int>();
+}
+
+int inventoryCellIndex(Vec2 pos, Cygnet::Renderer::Rect rect, int offset)
+{
+	auto cellPos = inventoryCellPos(pos, rect);
+	if (!cellPos) {
+		return -1;
+	}
+
+	auto size = (rect.size * 2).as<int>().add(-2, -2);
+	return cellPos->y * (size.x) + cellPos->x + offset;
 }
 
 }

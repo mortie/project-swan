@@ -36,6 +36,8 @@ public:
 		return item_ == nullptr;
 	}
 
+	bool full() const;
+
 	// Insert as much of 'st' as possible, returning the leftovers
 	ItemStack insert(ItemStack st);
 

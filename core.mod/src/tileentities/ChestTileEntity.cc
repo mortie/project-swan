@@ -25,7 +25,7 @@ void ChestTileEntity::deserialize(const Swan::Context &ctx, Proto::Reader r)
 void ChestTileEntity::onDespawn(const Swan::Context &ctx)
 {
 	Swan::info << "Despawning chest at " << tileEntity_.pos;
-	for (auto stack: inventory_.content) {
+	for (auto stack: inventory_.content_) {
 		if (stack.empty()) {
 			continue;
 		}

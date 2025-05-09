@@ -1,8 +1,51 @@
 #include "chest.h"
 
 #include "tileentities/ChestTileEntity.h"
+#include "entities/PlayerEntity.h"
 
 namespace CoreMod {
+
+static void closeCallback(const Swan::Context &ctx, Swan::EntityRef ref)
+{
+	auto pos = ref->trait<Swan::TileEntityTrait>()->pos;
+	ctx.game.playSound(ctx.world.getSound("core::sounds/misc/lock-open"), pos);
+	ctx.plane.tiles().set(pos, "core::chest");
+}
+
+static void openChest(const Swan::Context &ctx, Swan::TilePos pos, Swan::EntityRef opener)
+{
+	auto *player = dynamic_cast<PlayerEntity *>(opener.get());
+	if (!player) {
+		return;
+	}
+
+	auto self = ctx.plane.entities().getTileEntity(pos);
+	if (!self) {
+		return;
+	}
+
+	if (!player->askToOpenInventory(self, closeCallback)) {
+		return;
+	}
+
+	ctx.game.playSound(ctx.world.getSound("core::sounds/misc/lock-open"), pos);
+	ctx.plane.tiles().set(pos, "core::chest::open");
+}
+
+static void closeChest(const Swan::Context &ctx, Swan::TilePos pos, Swan::EntityRef opener)
+{
+	auto *player = dynamic_cast<PlayerEntity *>(opener.get());
+	if (!player) {
+		return;
+	}
+
+	auto self = ctx.plane.entities().getTileEntity(pos);
+	if (!self) {
+		return;
+	}
+
+	player->askToCloseInventory(ctx, self);
+}
 
 void registerChest(Swan::Mod &mod)
 {
@@ -15,10 +58,7 @@ void registerChest(Swan::Mod &mod)
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::chest",
 		.tileEntity = "core::tile::chest",
-		.onActivate = +[](const Swan::Context &ctx, Swan::TilePos pos, Swan::EntityRef) {
-			ctx.game.playSound(ctx.world.getSound("core::sounds/misc/lock-open"));
-			ctx.plane.tiles().set(pos, "core::chest::open");
-		},
+		.onActivate = openChest,
 	});
 	mod.registerTile({
 		.name = "chest::open",
@@ -27,10 +67,7 @@ void registerChest(Swan::Mod &mod)
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::chest",
 		.tileEntity = "core::tile::chest",
-		.onActivate = +[](const Swan::Context &ctx, Swan::TilePos pos, Swan::EntityRef) {
-			ctx.game.playSound(ctx.world.getSound("core::sounds/misc/lock-close"));
-			ctx.plane.tiles().set(pos, "core::chest");
-		},
+		.onActivate = closeChest,
 	});
 }
 

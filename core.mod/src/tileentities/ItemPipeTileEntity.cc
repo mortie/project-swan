@@ -10,7 +10,7 @@ void ItemPipeTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 {
 	Swan::Vec2 center = tileEntity_.pos.as<float>().add(0.5, 0.5);
 
-	for (auto &item: contents_) {
+	for (auto &item: content_) {
 		float frac;
 		Swan::Vec2 from;
 		Swan::Vec2 to;
@@ -35,8 +35,8 @@ void ItemPipeTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 
 void ItemPipeTileEntity::tick(const Swan::Context &ctx, float dt)
 {
-	for (size_t i = 0; i < contents_.size();) {
-		auto &item = contents_[i];
+	for (size_t i = 0; i < content_.size();) {
+		auto &item = content_[i];
 		item.timer += 1;
 		if (item.timer >= 10) {
 			moveItemOut(ctx, i);
@@ -48,9 +48,9 @@ void ItemPipeTileEntity::tick(const Swan::Context &ctx, float dt)
 
 void ItemPipeTileEntity::tick2(const Swan::Context &ctx, float dt)
 {
-	if (inbox_.contents_ && contents_.size() < 10) {
-		auto input = inbox_.contents_.value();
-		inbox_.contents_.reset();
+	if (inbox_.content_ && content_.size() < 10) {
+		auto input = inbox_.content_.value();
+		inbox_.content_.reset();
 
 		Swan::DirectionSet possibilities;
 		for (auto dir: Swan::DirectionSet::all()) {
@@ -77,7 +77,7 @@ void ItemPipeTileEntity::tick2(const Swan::Context &ctx, float dt)
 			dest = input.from.opposite();
 		}
 
-		contents_.push_back({
+		content_.push_back({
 			.item = input.item,
 			.from = input.from,
 			.to = dest.value(),
@@ -87,9 +87,9 @@ void ItemPipeTileEntity::tick2(const Swan::Context &ctx, float dt)
 
 void ItemPipeTileEntity::moveItemOut(const Swan::Context &ctx, size_t index)
 {
-	auto item = contents_[index];
-	contents_[index] = contents_.back();
-	contents_.pop_back();
+	auto item = content_[index];
+	content_[index] = content_.back();
+	content_.pop_back();
 
 	auto pos = tileEntity_.pos + item.to;
 	bool ok = [&] {
@@ -119,13 +119,13 @@ void ItemPipeTileEntity::moveItemOut(const Swan::Context &ctx, size_t index)
 void ItemPipeTileEntity::onDespawn(const Swan::Context &ctx)
 {
 	auto pos = tileEntity_.pos.as<float>().add(0.5, 0.5);
-	for (auto &item: contents_) {
+	for (auto &item: content_) {
 		ctx.plane.entities().spawn<ItemStackEntity>(pos, item.item);
 	}
 
-	if (inbox_.contents_) {
+	if (inbox_.content_) {
 		ctx.plane.entities().spawn<ItemStackEntity>(
-			pos, inbox_.contents_.value().item);
+			pos, inbox_.content_.value().item);
 	}
 }
 
@@ -134,18 +134,18 @@ void ItemPipeTileEntity::serialize(
 {
 	tileEntity_.serialize(w.initTileEntity());
 
-	if (inbox_.contents_) {
+	if (inbox_.content_) {
 		auto inboxW = w.initInbox();
-		inbox_.contents_->from.serialize(inboxW.initFrom());
-		inboxW.setItem(inbox_.contents_->item->name);
+		inbox_.content_->from.serialize(inboxW.initFrom());
+		inboxW.setItem(inbox_.content_->item->name);
 	}
 
-	auto contentsW = w.initContents(contents_.size());
-	for (size_t i = 0; i < contents_.size(); ++i) {
-		contentsW[i].setItem(contents_[i].item->name);
-		contents_[i].from.serialize(contentsW[i].initFrom());
-		contents_[i].to.serialize(contentsW[i].initTo());
-		contentsW[i].setTimer(contents_[i].timer);
+	auto contentsW = w.initContents(content_.size());
+	for (size_t i = 0; i < content_.size(); ++i) {
+		contentsW[i].setItem(content_[i].item->name);
+		content_[i].from.serialize(contentsW[i].initFrom());
+		content_[i].to.serialize(contentsW[i].initTo());
+		contentsW[i].setTimer(content_[i].timer);
 	}
 }
 
@@ -154,22 +154,22 @@ void ItemPipeTileEntity::deserialize(
 {
 	tileEntity_.deserialize(r.getTileEntity());
 
-	inbox_.contents_.reset();
+	inbox_.content_.reset();
 	if (r.hasInbox()) {
-		inbox_.contents_ = {};
-		auto &inboxContents = *inbox_.contents_;
+		inbox_.content_ = {};
+		auto &inboxContents = *inbox_.content_;
 		inboxContents.from.deserialize(r.getInbox().getFrom());
 		inboxContents.item = &ctx.world.getItem(r.getInbox().getItem().cStr());
 	}
 
-	contents_.clear();
+	content_.clear();
 	auto contentsR = r.getContents();
-	contents_.resize(contentsR.size());
+	content_.resize(contentsR.size());
 	for (size_t i = 0; i < contentsR.size(); ++i) {
-		contents_[i].item = &ctx.world.getItem(contentsR[i].getItem().cStr());
-		contents_[i].from.deserialize(contentsR[i].getFrom());
-		contents_[i].to.deserialize(contentsR[i].getTo());
-		contents_[i].timer = contentsR[i].getTimer();
+		content_[i].item = &ctx.world.getItem(contentsR[i].getItem().cStr());
+		content_[i].from.deserialize(contentsR[i].getFrom());
+		content_[i].to.deserialize(contentsR[i].getTo());
+		content_[i].timer = contentsR[i].getTimer();
 	}
 }
 
@@ -181,7 +181,7 @@ Swan::ItemStack ItemPipeTileEntity::Inbox::insert(Swan::ItemStack stack)
 Swan::ItemStack ItemPipeTileEntity::Inbox::insert(
 	Swan::Direction from, Swan::ItemStack stack)
 {
-	if (contents_) {
+	if (content_) {
 		return stack;
 	}
 
@@ -190,7 +190,7 @@ Swan::ItemStack ItemPipeTileEntity::Inbox::insert(
 		return stack;
 	}
 
-	contents_ = {oneItem.item(), from};
+	content_ = {oneItem.item(), from};
 	return stack;
 }
 
