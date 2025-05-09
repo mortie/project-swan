@@ -18,14 +18,12 @@ Swan::ItemStack CraftingInventory::take(int slot)
 	// Verify item availability
 	for (auto &input: recipes_[slot]->inputs) {
 		int needed = input.count();
-		Swan::info << "Looking for " << needed << " " << input.item()->name << "..";
 		for (auto &stack: invContent) {
 			if (input.item() != stack.item()) {
 				continue;
 			}
 
 			needed -= stack.count();
-			Swan::info << "Found! " << needed << " left";
 			if (needed <= 0) {
 				break;
 			}

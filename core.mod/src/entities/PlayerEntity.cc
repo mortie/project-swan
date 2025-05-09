@@ -755,17 +755,16 @@ void PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 			slot = {};
 		}
 		else if (!heldStack_.empty() && slot.empty()) {
-			heldStack_ = inv.insert(heldStack_, index);
+			heldStack_ = inv.set(index, heldStack_);
 		}
 		else if (slot.item() == heldStack_.item()) {
-			int freeSpace = slot.item()->maxStack - slot.count();
-			int delta = std::min(freeSpace, heldStack_.count());
-			inv.set(index, {heldStack_.item(), slot.count() + delta});
-			heldStack_.remove(delta);
+			heldStack_ = inv.insert(heldStack_, index, index + 1);
 		}
 		else {
-			inv.set(index, heldStack_);
-			heldStack_ = slot;
+			heldStack_ = inv.set(index, heldStack_);
+			if (heldStack_.empty()) {
+				heldStack_ = slot;
+			}
 		}
 	};
 

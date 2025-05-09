@@ -52,7 +52,7 @@ struct InventoryTrait {
 
 		ItemStack insert(ItemStack stack, int from, int to)
 		{
-			return insertInto(stack, from, size());
+			return insertInto(stack, from, to);
 		}
 
 		ItemStack insert(Direction dir, ItemStack stack)
