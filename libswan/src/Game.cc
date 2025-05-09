@@ -132,6 +132,10 @@ void Game::draw()
 		ImGui::Text(
 			"Fluid updates: %d, particles: %d",
 			fluids.numUpdates(), fluids.numParticles());
+		ImGui::Text(
+			"Position: x=%d y=%d",
+			int(round(world_->player_->pos.x)),
+			int(round(world_->player_->pos.y)));
 
 		ImGui::Checkbox("Draw collision boxes", &debugDrawCollisionBoxes_);
 		ImGui::Checkbox("Draw chunk boundaries", &debugDrawChunkBoundaries_);
