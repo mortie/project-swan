@@ -2,7 +2,6 @@
 
 #include <cmath>
 
-#include "FallingTileEntity.h"
 #include "swan/common.h"
 #include "world/util.h"
 
@@ -17,7 +16,7 @@ static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
 	for (int y = -R2; y <= R2; ++y) {
 		for (int x = -R2; x <= R2; ++x) {
 			Swan::TilePos tp = {(int)round(pos.x + x - 0.5), (int)round(pos.y + y - 0.5)};
-			float squareDist = y * y + x * x;
+			float squareDist = y * y + (x * x * 0.5);
 
 			if (squareDist <= R1 * R1) {
 				ctx.plane.tiles().setID(tp, Swan::World::AIR_TILE_ID);
