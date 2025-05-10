@@ -441,7 +441,7 @@ void PlayerEntity::handleInventoryHover(const Swan::Context &ctx)
 	ui_.hoveredInventorySlot = -1;
 	auto mousePos = ctx.game.getMouseUIPos();
 	ui_.hoveredInventorySlot = Swan::UI::inventoryCellIndex(mousePos, ui_.hotbarRect);
-	if (ui_.hoveredInventorySlot < 0) {
+	if (ui_.hoveredInventorySlot < 0 && ui_.showInventory) {
 		ui_.hoveredInventorySlot = Swan::UI::inventoryCellIndex(mousePos, ui_.inventoryRect, 10);
 	}
 	ui_.hoveredAuxInventorySlot = -1;
