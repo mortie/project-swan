@@ -143,7 +143,7 @@ public:
 			.image = "core::tiles/geo/boulder",
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
-			.onBreak = dropRandomItemCount<"core::pebble", 5>,
+			.onBreak = dropRandomItemCount<"core::rock", 5>,
 		});
 
 		registerTile({
@@ -193,8 +193,8 @@ public:
 		});
 
 		registerItem({
-			.name = "pebble",
-			.image = "core::items/pebble",
+			.name = "rock",
+			.image = "core::items/rock",
 		});
 		registerItem({
 			.name = "coal",
@@ -258,7 +258,7 @@ public:
 			.inputs = {
 				{1, "core::rope"},
 				{2, "core::stick"},
-				{2, "core::pebble"},
+				{2, "core::rock"},
 			},
 			.output = {1, "core::axe"},
 			.kind = "core::crafting",
@@ -271,7 +271,7 @@ public:
 		registerRecipe({
 			.inputs = {
 				{4, "core::tree-trunk"},
-				{2, "core::pebble"},
+				{2, "core::rock"},
 				{1, "core::rope"},
 			},
 			.output = {1, "core::chest"},

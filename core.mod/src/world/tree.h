@@ -1,6 +1,6 @@
 #pragma once
 
-#include "swan/swan.h"
+#include <swan/swan.h>
 
 namespace CoreMod {
 
