@@ -192,6 +192,7 @@ public:
 	Perf perf_;
 
 	bool tickInProgress_ = false;
+	bool pendingTick_ = false;
 	float tickDT_ = 0;
 	RTDeadline tickDeadline_{2.0 / 1000};
 

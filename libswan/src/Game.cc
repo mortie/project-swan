@@ -393,6 +393,8 @@ void Game::update(float dt)
 		if (world_->tick(tickDT_, tickDeadline_)) {
 			tickInProgress_ = false;
 		}
+	} else if (pendingTick_) {
+		tick(tickDT_);
 	}
 }
 
@@ -404,7 +406,11 @@ void Game::tick(float dt)
 	}
 
 	if (tickInProgress_) {
-		warn << "Skipping tick because previous tick is still not done!";
+		if (pendingTick_) {
+			warn << "Skipping tick because previous tick is still not done!";
+		} else {
+			pendingTick_ = true;
+		}
 		return;
 	}
 
@@ -424,10 +430,12 @@ void Game::tick(float dt)
 		tickDeadline_ = RTDeadline(2.0 / 1000.0);
 	}
 
+	pendingTick_ = false;
 	tickInProgress_ = true;
 	tickDT_ = dt;
 	if (world_->tick(tickDT_, tickDeadline_)) {
 		tickInProgress_ = false;
+		pendingTick_ = false;
 	}
 }
 
