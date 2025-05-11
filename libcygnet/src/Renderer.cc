@@ -478,7 +478,7 @@ void Renderer::update(float dt)
 				continue;
 			}
 
-			meta.vel.y += GRAVITY * dt;
+			meta.vel.y += GRAVITY * meta.weight * dt;
 			particles[i].pos += meta.vel * dt;
 		}
 	}

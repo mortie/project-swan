@@ -8,6 +8,7 @@ using import "/swan.capnp".BasicInventory;
 using import "/swan.capnp".TileEntity;
 using import "/swan.capnp".ItemStack;
 using import "/swan.capnp".Direction;
+using import "/swan.capnp".EntityRef;
 using import "/swan.capnp".Vec2i;
 
 struct DynamiteEntity {
@@ -35,6 +36,17 @@ struct PlayerEntity {
 
 struct SpiderEntity {
 	body @0 :BasicPhysicsBody;
+}
+
+struct BonfireTileEntity {
+	tileEntity @0 :TileEntity;
+	ongoing @1 :List(OngoingBurn);
+
+	struct OngoingBurn {
+		inputs @0 :List(EntityRef);
+		output @1 :ItemStack;
+		timer @2 :Float32;
+	}
 }
 
 struct ChestTileEntity {

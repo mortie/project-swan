@@ -128,6 +128,7 @@ public:
 	struct ParticleMeta {
 		Swan::Vec2 vel;
 		float lifetime;
+		float weight;
 	};
 
 	struct SpawnParticle {
@@ -136,6 +137,7 @@ public:
 		Swan::Vec2 size = {1.0/8, 1.0/8};
 		Color color;
 		float lifetime = 1;
+		float weight = 1;
 	};
 
 	struct DrawRect {
@@ -227,6 +229,7 @@ public:
 		spawnedParticleMetas_[(int)layer].push_back({
 			.vel = particle.vel,
 			.lifetime = particle.lifetime,
+			.weight = particle.weight,
 		});
 	}
 	void spawnParticle(SpawnParticle particle)

@@ -6,6 +6,7 @@
 #include "entities/ItemStackEntity.h"
 #include "entities/SpiderEntity.h"
 #include "entities/FallingTileEntity.h"
+#include "world/bonfire.h"
 #include "world/chest.h"
 #include "world/item-fan.h"
 #include "world/ladder.h"
@@ -167,6 +168,7 @@ public:
 			},
 		});
 
+		registerBonfire(*this);
 		registerChest(*this);
 		registerItemFan(*this);
 		registerRopeLadder(*this);
@@ -276,6 +278,22 @@ public:
 			},
 			.output = {1, "core::chest"},
 			.kind = "core::crafting",
+		});
+		registerRecipe({
+			.inputs = {
+				{3, "core::rock"},
+				{4, "core::stick"},
+				{2, "core::fiber"},
+			},
+			.output = {1, "core::bonfire"},
+			.kind = "core::crafting",
+		});
+
+		registerRecipeKind("burning");
+		registerRecipe({
+			.inputs = {{1, "core::stick"}},
+			.output = {},
+			.kind = "core::burning",
 		});
 
 		registerWorldGen<DefaultWorldGen>("default");

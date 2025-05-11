@@ -6,8 +6,6 @@
 #include <utility>
 #include <memory>
 #include <unordered_map>
-#include <typeindex>
-#include <mutex>
 #include <functional>
 
 #include "Clock.h"
@@ -20,7 +18,6 @@
 #include "Chunk.h"
 #include "Tile.h"
 #include "WorldGen.h"
-#include "FastHashSet.h"
 
 namespace Swan {
 
