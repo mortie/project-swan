@@ -158,6 +158,7 @@ public:
 	std::vector<ModWrapper> mods_;
 	Cygnet::ResourceManager resources_;
 	HashMap<SoundAsset> sounds_;
+	int resourceTickCounter_ = 0;
 
 	EntityRef playerRef_;
 	BodyTrait::Body *player_;

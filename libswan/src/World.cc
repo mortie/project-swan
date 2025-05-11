@@ -112,7 +112,7 @@ void World::buildResources()
 		PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE, 255);
 
 	// Let tile ID 0 be the invalid tile
-	builder.addTile(INVALID_TILE_ID, fallbackImage.data.get());
+	builder.addTile(INVALID_TILE_ID, fallbackImage.data.get(), 1);
 	tilesMap_[INVALID_TILE_NAME] = INVALID_TILE_ID;
 	tiles_.push_back(Tile(INVALID_TILE_ID, INVALID_TILE_NAME, {
 		.name = "", .image = "", // Not used in this case
@@ -124,7 +124,7 @@ void World::buildResources()
 	});
 
 	// ...And tile ID 1 be the air tile
-	builder.addTile(AIR_TILE_ID, std::move(airImage));
+	builder.addTile(AIR_TILE_ID, std::move(airImage), 1);
 	tilesMap_[AIR_TILE_NAME] = AIR_TILE_ID;
 	tiles_.push_back(Tile(AIR_TILE_ID, AIR_TILE_NAME, {
 		.name = "", .image = "", // Not used in this case
@@ -201,11 +201,11 @@ void World::buildResources()
 			if (image) {
 				buildTileParticles(tile, *image);
 				yOffset = findImageYOffset(*image);
-				builder.addTile(tileId, std::move(image->data));
+				builder.addTile(tileId, std::move(image->data), image->frameCount);
 			}
 			else {
 				warn << image.err();
-				builder.addTile(tileId, fallbackImage.data.get());
+				builder.addTile(tileId, fallbackImage.data.get(), 1);
 			}
 
 			if (tileBuilder.placeSound) {
@@ -269,11 +269,11 @@ void World::buildResources()
 			float yOffset = 0;
 			if (image) {
 				yOffset = findImageYOffset(*image);
-				builder.addTile(itemId, std::move(image->data));
+				builder.addTile(itemId, std::move(image->data), image->frameCount);
 			}
 			else {
 				warn << image.err();
-				builder.addTile(itemId, fallbackImage.data.get());
+				builder.addTile(itemId, fallbackImage.data.get(), 1);
 			}
 
 			auto &item = items_[itemName] = Item(itemId, itemName, itemBuilder);
@@ -664,6 +664,12 @@ bool World::tick(float dt, RTDeadline deadline)
 		chunkRenderer_.tick(
 			*planes_[currentPlane_].plane,
 			ChunkPos((int)player_->pos.x / CHUNK_WIDTH, (int)player_->pos.y / CHUNK_HEIGHT));
+
+		resourceTickCounter_ += 1;
+		if (resourceTickCounter_ >= 2) {
+			resources_.tick();
+			resourceTickCounter_ = 0;
+		}
 	}
 
 	bool allPlanesTicked = true;

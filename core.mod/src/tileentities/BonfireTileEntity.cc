@@ -7,6 +7,19 @@ void BonfireTileEntity::tick(const Swan::Context &ctx, float dt)
 {
 	Swan::Vec2 tileCenter = {tileEntity_.pos.x + 0.5f, tileEntity_.pos.y + 0.5f};
 
+	// Spawn smoke particles always
+	auto layer = Swan::random() % 3
+		? Cygnet::RenderLayer::BEHIND
+		: Cygnet::RenderLayer::NORMAL;
+	ctx.game.spawnParticle(layer, {
+		.pos = tileCenter.add((Swan::randfloat() - 0.5f) * 0.2f, 0.2f),
+		.vel = {(Swan::randfloat() - 0.5f) * 1, -(Swan::randfloat() * 0.5f + 0.6f)},
+		.size = {1.0f / 16, 1.0f / 16},
+		.color = {0.3f, 0.3f, 0.3f, Swan::randfloat() * 0.2f + 0.75f},
+		.lifetime = Swan::randfloat() + 0.2f,
+		.weight = 0.05,
+	});
+
 	// Progress existing burns
 	for (size_t i = 0; i < ongoing_.size();) {
 		auto &burn = ongoing_[i];

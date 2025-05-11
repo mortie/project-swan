@@ -1,9 +1,7 @@
 #pragma once
 
-#include <unordered_map>
 #include <memory>
 #include <stdint.h>
-#include <string.h>
 #include <swan/constants.h>
 #include <swan/HashMap.h>
 
@@ -33,8 +31,8 @@ public:
 	};
 
 	RenderSprite addSprite(std::string name, void *data, SpriteMeta meta);
-	void addTile(Renderer::TileID id, void *data, int frames = 1);
-	void addTile(Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames = 1);
+	void addTile(Renderer::TileID id, void *data, int frames);
+	void addTile(Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames);
 	void addFluid(uint8_t id, ByteColor color);
 
 private:

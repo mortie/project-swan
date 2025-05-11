@@ -1,6 +1,6 @@
 #include "ResourceManager.h"
 
-#include <iostream>
+#include <string.h>
 
 namespace Cygnet {
 
