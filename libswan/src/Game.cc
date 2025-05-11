@@ -110,7 +110,11 @@ Cygnet::Color Game::backgroundColor()
 
 void Game::drawDebugMenu()
 {
-	ImGui::Begin("Debug Menu", &debug_.show, ImGuiWindowFlags_AlwaysAutoResize);
+	ImGui::Begin(
+		"Debug Menu", &debug_.show,
+		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing);
+	ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 
 	ImGui::Text(
 		"Position: x=%d y=%d",
@@ -268,7 +272,13 @@ void Game::drawDebugMenu()
 
 void Game::drawPerfMenu()
 {
-	ImGui::Begin("Perf Menu", &perf_.show, ImGuiWindowFlags_AlwaysAutoResize);
+	ImGui::Begin(
+		"Perf Menu", &perf_.show,
+		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing);
+	ImGui::SetWindowPos(
+		ImVec2(ImGui::GetIO().DisplaySize.x - ImGui::GetWindowWidth(), 0),
+		ImGuiCond_Always);
 
 	auto &fluids = world_->currentPlane().fluids();
 	ImGui::Text("FPS: %d", perf_.fps);

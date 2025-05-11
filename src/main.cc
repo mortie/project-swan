@@ -174,6 +174,7 @@ int main(int argc, char **argv)
 	SWAN_DEFER(ImGui::DestroyContext());
 
 	imguiIo = &ImGui::GetIO();
+	imguiIo->IniFilename = nullptr;
 
 	ImGui::StyleColorsDark();
 
