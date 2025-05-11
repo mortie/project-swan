@@ -115,8 +115,8 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 	// Same thing as with spawnCave,
 	// except that below stoneLevel + 200, we want oil to take precedence
 	// over caves
-	bool spawnOil = isOil(pos, grassLevel) &&
-		(pos.y >= stoneLevel + 200 || (
+	bool spawnOil = isOil(pos, grassLevel) && (
+		pos.y >= stoneLevel + 200 || (
 			!isCave(pos.add(-1, 0), grassLevel) &&
 			!isCave(pos.add(1, 0), grassLevel) &&
 			!isCave(pos.add(0, -1), grassLevel) &&
