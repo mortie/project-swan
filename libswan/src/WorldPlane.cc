@@ -173,9 +173,20 @@ void WorldPlane::update(float dt)
 	}
 }
 
-void WorldPlane::tick(float dt)
+bool WorldPlane::tick(float dt, RTDeadline deadline)
 {
 	ZoneScopedN("WorldPlane tick");
+
+	// Resume fluid processing if we're in the middle of a tick
+	if (tickProgress_ == TickProgress::FLUID_ONGOING) {
+		if (fluidSystem_.tick(deadline)) {
+			tickProgress_ = TickProgress::IDLE;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	auto ctx = getContext();
 
 	// Any chunk which has been in use since last tick should be kept alive
@@ -231,19 +242,27 @@ void WorldPlane::tick(float dt)
 	tileSystem_.endTick();
 	world_->game_->perf_.tileTickTime.record(tileTickClock.duration());
 
-	// Tick the rest
 	{
-		ZoneScopedN("Fluids");
-		RTClock clock;
-		fluidSystem_.tick();
-		world_->game_->perf_.fluidTickTime.record(clock.duration());
-	}
-	{
+		// Tick entities
 		ZoneScopedN("Entities");
 		RTClock clock;
 		entitySystem_.tick(dt);
 		world_->game_->perf_.entityTickTime.record(clock.duration());
 	}
+
+	{
+		// Tick fluids, possibly stopping in the middle
+		ZoneScopedN("Fluids");
+		RTClock clock;
+		if (fluidSystem_.tick(deadline)) {
+			tickProgress_ = TickProgress::IDLE;
+		} else {
+			tickProgress_ = TickProgress::FLUID_ONGOING;
+		}
+		world_->game_->perf_.fluidTickTime.record(clock.duration());
+	}
+
+	return tickProgress_ == TickProgress::IDLE;
 }
 
 void WorldPlane::serialize(proto::WorldPlane::Builder w)

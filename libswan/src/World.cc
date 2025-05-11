@@ -656,16 +656,38 @@ void World::update(float dt)
 	game_->cam_.pos = player_->pos + player_->size / 2;
 }
 
-void World::tick(float dt)
+bool World::tick(float dt, RTDeadline deadline)
 {
 	ZoneScopedN("World tick");
-	for (auto &plane: planes_) {
-		plane.plane->tick(dt);
+
+	if (!tickProgress_.ongoing) {
+		chunkRenderer_.tick(
+			*planes_[currentPlane_].plane,
+			ChunkPos((int)player_->pos.x / CHUNK_WIDTH, (int)player_->pos.y / CHUNK_HEIGHT));
 	}
 
-	chunkRenderer_.tick(
-		*planes_[currentPlane_].plane,
-		ChunkPos((int)player_->pos.x / CHUNK_WIDTH, (int)player_->pos.y / CHUNK_HEIGHT));
+	bool allPlanesTicked = true;
+	for (auto &plane: planes_) {
+		if (tickProgress_.tickedPlanes.contains(plane.plane->id_)) {
+			continue;
+		}
+
+		if (!plane.plane->tick(dt, deadline)) {
+			allPlanesTicked = false;
+			break;
+		}
+
+		tickProgress_.tickedPlanes.insert(plane.plane->id_);
+	}
+
+	if (allPlanesTicked) {
+		tickProgress_.tickedPlanes.clear();
+		tickProgress_.ongoing = false;
+		return true;
+	} else {
+		tickProgress_.ongoing = true;
+		return false;
+	}
 }
 
 void World::serialize(proto::World::Builder w)

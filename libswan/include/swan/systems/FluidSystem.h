@@ -3,6 +3,7 @@
 #include "../FastHashSet.h"
 #include "../common.h"
 #include "../Fluid.h"
+#include "../Clock.h"
 #include "swan.capnp.h"
 
 #include <cygnet/util.h>
@@ -22,6 +23,10 @@ class FluidSystemImpl {
 public:
 	FluidSystemImpl(WorldPlane &plane): plane_(plane) {}
 
+	struct TickProgress {
+		size_t updateIndex = 0;
+	};
+
 	/*
 	 * Available to game logic
 	 */
@@ -39,7 +44,7 @@ public:
 
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
-	void tick();
+	bool tick(RTDeadline deadline);
 
 	void serialize(proto::FluidSystem::Builder w);
 	void deserialize(proto::FluidSystem::Reader r);
@@ -83,6 +88,7 @@ private:
 	std::vector<FluidPos> updatesA_;
 	std::vector<FluidPos> updatesB_;
 	std::vector<FluidParticle> particles_;
+	TickProgress tickProgress_;
 };
 
 class FluidSystem: private FluidSystemImpl {

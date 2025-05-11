@@ -220,6 +220,10 @@ Fluid &FluidSystemImpl::getAtPos(Vec2 pos) {
 void FluidSystemImpl::draw(Cygnet::Renderer &rnd)
 {
 	for (auto &particle: particles_) {
+		if (rnd.isCulled(particle.pos)) {
+			continue;
+		}
+
 		rnd.drawParticle({
 			.pos = particle.pos,
 			.size = {1.0 / FLUID_RESOLUTION, 1.0 / FLUID_RESOLUTION},
@@ -243,6 +247,10 @@ void FluidSystemImpl::draw(Cygnet::Renderer &rnd)
 void FluidSystemImpl::update(float dt)
 {
 	auto spawnMist = [&](const FluidParticle &particle) {
+		if (plane_.world_->game_->renderer_.isCulled(particle.pos)) {
+			return;
+		}
+
 		for (int i = 0; i < int(randfloat() * 6); ++i) {
 			plane_.world_->game_->spawnParticle({
 				.pos = {
@@ -332,39 +340,55 @@ void FluidSystemImpl::update(float dt)
 	}
 }
 
-void FluidSystemImpl::tick()
+bool FluidSystemImpl::tick(RTDeadline deadline)
 {
-	updateSet_.clear();
-	movedSet_.clear();
-	updatesB_.clear();
-	std::swap(updatesA_, updatesB_);
+	if (tickProgress_.updateIndex == 0) {
+		updateSet_.clear();
+		movedSet_.clear();
+		updatesB_.clear();
+		std::swap(updatesA_, updatesB_);
 
-	// Tick particles, and delete old ones
-	for (size_t i = 0; i < particles_.size();) {
-		if (particles_[i].remainingTime == 0) {
-			particles_[i] = particles_.back();
-			particles_.pop_back();
-			continue;
+		// Tick particles, and delete old ones
+		for (size_t i = 0; i < particles_.size();) {
+			if (particles_[i].remainingTime == 0) {
+				particles_[i] = particles_.back();
+				particles_.pop_back();
+				continue;
+			}
+
+			if (random() % 2) {
+				particles_[i].remainingTime -= 1;
+			}
+			i += 1;
 		}
 
-		if (random() % 2) {
-			particles_[i].remainingTime -= 1;
+		// Randomize update order
+		for (size_t i = 1; i < updatesB_.size(); ++i) {
+			size_t newIndex = random() % (updatesB_.size() - i) + i;
+			if (i != newIndex) {
+				std::swap(updatesB_[i], updatesB_[newIndex]);
+			}
 		}
-		i += 1;
-	}
 
-	// Randomize update order
-	for (size_t i = 1; i < updatesB_.size(); ++i) {
-		size_t newIndex = random() % (updatesB_.size() - i) + i;
-		if (i != newIndex) {
-			std::swap(updatesB_[i], updatesB_[newIndex]);
-		}
 	}
 
 	// Run the updates
-	for (size_t i = 0; i < updatesB_.size(); ++i) {
-		applyRules(updatesB_[i]);
+	RTClock clock;
+	size_t index = tickProgress_.updateIndex;
+	size_t lim = updatesB_.size();
+	while (index < lim) {
+		for (size_t j = 0; j < 100 && index < lim; ++j) {
+			applyRules(updatesB_[index++]);
+		}
+
+		if (deadline.passed()) {
+			tickProgress_.updateIndex = index;
+			return false;
+		}
 	}
+
+	tickProgress_.updateIndex = 0;
+	return true;
 }
 
 void FluidSystemImpl::serialize(proto::FluidSystem::Builder w)

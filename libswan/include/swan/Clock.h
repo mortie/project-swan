@@ -59,4 +59,17 @@ private:
 		std::chrono::steady_clock::now();
 };
 
+class RTDeadline: public RTClock {
+public:
+	RTDeadline(double deadline): deadline_(deadline) {};
+
+	bool passed()
+	{
+		return duration() >= deadline_;
+	}
+
+private:
+	double deadline_;
+};
+
 }

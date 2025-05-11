@@ -10,6 +10,7 @@
 #include <mutex>
 #include <functional>
 
+#include "Clock.h"
 #include "common.h"
 #include "systems/EntitySystem.h"
 #include "systems/FluidSystem.h"
@@ -29,6 +30,10 @@ class Game;
 class WorldPlane final: NonCopyable {
 public:
 	using ID = uint16_t;
+
+	enum class TickProgress {
+		IDLE, FLUID_ONGOING,
+	};
 
 	WorldPlane(
 		ID id, World *world, std::unique_ptr<WorldGen> gen,
@@ -65,7 +70,7 @@ public:
 	Cygnet::Color backgroundColor();
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
-	void tick(float dt);
+	bool tick(float dt, RTDeadline deadline);
 
 	ID id_;
 	World *world_;
@@ -85,6 +90,7 @@ private:
 	std::vector<std::function<void(const Context &)>> nextTickA_;
 	std::vector<std::function<void(const Context &)>> nextTickB_;
 
+	TickProgress tickProgress_ = TickProgress::IDLE;
 	FluidSystem fluidSystem_{*this};
 	EntitySystem entitySystem_;
 	LightSystem lightSystem_{*this};

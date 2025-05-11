@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Clock.h"
 #include <bitset>
 #include <chrono>
 #include <string>
@@ -189,6 +190,10 @@ public:
 	float fpsLimit_ = 0;
 	Debug debug_;
 	Perf perf_;
+
+	bool tickInProgress_ = false;
+	float tickDT_ = 0;
+	RTDeadline tickDeadline_{2.0 / 1000};
 
 	int frameAcc_ = 0;
 	std::chrono::steady_clock::duration frameTimeAcc_;

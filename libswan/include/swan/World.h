@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_set>
 #include <vector>
 #include <string>
 #include <random>
@@ -9,6 +10,7 @@
 #include <cygnet/ResourceManager.h>
 #include <cygnet/util.h>
 
+#include "Clock.h"
 #include "Fluid.h"
 #include "common.h"
 #include "Item.h"
@@ -45,6 +47,11 @@ public:
 
 	static constexpr char INVALID_SOUND_NAME[] = "@::invalid";
 	static constexpr char THUD_SOUND_NAME[] = "@::thud";
+
+	struct TickProgress {
+		bool ongoing = false;
+		std::unordered_set<WorldPlane::ID> tickedPlanes;
+	};
 
 	World(Game *game, unsigned long randSeed, std::span<std::string> modPaths);
 	~World();
@@ -101,7 +108,7 @@ public:
 	Cygnet::Color backgroundColor();
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
-	void tick(float dt);
+	bool tick(float dt, RTDeadline deadline);
 
 	Tile &invalidTile()
 	{
@@ -175,6 +182,7 @@ private:
 	WorldPlane::ID currentPlane_ = 0;
 	std::vector<PlaneWrapper> planes_;
 	std::string defaultWorldGen_;
+	TickProgress tickProgress_;
 
 	Item *invalidItem_;
 };

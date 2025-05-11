@@ -80,8 +80,8 @@ public:
 	static constexpr int LAYER_COUNT = (int)RenderLayer::MAX + 1;
 
 	struct Rect {
-		Swan::Vec2 pos{};
-		Swan::Vec2 size;
+		Swan::Vec2 pos{0, 0};
+		Swan::Vec2 size{1, 1};
 	};
 
 	struct DrawChunk {
@@ -386,11 +386,36 @@ public:
 		return winScale_;
 	}
 
+	void setCull(Rect rect)
+	{
+		cullRect_ = rect;
+	}
+
+	bool isCulled(Swan::Vec2 pos)
+	{
+		if (pos.x < cullRect_.pos.x - cullRect_.size.x) {
+			return true;
+		}
+		if (pos.x > cullRect_.pos.x + cullRect_.size.x) {
+			return true;
+		}
+		if (pos.y < cullRect_.pos.y - cullRect_.size.y) {
+			return true;
+		}
+		if (pos.y > cullRect_.pos.y + cullRect_.size.y) {
+			return true;
+		}
+
+		return false;
+	}
+
+
 private:
 	void renderLayer(RenderLayer layer, Mat3gf camMat, GLint screenFBO);
 	void renderUILayer(RenderLayer layer, Mat3gf camMat);
 	void applyAnchor(Anchor anchor, Mat3gf &mat, Swan::Vec2 size);
 
+	Rect cullRect_;
 	std::unique_ptr<RendererState> state_;
 	Swan::Vec2 winScale_ = {1, 1};
 	float gamma_;

@@ -11,6 +11,7 @@
 #include <capnp/serialize-packed.h>
 #include <kj/filesystem.h>
 
+#include "Clock.h"
 #include "swan.capnp.h"
 
 #include "traits/InventoryTrait.h"
@@ -360,6 +361,11 @@ void Game::update(float dt)
 		cam_.zoom = zoomLim;
 	}
 
+	renderer_.setCull({
+		.pos = cam_.pos,
+		.size = {1 / cam_.zoom, 1 / cam_.zoom},
+	});
+
 	if (wasLiteralKeyPressed(GLFW_KEY_F3)) {
 		debug_.show = !debug_.show;
 	}
@@ -380,6 +386,14 @@ void Game::update(float dt)
 	didReleaseLiteralKeys_.reset();
 	didPressButtons_.reset();
 	didReleaseButtons_.reset();
+
+	// Continue running the ongoing tick if necessary
+	if (tickInProgress_) {
+		tickDeadline_.reset();
+		if (world_->tick(tickDT_, tickDeadline_)) {
+			tickInProgress_ = false;
+		}
+	}
 }
 
 void Game::tick(float dt)
@@ -387,6 +401,11 @@ void Game::tick(float dt)
 	if (triggerSave_) {
 		save();
 		triggerSave_ = false;
+	}
+
+	if (tickInProgress_) {
+		warn << "Skipping tick because previous tick is still not done!";
+		return;
 	}
 
 	perf_.tickCount += 1;
@@ -397,11 +416,32 @@ void Game::tick(float dt)
 		perf_.tickCount = 0;
 	}
 
-	world_->tick(dt);
+	if (fpsLimit_ > 0) {
+		// Allocate a quarter of a frame to a tick
+		tickDeadline_ = RTDeadline(0.25 / fpsLimit_);
+	} else {
+		// If there's no FPS limit, allocate 2ms
+		tickDeadline_ = RTDeadline(2.0 / 1000.0);
+	}
+
+	tickInProgress_ = true;
+	tickDT_ = dt;
+	if (world_->tick(tickDT_, tickDeadline_)) {
+		tickInProgress_ = false;
+	}
 }
 
 void Game::save()
 {
+	if (tickInProgress_) {
+		info << "Completing current tick...";
+		if (world_->tick(tickDT_, RTDeadline(2))) {
+			tickInProgress_ = false;
+		} else {
+			warn << "Failed to complete tick in 2 seconds!";
+		}
+	}
+
 	info << "Serializing world...";
 	capnp::MallocMessageBuilder mb;
 	auto world = mb.initRoot<proto::World>();
