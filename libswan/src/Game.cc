@@ -107,13 +107,197 @@ Cygnet::Color Game::backgroundColor()
 	return world_->backgroundColor();
 }
 
+void Game::drawDebugMenu()
+{
+	ImGui::Begin("Debug Menu", &debug_.show, ImGuiWindowFlags_AlwaysAutoResize);
+
+	ImGui::Text(
+		"Position: x=%d y=%d",
+		int(round(world_->player_->pos.x)),
+		int(round(world_->player_->pos.y)));
+
+	ImGui::Checkbox("Draw collision boxes", &debug_.drawCollisionBoxes);
+	ImGui::Checkbox("Draw chunk boundaries", &debug_.drawChunkBoundaries);
+
+	bool prevEnableVSync = enableVSync_;
+	ImGui::Checkbox("Enable VSync", &enableVSync_);
+	if (enableVSync_ && !prevEnableVSync) {
+		glfwSwapInterval(1);
+	}
+	else if (!enableVSync_ && prevEnableVSync) {
+		glfwSwapInterval(0);
+	}
+
+	ImGui::Checkbox("Show fluid particles", &debug_.fluidParticleLocations);
+	ImGui::Checkbox("Disable shadows", &debug_.disableShadows);
+
+	ImGui::Checkbox("Hand-break any tile", &debug_.handBreakAny);
+	ImGui::Checkbox("God mode", &debug_.godMode);
+
+	ImGui::Checkbox("Individually serialize entities", &debug_.outputEntityProto);
+	if (ImGui::Button("Save")) {
+		triggerSave_ = true;
+	}
+
+	if (!FrameRecorder::isAvailable()) {
+		ImGui::Text("Screen recording unavailable");
+	}
+	else if (frameRecorder_) {
+		if (ImGui::Button("End recording")) {
+			frameRecorder_->end();
+			frameRecorder_.reset();
+			fixedDeltaTime_.reset();
+		}
+	}
+	else {
+		if (ImGui::Button("Begin recording")) {
+			frameRecorder_.emplace();
+
+			int fps = 60;
+			int width = 1920;
+			int height = int((float(width) / cam_.size.x) * cam_.size.y);
+
+			fixedDeltaTime_ = 1.0 / fps;
+			fpsLimit_ = fps;
+			if (!frameRecorder_->begin(width, height, fps, "rec.mp4")) {
+				info << "Recording failed!";
+				frameRecorder_.reset();
+				fixedDeltaTime_.reset();
+			}
+		}
+	}
+
+	ImGui::SliderFloat(
+		"Time scale", &timeScale_, 0, 3.0, "%.03f",
+		ImGuiSliderFlags_Logarithmic);
+	if (ImGui::BeginPopupContextItem("Time scale menu")) {
+		if (ImGui::MenuItem("Reset")) {
+			timeScale_ = 1.0;
+		}
+		ImGui::EndPopup();
+	}
+
+	float oldVolume = soundPlayer_.volume();
+	float volume = oldVolume;
+	ImGui::SliderFloat(
+		"Volume", &volume, 0, 1.0, "%.03f",
+		ImGuiSliderFlags_Logarithmic);
+	if (ImGui::BeginPopupContextItem("Volume menu")) {
+		if (ImGui::MenuItem("Reset")) {
+			volume = 1.0;
+		}
+		ImGui::EndPopup();
+	}
+
+	if (volume != oldVolume) {
+		soundPlayer_.volume(volume);
+	}
+
+	ImGui::SliderFloat(
+		"UI scale", &uiCam_.zoom, 0, 1.0, "%.03f",
+		ImGuiSliderFlags_Logarithmic);
+	if (ImGui::BeginPopupContextItem("UI scale menu")) {
+		if (ImGui::MenuItem("Reset")) {
+			uiCam_.zoom = 1.0 / 16;
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::SliderFloat(
+		"FPS limit", &fpsLimit_, 10, 360.0, "%.03f", 0);
+	if (ImGui::BeginPopupContextItem("FPS limit menu")) {
+		if (ImGui::MenuItem("Disable")) {
+			fpsLimit_ = 0;
+		}
+		else if (ImGui::MenuItem("30")) {
+			fpsLimit_ = 30;
+		}
+		else if (ImGui::MenuItem("60")) {
+			fpsLimit_ = 60;
+		}
+		else if (ImGui::MenuItem("90")) {
+			fpsLimit_ = 90;
+		}
+		else if (ImGui::MenuItem("120")) {
+			fpsLimit_ = 120;
+		}
+		else if (ImGui::MenuItem("144")) {
+			fpsLimit_ = 144;
+		}
+		ImGui::EndPopup();
+	}
+
+	if (fpsLimit_ < 10) {
+		fpsLimit_ = 0;
+	}
+
+	auto &tile = world_->currentPlane().tiles().get(getMouseTile());
+	ImGui::Text("Tile: %s\n", tile.name.c_str());
+
+	if (!hasSortedItems_) {
+		sortedItems_.clear();
+		sortedItems_.reserve(world_->items_.size());
+		for (auto &[name, item]: world_->items_) {
+			sortedItems_.push_back(&item);
+		}
+		std::sort(sortedItems_.begin(), sortedItems_.end(), [](Item *a, Item *b) {
+			return a->name < b->name;
+		});
+	}
+
+	ImGui::Text("Give Item:");
+	ImGui::BeginChild("Give Item", {0, 200});
+	for (auto item: sortedItems_) {
+		if (item->hidden) {
+			continue;
+		}
+
+		if (ImGui::Button(item->name.c_str())) {
+			auto *inventory = world_->playerRef_.trait<InventoryTrait>();
+			ItemStack stack(item, 1);
+
+			info << "Giving player " << stack.count() << ' ' << item->name;
+			inventory->insert(stack);
+		}
+	}
+	ImGui::EndChild();
+
+	ImGui::End();
+}
+
+void Game::drawPerfMenu()
+{
+	ImGui::Begin("Perf Menu", &perf_.show, ImGuiWindowFlags_AlwaysAutoResize);
+
+	auto &fluids = world_->currentPlane().fluids();
+	ImGui::Text("FPS: %d", perf_.fps);
+	ImGui::Text(
+		"Fluid updates: %d, particles: %d",
+		fluids.numUpdates(), fluids.numParticles());
+
+	ImGui::Separator();
+
+	ImGui::Text("Entity update: %.2fms avg / %.2fms max",
+		perf_.entityUpdateTime.avgMs, perf_.entityTickTime.maxMs);
+	ImGui::Text("Entity tick:   %.2fms avg / %.2fms max",
+		perf_.entityTickTime.avgMs, perf_.entityTickTime.maxMs);
+	ImGui::Text("Tile tick:     %.2fms avg / %.2fms max",
+		perf_.tileTickTime.avgMs, perf_.tileTickTime.maxMs);
+	ImGui::Text("Fluid update:  %.2fms avg / %.2fms max",
+		perf_.fluidUpdateTime.avgMs, perf_.fluidUpdateTime.maxMs);
+	ImGui::Text("Fluid tick:    %.2fms avg / %.2fms max",
+		perf_.fluidTickTime.avgMs, perf_.fluidTickTime.maxMs);
+
+	ImGui::End();
+}
+
 void Game::draw()
 {
 	auto now = std::chrono::steady_clock::now();
 
 	if (now > fpsUpdateTime_ + std::chrono::milliseconds(200) && frameAcc_ > 0) {
 		float avgFrameTime = std::chrono::duration_cast<std::chrono::duration<float>>(frameTimeAcc_).count() / frameAcc_;
-		fps_ = std::round(1.0f / avgFrameTime);
+		perf_.fps = std::round(1.0f / avgFrameTime);
 		frameAcc_ = 0;
 		frameTimeAcc_ = {};
 		fpsUpdateTime_ = now;
@@ -124,166 +308,12 @@ void Game::draw()
 	}
 	prevTime_ = now;
 
-	if (debugShowMenu_) {
-		ImGui::Begin("Debug Menu", &debugShowMenu_, ImGuiWindowFlags_AlwaysAutoResize);
+	if (debug_.show) {
+		drawDebugMenu();
+	}
 
-		auto &fluids = world_->currentPlane().fluids();
-		ImGui::Text("FPS: %d", fps_);
-		ImGui::Text(
-			"Fluid updates: %d, particles: %d",
-			fluids.numUpdates(), fluids.numParticles());
-		ImGui::Text(
-			"Position: x=%d y=%d",
-			int(round(world_->player_->pos.x)),
-			int(round(world_->player_->pos.y)));
-
-		ImGui::Checkbox("Draw collision boxes", &debugDrawCollisionBoxes_);
-		ImGui::Checkbox("Draw chunk boundaries", &debugDrawChunkBoundaries_);
-
-		bool prevEnableVSync = enableVSync_;
-		ImGui::Checkbox("Enable VSync", &enableVSync_);
-		if (enableVSync_ && !prevEnableVSync) {
-			glfwSwapInterval(1);
-		}
-		else if (!enableVSync_ && prevEnableVSync) {
-			glfwSwapInterval(0);
-		}
-
-		ImGui::Checkbox("Show fluid particles", &debugFluidParticleLocations_);
-		ImGui::Checkbox("Disable shadows", &debugDisableShadows_);
-
-		ImGui::Checkbox("Hand-break any tile", &debugHandBreakAny_);
-		ImGui::Checkbox("God mode", &debugGodMode_);
-
-		ImGui::Checkbox("Individually serialize entities", &debugOutputEntityProto_);
-		if (ImGui::Button("Save")) {
-			triggerSave_ = true;
-		}
-
-		if (!FrameRecorder::isAvailable()) {
-			ImGui::Text("Screen recording unavailable");
-		}
-		else if (frameRecorder_) {
-			if (ImGui::Button("End recording")) {
-				frameRecorder_->end();
-				frameRecorder_.reset();
-				fixedDeltaTime_.reset();
-			}
-		}
-		else {
-			if (ImGui::Button("Begin recording")) {
-				frameRecorder_.emplace();
-
-				int fps = 60;
-				int width = 1920;
-				int height = int((float(width) / cam_.size.x) * cam_.size.y);
-
-				fixedDeltaTime_ = 1.0 / fps;
-				fpsLimit_ = fps;
-				if (!frameRecorder_->begin(width, height, fps, "rec.mp4")) {
-					info << "Recording failed!";
-					frameRecorder_.reset();
-					fixedDeltaTime_.reset();
-				}
-			}
-		}
-
-		ImGui::SliderFloat(
-			"Time scale", &timeScale_, 0, 3.0, "%.03f",
-			ImGuiSliderFlags_Logarithmic);
-		if (ImGui::BeginPopupContextItem("Time scale menu")) {
-			if (ImGui::MenuItem("Reset")) {
-				timeScale_ = 1.0;
-			}
-			ImGui::EndPopup();
-		}
-
-		float oldVolume = soundPlayer_.volume();
-		float volume = oldVolume;
-		ImGui::SliderFloat(
-			"Volume", &volume, 0, 1.0, "%.03f",
-			ImGuiSliderFlags_Logarithmic);
-		if (ImGui::BeginPopupContextItem("Volume menu")) {
-			if (ImGui::MenuItem("Reset")) {
-				volume = 1.0;
-			}
-			ImGui::EndPopup();
-		}
-
-		if (volume != oldVolume) {
-			soundPlayer_.volume(volume);
-		}
-
-		ImGui::SliderFloat(
-			"UI scale", &uiCam_.zoom, 0, 1.0, "%.03f",
-			ImGuiSliderFlags_Logarithmic);
-		if (ImGui::BeginPopupContextItem("UI scale menu")) {
-			if (ImGui::MenuItem("Reset")) {
-				uiCam_.zoom = 1.0 / 16;
-			}
-			ImGui::EndPopup();
-		}
-
-		ImGui::SliderFloat(
-			"FPS limit", &fpsLimit_, 10, 360.0, "%.03f", 0);
-		if (ImGui::BeginPopupContextItem("FPS limit menu")) {
-			if (ImGui::MenuItem("Disable")) {
-				fpsLimit_ = 0;
-			}
-			else if (ImGui::MenuItem("30")) {
-				fpsLimit_ = 30;
-			}
-			else if (ImGui::MenuItem("60")) {
-				fpsLimit_ = 60;
-			}
-			else if (ImGui::MenuItem("90")) {
-				fpsLimit_ = 90;
-			}
-			else if (ImGui::MenuItem("120")) {
-				fpsLimit_ = 120;
-			}
-			else if (ImGui::MenuItem("144")) {
-				fpsLimit_ = 144;
-			}
-			ImGui::EndPopup();
-		}
-
-		if (fpsLimit_ < 10) {
-			fpsLimit_ = 0;
-		}
-
-		auto &tile = world_->currentPlane().tiles().get(getMouseTile());
-		ImGui::Text("Tile: %s\n", tile.name.c_str());
-
-		if (!hasSortedItems_) {
-			sortedItems_.clear();
-			sortedItems_.reserve(world_->items_.size());
-			for (auto &[name, item]: world_->items_) {
-				sortedItems_.push_back(&item);
-			}
-			std::sort(sortedItems_.begin(), sortedItems_.end(), [](Item *a, Item *b) {
-				return a->name < b->name;
-			});
-		}
-
-		ImGui::Text("Give Item:");
-		ImGui::BeginChild("Give Item", {0, 200});
-		for (auto item: sortedItems_) {
-			if (item->hidden) {
-				continue;
-			}
-
-			if (ImGui::Button(item->name.c_str())) {
-				auto *inventory = world_->playerRef_.trait<InventoryTrait>();
-				ItemStack stack(item, 1);
-
-				info << "Giving player " << stack.count() << ' ' << item->name;
-				inventory->insert(stack);
-			}
-		}
-		ImGui::EndChild();
-
-		ImGui::End();
+	if (perf_.show) {
+		drawPerfMenu();
 	}
 
 	world_->draw(renderer_);
@@ -313,7 +343,14 @@ void Game::render()
 
 void Game::update(float dt)
 {
-	float zoomLim = debugGodMode_ ? 0.002 : 0.0175;
+	perf_.updateCount += 1;
+	if (perf_.updateCount >= 60) {
+		perf_.entityUpdateTime.capture(perf_.updateCount);
+		perf_.fluidUpdateTime.capture(perf_.updateCount);
+		perf_.updateCount = 0;
+	}
+
+	float zoomLim = debug_.godMode ? 0.002 : 0.0175;
 	// Zoom the window using the scroll wheel
 	cam_.zoom += (float)wasWheelScrolled() * 0.05f * cam_.zoom;
 	if (cam_.zoom > 1) {
@@ -324,7 +361,11 @@ void Game::update(float dt)
 	}
 
 	if (wasLiteralKeyPressed(GLFW_KEY_F3)) {
-		debugShowMenu_ = !debugShowMenu_;
+		debug_.show = !debug_.show;
+	}
+
+	if (wasLiteralKeyPressed(GLFW_KEY_F4)) {
+		perf_.show = !perf_.show;
 	}
 
 	renderer_.update(dt);
@@ -346,6 +387,14 @@ void Game::tick(float dt)
 	if (triggerSave_) {
 		save();
 		triggerSave_ = false;
+	}
+
+	perf_.tickCount += 1;
+	if (perf_.tickCount >= 20) {
+		perf_.entityTickTime.capture(perf_.tickCount);
+		perf_.tileTickTime.capture(perf_.tickCount);
+		perf_.fluidTickTime.capture(perf_.tickCount);
+		perf_.tickCount = 0;
 	}
 
 	world_->tick(dt);

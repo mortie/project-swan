@@ -3,6 +3,7 @@
 #include <math.h>
 #include <utility>
 
+#include "Clock.h"
 #include "log.h"
 #include "World.h"
 #include "Game.h"
@@ -107,7 +108,7 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 				Chunk &chunk = iter->second;
 				chunk.draw(ctx, rnd);
 
-				if (ctx.game.debugDrawChunkBoundaries_) {
+				if (ctx.game.debug_.drawChunkBoundaries) {
 					Vec2i size = {CHUNK_WIDTH, CHUNK_HEIGHT};
 					rnd.drawRect({chunk.pos() * size, size, {0.7, 0.1, 0.2, 1}});
 				}
@@ -159,12 +160,16 @@ void WorldPlane::update(float dt)
 
 	{
 		ZoneScopedN("Entities");
+		RTClock clock;
 		entitySystem_.update(dt);
+		world_->game_->perf_.entityUpdateTime.record(clock.duration());
 	}
 
 	{
 		ZoneScopedN("Fluids");
+		RTClock clock;
 		fluidSystem_.update(dt);
+		world_->game_->perf_.fluidUpdateTime.record(clock.duration());
 	}
 }
 
@@ -213,6 +218,7 @@ void WorldPlane::tick(float dt)
 	// First swap all the A and B buffers,
 	// so that the current frame's stuff is in 'B'...
 	std::swap(nextTickA_, nextTickB_);
+	RTClock tileTickClock;
 	tileSystem_.beginTick();
 
 	// Then run through the 'B' buffers of nextTick
@@ -223,15 +229,20 @@ void WorldPlane::tick(float dt)
 
 	// ..and the 'B' buffers of the tile system
 	tileSystem_.endTick();
+	world_->game_->perf_.tileTickTime.record(tileTickClock.duration());
 
 	// Tick the rest
 	{
 		ZoneScopedN("Fluids");
+		RTClock clock;
 		fluidSystem_.tick();
+		world_->game_->perf_.fluidTickTime.record(clock.duration());
 	}
 	{
 		ZoneScopedN("Entities");
+		RTClock clock;
 		entitySystem_.tick(dt);
+		world_->game_->perf_.entityTickTime.record(clock.duration());
 	}
 }
 

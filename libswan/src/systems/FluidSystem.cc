@@ -227,7 +227,7 @@ void FluidSystemImpl::draw(Cygnet::Renderer &rnd)
 		});
 	}
 
-	if (plane_.world_->game_->debugFluidParticleLocations_) {
+	if (plane_.world_->game_->debug_.fluidParticleLocations) {
 		for (auto &particle: particles_) {
 			rnd.drawRect(Cygnet::Renderer::DrawRect{
 				.pos = fluidPosToWorldPos(worldPosToFluidPos(particle.pos))

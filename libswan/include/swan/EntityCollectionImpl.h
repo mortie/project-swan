@@ -316,7 +316,7 @@ inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Cygnet::Renderer
 	}
 
 	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
-		if (ctx.game.debugDrawCollisionBoxes_) {
+		if (ctx.game.debug_.drawCollisionBoxes) {
 			for (auto &w: entities_) {
 				auto &body = w.ent.get(BodyTrait::Tag{});
 				rnd.drawRect({body.pos, body.size});
@@ -366,7 +366,7 @@ inline void EntityCollectionImpl<Ent>::serialize(
 	const Context &ctx, proto::EntitySystem::Collection::Builder w)
 {
 	std::string sanitizedName;
-	if (ctx.game.debugOutputEntityProto_) {
+	if (ctx.game.debug_.outputEntityProto) {
 		sanitizedName = name_;
 		for (auto &ch: sanitizedName) {
 			if (ch == ':') {
@@ -393,7 +393,7 @@ inline void EntityCollectionImpl<Ent>::serialize(
 		auto data = entities[i].initData(arr.size());
 		memcpy(&data.front(), &arr.front(), arr.size());
 
-		if (ctx.game.debugOutputEntityProto_) {
+		if (ctx.game.debug_.outputEntityProto) {
 			auto path = cat(
 				"ent.", sanitizedName, ".", std::to_string(wrapper.id), ".bin");
 			std::ofstream f(path);

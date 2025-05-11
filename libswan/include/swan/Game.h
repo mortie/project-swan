@@ -24,6 +24,53 @@ class Game {
 public:
 	using SoundHandle = std::shared_ptr<SoundPlayer::Handle>;
 
+	struct Debug {
+		bool show = false;
+		bool drawCollisionBoxes = false;
+		bool drawChunkBoundaries = false;
+		bool fluidParticleLocations = false;
+		bool disableShadows = false;
+		bool handBreakAny = false;
+		bool outputEntityProto = false;
+		bool godMode = false;
+	};
+
+	struct PerfRecord {
+		float maxMs = 0;
+		float avgMs = 0;
+		float nextMaxSec = 0;
+		float nextSumSec = 0;
+
+		void record(float sec)
+		{
+			nextSumSec += sec;
+			if (sec > nextMaxSec) {
+				nextMaxSec = sec;
+			}
+		}
+
+		void capture(int num)
+		{
+			maxMs = nextMaxSec * 1000;
+			nextMaxSec = 0;
+			avgMs = (nextSumSec / num) * 1000;
+			nextSumSec = 0;
+		}
+	};
+
+	struct Perf {
+		bool show = false;
+		int updateCount = 0;
+		int tickCount = 0;
+
+		int fps = 0;
+		PerfRecord entityUpdateTime;
+		PerfRecord entityTickTime;
+		PerfRecord tileTickTime;
+		PerfRecord fluidTickTime;
+		PerfRecord fluidUpdateTime;
+	};
+
 	void createWorld(
 		const std::string &worldgen, std::span<std::string> modPaths);
 
@@ -121,6 +168,8 @@ public:
 
 	Cygnet::Color backgroundColor();
 
+	void drawDebugMenu();
+	void drawPerfMenu();
 	void draw();
 	void render();
 
@@ -133,21 +182,14 @@ public:
 	Cygnet::RenderCamera cam_{.zoom = 1.0 / 8};
 	Cygnet::RenderCamera uiCam_{.zoom = 1.0 / 16};
 
-	bool debugShowMenu_ = false;
-	bool debugDrawCollisionBoxes_ = false;
-	bool debugDrawChunkBoundaries_ = false;
-	bool debugFluidParticleLocations_ = false;
-	bool debugDisableShadows_ = false;
-	bool debugHandBreakAny_ = false;
-	bool debugOutputEntityProto_ = false;
-	bool debugGodMode_ = false;
 	bool triggerSave_ = false;
 	bool enableVSync_ = false;
 	float timeScale_ = 1.0;
 	std::optional<float> fixedDeltaTime_;
 	float fpsLimit_ = 0;
+	Debug debug_;
+	Perf perf_;
 
-	int fps_ = 0;
 	int frameAcc_ = 0;
 	std::chrono::steady_clock::duration frameTimeAcc_;
 	std::chrono::steady_clock::time_point fpsUpdateTime_ = std::chrono::steady_clock::now();

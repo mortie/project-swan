@@ -200,7 +200,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 
 	// God mode, or normal physics
-	if (ctx.game.debugGodMode_) {
+	if (ctx.game.debug_.godMode) {
 		physicsBody_.onGround = false;
 		physicsBody_.friction();
 
@@ -343,7 +343,7 @@ void PlayerEntity::onLeftClick(const Swan::Context &ctx)
 	}
 
 	auto pos = breakPos_;
-	bool canBreak = ctx.game.debugHandBreakAny_ ||
+	bool canBreak = ctx.game.debug_.handBreakAny ||
 		ctx.plane.tiles().get(pos).breakableBy.contains(tool);
 
 	if (!canBreak) {

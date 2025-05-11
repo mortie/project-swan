@@ -114,7 +114,7 @@ void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
 	rnd.drawChunk({pos, renderChunk_});
 	rnd.drawChunkFluid({pos, renderChunkFluid_});
 
-	if (!ctx.game.debugDisableShadows_) {
+	if (!ctx.game.debug_.disableShadows) {
 		rnd.drawChunkShadow({pos, renderChunkShadow_});
 	}
 }
