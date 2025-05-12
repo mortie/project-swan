@@ -47,7 +47,7 @@ void BonfireTileEntity::tick(const Swan::Context &ctx, float dt)
 			float r = 0.5f + (Swan::randfloat() * 0.4f);
 			float g = std::min(0.1f + (Swan::randfloat() * 0.8f), r);
 			ctx.game.spawnParticle({
-				.pos = center.add(0, (Swan::randfloat() - 0.5f) * 0.2f),
+				.pos = center.add(-0.5f / 16, (Swan::randfloat() - 0.5f) * 0.2f),
 				.vel = {(Swan::randfloat() - 0.5f) * 2, -(Swan::randfloat() * 0.5f + 1)},
 				.size = {1.0f / 16, 1.0f / 16},
 				.color = {r, g, 0},
