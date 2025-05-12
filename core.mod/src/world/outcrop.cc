@@ -53,14 +53,18 @@ static void onOutcropUpdate(const Swan::Context &ctx, Swan::TilePos pos)
 	}
 }
 
-void registerOutcrop(Swan::Mod &mod, const char *name)
+void registerOutcrop(Swan::Mod &mod, const char *name, const char *item)
 {
+	if (item == nullptr) {
+		item = name;
+	}
+
 	mod.registerTile({
 		.name = Swan::cat(name, "-outcrop"),
 		.image = Swan::cat("core::tiles/geo/", name, "-outcrop::normal"),
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
-		.droppedItem = Swan::cat("core::", name),
+		.droppedItem = Swan::cat("core::", item),
 		.onSpawn = onOutcropSpawn,
 		.onTileUpdate = onOutcropUpdate,
 	});
@@ -70,7 +74,7 @@ void registerOutcrop(Swan::Mod &mod, const char *name)
 		.image = Swan::cat("core::tiles/geo/", name, "-outcrop::hanging"),
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
-		.droppedItem = Swan::cat("core::", name),
+		.droppedItem = Swan::cat("core::", item),
 		.onTileUpdate = onOutcropUpdate,
 	});
 
@@ -79,7 +83,7 @@ void registerOutcrop(Swan::Mod &mod, const char *name)
 		.image = Swan::cat("core::tiles/geo/", name, "-outcrop::left"),
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
-		.droppedItem = Swan::cat("core::", name),
+		.droppedItem = Swan::cat("core::", item),
 		.onTileUpdate = onOutcropUpdate,
 	});
 
@@ -88,7 +92,7 @@ void registerOutcrop(Swan::Mod &mod, const char *name)
 		.image = Swan::cat("core::tiles/geo/", name, "-outcrop::right"),
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
-		.droppedItem = Swan::cat("core::", name),
+		.droppedItem = Swan::cat("core::", item),
 		.onTileUpdate = onOutcropUpdate,
 	});
 }

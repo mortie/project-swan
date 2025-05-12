@@ -173,6 +173,7 @@ public:
 		registerItemFan(*this);
 		registerRopeLadder(*this);
 		registerOutcrop(*this, "coal");
+		registerOutcrop(*this, "iron", "iron-ore-chunk");
 		registerOutcrop(*this, "sulphur");
 		registerGlassPipe(*this);
 		registerTorch(*this);
@@ -201,6 +202,14 @@ public:
 		registerItem({
 			.name = "coal",
 			.image = "core::items/coal",
+		});
+		registerItem({
+			.name = "iron",
+			.image = "core::items/iron",
+		});
+		registerItem({
+			.name = "iron-ore-chunk",
+			.image = "core::items/iron-ore-chunk",
 		});
 		registerItem({
 			.name = "sulphur",
@@ -293,6 +302,11 @@ public:
 		registerRecipe({
 			.inputs = {{1, "core::stick"}},
 			.output = {},
+			.kind = "core::burning",
+		});
+		registerRecipe({
+			.inputs = {{1, "core::iron-ore-chunk"}},
+			.output = {1, "core::iron"},
 			.kind = "core::burning",
 		});
 
