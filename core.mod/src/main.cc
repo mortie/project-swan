@@ -204,8 +204,8 @@ public:
 			.image = "core::items/coal",
 		});
 		registerItem({
-			.name = "iron",
-			.image = "core::items/iron",
+			.name = "pig-iron",
+			.image = "core::items/pig-iron",
 		});
 		registerItem({
 			.name = "iron-ore-chunk",
@@ -306,7 +306,7 @@ public:
 		});
 		registerRecipe({
 			.inputs = {{1, "core::iron-ore-chunk"}},
-			.output = {1, "core::iron"},
+			.output = {1, "core::pig-iron"},
 			.kind = "core::burning",
 		});
 
