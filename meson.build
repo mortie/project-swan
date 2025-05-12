@@ -82,4 +82,12 @@ executable('swan', 'src/swan.cc',
   ] + maybe_libtracy,
 )
 
+executable('swan-build', 'src/swan-build.cc',
+  install: true,
+  install_rpath: get_option('libdir'),
+  dependencies: [
+    libcpptoml,
+  ],
+)
+
 install_subdir('assets', install_dir: '')
