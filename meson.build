@@ -74,7 +74,7 @@ subdir('libcygnet')
 subdir('libswan')
 subdir('core.mod')
 
-executable('swan', 'src/main.cc',
+executable('swan', 'src/swan.cc',
   install: true,
   install_rpath: get_option('libdir'),
   dependencies: [
