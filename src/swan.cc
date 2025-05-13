@@ -137,7 +137,6 @@ int main(int argc, char **argv)
 	glEnable(GL_BLEND);
 	Cygnet::glCheck();
 
-
 	// Create the game and mod list
 	Game game;
 	std::vector<std::string> mods{"core.mod"};
@@ -166,7 +165,35 @@ int main(int argc, char **argv)
 	Cygnet::glCheck();
 	game.enableVSync_ = true;
 
-	const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+	GLFWmonitor *currentMonitor = [&] {
+		int winX, winY, winW, winH;
+		glfwGetWindowPos(window, &winX, &winY);
+		glfwGetWindowSize(window, &winW, &winH);
+		int centerX = winX + (winW / 2);
+		int centerY = winY + (winH / 2);
+
+		int n;
+		GLFWmonitor **monitors = glfwGetMonitors(&n);
+		for (int i = 0; i < n; ++i) {
+			int monX, monY, monW, monH;
+			glfwGetMonitorWorkarea(monitors[i], &monX, &monY, &monW, &monH);
+			if (centerX < monX || centerX > monX + monW) {
+				continue;
+			}
+			if (centerY < monY || centerY > monY + monH) {
+				continue;
+			}
+
+			Swan::info << "Found monitor: " << glfwGetMonitorName(monitors[i]);
+			return monitors[i];
+		}
+
+		Swan::info << "Found no monitor, using primary";
+		return glfwGetPrimaryMonitor();
+	}();
+
+
+	const GLFWvidmode *mode = glfwGetVideoMode(currentMonitor);
 	game.fpsLimit_ = mode->refreshRate;
 
 	IMGUI_CHECKVERSION();
