@@ -1,4 +1,3 @@
-#include <atomic>
 #include <condition_variable>
 #include <cpptoml.h>
 #include <cstdlib>
@@ -11,6 +10,7 @@
 #include <string>
 #include <filesystem>
 #include <stdexcept>
+#include <optional>
 #include <sys/wait.h>
 #include <thread>
 #include <unistd.h>

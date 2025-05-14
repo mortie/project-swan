@@ -10,8 +10,8 @@ namespace Swan {
 struct Recipe {
 	struct Builder {
 		struct Items {
-			int count;
-			std::string item;
+			int count = 0;
+			std::string item = "";
 		};
 
 		std::vector<Items> inputs;

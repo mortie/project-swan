@@ -361,12 +361,16 @@ void World::buildResources()
 				});
 			}
 
-			vec->second.push_back({
-				.inputs = recipeInputs, // Copy, don't move, so we shrink to fit
-				.output = {
+			ItemStack output;
+			if (recipeBuilder.output.count != 0) {
+				output = {
 					&getItem(recipeBuilder.output.item),
 					recipeBuilder.output.count,
-				},
+				};
+			}
+			vec->second.push_back({
+				.inputs = recipeInputs, // Copy, don't move, so we shrink to fit
+				.output = output,
 				.kind = recipeBuilder.kind,
 			});
 		}
@@ -593,6 +597,7 @@ Item &World::getItem(std::string_view name)
 
 	if (iter == items_.end()) {
 		warn << "Tried to get non-existent item " << name << "!";
+		abort();
 		return invalidItem();
 	}
 
