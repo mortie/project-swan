@@ -159,6 +159,33 @@ int inventoryCellIndex(Vec2 pos, Cygnet::Renderer::Rect rect, int offset)
 	return cellPos->y * (size.x) + cellPos->x + offset;
 }
 
+void tooltip(const Context &ctx, Cygnet::Renderer &rnd, std::string_view text)
+{
+	float size = 0.7;
+
+	auto &segment = rnd.drawUIText(Cygnet::RenderLayer::FOREGROUND, {
+		.textCache = ctx.game.smallFont_,
+		.transform = Cygnet::Mat3gf{}
+			.scale({size, size})
+			.translate(ctx.game.getMouseUIPos())
+			.translate({0.4, -0.7}),
+		.text = text,
+	});
+	segment.drawText.transform.translate({
+		segment.size.x / 2,
+		segment.size.y / 2,
+	});
+
+	rnd.drawUIRect(Cygnet::RenderLayer::FOREGROUND, {
+		.pos = ctx.game.getMouseUIPos()
+			.add(0.4, -0.7)
+			.add(-0.1, -0.1),
+		.size = (segment.size * size).add(0.32, 0.3),
+		.outline = {0.3, 0.1, 0.1},
+		.fill = {0, 0, 0, 0.7},
+	});
+}
+
 }
 
 }

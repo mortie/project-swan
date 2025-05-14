@@ -26,6 +26,8 @@ Vec2 relativePos(Vec2 pos, Cygnet::Renderer::Rect rect);
 std::optional<Vec2i> inventoryCellPos(Vec2 pos, Cygnet::Renderer::Rect rect);
 int inventoryCellIndex(Vec2 pos, Cygnet::Renderer::Rect rect, int offset = 0);
 
+void tooltip(const Context &ctx, Cygnet::Renderer &rnd, std::string_view text);
+
 }
 
 }

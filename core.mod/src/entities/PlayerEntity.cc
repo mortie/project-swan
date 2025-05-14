@@ -91,10 +91,11 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		if (!auxInventory_) {
 			auxInventoryEntity_ = {};
 			closeInventoryCallback_ = nullptr;
+			ui_.hoveredAuxInventorySlot = -1;
 		}
 	}
 
-	// Draw current open other inventory
+	// Draw auxiliary inventory
 	if (auxInventory_) {
 		auto content = auxInventory_->content();
 		auto size = Swan::UI::calcInventorySize(content.size());
@@ -104,6 +105,22 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		}, [&] {
 			Swan::UI::inventory(ctx, rnd, size, inventorySprite_, content);
 		}, Cygnet::Anchor::TOP);
+	}
+
+	// Draw tooltips for player inventory
+	if (ui_.hoveredInventorySlot >= 0 && heldStack_.empty()) {
+		auto &stack = inventory_.content_[ui_.hoveredInventorySlot];
+		if (!stack.empty()) {
+			Swan::UI::tooltip(ctx, rnd, stack.item()->name);
+		}
+	}
+
+	// Draw tooltips for auxiliary inventory
+	if (ui_.hoveredAuxInventorySlot >= 0 && heldStack_.empty()) {
+		auto stack = auxInventory_->get(ui_.hoveredAuxInventorySlot);
+		if (!stack.empty()) {
+			Swan::UI::tooltip(ctx, rnd, stack.item()->name);
+		}
 	}
 
 	// Everything after this is inventory stuff
