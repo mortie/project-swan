@@ -11,7 +11,7 @@ public:
 	TreeDef(Swan::World &world, uint32_t seed):
 		tGrass_(world.getTileID("core::grass")),
 		tTreeTrunk_(world.getTileID("core::tree-trunk")),
-		tTreeLeaves_(world.getTileID("core::tree-leaves")),
+		tTreeLeaves_(world.getTileID("core::leaves")),
 		seed_(seed)
 	{}
 

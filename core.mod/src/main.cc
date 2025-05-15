@@ -109,7 +109,7 @@ public:
 			.traits = std::make_shared<TreeTrunkTrait>(),
 		});
 		registerTile({
-			.name = "tree-leaves",
+			.name = "leaves",
 			.image = "core::tiles/leaves",
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,

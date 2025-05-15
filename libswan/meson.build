@@ -36,6 +36,7 @@ libswan = declare_dependency(
     'src/Game.cc',
     'src/ItemStack.cc',
     'src/LightServer.cc',
+    'src/Mod.cc',
     'src/OS.cc',
     'src/SoundPlayer.cc',
     'src/World.cc',

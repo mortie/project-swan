@@ -27,6 +27,7 @@ struct Item {
 
 	Tile::ID id;
 	std::string name;
+	std::string displayName;
 	int maxStack;
 	Tile *tile;
 	ToolSet tool;

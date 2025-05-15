@@ -111,7 +111,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	if (ui_.hoveredInventorySlot >= 0 && heldStack_.empty()) {
 		auto &stack = inventory_.content_[ui_.hoveredInventorySlot];
 		if (!stack.empty()) {
-			Swan::UI::tooltip(ctx, rnd, stack.item()->name);
+			Swan::UI::tooltip(ctx, rnd, stack.item()->displayName);
 		}
 	}
 
@@ -119,7 +119,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	if (ui_.hoveredAuxInventorySlot >= 0 && heldStack_.empty()) {
 		auto stack = auxInventory_->get(ui_.hoveredAuxInventorySlot);
 		if (!stack.empty()) {
-			Swan::UI::tooltip(ctx, rnd, stack.item()->name);
+			Swan::UI::tooltip(ctx, rnd, stack.item()->displayName);
 		}
 	}
 

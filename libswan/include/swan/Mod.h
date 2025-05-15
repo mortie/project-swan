@@ -12,6 +12,10 @@
 #include "EntityCollection.h"
 #include "OS.h"
 
+namespace cpptoml {
+class table;
+}
+
 namespace Swan {
 
 class ModWrapper;
@@ -62,18 +66,9 @@ private:
 
 class ModWrapper {
 public:
-	ModWrapper(std::unique_ptr<Mod> mod, std::string path, OS::Dynlib lib):
-		mod_(std::move(mod)), path_(std::move(path)), dynlib_(std::move(lib))
-	{}
-
-	ModWrapper(ModWrapper &&other) noexcept = default;
-
-	~ModWrapper()
-	{
-		// Mod::~Mod will destroy stuff allocated by the dynlib,
-		// so we must run its destructor before deleting the dynlib
-		mod_.reset();
-	}
+	ModWrapper(std::unique_ptr<Mod> mod, std::string path, OS::Dynlib lib);
+	ModWrapper(ModWrapper &&other) noexcept;
+	~ModWrapper();
 
 	const std::string &name()
 	{
@@ -125,9 +120,16 @@ public:
 		return mod_->entities_;
 	}
 
+	// This uses string& due to cpptoml >_>
+	std::string lang(const std::string &cat, const std::string &name);
+
+	void loadLang(std::string_view lang);
+
 	std::unique_ptr<Mod> mod_;
 	std::string path_;
 	OS::Dynlib dynlib_;
+
+	std::shared_ptr<cpptoml::table> lang_;
 };
 
 }

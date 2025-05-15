@@ -6,41 +6,6 @@
 
 namespace Swan {
 
-inline void Mod::registerTile(Tile::Builder &&tile)
-{
-	tiles_.push_back(std::move(tile));
-}
-
-inline void Mod::registerItem(Item::Builder &&item)
-{
-	items_.push_back(std::move(item));
-}
-
-inline void Mod::registerFluid(Fluid::Builder &&fluid)
-{
-	fluids_.push_back(std::move(fluid));
-}
-
-inline void Mod::registerRecipe(Recipe::Builder &&recipe)
-{
-	recipes_.push_back(std::move(recipe));
-}
-
-inline void Mod::registerSprite(std::string &&sprite)
-{
-	sprites_.push_back(std::move(sprite));
-}
-
-inline void Mod::registerSound(std::string &&sound)
-{
-	sounds_.push_back(std::move(sound));
-}
-
-inline void Mod::registerRecipeKind(std::string &&kind)
-{
-	recipeKinds_.push_back(std::move(kind));
-}
-
 template<typename WG>
 inline void Mod::registerWorldGen(std::string name)
 {

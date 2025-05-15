@@ -244,6 +244,7 @@ void World::buildResources()
 				.name = "",
 				.lightLevel = tile.lightLevel,
 			});
+			item.displayName = mod.lang("items", tileBuilder.name);
 			item.tile = &tile;
 			item.yOffset = yOffset;
 
@@ -277,6 +278,7 @@ void World::buildResources()
 			}
 
 			auto &item = items_[itemName] = Item(itemId, itemName, itemBuilder);
+			item.displayName = mod.lang("items", itemBuilder.name);
 			item.yOffset = yOffset;
 			item.hidden = false;
 			if (itemBuilder.tile) {
