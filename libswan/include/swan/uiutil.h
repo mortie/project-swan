@@ -17,7 +17,7 @@ Cygnet::Color linearGradient(
 
 void inventory(
 	const Context &ctx, Cygnet::Renderer &rnd, Vec2i size, Cygnet::RenderSprite sprite,
-	std::span<const ItemStack> content);
+	std::span<const ItemStack> content, int hovered = -1);
 
 Vec2i calcInventorySize(int size);
 

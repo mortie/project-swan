@@ -311,8 +311,9 @@ public:
 		drawUITile(RenderLayer::NORMAL, drawTile, anchor);
 	}
 
-	void drawUIRect(RenderLayer layer, DrawRect drawRect)
+	void drawUIRect(RenderLayer layer, DrawRect drawRect, Anchor anchor = Anchor::CENTER)
 	{
+		applyAnchor(anchor, drawRect.pos, drawRect.size);
 		drawUIRects_[(int)layer].push_back(drawRect);
 	}
 	void drawUIRect(DrawRect dr)
@@ -417,6 +418,7 @@ private:
 	void renderLayer(RenderLayer layer, Mat3gf camMat, GLint screenFBO);
 	void renderUILayer(RenderLayer layer, Mat3gf camMat);
 	void applyAnchor(Anchor anchor, Mat3gf &mat, Swan::Vec2 size);
+	void applyAnchor(Anchor anchor, Swan::Vec2 &pos, Swan::Vec2 size);
 
 	Rect cullRect_;
 	std::unique_ptr<RendererState> state_;

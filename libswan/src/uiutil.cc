@@ -50,7 +50,7 @@ Cygnet::Color linearGradient(
 
 void inventory(
 	const Context &ctx, Cygnet::Renderer &rnd, Vec2i size, Cygnet::RenderSprite sprite,
-	std::span<const ItemStack> content)
+	std::span<const ItemStack> content, int hovered)
 {
 	rnd.drawUIGrid({
 		.sprite = sprite,
@@ -60,7 +60,17 @@ void inventory(
 
 	int x = 0;
 	int y = 0;
+	int index = 0;
 	for (auto &stack: content) {
+		if (hovered == index) {
+			rnd.drawUIRect(Cygnet::RenderLayer::BACKGROUND, {
+				.pos = {x + 1.0f, y + 1.0f},
+				.size = {1, 1},
+				.outline = {0, 0, 0, 0},
+				.fill = {1, 1, 1, 0.5},
+			}, Cygnet::Anchor::TOP_LEFT);
+		}
+
 		if (stack.empty()) {
 			goto next;
 		}
@@ -83,6 +93,7 @@ void inventory(
 		}, Cygnet::Anchor::TOP_LEFT);
 
 	next:
+		index += 1;
 		x += 1;
 		if (x >= size.x) {
 			y += 1;
@@ -176,11 +187,13 @@ void tooltip(const Context &ctx, Cygnet::Renderer &rnd, std::string_view text)
 		segment.size.y / 2,
 	});
 
+	auto rectSize = (segment.size * size).add(0.32, 0.3);
 	rnd.drawUIRect(Cygnet::RenderLayer::FOREGROUND, {
 		.pos = ctx.game.getMouseUIPos()
 			.add(0.4, -0.7)
-			.add(-0.1, -0.1),
-		.size = (segment.size * size).add(0.32, 0.3),
+			.add(-0.1, -0.1)
+			.add(rectSize.x / 2, rectSize.y / 2),
+		.size = rectSize,
 		.outline = {0.3, 0.1, 0.1},
 		.fill = {0, 0, 0, 0.7},
 	});

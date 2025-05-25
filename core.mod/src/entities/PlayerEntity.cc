@@ -54,7 +54,9 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		.size = {12, 3},
 	}, [&] {
 		// Hotbar content
-		Swan::UI::inventory(ctx, rnd, {10, 1}, inventorySprite_, inventory_.content_);
+		Swan::UI::inventory(
+			ctx, rnd, {10, 1}, inventorySprite_, inventory_.content_,
+			ui_.hoveredInventorySlot);
 
 		// Selection
 		if (ui_.selectedInventorySlot < 10) {
@@ -103,7 +105,9 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 			.pos = {0, 0},
 			.size = size.add(2, 2),
 		}, [&] {
-			Swan::UI::inventory(ctx, rnd, size, inventorySprite_, content);
+			Swan::UI::inventory(
+				ctx, rnd, size, inventorySprite_, content,
+				ui_.hoveredAuxInventorySlot);
 		}, Cygnet::Anchor::TOP);
 	}
 
@@ -136,7 +140,8 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		// Inventory content
 		Swan::UI::inventory(
 			ctx, rnd, {10, 3}, inventorySprite_,
-			{inventory_.content_.begin() + 10, inventory_.content_.end()});
+			{inventory_.content_.begin() + 10, inventory_.content_.end()},
+			ui_.hoveredInventorySlot - 10);
 
 		// Selection
 		if (ui_.selectedInventorySlot >= 10) {

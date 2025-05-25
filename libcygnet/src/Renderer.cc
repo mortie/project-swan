@@ -702,6 +702,50 @@ void Renderer::applyAnchor(Anchor anchor, Mat3gf &mat, Swan::Vec2 size)
 	}
 };
 
+void Renderer::applyAnchor(Anchor anchor, Swan::Vec2 &pos, Swan::Vec2 size)
+{
+	auto &view = uiViewStack_.back();
+	pos += view.pos;
+
+	switch (anchor) {
+	case Anchor::CENTER:
+		pos += size * -0.5f;
+		break;
+
+	case Anchor::LEFT:
+		pos += {-view.size.x, size.y * -0.5f};
+		break;
+
+	case Anchor::RIGHT:
+		pos += {view.size.x - size.x, size.y * -0.5f};
+		break;
+
+	case Anchor::TOP:
+		pos += {size.x * -0.5f, -view.size.y};
+		break;
+
+	case Anchor::BOTTOM:
+		pos += {size.x * -0.5f, view.size.y - size.y};
+		break;
+
+	case Anchor::TOP_LEFT:
+		pos += {-view.size.x, -view.size.y};
+		break;
+
+	case Anchor::TOP_RIGHT:
+		pos += {view.size.x - size.x, -view.size.y};
+		break;
+
+	case Anchor::BOTTOM_LEFT:
+		pos += {-view.size.x, view.size.y - size.y};
+		break;
+
+	case Anchor::BOTTOM_RIGHT:
+		pos += {view.size.x - size.x, view.size.y - size.y};
+		break;
+	}
+};
+
 Renderer::Rect Renderer::pushUIView(Rect rect, Anchor anchor)
 {
 	auto &view = uiViewStack_.back();
