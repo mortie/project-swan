@@ -56,6 +56,8 @@ endif
 
 libcapnp = dependency('capnp')
 
+libcpptoml = subproject('cpptoml-ng').get_variable('cpptoml_dep')
+
 libdl = meson.get_compiler('cpp').find_library('dl')
 libz = meson.get_compiler('cpp').find_library('z')
 

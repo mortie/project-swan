@@ -12,7 +12,7 @@
 #include "EntityCollection.h"
 #include "OS.h"
 
-namespace cpptoml {
+namespace cpptomlng {
 class table;
 }
 
@@ -129,7 +129,7 @@ public:
 	std::string path_;
 	OS::Dynlib dynlib_;
 
-	std::shared_ptr<cpptoml::table> lang_;
+	std::shared_ptr<cpptomlng::table> lang_;
 };
 
 }

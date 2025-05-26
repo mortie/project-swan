@@ -1,7 +1,3 @@
-libcpptoml = declare_dependency(
-  include_directories: 'cpptoml/include'
-)
-
 libfmt = declare_dependency(
   include_directories: 'fmt/include',
   link_with: library('fmt',

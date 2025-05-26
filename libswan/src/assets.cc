@@ -13,6 +13,7 @@
 #include <stb/stb_vorbis.h>
 #include <cpptoml.h>
 #include <string.h>
+#include <fstream>
 
 namespace Swan {
 
