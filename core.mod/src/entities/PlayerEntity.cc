@@ -566,7 +566,7 @@ void PlayerEntity::handlePhysics(const Swan::Context &ctx, float dt)
 		bool oldInFluid = inFluid_;
 		if (fluidCenter.density > 0 && fluidBottom.density > 0) {
 			inFluid_ = true;
-			fluidColor_ = fluidCenter.color;
+			fluidColor_ = fluidCenter.fg;
 		}
 		else if (fluidCenter.density <= 0 && fluidBottom.density <= 0) {
 			inFluid_ = false;

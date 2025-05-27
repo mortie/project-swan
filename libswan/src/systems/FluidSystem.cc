@@ -192,7 +192,7 @@ void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 					float(x) / FLUID_RESOLUTION,
 					float(y) / FLUID_RESOLUTION),
 				.vel = {vx, vy},
-				.color = plane_.world_->getFluidByID(id).color,
+				.color = plane_.world_->getFluidByID(id).fg,
 				.id = id,
 				.remainingTime = 255,
 			});
@@ -427,7 +427,7 @@ void FluidSystemImpl::deserialize(proto::FluidSystem::Reader r)
 		particles_.push_back({
 			.pos = {pos.getX(), pos.getY()},
 			.vel = {vel.getX(), vel.getY()},
-			.color = plane_.world_->getFluidByID(particle.getId()).color,
+			.color = plane_.world_->getFluidByID(particle.getId()).fg,
 			.id = particle.getId(),
 			.remainingTime = particle.getRemainingTime(),
 		});
@@ -486,7 +486,7 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 				particles_.push_back({
 					.pos = fluidPosToWorldPos(pos),
 					.vel = {float(vx) * 5, 0},
-					.color = plane_.world_->getFluidByID(id).color,
+					.color = plane_.world_->getFluidByID(id).fg,
 					.id = id,
 					.remainingTime = 255,
 				});
@@ -501,7 +501,7 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 			particles_.push_back({
 				.pos = fluidPosToWorldPos(pos),
 				.vel = {0, 5},
-				.color = plane_.world_->getFluidByID(id).color,
+				.color = plane_.world_->getFluidByID(id).fg,
 				.id = id,
 				.remainingTime = 255,
 			});

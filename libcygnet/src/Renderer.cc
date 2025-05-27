@@ -81,7 +81,7 @@ struct ChunkProg: public GlProg<Shader::Chunk> {
 struct ChunkFluidProg: public GlProg<Shader::ChunkFluid> {
 	void draw(
 		std::span<Renderer::DrawChunkFluid> drawChunkFluids, const Mat3gf &cam,
-		GLuint fluidsTex)
+		GLuint fluidsTex, float row)
 	{
 		if (drawChunkFluids.size() == 0) {
 			return;
@@ -96,6 +96,9 @@ struct ChunkFluidProg: public GlProg<Shader::ChunkFluid> {
 		glCheck();
 
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
+		glCheck();
+
+		glUniform1f(shader.uniRow, row);
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE1);
@@ -586,10 +589,11 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat, GLint screenFBO)
 	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glCheck();
 
+	state_->chunkFluidProg.draw(drawChunkFluids_[idx], camMat, state_->fluidAtlasTex, 1);
 	state_->chunkProg.draw(drawChunks_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
 	state_->tileProg.draw(drawTiles_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
 	state_->spriteProg.draw(drawSprites_[idx], camMat);
-	state_->chunkFluidProg.draw(drawChunkFluids_[idx], camMat, state_->fluidAtlasTex);
+	state_->chunkFluidProg.draw(drawChunkFluids_[idx], camMat, state_->fluidAtlasTex, 0);
 	state_->particleProg.draw(drawParticles_[idx], camMat);
 
 	// Use the stencil buffer to ensure that spawned particles don't
@@ -815,7 +819,7 @@ bool Renderer::assertUIViewStackEmpty()
 void Renderer::uploadFluidAtlas(const void *data)
 {
 	glBindTexture(GL_TEXTURE_2D, state_->fluidAtlasTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

@@ -33,7 +33,7 @@ public:
 	RenderSprite addSprite(std::string name, void *data, SpriteMeta meta);
 	void addTile(Renderer::TileID id, void *data, int frames);
 	void addTile(Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames);
-	void addFluid(uint8_t id, ByteColor color);
+	void addFluid(uint8_t id, ByteColor fg, ByteColor bg);
 
 private:
 	Renderer *rnd_;

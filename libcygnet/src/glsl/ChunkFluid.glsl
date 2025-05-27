@@ -2,6 +2,7 @@ uniform mat3 camera;
 uniform vec2 pos;
 uniform usampler2D fluidGrid;
 uniform sampler2D fluids;
+uniform float row;
 
 // @Vertex
 out vec2 v_texCoord;
@@ -30,5 +31,5 @@ void main() {
 	}
 
 	float pos = (float(id) + 0.5) / 256.0;
-	fragColor = texture(fluids, vec2(pos, 0.5));
+	fragColor = texture(fluids, vec2(pos, (0.5 + float(row)) / 2.0));
 }

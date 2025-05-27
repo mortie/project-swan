@@ -294,20 +294,20 @@ void World::buildResources()
 	fluidsMap_[AIR_FLUID_NAME] = AIR_FLUID_ID;
 	fluids_.emplace_back(AIR_FLUID_ID, AIR_FLUID_NAME, Fluid::Builder{
 		.name = "",
-		.color = Cygnet::Color{0, 0, 0, 0},
+		.fg = Cygnet::Color{0, 0, 0, 0},
 		.density = 0,
 	});
-	builder.addFluid(fluids_.back().id, fluids_.back().color);
+	builder.addFluid(fluids_.back().id, fluids_.back().fg, fluids_.back().bg);
 
 	// Solid
 	static_assert(SOLID_FLUID_ID == 1);
 	fluidsMap_[SOLID_FLUID_NAME] = SOLID_FLUID_ID;
 	fluids_.emplace_back(SOLID_FLUID_ID, SOLID_FLUID_NAME, Fluid::Builder{
 		.name = "",
-		.color = Cygnet::Color{0, 0, 0, 0},
+		.fg = Cygnet::Color{0, 0, 0, 0},
 		.density = std::numeric_limits<float>::infinity(),
 	});
-	builder.addFluid(fluids_.back().id, fluids_.back().color);
+	builder.addFluid(fluids_.back().id, fluids_.back().fg, fluids_.back().bg);
 
 	// Fluids from mods
 	for (auto &mod: mods_) {
@@ -322,7 +322,7 @@ void World::buildResources()
 			Fluid::ID id = Fluid::ID(fluids_.size());
 			fluidsMap_[fluidName] = id;
 			fluids_.emplace_back(id, std::move(fluidName), fluidBuilder);
-			builder.addFluid(fluids_.back().id, fluids_.back().color);
+			builder.addFluid(fluids_.back().id, fluids_.back().fg, fluids_.back().bg);
 		}
 	}
 
@@ -331,10 +331,10 @@ void World::buildResources()
 	while (fluids_.size() <= INVALID_FLUID_ID) {
 		fluids_.emplace_back(fluids_.size(), INVALID_FLUID_NAME, Fluid::Builder{
 			.name = "",
-			.color = Cygnet::Color{1, 0.19, 0.97, 1},
+			.fg = Cygnet::Color{1, 0.19, 0.97, 1},
 			.density = 0,
 		});
-		builder.addFluid(fluids_.back().id, fluids_.back().color);
+		builder.addFluid(fluids_.back().id, fluids_.back().fg, fluids_.back().bg);
 	}
 
 	// Load recipe kinds.

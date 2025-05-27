@@ -6,7 +6,7 @@ namespace Cygnet {
 
 ResourceBuilder::ResourceBuilder(Renderer *rnd): rnd_(rnd)
 {
-	fluids_ = std::make_unique<uint8_t[]>(256 * 4);
+	fluids_ = std::make_unique<uint8_t[]>(256 * 4 * 2);
 }
 
 RenderSprite ResourceBuilder::addSprite(
@@ -43,17 +43,22 @@ void ResourceBuilder::addTile(
 	}
 }
 
-void ResourceBuilder::addFluid(uint8_t id, ByteColor color)
+void ResourceBuilder::addFluid(uint8_t id, ByteColor fg, ByteColor bg)
 {
 	// The two high bits are used for metadata,
 	// so register the same color for all combinations
 	for (int high = 0; high < 4; ++high) {
 		size_t index = (id & 0x3f) | (high << 6);
 		auto *pix = &fluids_[index * 4];
-		pix[0] = color.r;
-		pix[1] = color.g;
-		pix[2] = color.b;
-		pix[3] = color.a;
+		pix[0] = fg.r;
+		pix[1] = fg.g;
+		pix[2] = fg.b;
+		pix[3] = fg.a;
+		pix = &fluids_[index * 4 + 256 * 4];
+		pix[0] = bg.r;
+		pix[1] = bg.g;
+		pix[2] = bg.b;
+		pix[3] = bg.a;
 	}
 }
 
@@ -63,6 +68,10 @@ ResourceManager::ResourceManager(ResourceBuilder &&builder):
 {
 	size_t width, height;
 	const unsigned char *data = builder.atlas_.getImage(&width, &height);
+
+	FILE *f = fopen("fluids.rgba", "w");
+	fwrite(builder.fluids_.get(), 1, 256 * 4 * 2, f);
+	fclose(f);
 
 	rnd_->uploadTileAtlas(data, width, height);
 	rnd_->uploadFluidAtlas(builder.fluids_.get());

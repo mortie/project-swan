@@ -230,12 +230,13 @@ public:
 
 		registerFluid({
 			.name = "water",
-			.color = {0.21, 0.78, 0.9, 0.7},
+			.fg = Cygnet::Color::premultiply(0.21, 0.78, 0.9, 0.6),
+			.bg = {0.21, 0.78, 0.9, 1},
 			.density = 1,
 		});
 		registerFluid({
 			.name = "oil",
-			.color = {0.05, 0.02, 0.0, 0.98},
+			.fg = {0.05, 0.02, 0.0, 0.98},
 			.density = 1.5,
 		});
 

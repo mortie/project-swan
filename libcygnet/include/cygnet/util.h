@@ -20,6 +20,11 @@ struct ByteColor;
 struct Color {
 	float r = 0, g = 0, b = 0, a = 1;
 
+	static Color premultiply(float r, float g, float b, float a)
+	{
+		return {r * a, g * a, b * a, a};
+	}
+
 	operator ByteColor() const;
 	friend bool operator==(const Color &a, const Color &b) = default;
 };
