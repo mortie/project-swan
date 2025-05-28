@@ -14,6 +14,7 @@
 #include <sys/wait.h>
 #include <thread>
 #include <unistd.h>
+#include <string.h>
 
 struct BuildInfo {
 	std::string compiler = "clang++";
