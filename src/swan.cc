@@ -326,13 +326,6 @@ int main(int argc, char **argv)
 		}
 
 		{
-			Cygnet::Color color = game.backgroundColor();
-			glClearColor(color.r, color.g, color.b, color.a);
-			glClear(GL_COLOR_BUFFER_BIT);
-			Cygnet::glCheck();
-		}
-
-		{
 			ZoneScopedN("game render");
 			game.render();
 			Cygnet::glCheck();

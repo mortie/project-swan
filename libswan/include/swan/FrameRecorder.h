@@ -16,7 +16,7 @@ public:
 	bool begin(int w, int h, int fps, const char *path);
 	void end();
 
-	void beginFrame(Cygnet::Color clearColor);
+	void beginFrame();
 	void endFrame();
 	Swan::Vec2i size();
 

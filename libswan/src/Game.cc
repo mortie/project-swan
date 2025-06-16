@@ -103,11 +103,6 @@ TilePos Game::getMouseTile()
 	return TilePos{(int)floor(pos.x), (int)floor(pos.y)};
 }
 
-Cygnet::Color Game::backgroundColor()
-{
-	return world_->backgroundColor();
-}
-
 void Game::drawDebugMenu()
 {
 	ImGui::Begin(
@@ -332,6 +327,7 @@ void Game::draw()
 
 void Game::render()
 {
+	renderer_.setBackgroundColor(world_->backgroundColor());
 	renderer_.render(cam_);
 	renderer_.renderUI(uiCam_);
 
@@ -343,7 +339,7 @@ void Game::render()
 			.fill = {0, 0, 0, 1},
 		});
 		auto size = frameRecorder_->size();
-		frameRecorder_->beginFrame(backgroundColor());
+		frameRecorder_->beginFrame();
 		renderer_.render(cam_.withSize(size), {.vflip = true});
 		renderer_.renderUI(uiCam_.withSize(size), {.vflip = true});
 		frameRecorder_->endFrame();

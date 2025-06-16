@@ -495,7 +495,6 @@ void Renderer::clear()
 		drawSprites_[idx].clear();
 		drawChunkFluids_[idx].clear();
 		drawParticles_[idx].clear();
-		drawChunkShadows_[idx].clear();
 		drawRects_[idx].clear();
 		drawTexts_[idx].clear();
 
@@ -506,6 +505,7 @@ void Renderer::clear()
 		drawUITexts_[idx].clear();
 	}
 
+	drawChunkShadows_.clear();
 	textBuffer_.clear();
 	textUIBuffer_.clear();
 }
@@ -570,24 +570,33 @@ void Renderer::render(const RenderCamera &cam, RenderProps props)
 		glCheck();
 	}
 
-	for (int i = 0; i <= (int)RenderLayer::MAX; ++i) {
-		renderLayer(RenderLayer(i), camMat, screenFBO);
-	}
-
-	textBuffer_.clear();
-}
-
-void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat, GLint screenFBO)
-{
-	int idx = (int)layer;
-
 	glBindFramebuffer(GL_FRAMEBUFFER, state_->offscreenFramebuffer);
 	glFramebufferTexture2D(
 			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
 			state_->offscreenTex, 0);
-	glClearColor(0, 0, 0, 0);
+	glClearColor(
+		backgroundColor_.r, backgroundColor_.g,
+		backgroundColor_.b, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glCheck();
+
+	for (int i = 0; i <= (int)RenderLayer::MAX; ++i) {
+		renderLayer(RenderLayer(i), camMat);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, screenFBO);
+	state_->blendProg.draw(state_->offscreenTex, gamma_);
+	glCheck();
+
+	state_->chunkShadowProg.draw(drawChunkShadows_, camMat, gamma_);
+	glCheck();
+
+	textBuffer_.clear();
+}
+
+void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
+{
+	int idx = (int)layer;
 
 	state_->chunkFluidProg.draw(drawChunkFluids_[idx], camMat, state_->fluidAtlasTex, 1);
 	state_->chunkProg.draw(drawChunks_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
@@ -609,9 +618,6 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat, GLint screenFBO)
 		glDisable(GL_STENCIL_TEST);
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, screenFBO);
-	state_->blendProg.draw(state_->offscreenTex, gamma_);
-	state_->chunkShadowProg.draw(drawChunkShadows_[idx], camMat, gamma_);
 	state_->rectProg.draw(drawRects_[idx], camMat);
 	state_->textProg.draw(drawTexts_[idx], textBuffer_, camMat, 1.0 / 128);
 

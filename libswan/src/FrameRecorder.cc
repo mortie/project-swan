@@ -12,7 +12,7 @@ FrameRecorder::~FrameRecorder() = default;
 bool FrameRecorder::isAvailable() { return false; }
 bool FrameRecorder::begin(int, int, int, const char *) { return false; }
 void FrameRecorder::end() {}
-void FrameRecorder::beginFrame(Cygnet::Color) {}
+void FrameRecorder::beginFrame() {}
 void FrameRecorder::endFrame() {}
 Swan::Vec2i FrameRecorder::size() { return {}; }
 void FrameRecorder::flush() {}
@@ -214,14 +214,10 @@ void FrameRecorder::end()
 	impl_.reset();
 }
 
-void FrameRecorder::beginFrame(Cygnet::Color color)
+void FrameRecorder::beginFrame()
 {
 	glGetIntegerv(GL_VIEWPORT, impl_->viewport);
-
 	glBindFramebuffer(GL_FRAMEBUFFER, impl_->fbo);
-	glClearColor(color.r, color.g, color.b, color.a);
-	glClear(GL_COLOR_BUFFER_BIT);
-
 	auto s = size();
 	glViewport(0, 0, s.x, s.y);
 }

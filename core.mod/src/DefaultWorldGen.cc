@@ -35,6 +35,7 @@ void DefaultWorldGen::drawBackground(
 	if (y < 35) {
 		opacity = (y - 15) / (35 - 15);
 	}
+	opacity *= 0.3;
 
 	pos -= {2.5, 2.5};
 	pos /= 8;

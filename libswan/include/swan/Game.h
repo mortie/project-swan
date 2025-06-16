@@ -167,8 +167,6 @@ public:
 	Vec2 getMousePos();
 	TilePos getMouseTile();
 
-	Cygnet::Color backgroundColor();
-
 	void drawDebugMenu();
 	void drawPerfMenu();
 	void draw();

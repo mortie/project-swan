@@ -183,13 +183,9 @@ public:
 		drawChunkFluid(RenderLayer::NORMAL, chunkFluid);
 	}
 
-	void drawChunkShadow(RenderLayer layer, DrawChunkShadow chunkShadow)
-	{
-		drawChunkShadows_[(int)layer].push_back(chunkShadow);
-	}
 	void drawChunkShadow(DrawChunkShadow chunkShadow)
 	{
-		drawChunkShadow(RenderLayer::NORMAL, chunkShadow);
+		drawChunkShadows_.push_back(chunkShadow);
 	}
 
 	void drawTile(RenderLayer layer, DrawTile drawTile)
@@ -278,6 +274,8 @@ public:
 	Rect pushUIView(Rect rect, Anchor anchor = Anchor::CENTER);
 	void popUIView();
 	bool assertUIViewStackEmpty();
+
+	void setBackgroundColor(Color color) { backgroundColor_ = color; }
 
 	void drawUIGrid(RenderLayer layer, DrawGrid drawGrid, Anchor anchor = Anchor::CENTER)
 	{
@@ -415,7 +413,7 @@ public:
 
 
 private:
-	void renderLayer(RenderLayer layer, Mat3gf camMat, GLint screenFBO);
+	void renderLayer(RenderLayer layer, Mat3gf camMat);
 	void renderUILayer(RenderLayer layer, Mat3gf camMat);
 	void applyAnchor(Anchor anchor, Mat3gf &mat, Swan::Vec2 size);
 	void applyAnchor(Anchor anchor, Swan::Vec2 &pos, Swan::Vec2 size);
@@ -424,12 +422,13 @@ private:
 	std::unique_ptr<RendererState> state_;
 	Swan::Vec2 winScale_ = {1, 1};
 	float gamma_;
+	Color backgroundColor_;
 
 	std::vector<Rect> uiViewStack_ = {{{0, 0}, {1, 1}}};
 
 	std::vector<DrawChunk> drawChunks_[LAYER_COUNT];
 	std::vector<DrawChunkFluid> drawChunkFluids_[LAYER_COUNT];
-	std::vector<DrawChunkShadow> drawChunkShadows_[LAYER_COUNT];
+	std::vector<DrawChunkShadow> drawChunkShadows_;
 	std::vector<DrawTile> drawTiles_[LAYER_COUNT];
 	std::vector<DrawSprite> drawSprites_[LAYER_COUNT];
 	std::vector<DrawParticle> drawParticles_[LAYER_COUNT];
