@@ -174,6 +174,7 @@ public:
 		registerRopeLadder(*this);
 		registerOutcrop(*this, "coal");
 		registerOutcrop(*this, "iron", "iron-ore-chunk");
+		registerOutcrop(*this, "copper", "iron-ore-chunk");
 		registerOutcrop(*this, "sulphur");
 		registerGlassPipe(*this);
 		registerTorch(*this);
