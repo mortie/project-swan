@@ -11,9 +11,8 @@ class FallingTileEntity final: public Swan::Entity,
 public:
 	using Proto = proto::FallingTileEntity;
 
+	FallingTileEntity(const Swan::Context &ctx);
 	FallingTileEntity(const Swan::Context &ctx, Swan::Vec2 pos, Swan::Tile::ID tile);
-	FallingTileEntity(const Swan::Context &ctx)
-	{}
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -32,14 +31,8 @@ public:
 	void deserialize(const Swan::Context &ctx, Proto::Reader r);
 
 private:
-	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
-		.size = {1, 1},
-		.mass = 80,
-	};
-	static constexpr float DESPAWN_TIME = 5 * 60;
-
 	Swan::Tile::ID tile_ = Swan::World::INVALID_TILE_ID;
-	Swan::BasicPhysicsBody physicsBody_{PROPS};
+	Swan::BasicPhysicsBody physicsBody_;
 };
 
 }

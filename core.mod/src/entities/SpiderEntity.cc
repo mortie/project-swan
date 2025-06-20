@@ -4,6 +4,18 @@
 
 namespace CoreMod {
 
+static constexpr Swan::BasicPhysicsBody::Props PROPS = {
+	.size = {1, 0.65},
+	.mass = 30,
+};
+static constexpr float MOVE_FORCE = 50 * PROPS.mass;
+static constexpr float JUMP_VEL = 9;
+
+SpiderEntity::SpiderEntity(const Swan::Context &ctx):
+	idleAnimation_(ctx, "core::entities/spider/idle", 0.8),
+	physicsBody_(PROPS)
+{}
+
 SpiderEntity::SpiderEntity(
 	const Swan::Context &ctx, Swan::Vec2 pos):
 	SpiderEntity(ctx)

@@ -4,8 +4,18 @@
 
 namespace CoreMod {
 
+static constexpr Swan::BasicPhysicsBody::Props PROPS = {
+	.size = {1, 1},
+	.mass = 80,
+};
+
+FallingTileEntity::FallingTileEntity(const Swan::Context &ctx):
+	physicsBody_(PROPS)
+{}
+
 FallingTileEntity::FallingTileEntity(
-	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Tile::ID tile)
+	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Tile::ID tile):
+	FallingTileEntity(ctx)
 {
 	physicsBody_.body.pos = pos;
 	tile_ = tile;

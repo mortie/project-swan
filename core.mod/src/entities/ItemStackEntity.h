@@ -11,11 +11,9 @@ class ItemStackEntity final: public Swan::Entity,
 public:
 	using Proto = proto::ItemStackEntity;
 
+	ItemStackEntity(const Swan::Context &ctx);
 	ItemStackEntity(const Swan::Context &ctx, Swan::Vec2 pos, Swan::Item *item);
 	ItemStackEntity(const Swan::Context &ctx, Swan::Vec2 pos, Swan::Vec2 vel, Swan::Item *item);
-	ItemStackEntity(const Swan::Context &ctx):
-		item_(&ctx.world.invalidItem())
-	{}
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -42,16 +40,8 @@ public:
 	float lifetime_ = 0;
 
 private:
-	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
-		.size = {0.5, 0.5},
-		.mass = 80,
-		.isSolid = false,
-	};
-	static constexpr float DESPAWN_TIME = 5 * 60;
-	static constexpr float BOUNCINESS = 0.6;
-
 	Swan::Item *item_;
-	Swan::BasicPhysicsBody physicsBody_{PROPS};
+	Swan::BasicPhysicsBody physicsBody_;
 };
 
 }

@@ -10,6 +10,33 @@
 
 namespace CoreMod {
 
+static constexpr Swan::BasicPhysicsBody::Props PROPS = {
+	.size = {0.6, 1.5},
+	.mass = 80,
+	.bounciness = 0,
+};
+
+static constexpr int INVENTORY_SIZE = 40;
+static constexpr float SPRINT_FORCE_GROUND = 125 * PROPS.mass;
+static constexpr float MOVE_FORCE_GROUND = 75 * PROPS.mass;
+static constexpr float MOVE_FORCE_AIR = 10 * PROPS.mass;
+static constexpr float JUMP_VEL = 12.5;
+static constexpr float DOWN_FORCE = 30 * PROPS.mass;
+static constexpr float LADDER_CLIMB_FORCE = 70 * PROPS.mass;
+static constexpr float LADDER_MAX_VEL = 5;
+static constexpr float SWIM_FORCE_UP = 12 * PROPS.mass;
+static constexpr float SWIM_FORCE_DOWN = 12 * PROPS.mass;
+
+PlayerEntity::PlayerEntity(const Swan::Context &ctx):
+	animations_(ctx),
+	sounds_(ctx),
+	inventorySprite_(ctx.world.getSprite("core::ui/inventory")),
+	selectedSlotSprite_(ctx.world.getSprite("core::ui/selected-slot")),
+	inventory_(INVENTORY_SIZE),
+	craftingInventory_(ctx.plane.entities().current()),
+	physicsBody_(PROPS)
+{}
+
 PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
 	PlayerEntity(ctx)
 {

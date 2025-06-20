@@ -11,12 +11,9 @@ class DynamiteEntity final: public Swan::Entity,
 public:
 	using Proto = proto::DynamiteEntity;
 
+	DynamiteEntity(const Swan::Context &ctx);
 	DynamiteEntity(
 		const Swan::Context &ctx, Swan::Vec2 pos, Swan::Vec2 vel = {0, 0});
-
-	DynamiteEntity(const Swan::Context &ctx):
-		tile_(ctx.world.getItem("core::dynamite").id)
-	{}
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -35,16 +32,9 @@ public:
 	void deserialize(const Swan::Context &ctx, Proto::Reader r);
 
 private:
-	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
-		.size = {0.8, 0.2},
-		.mass = 20,
-		.isSolid = false,
-	};
-	static constexpr float FUSE_TIME = 5;
-
 	Swan::Tile::ID tile_;
-	float fuse_ = FUSE_TIME;
-	Swan::BasicPhysicsBody physicsBody_{PROPS};
+	float fuse_;
+	Swan::BasicPhysicsBody physicsBody_;
 };
 
 }

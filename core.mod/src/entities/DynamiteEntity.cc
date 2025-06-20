@@ -7,6 +7,13 @@
 
 namespace CoreMod {
 
+static constexpr Swan::BasicPhysicsBody::Props PROPS = {
+	.size = {0.8, 0.2},
+	.mass = 20,
+	.isSolid = false,
+};
+static constexpr float FUSE_TIME = 5;
+
 static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
 {
 	constexpr float R1 = 2;
@@ -48,8 +55,15 @@ static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
 	}
 }
 
+DynamiteEntity::DynamiteEntity(const Swan::Context &ctx):
+	tile_(ctx.world.getItem("core::dynamite").id),
+	fuse_(FUSE_TIME),
+	physicsBody_(PROPS)
+{}
+
 DynamiteEntity::DynamiteEntity(
-	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Vec2 vel)
+	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Vec2 vel):
+	DynamiteEntity(ctx)
 {
 	physicsBody_.body.pos = pos;
 	physicsBody_.vel = vel;

@@ -4,8 +4,21 @@
 
 namespace CoreMod {
 
+static constexpr Swan::BasicPhysicsBody::Props PROPS = {
+	.size = {0.5, 0.5},
+	.mass = 80,
+	.isSolid = false,
+};
+static constexpr float DESPAWN_TIME = 5 * 60;
+
+ItemStackEntity::ItemStackEntity(const Swan::Context &ctx):
+	item_(&ctx.world.invalidItem()),
+	physicsBody_(PROPS)
+{}
+
 ItemStackEntity::ItemStackEntity(
-	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Item *item)
+	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Item *item):
+	ItemStackEntity(ctx)
 {
 	static std::uniform_real_distribution vx(-2.3f, 2.3f);
 	static std::uniform_real_distribution vy(-2.3f, -1.2f);
@@ -16,7 +29,8 @@ ItemStackEntity::ItemStackEntity(
 }
 
 ItemStackEntity::ItemStackEntity(
-	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Vec2 vel, Swan::Item *item)
+	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Vec2 vel, Swan::Item *item):
+	ItemStackEntity(ctx)
 {
 	physicsBody_.body.pos = pos;
 	physicsBody_.vel += vel;

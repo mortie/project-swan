@@ -475,6 +475,7 @@ void Game::save()
 		info << "Completing current tick...";
 		if (world_->tick(tickDT_, RTDeadline(2))) {
 			tickInProgress_ = false;
+			pendingTick_ = false;
 		} else {
 			warn << "Failed to complete tick in 2 seconds!";
 		}

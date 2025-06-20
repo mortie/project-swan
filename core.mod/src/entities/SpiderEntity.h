@@ -11,10 +11,8 @@ class SpiderEntity final: public Swan::Entity,
 public:
 	using Proto = proto::SpiderEntity;
 
+	SpiderEntity(const Swan::Context &ctx);
 	SpiderEntity(const Swan::Context &ctx, Swan::Vec2 pos);
-	SpiderEntity(const Swan::Context &ctx):
-		idleAnimation_(ctx, "core::entities/spider/idle", 0.8)
-	{}
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -39,19 +37,12 @@ public:
 	void deserialize(const Swan::Context &ctx, Proto::Reader r);
 
 private:
-	static constexpr Swan::BasicPhysicsBody::Props PROPS = {
-		.size = {1, 0.65},
-		.mass = 30,
-	};
-	static constexpr float MOVE_FORCE = 50 * PROPS.mass;
-	static constexpr float JUMP_VEL = 9;
-
 	Swan::Animation idleAnimation_;
 
 	float jumpTimer_ = 0;
 	Body *target_ = nullptr;
 
-	Swan::BasicPhysicsBody physicsBody_{PROPS};
+	Swan::BasicPhysicsBody physicsBody_;
 	Damage damage_{};
 };
 
