@@ -8,7 +8,7 @@ swan_proto = custom_target(
     '@INPUT@',
   ],
   install: true,
-  install_dir: 'include/proto',
+  install_dir: ['include/proto', false],
 )
 install_data(
   'proto/swan.capnp',
