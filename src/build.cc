@@ -219,19 +219,6 @@ static void iterateSources(
 			continue;
 		}
 
-		const char *objExt;
-		switch (type) {
-		case SourceType::SOURCE:
-			objExt = ".o";
-			break;
-		case SourceType::HEADER:
-			objExt = ".stamp";
-			break;
-		case SourceType::PROTO:
-			objExt = ".o";
-			break;
-		}
-
 		std::string sanitizedPath;
 		sanitizedPath.reserve(path.size() + 10);
 		for (char ch: path) {
@@ -241,6 +228,23 @@ static void iterateSources(
 			} else {
 				sanitizedPath.push_back(ch);
 			}
+		}
+
+		const char *objExt;
+		std::string outDir;
+		switch (type) {
+		case SourceType::SOURCE:
+			objExt = ".o";
+			outDir = objRoot;
+			break;
+		case SourceType::HEADER:
+			objExt = ".stamp";
+			outDir = objRoot;
+			break;
+		case SourceType::PROTO:
+			objExt = ".o";
+			outDir = cat(objRoot, sanitizedPath);
+			break;
 		}
 
 		auto objPath = cat(objRoot, sanitizedPath, name, objExt);
@@ -256,7 +260,7 @@ static void iterateSources(
 			.srcDir = cat(srcRoot, path),
 			.outPath = std::move(objPath),
 			.outLastWrite = objLastWrite,
-			.outDir = cat(objRoot, sanitizedPath),
+			.outDir = std::move(outDir),
 			.type = type,
 		});
 	}
