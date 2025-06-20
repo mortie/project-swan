@@ -599,7 +599,6 @@ Item &World::getItem(std::string_view name)
 
 	if (iter == items_.end()) {
 		warn << "Tried to get non-existent item " << name << "!";
-		abort();
 		return invalidItem();
 	}
 

@@ -174,7 +174,7 @@ public:
 		registerRopeLadder(*this);
 		registerOutcrop(*this, "coal");
 		registerOutcrop(*this, "iron", "iron-ore-chunk");
-		registerOutcrop(*this, "copper", "iron-ore-chunk");
+		registerOutcrop(*this, "copper", "copper-ore-chunk");
 		registerOutcrop(*this, "sulphur");
 		registerGlassPipe(*this);
 		registerTorch(*this);
@@ -211,6 +211,10 @@ public:
 		registerItem({
 			.name = "iron-ore-chunk",
 			.image = "core::items/iron-ore-chunk",
+		});
+		registerItem({
+			.name = "copper-ore-chunk",
+			.image = "core::items/copper-ore-chunk",
 		});
 		registerItem({
 			.name = "sulphur",
