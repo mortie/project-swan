@@ -181,6 +181,10 @@ int main(int argc, char **argv)
 	GLFWmonitor *currentMonitor = [&] {
 		int winX, winY, winW, winH;
 		glfwGetWindowPos(window, &winX, &winY);
+		if (glfwGetError(nullptr) == GLFW_FEATURE_UNAVAILABLE) {
+			return glfwGetPrimaryMonitor();
+		}
+
 		glfwGetWindowSize(window, &winW, &winH);
 		int centerX = winX + (winW / 2);
 		int centerY = winY + (winH / 2);
