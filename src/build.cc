@@ -120,6 +120,8 @@ void buildCommand(std::string &cmd, const SourceFile &f, const BuildInfo &info)
 		appendArg(cmd, "-std=c++20");
 		appendArg(cmd, "-Wall");
 		appendArg(cmd, "-Werror");
+		appendArg(cmd, "-fPIC");
+		appendArg(cmd, "-O2");
 		cmd += info.cflags;
 
 		for (const auto &include: info.includes) {
@@ -262,6 +264,7 @@ static void iterateSources(
 			.outLastWrite = objLastWrite,
 			.outDir = std::move(outDir),
 			.type = type,
+			.isOutdated = true,
 		});
 	}
 }
@@ -285,11 +288,15 @@ static bool compile(const SourceFile &f, const BuildInfo &info)
 
 	if (f.type == SourceType::PROTO) {
 		return compile({
+			.srcName = cat(f.srcName, ".c++"),
 			.srcPath = cat(f.outDir, "/", f.srcName, ".c++"),
+			.srcLastWrite = {},
 			.srcDir = f.outDir,
 			.outPath = f.outPath,
+			.outLastWrite = {},
 			.outDir = f.outDir,
 			.type = SourceType::SOURCE,
+			.isOutdated = true,
 		}, info);
 	}
 
@@ -588,8 +595,8 @@ void build(const char *modPath, const char *swanPath)
 			cat(swanPath, "/include/proto"),
 		},
 		.libs = {
-			cat(swanPath, "/lib/libswan.dylib"),
-			cat(swanPath, "/lib/libcygnet.dylib"),
+			cat(swanPath, "/lib/libswan" DYNLIB_EXT),
+			cat(swanPath, "/lib/libcygnet" DYNLIB_EXT),
 		},
 		.buildID = hashFiles(cat(swanPath, "/include")),
 	});
