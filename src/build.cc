@@ -267,7 +267,7 @@ static void iterateSources(
 			.outLastWrite = objLastWrite,
 			.outDir = std::move(outDir),
 			.type = type,
-			.isOutdated = true,
+			.isOutdated = false,
 		});
 	}
 }
@@ -322,7 +322,7 @@ static bool compile(const SourceFile &f, const BuildInfo &info)
 			.outLastWrite = {},
 			.outDir = f.outDir,
 			.type = SourceType::SOURCE,
-			.isOutdated = true,
+			.isOutdated = false,
 		}, info);
 	}
 
@@ -553,8 +553,8 @@ static void buildMod(const BuildInfo &info)
 			cv.wait(lock);
 		}
 
-		std::cerr << "* Building " << f.outPath << "...\n";
 		numThreads += 1;
+		std::cerr << "* Building " << f.srcName << "...\n";
 		std::thread([&numThreads, &cv, &mut, &info, &failed, f]  {
 			bool ok = compile(f, info);
 

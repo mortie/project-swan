@@ -184,6 +184,7 @@ public:
 	Cygnet::RenderCamera uiCam_{.zoom = 1.0 / 16};
 
 	bool triggerSave_ = false;
+	int triggerReload_ = 0;
 	bool enableVSync_ = false;
 	float timeScale_ = 1.0;
 	std::optional<float> fixedDeltaTime_;

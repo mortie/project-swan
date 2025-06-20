@@ -33,11 +33,6 @@ void Chunk::compress()
 		memcpy(data_.get(), dest, destlen);
 
 		compressedSize_ = destlen;
-
-		info
-			<< "Compressed chunk " << pos_ << " from "
-			<< DATA_SIZE << " bytes "
-			<< "to " << destlen << " bytes";
 	}
 	else if (ret == Z_BUF_ERROR) {
 		info
@@ -72,11 +67,6 @@ void Chunk::decompress()
 	}
 
 	data_ = std::move(dest);
-
-	info
-		<< "Decompressed chunk " << pos_ << " from "
-		<< compressedSize_ << " bytes to "
-		<< DATA_SIZE << " bytes.";
 	compressedSize_ = -1;
 }
 

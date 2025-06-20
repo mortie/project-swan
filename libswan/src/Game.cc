@@ -322,6 +322,21 @@ void Game::draw()
 		drawPerfMenu();
 	}
 
+	if (triggerReload_) {
+		ImGui::Begin(
+			"Reload", nullptr,
+			ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing |
+			ImGuiWindowFlags_NoTitleBar);
+		ImGui::SetWindowPos(
+			ImVec2(
+				ImGui::GetIO().DisplaySize.x / 2 - ImGui::GetWindowWidth() / 2,
+				ImGui::GetIO().DisplaySize.y / 2 - ImGui::GetWindowHeight() / 2),
+			ImGuiCond_Always);
+		ImGui::Text("Reloading...");
+		ImGui::End();
+	}
+
 	world_->draw(renderer_);
 }
 
@@ -350,10 +365,6 @@ void Game::render()
 
 void Game::update(float dt)
 {
-	if (wasLiteralKeyPressed(GLFW_KEY_F5)) {
-		reload();
-	}
-
 	perf_.updateCount += 1;
 	if (perf_.updateCount >= 60) {
 		perf_.entityUpdateTime.capture(perf_.updateCount);
@@ -382,6 +393,15 @@ void Game::update(float dt)
 
 	if (wasLiteralKeyPressed(GLFW_KEY_F4)) {
 		perf_.show = !perf_.show;
+	}
+
+	if (triggerReload_ == 1) {
+		triggerReload_ = 0;
+		reload();
+	} else if (wasLiteralKeyPressed(GLFW_KEY_F5)) {
+		triggerReload_ = 2;
+	} else if (triggerReload_ > 0) {
+		triggerReload_ -= 1;
 	}
 
 	renderer_.update(dt);
@@ -482,7 +502,6 @@ void Game::reload()
 {
 	std::vector<std::string> mods;
 	for (auto &mod: world_->mods_) {
-		std::cerr << "Has mod: " << mod.path_ << '\n';
 		mods.push_back(mod.path_);
 	}
 
