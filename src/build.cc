@@ -32,6 +32,7 @@ namespace SwanBuild {
 struct BuildInfo {
 	std::string compiler = "clang++";
 	std::string modPath;
+	std::string swanPath;
 	std::string cflags;
 	std::string ldflags;
 	std::vector<std::string> includes;
@@ -120,18 +121,10 @@ void buildCommand(std::string &cmd, const SourceFile &f, const BuildInfo &info)
 	switch (f.type) {
 	case SourceType::SOURCE:
 		quoteArg(cmd, info.compiler);
-		appendArg(cmd, "-std=c++20");
-		appendArg(cmd, "-Wall");
-		appendArg(cmd, "-Werror");
-		appendArg(cmd, "-fPIC");
-		appendArg(cmd, "-O2");
+		cmd += ' ';
 		cmd += info.cflags;
-
-		for (const auto &include: info.includes) {
-			cmd += " -I";
-			quoteArg(cmd, include);
-		}
-
+		cmd += " -include-pch";
+		appendArg(cmd, cat(info.modPath, "/.swanbuild/swan.h.pch"));
 		cmd += " -c -o";
 		quoteArg(cmd, f.outPath);
 		appendArg(cmd, f.srcPath);
@@ -329,6 +322,18 @@ static bool compile(const SourceFile &f, const BuildInfo &info)
 	return true;
 }
 
+static bool compilePCH(const BuildInfo &info, std::string_view pchPath)
+{
+	std::string cmd;
+	quoteArg(cmd, info.compiler);
+	cmd += ' ';
+	cmd += info.cflags;
+	cmd += " -xc++-header -c -o";
+	quoteArg(cmd, pchPath);
+	appendArg(cmd, cat(info.swanPath, "/include/swan/swan.h"));
+	return runCommand(cmd.c_str());
+}
+
 static void link(
 	std::string_view out,
 	std::span<const SourceFile> sources,
@@ -338,6 +343,7 @@ static void link(
 	quoteArg(cmd, info.compiler);
 	cmd += " -shared -o";
 	quoteArg(cmd, out);
+	cmd += ' ';
 	cmd += info.cflags;
 	for (const auto &source: sources) {
 		if (source.type != SourceType::SOURCE) {
@@ -472,8 +478,10 @@ static void buildMod(const BuildInfo &info)
 	auto modNamespace = getToml<std::string>(*modToml, "namespace");
 	auto modVersion = getToml<std::string>(*modToml, "version");
 
+	auto pchPath = cat(info.modPath, "/.swanbuild/swan.h.pch");
 	auto manifestPath = cat(info.modPath, "/.swanbuild/manifest.toml");
 	bool allOutdated = isOutdated(manifestPath, info);
+	bool pchOutdated = allOutdated;
 	if (allOutdated) {
 		std::cerr << modName << " v" << modVersion << " needs to be recompiled.\n";
 	}
@@ -516,6 +524,7 @@ static void buildMod(const BuildInfo &info)
 
 	std::cerr << "Compiling " << modName << " v" << modVersion << "...\n";
 	std::filesystem::remove(manifestPath);
+	std::filesystem::create_directory(cat(info.modPath, "/.swanbuild"));
 
 	std::mutex mut;
 	std::unique_lock lock(mut);
@@ -531,6 +540,13 @@ static void buildMod(const BuildInfo &info)
 	compileDB.close();
 	if (compileDB.fail()) {
 		throw std::runtime_error(cat("Failed to write ", compileDBPath));
+	}
+
+	if (pchOutdated || !std::filesystem::exists(pchPath)) {
+		std::cerr << "* Building PCH...\n";
+		if (!compilePCH(info, pchPath)) {
+			throw std::runtime_error("Failed to compile PCH");
+		}
 	}
 
 	for (auto &f: sources) {
@@ -601,21 +617,38 @@ void build(const char *modPath, const char *swanPath)
 		"glfw3",
 	};
 
+	std::vector<std::string> includes = {
+		cat(modPath, "/proto"),
+		cat(modPath, "/src"),
+		cat(modPath, "/.swanbuild/proto"),
+		cat(swanPath, "/include"),
+		cat(swanPath, "/include/proto"),
+	};
+
+	std::vector<std::string> libs = {
+		cat(swanPath, "/lib/libswan" DYNLIB_EXT),
+		cat(swanPath, "/lib/libcygnet" DYNLIB_EXT),
+	};
+
+	std::string cflags =
+		"-std=c++20 "
+		"-Wall "
+		"-Werror "
+		"-fPIC "
+		"-O2";
+	cflags += pkgconfig("--cflags", pkgs);
+	for (auto &include: includes) {
+		cflags += " -I";
+		quoteArg(cflags, include);
+	}
+
 	buildMod({
 		.modPath = std::string(modPath),
-		.cflags = pkgconfig("--cflags", pkgs),
+		.swanPath = std::string(swanPath),
+		.cflags = std::move(cflags),
 		.ldflags = pkgconfig("--libs", pkgs),
-		.includes = {
-			cat(modPath, "/proto"),
-			cat(modPath, "/src"),
-			cat(modPath, "/.swanbuild/proto"),
-			cat(swanPath, "/include"),
-			cat(swanPath, "/include/proto"),
-		},
-		.libs = {
-			cat(swanPath, "/lib/libswan" DYNLIB_EXT),
-			cat(swanPath, "/lib/libcygnet" DYNLIB_EXT),
-		},
+		.includes = std::move(includes),
+		.libs = std::move(libs),
 		.buildID = hashFiles(cat(swanPath, "/include")),
 	});
 }
