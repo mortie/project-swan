@@ -49,10 +49,12 @@ private:
 	NewLightChunk computeLightChunk(const Chunk &chunk);
 
 	WorldPlane &plane_;
-	LightServer server_{*this};
 	std::vector<LightUpdate> updates_;
-
 	std::mutex mut_;
+
+	// Server must be the last thing,
+	// so that it gets destroyed first
+	LightServer server_{*this};
 };
 
 class LightSystem: private LightSystemImpl {

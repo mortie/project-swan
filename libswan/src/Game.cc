@@ -34,7 +34,7 @@ void Game::createWorld(
 }
 
 void Game::loadWorld(
-	kj::BufferedInputStream &is, std::span<std::string> modPaths)
+	kj::BufferedInputStream &is, std::span<const std::string> modPaths)
 {
 	capnp::PackedMessageReader reader(is);
 
@@ -350,6 +350,10 @@ void Game::render()
 
 void Game::update(float dt)
 {
+	if (wasLiteralKeyPressed(GLFW_KEY_F5)) {
+		reload();
+	}
+
 	perf_.updateCount += 1;
 	if (perf_.updateCount >= 60) {
 		perf_.entityUpdateTime.capture(perf_.updateCount);
@@ -472,6 +476,27 @@ void Game::save()
 
 	info << "Done!";
 	replacer->commit();
+}
+
+void Game::reload()
+{
+	std::vector<std::string> mods;
+	for (auto &mod: world_->mods_) {
+		std::cerr << "Has mod: " << mod.path_ << '\n';
+		mods.push_back(mod.path_);
+	}
+
+	save();
+	soundPlayer_.flush();
+	world_.reset();
+
+	recompileMods_();
+
+	auto fs = kj::newDiskFilesystem();
+	auto worldFile = fs->getCurrent().openFile(kj::Path("world.swan"));
+	auto bytes = worldFile->readAllBytes();
+	auto data = kj::ArrayInputStream(bytes);
+	loadWorld(data, mods);
 }
 
 }

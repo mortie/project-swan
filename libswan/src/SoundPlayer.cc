@@ -27,6 +27,7 @@ struct SoundPlayer::Context {
 
 	AtomicRingBuffer<Playback, MAX_NEW_PLAYBACKS> newPlaybacks;
 	std::atomic<bool> end = false;
+	std::atomic<bool> flush = false;
 	std::atomic<float> volume = 0.5;
 	std::atomic<float> centerX = 0;
 	std::atomic<float> centerY = 0;
@@ -42,6 +43,19 @@ static int callback(
 	constexpr int CHANNELS = 2;
 
 	SoundPlayer::Context *ctx = (SoundPlayer::Context *)userData;
+
+	if (ctx->flush.exchange(false)) {
+		for (size_t i = 0; i < ctx->playbackCount; ++i) {
+			ctx->playbacks[i].handle->done = true;
+			ctx->playbacks[i].handle.reset();
+		}
+		ctx->playbackCount = 0;
+
+		while (ctx->newPlaybacks.canRead()) {
+			auto pb = ctx->newPlaybacks.read();
+			pb.handle->done = true;
+		}
+	}
 
 	float *output = (float *)outputBuffer;
 	float volume = ctx->volume;
@@ -197,6 +211,11 @@ void SoundPlayer::volume(float volume)
 float SoundPlayer::volume()
 {
 	return context_->volume;
+}
+
+void SoundPlayer::flush()
+{
+	context_->flush = true;
 }
 
 void SoundPlayer::play(

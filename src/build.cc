@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <optional>
 #include <sys/wait.h>
+#include <spawn.h>
 #include <thread>
 #include <unistd.h>
 #include <string.h>
@@ -23,6 +24,8 @@
 #else
 #define DYNLIB_EXT ".so"
 #endif
+
+extern char **environ;
 
 namespace SwanBuild {
 
@@ -269,6 +272,30 @@ static void iterateSources(
 	}
 }
 
+static bool runCommand(const char *cmd)
+{
+	pid_t pid = 0;
+	const char *argv[] = {"/bin/sh", "-c", cmd, nullptr};
+	if (posix_spawn(&pid, argv[0], nullptr, nullptr, (char *const *)argv, environ) < 0) {
+		std::cerr << "Failed to run command: " << cmd << '\n';
+		return false;
+	}
+
+	int stat = 0;
+	waitpid(pid, &stat, 0);
+	if (WIFEXITED(stat)) {
+		int code = WEXITSTATUS(stat);
+		if (code != 0) {
+			std::cerr << "Command exited with non-zero code " << code << ": " << cmd << '\n';
+			return false;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
 static bool compile(const SourceFile &f, const BuildInfo &info)
 {
 	std::filesystem::create_directories(f.outDir);
@@ -281,8 +308,7 @@ static bool compile(const SourceFile &f, const BuildInfo &info)
 	std::string cmd;
 	buildCommand(cmd, f, info);
 
-	if (std::system(cmd.c_str()) != 0) {
-		std::cerr << "Compile failed! Command: " << cmd << '\n';
+	if (!runCommand(cmd.c_str())) {
 		return false;
 	}
 
@@ -326,7 +352,7 @@ static void link(
 		appendArg(cmd, lib);
 	}
 
-	if (std::system(cmd.c_str()) != 0) {
+	if (!runCommand(cmd.c_str())) {
 		throw std::runtime_error("Link failed! Command: " + cmd);
 	}
 }
@@ -495,8 +521,8 @@ static void buildMod(const BuildInfo &info)
 	std::unique_lock lock(mut);
 
 	int numThreads = 0;
+	bool failed = false;
 	std::condition_variable cv;
-	std::atomic_bool failed = false;
 
 	// Create compile_commands.json first,
 	// so we make all of it even if there are compile errors
@@ -530,21 +556,13 @@ static void buildMod(const BuildInfo &info)
 		std::cerr << "* Building " << f.outPath << "...\n";
 		numThreads += 1;
 		std::thread([&numThreads, &cv, &mut, &info, &failed, f]  {
-			pid_t child = fork();
-			if (child < 0) {
-				throw std::runtime_error("Fork failed");
-			} else if (child != 0) {
-				int stat;
-				waitpid(child, &stat, 0);
-				if (WIFEXITED(stat) && WEXITSTATUS(stat) != 0) {
-					failed = true;
-				}
-			} else {
-				exit(compile(f, info) ? 0 : 1);
-			}
+			bool ok = compile(f, info);
 
 			mut.lock();
 			numThreads -= 1;
+			if (!ok) {
+				failed = true;
+			}
 			mut.unlock();
 			cv.notify_all();
 		}).detach();

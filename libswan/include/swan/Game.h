@@ -23,6 +23,8 @@ namespace Swan {
 
 class Game {
 public:
+	Game(std::function<void()> recompileMods): recompileMods_(recompileMods) {}
+
 	using SoundHandle = std::shared_ptr<SoundPlayer::Handle>;
 
 	struct Debug {
@@ -76,7 +78,7 @@ public:
 		const std::string &worldgen, std::span<std::string> modPaths);
 
 	void loadWorld(
-		kj::BufferedInputStream &is, std::span<std::string> modPaths);
+		kj::BufferedInputStream &is, std::span<const std::string> modPaths);
 
 	void onKeyDown(int scancode, int key);
 	void onKeyUp(int scancode, int key);
@@ -206,6 +208,8 @@ public:
 	Cygnet::TextCache bigFont_{notoSans_, 200};
 
 private:
+	void reload();
+
 	std::bitset<GLFW_KEY_LAST + 1> pressedKeys_;
 	std::bitset<GLFW_KEY_LAST + 1> didPressKeys_;
 	std::bitset<GLFW_KEY_LAST + 1> didReleaseKeys_;
@@ -227,6 +231,7 @@ private:
 	std::optional<FrameRecorder> frameRecorder_;
 
 	double didScroll_ = 0;
+	std::function<void()> recompileMods_;
 };
 
 

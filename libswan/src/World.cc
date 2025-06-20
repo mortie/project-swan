@@ -20,7 +20,7 @@ static void chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &d
 	}
 }
 
-std::vector<ModWrapper> World::loadMods(std::span<std::string> paths)
+std::vector<ModWrapper> World::loadMods(std::span<const std::string> paths)
 {
 	std::vector<ModWrapper> mods;
 
@@ -35,7 +35,7 @@ std::vector<ModWrapper> World::loadMods(std::span<std::string> paths)
 		}
 
 		std::unique_ptr<Mod> mod(create());
-		mods.push_back(ModWrapper(std::move(mod), std::move(path), std::move(dl)));
+		mods.push_back(ModWrapper(std::move(mod), path, std::move(dl)));
 	}
 
 	return mods;
@@ -437,7 +437,7 @@ void World::buildResources()
 	resources_ = Cygnet::ResourceManager(std::move(builder));
 }
 
-World::World(Game *game, unsigned long randSeed, std::span<std::string> modPaths):
+World::World(Game *game, unsigned long randSeed, std::span<const std::string> modPaths):
 	game_(game), random_(randSeed)
 {
 	mods_ = loadMods(modPaths);

@@ -53,7 +53,7 @@ public:
 		std::unordered_set<WorldPlane::ID> tickedPlanes;
 	};
 
-	World(Game *game, unsigned long randSeed, std::span<std::string> modPaths);
+	World(Game *game, unsigned long randSeed, std::span<const std::string> modPaths);
 	~World();
 
 	void setWorldGen(std::string gen);
@@ -174,7 +174,7 @@ private:
 		std::unique_ptr<WorldPlane> plane;
 	};
 
-	std::vector<ModWrapper> loadMods(std::span<std::string> paths);
+	std::vector<ModWrapper> loadMods(std::span<const std::string> paths);
 	void buildResources();
 	void buildTileParticles(Tile &tile, ImageAsset &image);
 	float findImageYOffset(ImageAsset &image);

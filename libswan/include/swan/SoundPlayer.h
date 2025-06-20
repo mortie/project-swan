@@ -26,6 +26,7 @@ public:
 
 	void volume(float volume);
 	float volume();
+	void flush();
 
 	void play(
 		SoundAsset *asset, float volume,

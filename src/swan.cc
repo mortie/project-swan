@@ -118,11 +118,17 @@ int main(int argc, char **argv)
 		if (arg == "--mod") {
 			i += 1;
 			mods.push_back(argv[i]);
-			SwanBuild::build(argv[i], swanRoot);
 		} else {
 			warn << "Unexpected option: " << arg;
 		}
 	}
+
+	auto compileMods = [&]() {
+		for (auto &mod: mods) {
+			SwanBuild::build(mod.c_str(), swanRoot);
+		}
+	};
+	compileMods();
 
 	glfwSetErrorCallback(+[] (int error, const char *description) {
 		warn << "GLFW Error: " << error << ": " << description;
@@ -152,7 +158,7 @@ int main(int argc, char **argv)
 	Cygnet::glCheck();
 
 	// Create the game and mod list
-	Game game;
+	Game game(compileMods);
 
 	// Load or create world
 	auto fs = kj::newDiskFilesystem();
