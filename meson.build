@@ -55,9 +55,7 @@ if not libportaudio.found()
 endif
 
 libcapnp = dependency('capnp')
-
 libcpptoml = subproject('cpptoml-ng').get_variable('cpptoml_dep')
-
 libdl = meson.get_compiler('cpp').find_library('dl')
 libz = meson.get_compiler('cpp').find_library('z')
 
@@ -74,21 +72,32 @@ common = declare_dependency(
 
 subdir('libcygnet')
 subdir('libswan')
-subdir('core.mod')
+install_subdir(
+  'include/swan',
+  install_dir: 'include',
+)
 
-executable('swan', 'src/swan.cc',
+executable(
+  'swan',
+  'src/build.cc',
+  'src/swan.cc',
   install: true,
   install_rpath: get_option('libdir'),
   dependencies: [
     libswan, libcygnet, common, libimgui, libgl, libglfw3, libbackwardcpp,
+    libcpptoml, libsha1,
   ] + maybe_libtracy,
 )
 
-executable('swan-build', 'src/swan-build.cc',
+executable(
+  'swan-build',
+  'src/build.cc',
+  'src/swan-build.cc',
   install: true,
   install_rpath: get_option('libdir'),
   dependencies: [
     libcpptoml,
+    libsha1,
   ],
 )
 

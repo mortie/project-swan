@@ -1,10 +1,13 @@
 OUT ?= ./build
 MESON ?= meson
 
-all: $(OUT)/swan
+.PHONY: all
+all: build
 
 $(OUT)/build.ninja:
-	$(MESON) setup $(OUT) -Dbuildtype=debug -Ddebug=true -Doptimization=1
+	$(MESON) setup $(OUT) \
+		-Dbuildtype=debug -Ddebug=true -Doptimization=1 \
+		-Dprefix=$(abspath $(OUT)/pfx)
 
 $(OUT)/swan: $(OUT)/build.ninja phony
 	ninja -C $(OUT) swan core.mod/mod.so
@@ -19,11 +22,17 @@ llrun:
 	${MAKE} run CMD='lldb -o r'
 
 .PHONY: run
-run: $(OUT)/swan
+run:
+	${MAKE} pfx
+	cd $(OUT)/pfx && $(CMD) ./bin/swan --mod $(abspath core.mod)
+
+.PHONY: build
+build: $(OUT)/build.ninja
 	ninja -C $(OUT)
-	ln -sf $(abspath assets) $(OUT)/
-	ln -sf $(abspath core.mod/assets) $(OUT)/core.mod/
-	cd $(OUT) && $(CMD) ./swan
+
+.PHONY: pfx
+pfx: build
+	ninja -C $(OUT) install >/dev/null
 
 .PHONY: setup
 setup: $(OUT)/build.ninja

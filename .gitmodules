@@ -31,3 +31,6 @@
 [submodule "subprojects/cpptoml-ng"]
 	path = subprojects/cpptoml-ng
 	url = git@github.com:mortie/cpptoml-ng.git
+[submodule "third-party/sha1"]
+	path = third-party/sha1
+	url = https://github.com/vog/sha1.git

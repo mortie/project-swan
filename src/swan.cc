@@ -17,13 +17,15 @@
 #include <swan/swan.h>
 #include <swan/assets.h>
 
+#include "build.h"
+
 using namespace Swan;
 
 #define errassert(expr, str, errfn) do { \
-			if (!(expr)) { \
-				panic << (str) << ": " << errfn(); \
-				return EXIT_FAILURE; \
-			} \
+	if (!(expr)) { \
+		panic << (str) << ": " << errfn(); \
+		return EXIT_FAILURE; \
+	} \
 } while (0)
 
 static Game *gameptr;
@@ -102,12 +104,24 @@ static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
 
 int main(int argc, char **argv)
 {
-	backward::SignalHandling sh;
-
-	char *swanRoot = getenv("SWAN_ROOT");
-
+	const char *swanRoot = getenv("SWAN_ROOT");
 	if (swanRoot != nullptr && swanRoot[0] != '\0') {
 		Swan::assetBasePath = swanRoot;
+	} else {
+		swanRoot = ".";
+	}
+
+	backward::SignalHandling sh;
+	std::vector<std::string> mods;
+	for (int i = 1; i < argc; ++i) {
+		std::string_view arg = argv[i];
+		if (arg == "--mod") {
+			i += 1;
+			mods.push_back(argv[i]);
+			SwanBuild::build(argv[i], swanRoot);
+		} else {
+			warn << "Unexpected option: " << arg;
+		}
 	}
 
 	glfwSetErrorCallback(+[] (int error, const char *description) {
@@ -139,7 +153,6 @@ int main(int argc, char **argv)
 
 	// Create the game and mod list
 	Game game;
-	std::vector<std::string> mods{"core.mod"};
 
 	// Load or create world
 	auto fs = kj::newDiskFilesystem();

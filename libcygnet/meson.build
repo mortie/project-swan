@@ -6,7 +6,7 @@ shader_gen = generator(
 
 libcygnet = declare_dependency(
   include_directories: 'include',
-  link_with: library('cygnet',
+  link_with: shared_library('cygnet',
     'src/gl.cc',
     'src/GlWrappers.cc',
     'src/Renderer.cc',
@@ -32,4 +32,8 @@ libcygnet = declare_dependency(
     install_rpath: get_option('libdir'),
     include_directories: 'include/cygnet',
   ),
+)
+install_subdir(
+  'include/cygnet',
+  install_dir: 'include',
 )

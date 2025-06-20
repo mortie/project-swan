@@ -168,8 +168,14 @@ Result<ImageAsset> loadImageAsset(
 		return {Err, cat("No mod named '", modPart, "'")};
 	}
 
-	std::string assetPath = cat(
-		assetBasePath, "/", modPath->second, "/assets/", pathPart);
+	std::string assetPath;
+	if (modPath->second[0] == '/') {
+		assetPath = cat(modPath->second, "/assets/", pathPart);
+	} else {
+		assetPath = cat(
+				assetBasePath, "/", modPath->second, "/assets/", pathPart);
+	}
+
 	std::string pngPath = cat(assetPath, ".png");
 	std::string tomlPath = cat(assetPath, ".toml");
 	if (!std::filesystem::exists(tomlPath)) {
@@ -298,8 +304,13 @@ Result<SoundAsset> loadSoundAsset(
 		return {Err, cat("No mod named '", modPart, "'")};
 	}
 
-	std::string assetPath = cat(
-		assetBasePath, "/", modPath->second, "/assets/", pathPart);
+	std::string assetPath;
+	if (modPath->second[0] == '/') {
+		assetPath = cat(modPath->second, "/assets/", pathPart);
+	} else {
+		assetPath = cat(
+			assetBasePath, "/", modPath->second, "/assets/", pathPart);
+	}
 	std::string oggPath = cat(assetPath, ".ogg");
 
 	int err;

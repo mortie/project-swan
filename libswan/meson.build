@@ -7,6 +7,12 @@ swan_proto = custom_target(
     '--src-prefix=@CURRENT_SOURCE_DIR@/proto',
     '@INPUT@',
   ],
+  install: true,
+  install_dir: 'include/proto',
+)
+install_data(
+  'proto/swan.capnp',
+  install_dir: 'include/proto',
 )
 
 libswan_cflags = []
@@ -19,7 +25,7 @@ libswan = declare_dependency(
   dependencies: [
     common, libcygnet, libglfw3, libcapnp,
   ] + maybe_libtracy,
-  link_with: library('swan',
+  link_with: shared_library('swan',
     'src/systems/EntitySystem.cc',
     'src/systems/FluidSystem.cc',
     'src/systems/LightSystem.cc',
@@ -52,6 +58,10 @@ libswan = declare_dependency(
     install_rpath: get_option('libdir'),
     include_directories: 'include/swan',
   ),
+)
+install_subdir(
+  'include/swan',
+  install_dir: 'include',
 )
 
 executable(

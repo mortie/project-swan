@@ -27,7 +27,7 @@ std::vector<ModWrapper> World::loadMods(std::span<std::string> paths)
 	mods.reserve(paths.size());
 
 	for (auto &path: paths) {
-		OS::Dynlib dl(path + "/mod");
+		OS::Dynlib dl(path + "/.swanbuild/mod");
 		auto create = dl.get<Mod *(*)()>("mod_create");
 		if (create == NULL) {
 			warn << path << ": No 'mod_create' function!";
