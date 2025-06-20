@@ -38,7 +38,7 @@ struct BuildInfo {
 	std::vector<std::string> includes;
 	std::vector<std::string> libs;
 	std::string buildID;
-	int concurrency = 8;
+	int concurrency = std::thread::hardware_concurrency();
 };
 
 enum class SourceType {
