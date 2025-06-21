@@ -9,5 +9,5 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	SwanBuild::build(argv[1], argv[2]);
+	return SwanBuild::build(argv[1], argv[2]) ? 0 : 1;
 }

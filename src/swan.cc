@@ -125,10 +125,16 @@ int main(int argc, char **argv)
 
 	auto compileMods = [&]() {
 		for (auto &mod: mods) {
-			SwanBuild::build(mod.c_str(), swanRoot);
+			if (!SwanBuild::build(mod.c_str(), swanRoot)) {
+				return false;
+			}
 		}
+
+		return true;
 	};
-	compileMods();
+	if (!compileMods()) {
+		return 1;
+	}
 
 	glfwSetErrorCallback(+[] (int error, const char *description) {
 		warn << "GLFW Error: " << error << ": " << description;

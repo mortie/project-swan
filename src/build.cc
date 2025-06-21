@@ -334,7 +334,7 @@ static bool compilePCH(const BuildInfo &info, std::string_view pchPath)
 	return runCommand(cmd.c_str());
 }
 
-static void link(
+static bool link(
 	std::string_view out,
 	std::span<const SourceFile> sources,
 	const BuildInfo &info)
@@ -358,12 +358,10 @@ static void link(
 		appendArg(cmd, lib);
 	}
 
-	if (!runCommand(cmd.c_str())) {
-		throw std::runtime_error("Link failed! Command: " + cmd);
-	}
+	return runCommand(cmd.c_str());
 }
 
-std::string pkgconfig(const char *arg, std::vector<const char *> pkgs)
+std::optional<std::string> pkgconfig(const char *arg, std::vector<const char *> pkgs)
 {
 	if (pkgs.empty()) {
 		return "";
@@ -377,7 +375,8 @@ std::string pkgconfig(const char *arg, std::vector<const char *> pkgs)
 
 	FILE *f = popen(cmd.c_str(), "r");
 	if (!f) {
-		throw std::runtime_error("Failed to run pkg-config command");
+		std::cerr << "Failed to run pkg-config\n";
+		return std::nullopt;
 	}
 
 	char buf[32];
@@ -388,7 +387,8 @@ std::string pkgconfig(const char *arg, std::vector<const char *> pkgs)
 	}
 
 	if (pclose(f) != 0) {
-		throw std::runtime_error("pkg-config failed! Command: " + cmd);
+		std::cerr << "pkg-config failed! Command: " << cmd << '\n';
+		return std::nullopt;
 	}
 
 	for (size_t i = 0; i < cflags.size(); ++i) {
@@ -469,7 +469,7 @@ static void buildCompileDB(
 	os << "\n]";
 }
 
-static void buildMod(const BuildInfo &info)
+static bool buildMod(const BuildInfo &info)
 {
 	auto startTime = std::chrono::steady_clock::now();
 
@@ -501,29 +501,28 @@ static void buildMod(const BuildInfo &info)
 	if (!allOutdated) {
 		bool someOutdated = false;
 		for (auto &f: sources) {
-			if (!f.outLastWrite) {
-				allOutdated = true;
-				break;
+			bool outdated =
+				!f.outLastWrite ||
+				(f.srcLastWrite - *f.outLastWrite).count() >= 0;
+			if (!outdated) {
+				continue;
 			}
 
-			if ((f.srcLastWrite - *f.outLastWrite).count() >= 0) {
-				std::cerr << f.srcPath << " outdated!\n";
-				someOutdated = true;
-				f.isOutdated = true;
-				if (f.type != SourceType::SOURCE) {
-					allOutdated = true;
-				}
+			std::cerr << f.srcPath << " outdated!\n";
+			someOutdated = true;
+			f.isOutdated = true;
+			if (f.type != SourceType::SOURCE) {
+				allOutdated = true;
 			}
 		}
 
 		if (!someOutdated) {
 			std::cerr << modName << " v" << modVersion << " is up to date.\n";
-			return;
+			return true;
 		}
 	}
 
 	std::cerr << "Compiling " << modName << " v" << modVersion << "...\n";
-	std::filesystem::remove(manifestPath);
 	std::filesystem::create_directory(cat(info.modPath, "/.swanbuild"));
 
 	std::mutex mut;
@@ -539,13 +538,15 @@ static void buildMod(const BuildInfo &info)
 	buildCompileDB(sources, compileDB, info);
 	compileDB.close();
 	if (compileDB.fail()) {
-		throw std::runtime_error(cat("Failed to write ", compileDBPath));
+		std::cerr << "Failed to write " << compileDBPath << '\n';
+		return false;
 	}
 
 	if (pchOutdated || !std::filesystem::exists(pchPath)) {
 		std::cerr << "* Building PCH...\n";
 		if (!compilePCH(info, pchPath)) {
-			throw std::runtime_error("Failed to compile PCH");
+			std::cerr << "Failed to compile PCH\n";
+			return false;
 		}
 	}
 
@@ -589,7 +590,7 @@ static void buildMod(const BuildInfo &info)
 	}
 
 	if (failed) {
-		exit(1);
+		return false;
 	}
 
 	std::cerr << "* Linking...\n";
@@ -601,15 +602,17 @@ static void buildMod(const BuildInfo &info)
 	newManifest << *newManifestRoot;
 	if (newManifest.fail()) {
 		std::filesystem::remove(manifestPath);
-		throw std::runtime_error(cat("Failed to write ", manifestPath));
+		std::cerr << "Failed to write " << manifestPath << '\n';
+		return false;
 	}
 
 	auto delta = std::chrono::duration<double>(
 		std::chrono::steady_clock::now() - startTime).count();
 	std::cout << "Compiled " << modName << " in " << delta << "s.\n";
+	return true;
 }
 
-void build(const char *modPath, const char *swanPath)
+bool build(const char *modPath, const char *swanPath)
 {
 	std::vector<const char *> pkgs = {
 		"kj",
@@ -630,23 +633,33 @@ void build(const char *modPath, const char *swanPath)
 		cat(swanPath, "/lib/libcygnet" DYNLIB_EXT),
 	};
 
+	auto pkgCFlags = pkgconfig("--cflags", pkgs);
+	if (!pkgCFlags) {
+		return false;
+	}
+
+	auto pkgLibs = pkgconfig("--libs", pkgs);
+	if (!pkgLibs) {
+		return false;
+	}
+
 	std::string cflags =
 		"-std=c++20 "
 		"-Wall "
 		"-Werror "
 		"-fPIC "
 		"-O2";
-	cflags += pkgconfig("--cflags", pkgs);
+	cflags += *pkgCFlags;
 	for (auto &include: includes) {
 		cflags += " -I";
 		quoteArg(cflags, include);
 	}
 
-	buildMod({
+	return buildMod({
 		.modPath = std::string(modPath),
 		.swanPath = std::string(swanPath),
 		.cflags = std::move(cflags),
-		.ldflags = pkgconfig("--libs", pkgs),
+		.ldflags = *pkgLibs,
 		.includes = std::move(includes),
 		.libs = std::move(libs),
 		.buildID = hashFiles(cat(swanPath, "/include")),

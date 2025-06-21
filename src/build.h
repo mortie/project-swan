@@ -1,5 +1,5 @@
 namespace SwanBuild {
 
-void build(const char *modPath, const char *swanPath);
+bool build(const char *modPath, const char *swanPath);
 
 }

@@ -23,7 +23,7 @@ namespace Swan {
 
 class Game {
 public:
-	Game(std::function<void()> recompileMods): recompileMods_(recompileMods) {}
+	Game(std::function<bool()> recompileMods): recompileMods_(recompileMods) {}
 
 	using SoundHandle = std::shared_ptr<SoundPlayer::Handle>;
 
@@ -183,6 +183,9 @@ public:
 	Cygnet::RenderCamera cam_{.zoom = 1.0 / 8};
 	Cygnet::RenderCamera uiCam_{.zoom = 1.0 / 16};
 
+	std::string popupMessage_;
+	float popupMessageTimer_ = 0;
+
 	bool triggerSave_ = false;
 	int triggerReload_ = 0;
 	bool enableVSync_ = false;
@@ -209,7 +212,7 @@ public:
 	Cygnet::TextCache bigFont_{notoSans_, 200};
 
 private:
-	void reload();
+	bool reload();
 
 	std::bitset<GLFW_KEY_LAST + 1> pressedKeys_;
 	std::bitset<GLFW_KEY_LAST + 1> didPressKeys_;
@@ -232,7 +235,7 @@ private:
 	std::optional<FrameRecorder> frameRecorder_;
 
 	double didScroll_ = 0;
-	std::function<void()> recompileMods_;
+	std::function<bool()> recompileMods_;
 };
 
 

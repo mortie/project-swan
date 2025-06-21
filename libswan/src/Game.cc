@@ -322,9 +322,9 @@ void Game::draw()
 		drawPerfMenu();
 	}
 
-	if (triggerReload_) {
+	if (popupMessage_ != "") {
 		ImGui::Begin(
-			"Reload", nullptr,
+			"Popup", nullptr,
 			ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
 			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing |
 			ImGuiWindowFlags_NoTitleBar);
@@ -333,7 +333,7 @@ void Game::draw()
 				ImGui::GetIO().DisplaySize.x / 2 - ImGui::GetWindowWidth() / 2,
 				ImGui::GetIO().DisplaySize.y / 2 - ImGui::GetWindowHeight() / 2),
 			ImGuiCond_Always);
-		ImGui::Text("Reloading...");
+		ImGui::Text("%s", popupMessage_.c_str());
 		ImGui::End();
 	}
 
@@ -395,11 +395,25 @@ void Game::update(float dt)
 		perf_.show = !perf_.show;
 	}
 
+	if (popupMessageTimer_ > 0) {
+		popupMessageTimer_ -= dt;
+		if (popupMessageTimer_ <= 0) {
+			popupMessage_ = "";
+		}
+	}
+
 	if (triggerReload_ == 1) {
-		triggerReload_ = 0;
-		reload();
+		triggerReload_ = false;
+		if (reload()) {
+			popupMessage_ = "";
+		} else {
+			popupMessage_ = "Reload failed!";
+			popupMessageTimer_ = 2;
+		}
 	} else if (wasLiteralKeyPressed(GLFW_KEY_F5)) {
-		triggerReload_ = 2;
+		popupMessage_ = "Reloading...";
+		popupMessageTimer_ = 1;
+		triggerReload_ = 3;
 	} else if (triggerReload_ > 0) {
 		triggerReload_ -= 1;
 	}
@@ -499,8 +513,13 @@ void Game::save()
 	replacer->commit();
 }
 
-void Game::reload()
+bool Game::reload()
 {
+	if (!recompileMods_()) {
+		warn << "Failed to recompile mods!";
+		return false;
+	}
+
 	std::vector<std::string> mods;
 	for (auto &mod: world_->mods_) {
 		mods.push_back(mod.path_);
@@ -510,13 +529,12 @@ void Game::reload()
 	soundPlayer_.flush();
 	world_.reset();
 
-	recompileMods_();
-
 	auto fs = kj::newDiskFilesystem();
 	auto worldFile = fs->getCurrent().openFile(kj::Path("world.swan"));
 	auto bytes = worldFile->readAllBytes();
 	auto data = kj::ArrayInputStream(bytes);
 	loadWorld(data, mods);
+	return true;
 }
 
 }
