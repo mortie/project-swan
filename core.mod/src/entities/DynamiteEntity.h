@@ -27,12 +27,14 @@ public:
 
 	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
 	void update(const Swan::Context &ctx, float dt) override;
+	void tick(const Swan::Context &ctx, float dt) override;
 
 	void serialize(const Swan::Context &ctx, Proto::Builder w);
 	void deserialize(const Swan::Context &ctx, Proto::Reader r);
 
 private:
-	Swan::Tile::ID tile_;
+	Swan::Animation animation_;
+
 	float fuse_;
 	Swan::BasicPhysicsBody physicsBody_;
 };

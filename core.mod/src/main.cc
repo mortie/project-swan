@@ -29,6 +29,7 @@ public:
 		registerSprite("entities/player/landing");
 		registerSprite("entities/spider/idle");
 		registerSprite("misc/background-cave");
+		registerSprite("misc/burning-dynamite");
 		registerSprite("ui/selected-slot");
 		registerSprite("ui/inventory");
 
