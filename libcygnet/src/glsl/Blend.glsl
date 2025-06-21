@@ -27,5 +27,5 @@ void main() {
 	float avg = (rgb.r + rgb.g + rgb.b) / 3.0f;
 	vec3 grey = vec3(avg, avg, avg);
 	rgb = (rgb * (1.0 - desaturate)) + (grey * desaturate);
-	fragColor = vec4(rgb.r, rgb.g, rgb.b, color.a);
+	fragColor = vec4(rgb.r, rgb.g, rgb.b, 1);
 }

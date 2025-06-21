@@ -602,7 +602,6 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 	state_->chunkProg.draw(drawChunks_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
 	state_->tileProg.draw(drawTiles_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
 	state_->spriteProg.draw(drawSprites_[idx], camMat);
-	state_->chunkFluidProg.draw(drawChunkFluids_[idx], camMat, state_->fluidAtlasTex, 0);
 	state_->particleProg.draw(drawParticles_[idx], camMat);
 
 	// Use the stencil buffer to ensure that spawned particles don't
@@ -618,6 +617,7 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 		glDisable(GL_STENCIL_TEST);
 	}
 
+	state_->chunkFluidProg.draw(drawChunkFluids_[idx], camMat, state_->fluidAtlasTex, 0);
 	state_->rectProg.draw(drawRects_[idx], camMat);
 	state_->textProg.draw(drawTexts_[idx], textBuffer_, camMat, 1.0 / 128);
 

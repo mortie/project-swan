@@ -111,10 +111,7 @@ void DynamiteEntity::update(const Swan::Context &ctx, float dt)
 
 void DynamiteEntity::tick(const Swan::Context &ctx, float dt)
 {
-	auto layer = Swan::random() % 3
-		? Cygnet::RenderLayer::BEHIND
-		: Cygnet::RenderLayer::NORMAL;
-	ctx.game.spawnParticle(layer, {
+	ctx.game.spawnParticle({
 		.pos = physicsBody_.body.midRight().add(-0.13, -0.15),
 		.vel = {(Swan::randfloat() - 0.5f) * 1, -(Swan::randfloat() * 0.5f + 0.6f)},
 		.size = {1.0f / 16, 1.0f / 16},
