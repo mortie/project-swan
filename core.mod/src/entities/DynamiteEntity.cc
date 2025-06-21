@@ -23,7 +23,7 @@ static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
 	for (int i = 0; i < 60; ++i) {
 		ctx.game.spawnParticle({
 			.pos = pos + Swan::Vec2{
-				(Swan::randfloat() - 0.5f) * 2.0f,
+				(Swan::randfloat() - 0.5f) * 3.0f,
 				(Swan::randfloat() - 0.5f) * 2.0f,
 			},
 			.vel = {
