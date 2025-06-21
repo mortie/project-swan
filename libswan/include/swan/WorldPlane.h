@@ -64,6 +64,10 @@ public:
 		nextTickA_.push_back(std::move(cb));
 	}
 
+	size_t getChunkCount() { return chunks_.size(); }
+	size_t getActiveChunkCount() { return activeChunks_.size(); }
+	size_t getChunkDataMemUsage();
+
 	Cygnet::Color backgroundColor();
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);

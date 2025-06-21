@@ -293,6 +293,11 @@ void Game::drawPerfMenu()
 		perf_.fluidUpdateTime.avgMs, perf_.fluidUpdateTime.maxMs);
 	ImGui::Text("Fluid tick:    %.2fms avg / %.2fms max",
 		perf_.fluidTickTime.avgMs, perf_.fluidTickTime.maxMs);
+	ImGui::Text("Chunk count:   %zu (active: %zu)",
+		world_->currentPlane().getChunkCount(),
+		world_->currentPlane().getActiveChunkCount());
+	ImGui::Text("Chunk memory:  %.02f MiB",
+		world_->currentPlane().getChunkDataMemUsage() / double(1024 * 1024));
 
 	ImGui::End();
 }

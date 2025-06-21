@@ -157,6 +157,11 @@ public:
 		isFluidModified_ = true;
 	}
 
+	size_t getMemUsage() const
+	{
+		return isCompressed() ? compressedSize_ : DATA_SIZE;
+	}
+
 	void serialize(proto::Chunk::Builder w);
 	void deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap);
 
@@ -165,7 +170,7 @@ public:
 private:
 	static constexpr float DEACTIVATE_INTERVAL = 20;
 
-	bool isCompressed()
+	bool isCompressed() const
 	{
 		return compressedSize_ != -1;
 	}

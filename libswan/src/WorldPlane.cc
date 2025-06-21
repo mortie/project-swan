@@ -80,6 +80,15 @@ EntityRef WorldPlane::spawnPlayer()
 	return worldGen_->spawnPlayer(getContext());
 }
 
+size_t WorldPlane::getChunkDataMemUsage()
+{
+	size_t size = 0;
+	for (const auto &[_, chunk]: chunks_) {
+		size += chunk.getMemUsage();
+	}
+	return size;
+}
+
 Cygnet::Color WorldPlane::backgroundColor()
 {
 	return worldGen_->backgroundColor(world_->player_->pos);
