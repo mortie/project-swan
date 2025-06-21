@@ -331,6 +331,7 @@ void PlayerEntity::serialize(
 	auto sp = w.initSpawnPoint();
 	sp.setX(spawnPoint_.x);
 	sp.setY(spawnPoint_.y);
+	w.setInventorySlot(ui_.selectedInventorySlot);
 }
 
 void PlayerEntity::deserialize(
@@ -344,6 +345,8 @@ void PlayerEntity::deserialize(
 		auto sp = r.getSpawnPoint();
 		spawnPoint_ = {sp.getX(), sp.getY()};
 	}
+
+	ui_.selectedInventorySlot = r.getInventorySlot();
 }
 
 bool PlayerEntity::askToOpenInventory(
