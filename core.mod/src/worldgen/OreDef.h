@@ -12,6 +12,7 @@ public:
 		tCoalOutcrop_(world, "core::coal-outcrop"),
 		tSulphurOutcrop_(world, "core::sulphur-outcrop"),
 		tIronOutcrop_(world, "core::iron-outcrop"),
+		tCopperOutcrop_(world, "core::copper-outcrop"),
 		tStone_(world.getTileID("core::stone")),
 		seed_(seed)
 	{}
@@ -36,6 +37,7 @@ private:
 	OutcropSet tCoalOutcrop_;
 	OutcropSet tSulphurOutcrop_;
 	OutcropSet tIronOutcrop_;
+	OutcropSet tCopperOutcrop_;
 	Swan::Tile::ID tStone_;
 
 	uint32_t seed_;

@@ -213,6 +213,10 @@ public:
 			.image = "core::items/iron-ore-chunk",
 		});
 		registerItem({
+			.name = "copper",
+			.image = "core::items/copper",
+		});
+		registerItem({
 			.name = "copper-ore-chunk",
 			.image = "core::items/copper-ore-chunk",
 		});
@@ -314,6 +318,11 @@ public:
 		registerRecipe({
 			.inputs = {{1, "core::iron-ore-chunk"}},
 			.output = {1, "core::pig-iron"},
+			.kind = "core::burning",
+		});
+		registerRecipe({
+			.inputs = {{1, "core::copper-ore-chunk"}},
+			.output = {1, "core::copper"},
 			.kind = "core::burning",
 		});
 

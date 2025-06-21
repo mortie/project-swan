@@ -21,7 +21,12 @@ void OreDef::generateArea(Area &area)
 
 			auto *set = &tCoalOutcrop_;
 			if (y > 35 && Swan::random(x * seed_ * 2) % 32 < 16) {
-				set = &tIronOutcrop_;
+				int r = Swan::random(x * seed_ * 3) % 2;
+				if (r == 0) {
+					set = &tIronOutcrop_;
+				} else {
+					set = &tCopperOutcrop_;
+				}
 			} else if (Swan::random(x * seed_) % 32 < 4) {
 				set = &tSulphurOutcrop_;
 			}
