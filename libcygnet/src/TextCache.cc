@@ -61,7 +61,7 @@ TextCache::TextCache(std::shared_ptr<FontFace> face, int size)
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxSize);
 	atlas_.sideLength = std::min(
 		maxSize / std::max(atlas_.charWidth, atlas_.charHeight),
-		size_t(32));
+		size_t(16));
 	atlas_.size = atlas_.sideLength * atlas_.sideLength;
 	glGenTextures(1, &atlas_.tex);
 	glCheck();
