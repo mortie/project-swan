@@ -87,6 +87,7 @@ void WorldPlane::regenerate()
 	chunkInitList_.clear();
 	chunks_.clear();
 	lightSystem_.~LightSystem();
+	entitySystem_.despawnAllTileEntities();
 	new (&lightSystem_) LightSystem(*this);
 }
 

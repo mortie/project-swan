@@ -238,6 +238,18 @@ EntityCollection *EntitySystemImpl::getCollectionOf(std::string_view name)
 	return it->second;
 }
 
+void EntitySystemImpl::despawnAllTileEntities()
+{
+	std::vector<TilePos> despawns;
+	for (auto &[pos, _]: tileEntities_) {
+		despawns.push_back(pos);
+	}
+
+	for (auto pos: despawns) {
+		despawnTileEntity(pos);
+	}
+}
+
 void EntitySystemImpl::serialize(proto::EntitySystem::Builder w)
 {
 	auto ctx = getContext();

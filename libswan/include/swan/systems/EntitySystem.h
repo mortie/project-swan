@@ -79,6 +79,8 @@ public:
 
 	EntityCollection *getCollectionOf(std::string_view name);
 
+	void despawnAllTileEntities();
+
 	void serialize(proto::EntitySystem::Builder w);
 	void deserialize(proto::EntitySystem::Reader r);
 
