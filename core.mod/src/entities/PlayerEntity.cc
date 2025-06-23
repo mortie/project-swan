@@ -65,7 +65,7 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 
 	// The running animation dips into the ground a bit
 	if (state_ == State::RUNNING) {
-		mat.translate({0, 4.0 / 32.0});
+		mat.translate({0, 3.5 / 32.0});
 	}
 
 	// Position

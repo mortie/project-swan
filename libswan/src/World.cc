@@ -520,7 +520,7 @@ float World::findImageYOffset(ImageAsset &image)
 		}
 	}
 
-	return y / float(TILE_SIZE);
+	return (y - 1) / float(TILE_SIZE);
 }
 
 void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos)
