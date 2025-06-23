@@ -50,6 +50,12 @@ struct BonfireTileEntity {
 	}
 }
 
+struct CrucibleTileEntity {
+	tileEntity @0 :TileEntity;
+	drawSupports @1 :Bool;
+	tepmerature @2 :Float32;
+}
+
 struct ChestTileEntity {
 	tileEntity @0 :TileEntity;
 	inventory @1 :BasicInventory;

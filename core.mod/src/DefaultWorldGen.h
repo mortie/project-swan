@@ -16,6 +16,7 @@ public:
 		tGrass_(world.getTileID("core::grass")),
 		tDirt_(world.getTileID("core::dirt")),
 		tStone_(world.getTileID("core::stone")),
+		tClay_(world.getTileID("core::clay-tile")),
 		tWater_(world.getTileID("core::water")),
 		tOil_(world.getTileID("core::oil")),
 		tAir_(world.getTileID("@::air")),
@@ -36,12 +37,13 @@ private:
 	bool isCave(Swan::TilePos pos, int grassLevel);
 	bool isLake(Swan::TilePos pos, int grassLevel, int stoneLevel);
 	bool isOil(Swan::TilePos pos, int grassLevel);
+	bool isClay(Swan::TilePos pos, int grassLevel, int stoneLevel);
 
 	Swan::Tile::ID genTile(Swan::TilePos pos, int grassLevel, int stoneLevel);
 	void initializeTile(const Swan::Context &ctx, Swan::TilePos pos);
 
 	const uint32_t seed_ = 100;
-	Swan::Tile::ID tGrass_, tDirt_, tStone_, tWater_, tOil_, tAir_;
+	Swan::Tile::ID tGrass_, tDirt_, tStone_, tClay_, tWater_, tOil_, tAir_;
 	Cygnet::RenderSprite bgCave_;
 	siv::PerlinNoise perlin_{seed_};
 

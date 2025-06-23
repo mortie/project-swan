@@ -414,6 +414,14 @@ static void hashFiles(std::string path, SHA1 &sha)
 			hashFiles(entry.path().string(), sha);
 		} else {
 			sha.update(SHA1::from_file(entry.path().string()));
+
+			// Clang gets angry if the mtime of a header is newer
+			// than the mtime of the PCH, so add the mtime to the hash
+			auto mtime = std::filesystem::last_write_time(entry.path());
+			using Sec = std::chrono::duration<int64_t>;
+			auto mtimeSec = std::chrono::duration_cast<Sec>(
+				mtime.time_since_epoch()).count();
+			sha.update(std::to_string(mtimeSec));
 		}
 	}
 }

@@ -8,6 +8,8 @@
 #include "entities/FallingTileEntity.h"
 #include "world/bonfire.h"
 #include "world/chest.h"
+#include "world/clay.h"
+#include "world/crucible.h"
 #include "world/item-fan.h"
 #include "world/ladder.h"
 #include "world/outcrop.h"
@@ -30,6 +32,7 @@ public:
 		registerSprite("entities/spider/idle");
 		registerSprite("misc/background-cave");
 		registerSprite("misc/burning-dynamite");
+		registerSprite("misc/crucible-support");
 		registerSprite("ui/selected-slot");
 		registerSprite("ui/inventory");
 
@@ -171,6 +174,8 @@ public:
 
 		registerBonfire(*this);
 		registerChest(*this);
+		registerClay(*this);
+		registerCrucible(*this);
 		registerItemFan(*this);
 		registerRopeLadder(*this);
 		registerOutcrop(*this, "coal");
@@ -200,6 +205,10 @@ public:
 		registerItem({
 			.name = "rock",
 			.image = "core::items/rock",
+		});
+		registerItem({
+			.name = "clay",
+			.image = "core::items/clay",
 		});
 		registerItem({
 			.name = "coal",
@@ -236,6 +245,10 @@ public:
 		registerItem({
 			.name = "rope",
 			.image = "core::items/rope",
+		});
+		registerItem({
+			.name = "unfired-crucible",
+			.image = "core::items/unfired-crucible",
 		});
 
 		registerFluid({
@@ -309,6 +322,11 @@ public:
 			.output = {1, "core::bonfire"},
 			.kind = "core::crafting",
 		});
+		registerRecipe({
+			.inputs = {{3, "core::clay"}},
+			.output = {1, "core::unfired-crucible"},
+			.kind = "core::crafting",
+		});
 
 		registerRecipeKind("burning");
 		registerRecipe({
@@ -324,6 +342,11 @@ public:
 		registerRecipe({
 			.inputs = {{1, "core::copper-ore-chunk"}},
 			.output = {1, "core::copper"},
+			.kind = "core::burning",
+		});
+		registerRecipe({
+			.inputs = {{1, "core::unfired-crucible"}},
+			.output = {1, "core::crucible"},
 			.kind = "core::burning",
 		});
 

@@ -64,6 +64,8 @@ public:
 		nextTickA_.push_back(std::move(cb));
 	}
 
+	void regenerate();
+
 	size_t getChunkCount() { return chunks_.size(); }
 	size_t getActiveChunkCount() { return activeChunks_.size(); }
 	size_t getChunkDataMemUsage();

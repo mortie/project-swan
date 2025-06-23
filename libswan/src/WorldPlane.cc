@@ -80,6 +80,16 @@ EntityRef WorldPlane::spawnPlayer()
 	return worldGen_->spawnPlayer(getContext());
 }
 
+void WorldPlane::regenerate()
+{
+	activeChunks_.clear();
+	tickChunks_.clear();
+	chunkInitList_.clear();
+	chunks_.clear();
+	lightSystem_.~LightSystem();
+	new (&lightSystem_) LightSystem(*this);
+}
+
 size_t WorldPlane::getChunkDataMemUsage()
 {
 	size_t size = 0;

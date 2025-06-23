@@ -14,6 +14,7 @@ void registerBonfire(Swan::Mod &mod)
 		.image = "core::tiles/bonfire",
 		.isSolid = false,
 		.lightLevel = 0.1,
+		.temperature = 1,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::bonfire",
 		.tileEntity = "core::tile::bonfire",

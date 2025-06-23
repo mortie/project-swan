@@ -92,6 +92,48 @@ bool DefaultWorldGen::isOil(Swan::TilePos pos, int grassLevel)
 		perlin_.noise2D(pos.x / 70.6, pos.y / 40.565) > 0.4;
 }
 
+bool DefaultWorldGen::isClay(Swan::TilePos pos, int grassLevel, int stoneLevel)
+{
+	if (pos.y > stoneLevel + 3) {
+		return false;
+	}
+
+	bool hasLake =
+		isLake(pos.add(-1, -1), grassLevel, stoneLevel) ||
+		isLake(pos.add(1, -1), grassLevel, stoneLevel) ||
+		isLake(pos.add(1, 0), grassLevel, stoneLevel);
+	if (hasLake && Swan::random(pos.x) % 32 < 31) {
+		return true;
+	}
+
+	uint32_t rand = Swan::random((pos.x << 5) ^ pos.y) % 16;
+	if (rand < 14) {
+		return false;
+	}
+
+	if (isLake(pos.add(0, -1), grassLevel, stoneLevel)) {
+		return true;
+	}
+
+	if (isClay(pos.add(0, -1), grassLevel, stoneLevel)) {
+		return true;
+	}
+
+	if (rand < 14) {
+		return false;
+	}
+
+	if (isClay(pos.add(-1, -1), grassLevel, stoneLevel)) {
+		return true;
+	}
+
+	if (isClay(pos.add(1, -1), grassLevel, stoneLevel)) {
+		return true;
+	}
+
+	return false;
+}
+
 Swan::Tile::ID DefaultWorldGen::genTile(
 	Swan::TilePos pos,
 	int grassLevel,
@@ -111,6 +153,10 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 
 	if (isLake(pos, grassLevel, stoneLevel)) {
 		return tWater_;
+	}
+
+	if (isClay(pos, grassLevel, stoneLevel)) {
+		return tClay_;
 	}
 
 	// Same thing as with spawnCave,

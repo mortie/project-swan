@@ -423,6 +423,12 @@ void Game::update(float dt)
 		triggerReload_ -= 1;
 	}
 
+	if (wasLiteralKeyPressed(GLFW_KEY_F6)) {
+		popupMessage_ = "Regenerating...";
+		popupMessageTimer_ = 0.5;
+		world_->currentPlane().regenerate();
+	}
+
 	renderer_.update(dt);
 	world_->update(dt);
 
