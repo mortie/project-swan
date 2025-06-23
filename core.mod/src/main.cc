@@ -155,7 +155,7 @@ public:
 			.name = "water",
 			.image = "@::invalid",
 			.isSolid = false,
-			.onSpawn = +[](const Swan::Context &ctx, Swan::TilePos pos) {
+			.onSpawn = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
 				ctx.plane.tiles().setIDWithoutUpdate(pos, Swan::World::AIR_TILE_ID);
 				ctx.plane.fluids().setInTile(pos, ctx.world.getFluid("core::water").id);
 				return true;
@@ -165,7 +165,7 @@ public:
 			.name = "oil",
 			.image = "@::invalid",
 			.isSolid = false,
-			.onSpawn = +[](const Swan::Context &ctx, Swan::TilePos pos) {
+			.onSpawn = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
 				ctx.plane.tiles().setIDWithoutUpdate(pos, Swan::World::AIR_TILE_ID);
 				ctx.plane.fluids().setInTile(pos, ctx.world.getFluid("core::oil").id);
 				return true;
@@ -194,7 +194,7 @@ public:
 			.name = "dynamite",
 			.image = "core::items/dynamite",
 			.onActivate = [](
-				const Swan::Context &ctx, Swan::ItemStack &stack,
+				Swan::Ctx &ctx, Swan::ItemStack &stack,
 				Swan::Vec2 pos, Swan::Vec2 dir)
 			{
 				stack.remove(1);

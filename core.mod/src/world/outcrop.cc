@@ -4,7 +4,7 @@
 
 namespace CoreMod {
 
-static bool onOutcropSpawn(const Swan::Context &ctx, Swan::TilePos pos)
+static bool onOutcropSpawn(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	// The default outcrop stands on the tile below it,
 	// so if that's valid, we're good
@@ -30,7 +30,7 @@ static bool onOutcropSpawn(const Swan::Context &ctx, Swan::TilePos pos)
 	return false;
 }
 
-static void onOutcropUpdate(const Swan::Context &ctx, Swan::TilePos pos)
+static void onOutcropUpdate(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	auto &tile = ctx.plane.tiles().get(pos);
 	bool isSupported;

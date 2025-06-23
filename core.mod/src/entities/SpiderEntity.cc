@@ -11,25 +11,25 @@ static constexpr Swan::BasicPhysicsBody::Props PROPS = {
 static constexpr float MOVE_FORCE = 50 * PROPS.mass;
 static constexpr float JUMP_VEL = 9;
 
-SpiderEntity::SpiderEntity(const Swan::Context &ctx):
+SpiderEntity::SpiderEntity(Swan::Ctx &ctx):
 	idleAnimation_(ctx, "core::entities/spider/idle", 0.8),
 	physicsBody_(PROPS)
 {}
 
 SpiderEntity::SpiderEntity(
-	const Swan::Context &ctx, Swan::Vec2 pos):
+	Swan::Ctx &ctx, Swan::Vec2 pos):
 	SpiderEntity(ctx)
 {
 	physicsBody_.body.pos = pos;
 }
 
-void SpiderEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
+void SpiderEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
 	idleAnimation_.draw(rnd, Cygnet::Mat3gf{}.translate(
 		physicsBody_.body.pos - Swan::Vec2{0, 0.35}));
 }
 
-void SpiderEntity::update(const Swan::Context &ctx, float dt)
+void SpiderEntity::update(Swan::Ctx &ctx, float dt)
 {
 	idleAnimation_.tick(dt);
 
@@ -66,7 +66,7 @@ void SpiderEntity::update(const Swan::Context &ctx, float dt)
 	physicsBody_.update(ctx, dt);
 }
 
-void SpiderEntity::tick(const Swan::Context &ctx, float dt)
+void SpiderEntity::tick(Swan::Ctx &ctx, float dt)
 {
 	if (!target_) {
 		target_ = ctx.world.player_;
@@ -78,13 +78,13 @@ void SpiderEntity::tick(const Swan::Context &ctx, float dt)
 }
 
 void SpiderEntity::serialize(
-	const Swan::Context &ctx, Proto::Builder w)
+	Swan::Ctx &ctx, Proto::Builder w)
 {
 	physicsBody_.serialize(w.initBody());
 }
 
 void SpiderEntity::deserialize(
-	const Swan::Context &ctx, Proto::Reader r)
+	Swan::Ctx &ctx, Proto::Reader r)
 {
 	physicsBody_.deserialize(r.getBody());
 }

@@ -73,8 +73,8 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 	void collideWith(BodyTrait::Body &otehr);
 	void collideAll(WorldPlane &plane);
 
-	void update(const Context &ctx, float dt);
-	void updateNoclip(const Context &ctx, float dt);
+	void update(Ctx &ctx, float dt);
+	void updateNoclip(Ctx &ctx, float dt);
 
 	void serialize(proto::BasicPhysicsBody::Builder w);
 	void deserialize(proto::BasicPhysicsBody::Reader r);

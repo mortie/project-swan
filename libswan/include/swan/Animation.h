@@ -16,7 +16,7 @@ public:
 	{}
 
 	Animation(
-		const Context &ctx, std::string_view name,
+		Ctx &ctx, std::string_view name,
 		float interval, int loopFrom = 0, Cygnet::Mat3gf mat = {}):
 		Animation(ctx.world.getSprite(name), interval, loopFrom, mat)
 	{}

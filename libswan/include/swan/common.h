@@ -59,5 +59,6 @@ struct Context {
 	World &world;
 	WorldPlane &plane;
 };
+using Ctx = const Context;
 
 }

@@ -24,7 +24,7 @@ static int getPlayerX(const siv::PerlinNoise &perlin)
 }
 
 void DefaultWorldGen::drawBackground(
-	const Swan::Context &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos)
+	Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos)
 {
 	float opacity = 1;
 	float y = pos.y;
@@ -238,7 +238,7 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 	}
 }
 
-Swan::EntityRef DefaultWorldGen::spawnPlayer(const Swan::Context &ctx)
+Swan::EntityRef DefaultWorldGen::spawnPlayer(Swan::Ctx &ctx)
 {
 	int x = getPlayerX(perlin_);
 

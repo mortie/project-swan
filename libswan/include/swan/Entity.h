@@ -18,17 +18,17 @@ public:
 
 	Entity &operator=(Entity &&) = default;
 
-	virtual void draw(const Context &ctx, Cygnet::Renderer &rnd)
+	virtual void draw(Ctx &ctx, Cygnet::Renderer &rnd)
 	{}
-	virtual void update(const Context &ctx, float dt)
+	virtual void update(Ctx &ctx, float dt)
 	{}
-	virtual void tick(const Context &ctx, float dt)
+	virtual void tick(Ctx &ctx, float dt)
 	{}
-	virtual void tick2(const Context &ctx, float dt)
+	virtual void tick2(Ctx &ctx, float dt)
 	{}
-	virtual void onSpawn(const Context &ctx)
+	virtual void onSpawn(Ctx &ctx)
 	{}
-	virtual void onDespawn(const Context &ctx)
+	virtual void onDespawn(Ctx &ctx)
 	{}
 
 	template<typename T>

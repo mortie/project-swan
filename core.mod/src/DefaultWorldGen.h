@@ -28,10 +28,10 @@ public:
 	{}
 
 	void drawBackground(
-		const Swan::Context &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos) override;
+		Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos) override;
 	Cygnet::Color backgroundColor(Swan::Vec2 pos) override;
 	void genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) override;
-	Swan::EntityRef spawnPlayer(const Swan::Context &ctx) override;
+	Swan::EntityRef spawnPlayer(Swan::Ctx &ctx) override;
 
 private:
 	bool isCave(Swan::TilePos pos, int grassLevel);
@@ -40,7 +40,7 @@ private:
 	bool isClay(Swan::TilePos pos, int grassLevel, int stoneLevel);
 
 	Swan::Tile::ID genTile(Swan::TilePos pos, int grassLevel, int stoneLevel);
-	void initializeTile(const Swan::Context &ctx, Swan::TilePos pos);
+	void initializeTile(Swan::Ctx &ctx, Swan::TilePos pos);
 
 	const uint32_t seed_ = 100;
 	Swan::Tile::ID tGrass_, tDirt_, tStone_, tClay_, tWater_, tOil_, tAir_;

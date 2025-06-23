@@ -11,7 +11,7 @@ class BonfireTileEntity final: public Swan::Entity,
 public:
 	using Proto = proto::BonfireTileEntity;
 
-	BonfireTileEntity(const Swan::Context &)
+	BonfireTileEntity(Swan::Ctx &)
 	{}
 
 	TileEntity &get(TileEntityTrait::Tag) override
@@ -19,10 +19,10 @@ public:
 		return tileEntity_;
 	}
 
-	void tick(const Swan::Context &ctx, float dt) override;
+	void tick(Swan::Ctx &ctx, float dt) override;
 
-	void serialize(const Swan::Context &ctx, Proto::Builder w);
-	void deserialize(const Swan::Context &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, Proto::Builder w);
+	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
 
 private:
 	struct OngoingBurn {

@@ -9,19 +9,19 @@ static constexpr Swan::BasicPhysicsBody::Props PROPS = {
 	.mass = 80,
 };
 
-FallingTileEntity::FallingTileEntity(const Swan::Context &ctx):
+FallingTileEntity::FallingTileEntity(Swan::Ctx &ctx):
 	physicsBody_(PROPS)
 {}
 
 FallingTileEntity::FallingTileEntity(
-	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Tile::ID tile):
+	Swan::Ctx &ctx, Swan::Vec2 pos, Swan::Tile::ID tile):
 	FallingTileEntity(ctx)
 {
 	physicsBody_.body.pos = pos;
 	tile_ = tile;
 }
 
-void FallingTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
+void FallingTileEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
 	rnd.drawTile({
 		.transform = Cygnet::Mat3gf{}.translate(physicsBody_.body.pos),
@@ -29,7 +29,7 @@ void FallingTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	});
 }
 
-void FallingTileEntity::update(const Swan::Context &ctx, float dt)
+void FallingTileEntity::update(Swan::Ctx &ctx, float dt)
 {
 	physicsBody_.collideAll(ctx.plane);
 
@@ -55,14 +55,14 @@ void FallingTileEntity::update(const Swan::Context &ctx, float dt)
 }
 
 void FallingTileEntity::serialize(
-	const Swan::Context &ctx, Proto::Builder w)
+	Swan::Ctx &ctx, Proto::Builder w)
 {
 	physicsBody_.serialize(w.initBody());
 	w.setTile(ctx.world.getTileByID(tile_).name);
 }
 
 void FallingTileEntity::deserialize(
-	const Swan::Context &ctx, Proto::Reader r)
+	Swan::Ctx &ctx, Proto::Reader r)
 {
 	physicsBody_.deserialize(r.getBody());
 	tile_ = ctx.world.getTileID(r.getTile().cStr());

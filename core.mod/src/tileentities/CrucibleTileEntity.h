@@ -12,7 +12,7 @@ class CrucibleTileEntity final: public Swan::Entity,
 public:
 	using Proto = proto::CrucibleTileEntity;
 
-	CrucibleTileEntity(const Swan::Context &ctx):
+	CrucibleTileEntity(Swan::Ctx &ctx):
 		sprite_(ctx.world.getSprite("core::misc/crucible-support"))
 	{}
 
@@ -21,15 +21,15 @@ public:
 		return tileEntity_;
 	}
 
-	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
-	void tick(const Swan::Context &ctx, float dt) override;
+	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
+	void tick(Swan::Ctx &ctx, float dt) override;
 
-	void serialize(const Swan::Context &ctx, Proto::Builder w);
-	void deserialize(const Swan::Context &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, Proto::Builder w);
+	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
 
-	void onDespawn(const Swan::Context &ctx) override;
+	void onDespawn(Swan::Ctx &ctx) override;
 
-	void activate(const Swan::Context &ctx, Swan::ItemStack &stack);
+	void activate(Swan::Ctx &ctx, Swan::ItemStack &stack);
 
 	bool drawSupports_ = false;
 	float temperature_ = 0;

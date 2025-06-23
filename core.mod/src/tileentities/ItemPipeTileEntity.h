@@ -12,7 +12,7 @@ class ItemPipeTileEntity final: public Swan::Entity,
 public:
 	using Proto = proto::ItemPipeTileEntity;
 
-	ItemPipeTileEntity(const Swan::Context &ctx)
+	ItemPipeTileEntity(Swan::Ctx &ctx)
 	{}
 
 	TileEntity &get(TileEntityTrait::Tag) override
@@ -25,14 +25,14 @@ public:
 		return inbox_;
 	}
 
-	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
-	void tick(const Swan::Context &ctx, float dt) override;
-	void tick2(const Swan::Context &ctx, float dt) override;
+	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
+	void tick(Swan::Ctx &ctx, float dt) override;
+	void tick2(Swan::Ctx &ctx, float dt) override;
 
-	void onDespawn(const Swan::Context &ctx) override;
+	void onDespawn(Swan::Ctx &ctx) override;
 
-	void serialize(const Swan::Context &ctx, Proto::Builder w);
-	void deserialize(const Swan::Context &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, Proto::Builder w);
+	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
 
 private:
 	struct MovingItem {
@@ -71,7 +71,7 @@ private:
 		std::optional<InboxItem> content_;
 	};
 
-	void moveItemOut(const Swan::Context &ctx, size_t index);
+	void moveItemOut(Swan::Ctx &ctx, size_t index);
 
 	TileEntity tileEntity_;
 	Inbox inbox_;

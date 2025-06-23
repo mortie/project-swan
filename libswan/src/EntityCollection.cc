@@ -10,7 +10,7 @@ void EntityRef::serialize(proto::EntityRef::Builder w)
 	w.setId(id_);
 }
 
-void EntityRef::deserialize(const Context &ctx, proto::EntityRef::Reader r)
+void EntityRef::deserialize(Ctx &ctx, proto::EntityRef::Reader r)
 {
 	coll_ = ctx.plane.entities().getCollectionOf(r.getCollection().cStr());
 	id_ = r.getId();

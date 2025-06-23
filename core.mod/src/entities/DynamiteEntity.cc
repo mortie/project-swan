@@ -14,7 +14,7 @@ static constexpr Swan::BasicPhysicsBody::Props PROPS = {
 };
 static constexpr float FUSE_TIME = 5;
 
-static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
+static void explode(Swan::Ctx &ctx, Swan::Vec2 pos)
 {
 	constexpr float R1 = 2;
 	constexpr float R2 = 3;
@@ -71,21 +71,21 @@ static void explode(const Swan::Context &ctx, Swan::Vec2 pos)
 	}
 }
 
-DynamiteEntity::DynamiteEntity(const Swan::Context &ctx):
+DynamiteEntity::DynamiteEntity(Swan::Ctx &ctx):
 	animation_(ctx, "core::misc/burning-dynamite", 0.1),
 	fuse_(FUSE_TIME),
 	physicsBody_(PROPS)
 {}
 
 DynamiteEntity::DynamiteEntity(
-	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Vec2 vel):
+	Swan::Ctx &ctx, Swan::Vec2 pos, Swan::Vec2 vel):
 	DynamiteEntity(ctx)
 {
 	physicsBody_.body.pos = pos;
 	physicsBody_.vel = vel;
 }
 
-void DynamiteEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
+void DynamiteEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
 	animation_.draw(rnd, Cygnet::Mat3gf{}
 		.scale({0.75, 0.75})
@@ -93,7 +93,7 @@ void DynamiteEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 		.translate({0, -0.25}));
 }
 
-void DynamiteEntity::update(const Swan::Context &ctx, float dt)
+void DynamiteEntity::update(Swan::Ctx &ctx, float dt)
 {
 	physicsBody_.standardForces();
 	physicsBody_.update(ctx, dt);
@@ -109,7 +109,7 @@ void DynamiteEntity::update(const Swan::Context &ctx, float dt)
 	}
 }
 
-void DynamiteEntity::tick(const Swan::Context &ctx, float dt)
+void DynamiteEntity::tick(Swan::Ctx &ctx, float dt)
 {
 	ctx.game.spawnParticle({
 		.pos = physicsBody_.body.midRight().add(-0.13, -0.15),
@@ -122,14 +122,14 @@ void DynamiteEntity::tick(const Swan::Context &ctx, float dt)
 }
 
 void DynamiteEntity::serialize(
-	const Swan::Context &ctx, Proto::Builder w)
+	Swan::Ctx &ctx, Proto::Builder w)
 {
 	physicsBody_.serialize(w.initBody());
 	w.setFuse(fuse_);
 }
 
 void DynamiteEntity::deserialize(
-	const Swan::Context &ctx, Proto::Reader r)
+	Swan::Ctx &ctx, Proto::Reader r)
 {
 	physicsBody_.deserialize(r.getBody());
 	fuse_ = r.getFuse();

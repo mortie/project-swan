@@ -5,7 +5,7 @@
 
 namespace CoreMod {
 
-void breakTreeLeavesIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
+void breakTreeLeavesIfFloating(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	/*
 	 * This algorithm implements a kind of search algorithm,

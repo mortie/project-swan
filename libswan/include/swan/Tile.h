@@ -47,10 +47,10 @@ struct Tile {
 		std::optional<std::string> droppedItem = std::nullopt;
 		std::optional<std::string> tileEntity = std::nullopt;
 
-		bool (*onSpawn)(const Context &ctx, TilePos pos) = nullptr;
-		void (*onBreak)(const Context &ctx, TilePos pos) = nullptr;
-		void (*onTileUpdate)(const Context &ctx, TilePos pos) = nullptr;
-		void (*onActivate)(const Context &ctx, TilePos pos, ActivateMeta meta) = nullptr;
+		bool (*onSpawn)(Ctx &ctx, TilePos pos) = nullptr;
+		void (*onBreak)(Ctx &ctx, TilePos pos) = nullptr;
+		void (*onTileUpdate)(Ctx &ctx, TilePos pos) = nullptr;
+		void (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta) = nullptr;
 
 		std::shared_ptr<Traits> traits = nullptr;
 	};
@@ -72,10 +72,10 @@ struct Tile {
 	Item *droppedItem = nullptr;
 	std::optional<std::string> tileEntity;
 
-	bool (*onSpawn)(const Context &ctx, TilePos pos);
-	void (*onBreak)(const Context &ctx, TilePos pos);
-	void (*onTileUpdate)(const Context &ctx, TilePos pos);
-	void (*onActivate)(const Context &ctx, TilePos pos, ActivateMeta meta);
+	bool (*onSpawn)(Ctx &ctx, TilePos pos);
+	void (*onBreak)(Ctx &ctx, TilePos pos);
+	void (*onTileUpdate)(Ctx &ctx, TilePos pos);
+	void (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta);
 
 	Cygnet::ByteColor particles[8][8];
 

@@ -49,7 +49,7 @@ Cygnet::Color linearGradient(
 }
 
 void inventory(
-	const Context &ctx, Cygnet::Renderer &rnd, Vec2i size, Cygnet::RenderSprite sprite,
+	Ctx &ctx, Cygnet::Renderer &rnd, Vec2i size, Cygnet::RenderSprite sprite,
 	std::span<const ItemStack> content, int hovered)
 {
 	rnd.drawUIGrid({
@@ -170,7 +170,7 @@ int inventoryCellIndex(Vec2 pos, Cygnet::Renderer::Rect rect, int offset)
 	return cellPos->y * (size.x) + cellPos->x + offset;
 }
 
-void tooltip(const Context &ctx, Cygnet::Renderer &rnd, std::string_view text)
+void tooltip(Ctx &ctx, Cygnet::Renderer &rnd, std::string_view text)
 {
 	float size = 0.7;
 

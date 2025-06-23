@@ -60,7 +60,7 @@ Swan::ItemStack CraftingInventory::take(int slot)
 }
 
 void CraftingInventory::recompute(
-	const Swan::Context &ctx, std::span<const Swan::ItemStack> items)
+	Swan::Ctx &ctx, std::span<const Swan::ItemStack> items)
 {
 	for (auto &[k, v]: itemCounts_) {
 		v = 0;

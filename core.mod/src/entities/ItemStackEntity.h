@@ -11,9 +11,9 @@ class ItemStackEntity final: public Swan::Entity,
 public:
 	using Proto = proto::ItemStackEntity;
 
-	ItemStackEntity(const Swan::Context &ctx);
-	ItemStackEntity(const Swan::Context &ctx, Swan::Vec2 pos, Swan::Item *item);
-	ItemStackEntity(const Swan::Context &ctx, Swan::Vec2 pos, Swan::Vec2 vel, Swan::Item *item);
+	ItemStackEntity(Swan::Ctx &ctx);
+	ItemStackEntity(Swan::Ctx &ctx, Swan::Vec2 pos, Swan::Item *item);
+	ItemStackEntity(Swan::Ctx &ctx, Swan::Vec2 pos, Swan::Vec2 vel, Swan::Item *item);
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -25,12 +25,12 @@ public:
 		return physicsBody_;
 	}
 
-	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
-	void update(const Swan::Context &ctx, float dt) override;
-	void tick(const Swan::Context &ctx, float dt) override;
+	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
+	void update(Swan::Ctx &ctx, float dt) override;
+	void tick(Swan::Ctx &ctx, float dt) override;
 
-	void serialize(const Swan::Context &ctx, Proto::Builder w);
-	void deserialize(const Swan::Context &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, Proto::Builder w);
+	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
 
 	Swan::Item *item()
 	{

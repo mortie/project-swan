@@ -11,13 +11,13 @@ static constexpr Swan::BasicPhysicsBody::Props PROPS = {
 };
 static constexpr float DESPAWN_TIME = 5 * 60;
 
-ItemStackEntity::ItemStackEntity(const Swan::Context &ctx):
+ItemStackEntity::ItemStackEntity(Swan::Ctx &ctx):
 	item_(&ctx.world.invalidItem()),
 	physicsBody_(PROPS)
 {}
 
 ItemStackEntity::ItemStackEntity(
-	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Item *item):
+	Swan::Ctx &ctx, Swan::Vec2 pos, Swan::Item *item):
 	ItemStackEntity(ctx)
 {
 	static std::uniform_real_distribution vx(-2.3f, 2.3f);
@@ -29,7 +29,7 @@ ItemStackEntity::ItemStackEntity(
 }
 
 ItemStackEntity::ItemStackEntity(
-	const Swan::Context &ctx, Swan::Vec2 pos, Swan::Vec2 vel, Swan::Item *item):
+	Swan::Ctx &ctx, Swan::Vec2 pos, Swan::Vec2 vel, Swan::Item *item):
 	ItemStackEntity(ctx)
 {
 	physicsBody_.body.pos = pos;
@@ -37,7 +37,7 @@ ItemStackEntity::ItemStackEntity(
 	item_ = item;
 }
 
-void ItemStackEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
+void ItemStackEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
 	rnd.drawTile({
 		Cygnet::Mat3gf{}
@@ -48,13 +48,13 @@ void ItemStackEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	});
 }
 
-void ItemStackEntity::update(const Swan::Context &ctx, float dt)
+void ItemStackEntity::update(Swan::Ctx &ctx, float dt)
 {
 	physicsBody_.standardForces();
 	physicsBody_.update(ctx, dt);
 }
 
-void ItemStackEntity::tick(const Swan::Context &ctx, float dt)
+void ItemStackEntity::tick(Swan::Ctx &ctx, float dt)
 {
 	lifetime_ += dt;
 	if (lifetime_ >= DESPAWN_TIME) {
@@ -63,7 +63,7 @@ void ItemStackEntity::tick(const Swan::Context &ctx, float dt)
 }
 
 void ItemStackEntity::serialize(
-	const Swan::Context &ctx, Proto::Builder w)
+	Swan::Ctx &ctx, Proto::Builder w)
 {
 	physicsBody_.serialize(w.initBody());
 	w.setLifetime(lifetime_);
@@ -71,7 +71,7 @@ void ItemStackEntity::serialize(
 }
 
 void ItemStackEntity::deserialize(
-	const Swan::Context &ctx, Proto::Reader r)
+	Swan::Ctx &ctx, Proto::Reader r)
 {
 	physicsBody_.deserialize(r.getBody());
 	lifetime_ = r.getLifetime();

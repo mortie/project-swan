@@ -6,7 +6,7 @@
 
 namespace CoreMod {
 
-void ItemPipeTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
+void ItemPipeTileEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
 	Swan::Vec2 center = tileEntity_.pos.as<float>().add(0.5, 0.5);
 
@@ -33,7 +33,7 @@ void ItemPipeTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	}
 }
 
-void ItemPipeTileEntity::tick(const Swan::Context &ctx, float dt)
+void ItemPipeTileEntity::tick(Swan::Ctx &ctx, float dt)
 {
 	for (size_t i = 0; i < content_.size();) {
 		auto &item = content_[i];
@@ -46,7 +46,7 @@ void ItemPipeTileEntity::tick(const Swan::Context &ctx, float dt)
 	}
 }
 
-void ItemPipeTileEntity::tick2(const Swan::Context &ctx, float dt)
+void ItemPipeTileEntity::tick2(Swan::Ctx &ctx, float dt)
 {
 	if (inbox_.content_ && content_.size() < 10) {
 		auto input = inbox_.content_.value();
@@ -85,7 +85,7 @@ void ItemPipeTileEntity::tick2(const Swan::Context &ctx, float dt)
 	}
 }
 
-void ItemPipeTileEntity::moveItemOut(const Swan::Context &ctx, size_t index)
+void ItemPipeTileEntity::moveItemOut(Swan::Ctx &ctx, size_t index)
 {
 	auto item = content_[index];
 	content_[index] = content_.back();
@@ -116,7 +116,7 @@ void ItemPipeTileEntity::moveItemOut(const Swan::Context &ctx, size_t index)
 	}
 }
 
-void ItemPipeTileEntity::onDespawn(const Swan::Context &ctx)
+void ItemPipeTileEntity::onDespawn(Swan::Ctx &ctx)
 {
 	auto pos = tileEntity_.pos.as<float>().add(0.5, 0.5);
 	for (auto &item: content_) {
@@ -130,7 +130,7 @@ void ItemPipeTileEntity::onDespawn(const Swan::Context &ctx)
 }
 
 void ItemPipeTileEntity::serialize(
-	const Swan::Context &ctx, Proto::Builder w)
+	Swan::Ctx &ctx, Proto::Builder w)
 {
 	tileEntity_.serialize(w.initTileEntity());
 
@@ -150,7 +150,7 @@ void ItemPipeTileEntity::serialize(
 }
 
 void ItemPipeTileEntity::deserialize(
-	const Swan::Context &ctx, Proto::Reader r)
+	Swan::Ctx &ctx, Proto::Reader r)
 {
 	tileEntity_.deserialize(r.getTileEntity());
 

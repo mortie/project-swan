@@ -5,14 +5,14 @@
 
 namespace CoreMod {
 
-static void closeCallback(const Swan::Context &ctx, Swan::EntityRef ref)
+static void closeCallback(Swan::Ctx &ctx, Swan::EntityRef ref)
 {
 	auto pos = ref->trait<Swan::TileEntityTrait>()->pos;
 	ctx.game.playSound(ctx.world.getSound("core::sounds/misc/lock-close"), pos);
 	ctx.plane.tiles().set(pos, "core::chest");
 }
 
-static void openChest(const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
+static void openChest(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
 {
 	auto *player = dynamic_cast<PlayerEntity *>(meta.activator.get());
 	if (!player) {
@@ -32,7 +32,7 @@ static void openChest(const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile::A
 	ctx.plane.tiles().set(pos, "core::chest::open");
 }
 
-static void closeChest(const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
+static void closeChest(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
 {
 	auto *player = dynamic_cast<PlayerEntity *>(meta.activator.get());
 	if (!player) {

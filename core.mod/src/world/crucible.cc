@@ -5,7 +5,7 @@
 
 namespace CoreMod {
 
-static bool isSupported(const Swan::Context &ctx, Swan::TilePos pos)
+static bool isSupported(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	auto &below = ctx.plane.tiles().get(pos.add(0, 1));
 	if (below.isSupportV) {
@@ -36,7 +36,7 @@ void registerCrucible(Swan::Mod &mod)
 		.droppedItem = "core::crucible",
 		.tileEntity = "core::tile::crucible",
 		.onSpawn = isSupported,
-		.onTileUpdate = +[](const Swan::Context &ctx, Swan::TilePos pos) {
+		.onTileUpdate = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
 			if (!isSupported(ctx, pos)) {
 				breakTileAndDropItem(ctx, pos);
 				return;
@@ -49,7 +49,7 @@ void registerCrucible(Swan::Mod &mod)
 				ent->temperature_ = below.temperature;
 			}
 		},
-		.onActivate = +[](const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta) {
+		.onActivate = +[](Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta) {
 			auto ent = ctx.plane.entities().getTileEntity(pos).as<CrucibleTileEntity>();
 			if (ent) {
 				ent->activate(ctx, meta.stack);

@@ -27,7 +27,7 @@ public:
 		return stack;
 	}
 
-	void recompute(const Swan::Context &ctx, std::span<const Swan::ItemStack> items);
+	void recompute(Swan::Ctx &ctx, std::span<const Swan::ItemStack> items);
 
 private:
 	std::vector<Swan::ItemStack> content_;

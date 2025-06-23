@@ -12,7 +12,7 @@ class ChestTileEntity final: public Swan::Entity,
 public:
 	using Proto = proto::ChestTileEntity;
 
-	ChestTileEntity(const Swan::Context &ctx)
+	ChestTileEntity(Swan::Ctx &ctx)
 	{}
 
 	TileEntity &get(TileEntityTrait::Tag) override
@@ -25,10 +25,10 @@ public:
 		return inventory_;
 	}
 
-	void serialize(const Swan::Context &ctx, Proto::Builder w);
-	void deserialize(const Swan::Context &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, Proto::Builder w);
+	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
 
-	void onDespawn(const Swan::Context &ctx) override;
+	void onDespawn(Swan::Ctx &ctx) override;
 
 private:
 	TileEntity tileEntity_{

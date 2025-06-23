@@ -22,7 +22,7 @@ struct Item {
 		float lightLevel = 0;
 
 		void (*onActivate)(
-			const Context &ctx, ItemStack &stack, Vec2 pos, Vec2 dir) = nullptr;
+			Ctx &ctx, ItemStack &stack, Vec2 pos, Vec2 dir) = nullptr;
 	};
 
 	Tile::ID id;
@@ -37,7 +37,7 @@ struct Item {
 	float yOffset = 0;
 
 	void (*onActivate)(
-		const Context &ctx, ItemStack &stack, Vec2 pos, Vec2 dir);
+		Ctx &ctx, ItemStack &stack, Vec2 pos, Vec2 dir);
 
 	Item() = default;
 	Item(Tile::ID id, std::string name, const Builder &builder):

@@ -70,7 +70,7 @@ void Chunk::decompress()
 	compressedSize_ = -1;
 }
 
-void Chunk::draw(const Context &ctx, Cygnet::Renderer &rnd)
+void Chunk::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 {
 	if (isCompressed()) {
 		return;

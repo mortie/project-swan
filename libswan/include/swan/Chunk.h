@@ -134,7 +134,7 @@ public:
 		}
 	}
 
-	void draw(const Context &ctx, Cygnet::Renderer &rnd);
+	void draw(Ctx &ctx, Cygnet::Renderer &rnd);
 	TickAction tick(float dt);
 
 	bool isActive() const

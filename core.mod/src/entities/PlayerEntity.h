@@ -12,10 +12,10 @@ class PlayerEntity final: public Swan::Entity,
 public:
 	using Proto = proto::PlayerEntity;
 
-	using CloseInventoryCallback = void(const Swan::Context &, Swan::EntityRef);
+	using CloseInventoryCallback = void(Swan::Ctx &, Swan::EntityRef);
 
-	PlayerEntity(const Swan::Context &ctx);
-	PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos);
+	PlayerEntity(Swan::Ctx &ctx);
+	PlayerEntity(Swan::Ctx &ctx, Swan::Vec2 pos);
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -32,19 +32,19 @@ public:
 		return inventory_;
 	}
 
-	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
-	void update(const Swan::Context &ctx, float dt) override;
-	void tick(const Swan::Context &ctx, float dt) override;
+	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
+	void update(Swan::Ctx &ctx, float dt) override;
+	void tick(Swan::Ctx &ctx, float dt) override;
 
-	void serialize(const Swan::Context &ctx, Proto::Builder w);
-	void deserialize(const Swan::Context &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, Proto::Builder w);
+	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
 
 	bool askToOpenInventory(Swan::EntityRef ent, CloseInventoryCallback cb);
-	void askToCloseInventory(const Swan::Context &ctx, Swan::EntityRef ent);
+	void askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent);
 
 private:
 	struct Sounds {
-		Sounds(const Swan::Context &ctx):
+		Sounds(Swan::Ctx &ctx):
 			snap(ctx.world.getSound("core::sounds/misc/snap")),
 			splash(ctx.world.getSound("core::sounds/misc/splash")),
 			shortSplash(ctx.world.getSound("core::sounds/misc/splash-short")),
@@ -64,7 +64,7 @@ private:
 	};
 
 	struct Animations {
-		Animations(const Swan::Context &ctx):
+		Animations(Swan::Ctx &ctx):
 			idle(ctx, "core::entities/player/idle", 0.2),
 			running(ctx, "core::entities/player/running", 0),
 			falling(ctx, "core::entities/player/falling", 0.1),
@@ -108,14 +108,14 @@ private:
 		LANDING,
 	};
 
-	void onRightClick(const Swan::Context &ctx);
-	void onLeftClick(const Swan::Context &ctx);
-	void dropItem(const Swan::Context &ctx);
+	void onRightClick(Swan::Ctx &ctx);
+	void onLeftClick(Swan::Ctx &ctx);
+	void dropItem(Swan::Ctx &ctx);
 
-	void handlePhysics(const Swan::Context &ctx, float dt);
-	void handleInventoryClick(const Swan::Context &ctx);
-	void handleInventorySelection(const Swan::Context &ctx);
-	void handleInventoryHover(const Swan::Context &ctx);
+	void handlePhysics(Swan::Ctx &ctx, float dt);
+	void handleInventoryClick(Swan::Ctx &ctx);
+	void handleInventorySelection(Swan::Ctx &ctx);
+	void handleInventoryHover(Swan::Ctx &ctx);
 
 	State state_ = State::IDLE;
 	Animations animations_;

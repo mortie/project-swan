@@ -8,19 +8,19 @@
 namespace CoreMod {
 
 inline void dropItem(
-	const Swan::Context &ctx, Swan::TilePos pos, Swan::Item &item)
+	Swan::Ctx &ctx, Swan::TilePos pos, Swan::Item &item)
 {
 	ctx.plane.entities().spawn<ItemStackEntity>(
 		(Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, &item);
 }
 
 inline void dropItem(
-	const Swan::Context &ctx, Swan::TilePos pos, const std::string &item)
+	Swan::Ctx &ctx, Swan::TilePos pos, const std::string &item)
 {
 	dropItem(ctx, pos, ctx.world.getItem(item));
 }
 
-inline void breakTileAndDropItem(const Swan::Context &ctx, Swan::TilePos pos)
+inline void breakTileAndDropItem(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	auto &droppedItem = ctx.plane.tiles().get(pos).droppedItem;
 
@@ -31,14 +31,14 @@ inline void breakTileAndDropItem(const Swan::Context &ctx, Swan::TilePos pos)
 	ctx.plane.breakTile(pos);
 }
 
-inline bool denyIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
+inline bool denyIfFloating(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	auto below = pos + Swan::TilePos{0, 1};
 
 	return ctx.plane.tiles().get(below).isSupportV;
 }
 
-inline void breakIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
+inline void breakIfFloating(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	auto below = pos + Swan::TilePos{0, 1};
 
@@ -47,7 +47,7 @@ inline void breakIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 	}
 }
 
-inline void fallIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
+inline void fallIfFloating(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	auto below = pos + Swan::TilePos{0, 1};
 
@@ -60,7 +60,7 @@ inline void fallIfFloating(const Swan::Context &ctx, Swan::TilePos pos)
 }
 
 template<Swan::FixedString NAME, int MAX = 3, int NUM = 1, int DEN = 4>
-void dropRandomItemCount(const Swan::Context &ctx, Swan::TilePos pos)
+void dropRandomItemCount(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	for (int i = 0; i < MAX; ++i) {
 		if (Swan::randfloat() > (float(NUM) / float(DEN))) {

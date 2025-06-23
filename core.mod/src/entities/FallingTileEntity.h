@@ -11,8 +11,8 @@ class FallingTileEntity final: public Swan::Entity,
 public:
 	using Proto = proto::FallingTileEntity;
 
-	FallingTileEntity(const Swan::Context &ctx);
-	FallingTileEntity(const Swan::Context &ctx, Swan::Vec2 pos, Swan::Tile::ID tile);
+	FallingTileEntity(Swan::Ctx &ctx);
+	FallingTileEntity(Swan::Ctx &ctx, Swan::Vec2 pos, Swan::Tile::ID tile);
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -24,11 +24,11 @@ public:
 		return physicsBody_;
 	}
 
-	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
-	void update(const Swan::Context &ctx, float dt) override;
+	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
+	void update(Swan::Ctx &ctx, float dt) override;
 
-	void serialize(const Swan::Context &ctx, Proto::Builder w);
-	void deserialize(const Swan::Context &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, Proto::Builder w);
+	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
 
 private:
 	Swan::Tile::ID tile_ = Swan::World::INVALID_TILE_ID;

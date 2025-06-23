@@ -40,10 +40,10 @@ public:
 	{}
 
 	template<typename ... Args>
-	EntityRef spawn(const Context &ctx, Args && ... args);
+	EntityRef spawn(Ctx &ctx, Args && ... args);
 
-	EntityRef spawn(const Context &ctx) override;
-	EntityRef spawn(const Context &ctx, capnp::Data::Reader data) override;
+	EntityRef spawn(Ctx &ctx) override;
+	EntityRef spawn(Ctx &ctx, capnp::Data::Reader data) override;
 
 	size_t size() override
 	{
@@ -63,16 +63,16 @@ public:
 		return typeid(Ent);
 	}
 
-	void update(const Context &ctx, float dt) override;
-	void tick(const Context &ctx, float dt) override;
-	void tick2(const Context &ctx, float dt) override;
-	void draw(const Context &ctx, Cygnet::Renderer &rnd) override;
-	void erase(const Context &ctx, uint64_t id) override;
+	void update(Ctx &ctx, float dt) override;
+	void tick(Ctx &ctx, float dt) override;
+	void tick2(Ctx &ctx, float dt) override;
+	void draw(Ctx &ctx, Cygnet::Renderer &rnd) override;
+	void erase(Ctx &ctx, uint64_t id) override;
 
 	void serialize(
-		const Context &ctx, proto::EntitySystem::Collection::Builder w) override;
+		Ctx &ctx, proto::EntitySystem::Collection::Builder w) override;
 	void deserialize(
-		const Context &ctx, proto::EntitySystem::Collection::Reader r) override;
+		Ctx &ctx, proto::EntitySystem::Collection::Reader r) override;
 
 	const std::string name_;
 	uint64_t nextId_ = 0;
@@ -147,7 +147,7 @@ inline bool EntityRef::exists()
  */
 
 template<typename Ent, typename ... Args>
-inline EntityRef EntityCollection::spawn(const Context &ctx, Args &&...args)
+inline EntityRef EntityCollection::spawn(Ctx &ctx, Args &&...args)
 {
 	auto *impl = (EntityCollectionImpl<Ent> *)this;
 
@@ -165,7 +165,7 @@ inline EntityRef EntityCollection::currentEntity()
 
 template<typename Ent>
 template<typename ... Args>
-inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, Args &&... args)
+inline EntityRef EntityCollectionImpl<Ent>::spawn(Ctx &ctx, Args &&... args)
 {
 	uint64_t id = nextId_++;
 	auto prevCurrentId = currentId_;
@@ -190,7 +190,7 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx, Args &&...
 }
 
 template<typename Ent>
-inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx)
+inline EntityRef EntityCollectionImpl<Ent>::spawn(Ctx &ctx)
 {
 	uint64_t id = nextId_++;
 	auto prevCurrentId = currentId_;
@@ -208,7 +208,7 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(const Context &ctx)
 
 template<typename Ent>
 inline EntityRef EntityCollectionImpl<Ent>::spawn(
-	const Context &ctx, capnp::Data::Reader data)
+	Ctx &ctx, capnp::Data::Reader data)
 {
 	auto ent = spawn(ctx);
 
@@ -259,7 +259,7 @@ inline BodyTrait::Body *EntityCollectionImpl<Ent>::getBody(uint64_t id)
 }
 
 template<typename Ent>
-inline void EntityCollectionImpl<Ent>::update(const Context &ctx, float dt)
+inline void EntityCollectionImpl<Ent>::update(Ctx &ctx, float dt)
 {
 	ZoneScopedN(__PRETTY_FUNCTION__);
 	for (auto &w: entities_) {
@@ -270,7 +270,7 @@ inline void EntityCollectionImpl<Ent>::update(const Context &ctx, float dt)
 }
 
 template<typename Ent>
-inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt)
+inline void EntityCollectionImpl<Ent>::tick(Ctx &ctx, float dt)
 {
 	ZoneScopedN(__PRETTY_FUNCTION__);
 	for (auto &w: entities_) {
@@ -296,7 +296,7 @@ inline void EntityCollectionImpl<Ent>::tick(const Context &ctx, float dt)
 }
 
 template<typename Ent>
-inline void EntityCollectionImpl<Ent>::tick2(const Context &ctx, float dt)
+inline void EntityCollectionImpl<Ent>::tick2(Ctx &ctx, float dt)
 {
 	ZoneScopedN(__PRETTY_FUNCTION__);
 	for (auto &w: entities_) {
@@ -307,7 +307,7 @@ inline void EntityCollectionImpl<Ent>::tick2(const Context &ctx, float dt)
 }
 
 template<typename Ent>
-inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Cygnet::Renderer &rnd)
+inline void EntityCollectionImpl<Ent>::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 {
 	ZoneScopedN(__PRETTY_FUNCTION__);
 	for (auto &w: entities_) {
@@ -330,7 +330,7 @@ inline void EntityCollectionImpl<Ent>::draw(const Context &ctx, Cygnet::Renderer
 }
 
 template<typename Ent>
-inline void EntityCollectionImpl<Ent>::erase(const Context &ctx, uint64_t id)
+inline void EntityCollectionImpl<Ent>::erase(Ctx &ctx, uint64_t id)
 {
 	ZoneScopedN(__PRETTY_FUNCTION__);
 	auto indexIt = idToIndex_.find(id);
@@ -363,7 +363,7 @@ inline void EntityCollectionImpl<Ent>::erase(const Context &ctx, uint64_t id)
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::serialize(
-	const Context &ctx, proto::EntitySystem::Collection::Builder w)
+	Ctx &ctx, proto::EntitySystem::Collection::Builder w)
 {
 	std::string sanitizedName;
 	if (ctx.game.debug_.outputEntityProto) {
@@ -409,7 +409,7 @@ inline void EntityCollectionImpl<Ent>::serialize(
 
 template<typename Ent>
 inline void EntityCollectionImpl<Ent>::deserialize(
-	const Context &ctx, proto::EntitySystem::Collection::Reader r)
+	Ctx &ctx, proto::EntitySystem::Collection::Reader r)
 {
 	entities_.clear();
 	idToIndex_.clear();

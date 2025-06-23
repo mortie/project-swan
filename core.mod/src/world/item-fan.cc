@@ -5,7 +5,7 @@
 
 namespace CoreMod {
 
-static void updateItemFan(const Swan::Context &ctx, Swan::TilePos pos)
+static void updateItemFan(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	bool hasLeft = ctx.plane.entities().getTileEntity(pos + Swan::Direction::LEFT)
 		->trait<Swan::InventoryTrait>();

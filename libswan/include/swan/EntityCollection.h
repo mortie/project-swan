@@ -87,7 +87,7 @@ public:
 	}
 
 	void serialize(proto::EntityRef::Builder w);
-	void deserialize(const Context &ctx, proto::EntityRef::Reader r);
+	void deserialize(Ctx &ctx, proto::EntityRef::Reader r);
 
 private:
 	EntityCollection *coll_;
@@ -107,7 +107,7 @@ public:
 	virtual ~EntityCollection() = default;
 
 	template<typename Ent, typename ... Args>
-	EntityRef spawn(const Context &ctx, Args && ... args);
+	EntityRef spawn(Ctx &ctx, Args && ... args);
 
 	EntityRef currentEntity();
 
@@ -118,18 +118,18 @@ public:
 	virtual Entity *get(uint64_t id) = 0;
 	virtual BodyTrait::Body *getBody(uint64_t id) = 0;
 
-	virtual EntityRef spawn(const Context &ctx) = 0;
-	virtual EntityRef spawn(const Context &ctx, capnp::Data::Reader data) = 0;
-	virtual void update(const Context &ctx, float dt) = 0;
-	virtual void tick(const Context &ctx, float dt) = 0;
-	virtual void tick2(const Context &ctx, float dt) = 0;
-	virtual void draw(const Context &ctx, Cygnet::Renderer &rnd) = 0;
-	virtual void erase(const Context &ctx, uint64_t id) = 0;
+	virtual EntityRef spawn(Ctx &ctx) = 0;
+	virtual EntityRef spawn(Ctx &ctx, capnp::Data::Reader data) = 0;
+	virtual void update(Ctx &ctx, float dt) = 0;
+	virtual void tick(Ctx &ctx, float dt) = 0;
+	virtual void tick2(Ctx &ctx, float dt) = 0;
+	virtual void draw(Ctx &ctx, Cygnet::Renderer &rnd) = 0;
+	virtual void erase(Ctx &ctx, uint64_t id) = 0;
 
 	virtual void serialize(
-		const Context &ctx, proto::EntitySystem::Collection::Builder w) = 0;
+		Ctx &ctx, proto::EntitySystem::Collection::Builder w) = 0;
 	virtual void deserialize(
-		const Context &ctx, proto::EntitySystem::Collection::Reader r) = 0;
+		Ctx &ctx, proto::EntitySystem::Collection::Reader r) = 0;
 
 protected:
 	uint64_t currentId_;

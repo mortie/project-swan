@@ -3,7 +3,7 @@
 
 namespace CoreMod {
 
-void BonfireTileEntity::tick(const Swan::Context &ctx, float dt)
+void BonfireTileEntity::tick(Swan::Ctx &ctx, float dt)
 {
 	Swan::Vec2 tileCenter = {tileEntity_.pos.x + 0.5f, tileEntity_.pos.y + 0.5f};
 
@@ -147,7 +147,7 @@ void BonfireTileEntity::tick(const Swan::Context &ctx, float dt)
 	}
 }
 
-void BonfireTileEntity::serialize(const Swan::Context &ctx, Proto::Builder w)
+void BonfireTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 {
 	tileEntity_.serialize(w.initTileEntity());
 
@@ -166,7 +166,7 @@ void BonfireTileEntity::serialize(const Swan::Context &ctx, Proto::Builder w)
 	}
 }
 
-void BonfireTileEntity::deserialize(const Swan::Context &ctx, Proto::Reader r)
+void BonfireTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
 {
 	tileEntity_.deserialize(r.getTileEntity());
 

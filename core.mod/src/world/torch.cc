@@ -3,7 +3,7 @@
 
 namespace CoreMod {
 
-static bool onTorchSpawn(const Swan::Context &ctx, Swan::TilePos pos)
+static bool onTorchSpawn(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	// The default torch stands on the tile below it,
 	// so if that's valid, we're good
@@ -23,7 +23,7 @@ static bool onTorchSpawn(const Swan::Context &ctx, Swan::TilePos pos)
 	return false;
 }
 
-static void onTorchUpdate(const Swan::Context &ctx, Swan::TilePos pos)
+static void onTorchUpdate(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	auto &tile = ctx.plane.tiles().get(pos);
 	bool isSupported;

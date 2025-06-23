@@ -4,7 +4,7 @@
 
 namespace CoreMod {
 
-void ItemFanTileEntity::update(const Swan::Context &ctx, float dt)
+void ItemFanTileEntity::update(Swan::Ctx &ctx, float dt)
 {
 	Swan::Vec2 pos;
 	Swan::Vec2 size = {2, 1};
@@ -32,7 +32,7 @@ void ItemFanTileEntity::update(const Swan::Context &ctx, float dt)
 	}
 }
 
-void ItemFanTileEntity::tick(const Swan::Context &ctx, float dt)
+void ItemFanTileEntity::tick(Swan::Ctx &ctx, float dt)
 {
 	auto pickup = pickup_;
 	pickup_ = {};
@@ -59,13 +59,13 @@ void ItemFanTileEntity::tick(const Swan::Context &ctx, float dt)
 	}
 }
 
-void ItemFanTileEntity::serialize(const Swan::Context &ctx, Proto::Builder w)
+void ItemFanTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 {
 	tileEntity_.serialize(w.initTileEntity());
 	dir_.serialize(w.initDirection());
 }
 
-void ItemFanTileEntity::deserialize(const Swan::Context &ctx, Proto::Reader r)
+void ItemFanTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
 {
 	tileEntity_.deserialize(r.getTileEntity());
 	dir_.deserialize(r.getDirection());

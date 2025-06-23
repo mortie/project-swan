@@ -11,8 +11,8 @@ class SpiderEntity final: public Swan::Entity,
 public:
 	using Proto = proto::SpiderEntity;
 
-	SpiderEntity(const Swan::Context &ctx);
-	SpiderEntity(const Swan::Context &ctx, Swan::Vec2 pos);
+	SpiderEntity(Swan::Ctx &ctx);
+	SpiderEntity(Swan::Ctx &ctx, Swan::Vec2 pos);
 
 	Body &get(BodyTrait::Tag) override
 	{
@@ -29,12 +29,12 @@ public:
 		return damage_;
 	}
 
-	void draw(const Swan::Context &ctx, Cygnet::Renderer &rnd) override;
-	void update(const Swan::Context &ctx, float dt) override;
-	void tick(const Swan::Context &ctx, float dt) override;
+	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
+	void update(Swan::Ctx &ctx, float dt) override;
+	void tick(Swan::Ctx &ctx, float dt) override;
 
-	void serialize(const Swan::Context &ctx, Proto::Builder w);
-	void deserialize(const Swan::Context &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, Proto::Builder w);
+	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
 
 private:
 	Swan::Animation idleAnimation_;

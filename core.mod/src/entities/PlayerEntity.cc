@@ -27,7 +27,7 @@ static constexpr float LADDER_MAX_VEL = 5;
 static constexpr float SWIM_FORCE_UP = 12 * PROPS.mass;
 static constexpr float SWIM_FORCE_DOWN = 12 * PROPS.mass;
 
-PlayerEntity::PlayerEntity(const Swan::Context &ctx):
+PlayerEntity::PlayerEntity(Swan::Ctx &ctx):
 	animations_(ctx),
 	sounds_(ctx),
 	inventorySprite_(ctx.world.getSprite("core::ui/inventory")),
@@ -37,14 +37,14 @@ PlayerEntity::PlayerEntity(const Swan::Context &ctx):
 	physicsBody_(PROPS)
 {}
 
-PlayerEntity::PlayerEntity(const Swan::Context &ctx, Swan::Vec2 pos):
+PlayerEntity::PlayerEntity(Swan::Ctx &ctx, Swan::Vec2 pos):
 	PlayerEntity(ctx)
 {
 	physicsBody_.body.pos = pos;
 	spawnPoint_ = pos.as<int>();
 }
 
-void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
+void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
 	rnd.setGamma(gamma_);
 
@@ -184,7 +184,7 @@ void PlayerEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	}, Cygnet::Anchor::BOTTOM);
 }
 
-void PlayerEntity::update(const Swan::Context &ctx, float dt)
+void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 {
 	if (interactTimer_ >= 0) {
 		interactTimer_ -= dt;
@@ -273,7 +273,7 @@ void PlayerEntity::update(const Swan::Context &ctx, float dt)
 	}
 }
 
-void PlayerEntity::tick(const Swan::Context &ctx, float dt)
+void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 {
 	auto lightPos = physicsBody_.body.topMid().as<int>();
 	if (lightPos.x < 0) lightPos.x -= 1;
@@ -323,7 +323,7 @@ void PlayerEntity::tick(const Swan::Context &ctx, float dt)
 }
 
 void PlayerEntity::serialize(
-	const Swan::Context &ctx, Proto::Builder w)
+	Swan::Ctx &ctx, Proto::Builder w)
 {
 	physicsBody_.serialize(w.initBody());
 	inventory_.serialize(w.initInventory());
@@ -335,7 +335,7 @@ void PlayerEntity::serialize(
 }
 
 void PlayerEntity::deserialize(
-	const Swan::Context &ctx, Proto::Reader r)
+	Swan::Ctx &ctx, Proto::Reader r)
 {
 	physicsBody_.deserialize(r.getBody());
 	inventory_.deserialize(ctx, r.getInventory());
@@ -367,7 +367,7 @@ bool PlayerEntity::askToOpenInventory(
 	return true;
 }
 
-void PlayerEntity::askToCloseInventory(const Swan::Context &ctx, Swan::EntityRef ent)
+void PlayerEntity::askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent)
 {
 	if (auxInventoryEntity_ != ent) {
 		Swan::info << "refusing to close inventory";
@@ -383,7 +383,7 @@ void PlayerEntity::askToCloseInventory(const Swan::Context &ctx, Swan::EntityRef
 	}
 }
 
-void PlayerEntity::onLeftClick(const Swan::Context &ctx)
+void PlayerEntity::onLeftClick(Swan::Ctx &ctx)
 {
 	if (interactTimer_ > 0) {
 		return;
@@ -411,7 +411,7 @@ void PlayerEntity::onLeftClick(const Swan::Context &ctx)
 	interactTimer_ = 0.2;
 }
 
-void PlayerEntity::onRightClick(const Swan::Context &ctx)
+void PlayerEntity::onRightClick(Swan::Ctx &ctx)
 {
 	if (interactTimer_ > 0) {
 		return;
@@ -480,7 +480,7 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 	stack.remove(1);
 }
 
-void PlayerEntity::dropItem(const Swan::Context &ctx)
+void PlayerEntity::dropItem(Swan::Ctx &ctx)
 {
 	Swan::ItemStack &stack = heldStack_.empty()
 		? inventory_.content_[ui_.selectedInventorySlot]
@@ -499,7 +499,7 @@ void PlayerEntity::dropItem(const Swan::Context &ctx)
 	ctx.plane.entities().spawn<ItemStackEntity>(pos, vel, removed.item());
 }
 
-void PlayerEntity::handleInventoryHover(const Swan::Context &ctx)
+void PlayerEntity::handleInventoryHover(Swan::Ctx &ctx)
 {
 	ui_.hoveredInventorySlot = -1;
 	auto mousePos = ctx.game.getMouseUIPos();
@@ -514,7 +514,7 @@ void PlayerEntity::handleInventoryHover(const Swan::Context &ctx)
 	}
 }
 
-void PlayerEntity::handlePhysics(const Swan::Context &ctx, float dt)
+void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 {
 	// Collide with stuff
 	bool pickedUpItem = false;
@@ -828,7 +828,7 @@ void PlayerEntity::handlePhysics(const Swan::Context &ctx, float dt)
 	}
 }
 
-void PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
+void PlayerEntity::handleInventoryClick(Swan::Ctx &ctx)
 {
 	auto clickInventory = [&](Swan::InventoryTrait::Inventory &inv, int index) {
 		auto slot = inv.get(index);
@@ -916,7 +916,7 @@ void PlayerEntity::handleInventoryClick(const Swan::Context &ctx)
 	}
 }
 
-void PlayerEntity::handleInventorySelection(const Swan::Context &ctx)
+void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 {
 	// Select item slots directly
 	auto selectSlot = [&](int slot) {

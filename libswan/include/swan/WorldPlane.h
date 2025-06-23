@@ -59,7 +59,7 @@ public:
 		return tileSystem_.placeTile(pos, id);
 	}
 
-	void nextTick(std::function<void(const Context &)> cb)
+	void nextTick(std::function<void(Ctx &)> cb)
 	{
 		nextTickA_.push_back(std::move(cb));
 	}
@@ -90,8 +90,8 @@ private:
 	std::deque<Chunk *> chunkInitList_;
 
 	// Callbacks to run on next tick
-	std::vector<std::function<void(const Context &)>> nextTickA_;
-	std::vector<std::function<void(const Context &)>> nextTickB_;
+	std::vector<std::function<void(Ctx &)>> nextTickA_;
+	std::vector<std::function<void(Ctx &)>> nextTickB_;
 
 	TickProgress tickProgress_ = TickProgress::IDLE;
 	FluidSystem fluidSystem_{*this};

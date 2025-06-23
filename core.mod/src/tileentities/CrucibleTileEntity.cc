@@ -4,7 +4,7 @@
 
 namespace CoreMod {
 
-void CrucibleTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
+void CrucibleTileEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
 	if (!drawSupports_) {
 		return;
@@ -17,7 +17,7 @@ void CrucibleTileEntity::draw(const Swan::Context &ctx, Cygnet::Renderer &rnd)
 	});
 }
 
-void CrucibleTileEntity::tick(const Swan::Context &ctx, float dt)
+void CrucibleTileEntity::tick(Swan::Ctx &ctx, float dt)
 {
 	if (!progress_) {
 		return;
@@ -58,7 +58,7 @@ void CrucibleTileEntity::tick(const Swan::Context &ctx, float dt)
 	}
 }
 
-void CrucibleTileEntity::serialize(const Swan::Context &ctx, Proto::Builder w)
+void CrucibleTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 {
 	tileEntity_.serialize(w.initTileEntity());
 	w.setDrawSupports(drawSupports_);
@@ -75,7 +75,7 @@ void CrucibleTileEntity::serialize(const Swan::Context &ctx, Proto::Builder w)
 	}
 }
 
-void CrucibleTileEntity::deserialize(const Swan::Context &ctx, Proto::Reader r)
+void CrucibleTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
 {
 	tileEntity_.deserialize(r.getTileEntity());
 	drawSupports_ = r.getDrawSupports();
@@ -99,14 +99,14 @@ void CrucibleTileEntity::deserialize(const Swan::Context &ctx, Proto::Reader r)
 	}
 }
 
-void CrucibleTileEntity::onDespawn(const Swan::Context &ctx)
+void CrucibleTileEntity::onDespawn(Swan::Ctx &ctx)
 {
 	for (auto &item: items_) {
 		dropItem(ctx, tileEntity_.pos, *item);
 	}
 }
 
-void CrucibleTileEntity::activate(const Swan::Context &ctx, Swan::ItemStack &stack)
+void CrucibleTileEntity::activate(Swan::Ctx &ctx, Swan::ItemStack &stack)
 {
 	if (progress_) {
 		return;

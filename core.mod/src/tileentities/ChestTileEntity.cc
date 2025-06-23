@@ -3,7 +3,7 @@
 
 namespace CoreMod {
 
-void ChestTileEntity::serialize(const Swan::Context &ctx, Proto::Builder w)
+void ChestTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 {
 	// Close the chest on load if it's open
 	auto &tile = ctx.plane.tiles().get(tileEntity_.pos);
@@ -16,13 +16,13 @@ void ChestTileEntity::serialize(const Swan::Context &ctx, Proto::Builder w)
 	inventory_.serialize(w.initInventory());
 }
 
-void ChestTileEntity::deserialize(const Swan::Context &ctx, Proto::Reader r)
+void ChestTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
 {
 	tileEntity_.deserialize(r.getTileEntity());
 	inventory_.deserialize(ctx, r.getInventory());
 }
 
-void ChestTileEntity::onDespawn(const Swan::Context &ctx)
+void ChestTileEntity::onDespawn(Swan::Ctx &ctx)
 {
 	Swan::info << "Despawning chest at " << tileEntity_.pos;
 	for (auto stack: inventory_.content_) {
