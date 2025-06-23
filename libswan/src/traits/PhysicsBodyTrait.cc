@@ -132,6 +132,22 @@ void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 	Vec2 dir = dist.sign();
 	Vec2 step = dir * 0.4;
 
+	// Teleport out of the center of a block, if possible
+	auto tpos = body.center().as<int>();
+	if (ctx.plane.tiles().get(tpos).isSolid) {
+		if (!ctx.plane.tiles().get(tpos.add(0, -1)).isSolid) {
+			body.setBottom(tpos.y - 0.01);
+		} else if (!ctx.plane.tiles().get(tpos.add(-1, 0)).isSolid) {
+			body.setRight(tpos.x - 0.01);
+		} else if (!ctx.plane.tiles().get(tpos.add(1, 0)).isSolid) {
+			body.setLeft(tpos.x + 1.01);
+		} else if (!ctx.plane.tiles().get(tpos.add(0, -1)).isSolid) {
+			body.setTop(tpos.y + 1.01);
+		} else {
+			body.setBottom(tpos.y - 0.01);
+		}
+	}
+
 	// Move in increments of at most 'step', on the Y axis
 	while (std::abs(dist.y) > std::abs(step.y)) {
 		body.pos.y += step.y;

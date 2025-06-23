@@ -3,6 +3,7 @@
 #include <utility>
 #include <ostream>
 #include <cmath>
+#include <type_traits>
 
 namespace Swan {
 
@@ -27,7 +28,14 @@ struct Vector2 {
 	template<typename U>
 	constexpr Vector2<U> as() const
 	{
-		return {U(x), U(y)};
+		if constexpr (std::is_integral_v<U> && std::is_floating_point_v<T>) {
+			return {
+				U(std::floor(x)),
+				U(std::floor(y)),
+			};
+		} else {
+			return {U(x), U(y)};
+		}
 	}
 
 	constexpr T length() const
