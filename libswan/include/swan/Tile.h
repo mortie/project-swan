@@ -15,12 +15,18 @@
 namespace Swan {
 
 struct Item;
+class ItemStack;
 
 struct Tile {
 	using ID = uint16_t;
 
 	struct Traits {
 		virtual ~Traits() = default;
+	};
+
+	struct ActivateMeta {
+		EntityRef activator;
+		ItemStack &stack;
 	};
 
 	struct Builder {
@@ -44,7 +50,7 @@ struct Tile {
 		bool (*onSpawn)(const Context &ctx, TilePos pos) = nullptr;
 		void (*onBreak)(const Context &ctx, TilePos pos) = nullptr;
 		void (*onTileUpdate)(const Context &ctx, TilePos pos) = nullptr;
-		void (*onActivate)(const Context &ctx, TilePos pos, EntityRef activator) = nullptr;
+		void (*onActivate)(const Context &ctx, TilePos pos, ActivateMeta meta) = nullptr;
 
 		std::shared_ptr<Traits> traits = nullptr;
 	};
@@ -69,7 +75,7 @@ struct Tile {
 	bool (*onSpawn)(const Context &ctx, TilePos pos);
 	void (*onBreak)(const Context &ctx, TilePos pos);
 	void (*onTileUpdate)(const Context &ctx, TilePos pos);
-	void (*onActivate)(const Context &ctx, TilePos pos, EntityRef activator);
+	void (*onActivate)(const Context &ctx, TilePos pos, ActivateMeta meta);
 
 	Cygnet::ByteColor particles[8][8];
 

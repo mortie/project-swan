@@ -335,19 +335,21 @@ public:
 			.kind = "core::burning",
 		});
 		registerRecipe({
-			.inputs = {{1, "core::iron-ore-chunk"}},
-			.output = {1, "core::pig-iron"},
-			.kind = "core::burning",
-		});
-		registerRecipe({
-			.inputs = {{1, "core::copper-ore-chunk"}},
-			.output = {1, "core::copper"},
-			.kind = "core::burning",
-		});
-		registerRecipe({
 			.inputs = {{1, "core::unfired-crucible"}},
 			.output = {1, "core::crucible"},
 			.kind = "core::burning",
+		});
+
+		registerRecipeKind("smelting");
+		registerRecipe({
+			.inputs = {{2, "core::iron-ore-chunk"}},
+			.output = {2, "core::pig-iron"},
+			.kind = "core::smelting",
+		});
+		registerRecipe({
+			.inputs = {{2, "core::copper-ore-chunk"}},
+			.output = {2, "core::copper"},
+			.kind = "core::smelting",
 		});
 
 		registerWorldGen<DefaultWorldGen>("default");

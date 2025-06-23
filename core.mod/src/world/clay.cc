@@ -5,7 +5,7 @@
 namespace CoreMod {
 
 template<int N>
-void activateClay(const Swan::Context &ctx, Swan::TilePos pos, Swan::EntityRef)
+void activateClay(const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta)
 {
 	if constexpr (N == 0) {
 		ctx.plane.tiles().setID(pos, Swan::World::AIR_TILE_ID);

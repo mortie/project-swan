@@ -12,9 +12,9 @@ static void closeCallback(const Swan::Context &ctx, Swan::EntityRef ref)
 	ctx.plane.tiles().set(pos, "core::chest");
 }
 
-static void openChest(const Swan::Context &ctx, Swan::TilePos pos, Swan::EntityRef opener)
+static void openChest(const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
 {
-	auto *player = dynamic_cast<PlayerEntity *>(opener.get());
+	auto *player = dynamic_cast<PlayerEntity *>(meta.activator.get());
 	if (!player) {
 		return;
 	}
@@ -32,9 +32,9 @@ static void openChest(const Swan::Context &ctx, Swan::TilePos pos, Swan::EntityR
 	ctx.plane.tiles().set(pos, "core::chest::open");
 }
 
-static void closeChest(const Swan::Context &ctx, Swan::TilePos pos, Swan::EntityRef opener)
+static void closeChest(const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
 {
-	auto *player = dynamic_cast<PlayerEntity *>(opener.get());
+	auto *player = dynamic_cast<PlayerEntity *>(meta.activator.get());
 	if (!player) {
 		return;
 	}

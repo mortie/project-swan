@@ -420,7 +420,18 @@ void PlayerEntity::onRightClick(const Swan::Context &ctx)
 	// First priority: activate the hovered tile if it can be activated
 	Swan::Tile &hoveredTile = ctx.plane.tiles().get(breakPos_);
 	if (hoveredTile.onActivate) {
-		hoveredTile.onActivate(ctx, breakPos_, ctx.plane.entities().current());
+		auto &stack = [&]() -> Swan::ItemStack & {
+			if (!heldStack_.empty()) {
+				return heldStack_;
+			} else {
+				return inventory_.content_[ui_.selectedInventorySlot];
+			}
+		}();
+		Swan::Tile::ActivateMeta meta = {
+			.activator = ctx.plane.entities().current(),
+			.stack = stack,
+		};
+		hoveredTile.onActivate(ctx, breakPos_, meta);
 		interactTimer_ = 0.2;
 		return;
 	}

@@ -53,7 +53,14 @@ struct BonfireTileEntity {
 struct CrucibleTileEntity {
 	tileEntity @0 :TileEntity;
 	drawSupports @1 :Bool;
-	tepmerature @2 :Float32;
+	temperature @2 :Float32;
+	items @3 :List(Text);
+	progress @4 :Progress;
+
+	struct Progress {
+		timer @0 :Float32;
+		output @1 :ItemStack;
+	}
 }
 
 struct ChestTileEntity {

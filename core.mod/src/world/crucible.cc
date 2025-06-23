@@ -49,6 +49,12 @@ void registerCrucible(Swan::Mod &mod)
 				ent->temperature_ = below.temperature;
 			}
 		},
+		.onActivate = +[](const Swan::Context &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta) {
+			auto ent = ctx.plane.entities().getTileEntity(pos).as<CrucibleTileEntity>();
+			if (ent) {
+				ent->activate(ctx, meta.stack);
+			}
+		},
 	});
 }
 

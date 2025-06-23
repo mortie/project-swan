@@ -70,12 +70,13 @@ void BonfireTileEntity::tick(const Swan::Context &ctx, float dt)
 				ctx.plane.entities().despawn(ent);
 			}
 
+			float dir = Swan::randfloat() > 0.5 ? 1 : -1;
 			for (int j = 0; j < burn.output.count(); ++j) {
-				float dir = Swan::randfloat() > 0.5 ? 1 : -1;
 				ctx.plane.entities().spawn<ItemStackEntity>(
 					tileCenter,
 					Swan::Vec2{(Swan::randfloat() * 1 + 2) * dir, -7},
 					burn.output.item());
+				dir *= -1;
 			}
 
 			ongoing_[i] = ongoing_.back();
