@@ -69,10 +69,6 @@ ResourceManager::ResourceManager(ResourceBuilder &&builder):
 	size_t width, height;
 	const unsigned char *data = builder.atlas_.getImage(&width, &height);
 
-	FILE *f = fopen("fluids.rgba", "w");
-	fwrite(builder.fluids_.get(), 1, 256 * 4 * 2, f);
-	fclose(f);
-
 	rnd_->uploadTileAtlas(data, width, height);
 	rnd_->uploadFluidAtlas(builder.fluids_.get());
 }

@@ -34,8 +34,8 @@ void registerClayTile(Swan::Mod &mod)
 		.image = "core::tiles/clay",
 		.stepSound = "core::sounds/step/sand",
 		.droppedItem = "core::clay",
-		.onActivate = activateClay<N>,
 		.onTileUpdate = fallIfFloating,
+		.onActivate = activateClay<N>,
 	});
 
 	if constexpr (N > 0) {
