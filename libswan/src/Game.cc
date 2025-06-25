@@ -281,6 +281,7 @@ void Game::drawPerfMenu()
 
 	auto &fluids = world_->currentPlane().fluids();
 	ImGui::Text("FPS: %d", perf_.fps);
+	ImGui::Text("TPS: %d", perf_.tps);
 	ImGui::Text(
 		"Fluid updates: %d, particles: %d",
 		fluids.numUpdates(), fluids.numParticles());
@@ -310,20 +311,17 @@ void Game::drawPerfMenu()
 
 void Game::draw()
 {
-	auto now = std::chrono::steady_clock::now();
+	auto now = std::chrono::duration<double>(
+		std::chrono::steady_clock::now().time_since_epoch()).count();
+	frameCount_ += 1;
 
-	if (now > fpsUpdateTime_ + std::chrono::milliseconds(200) && frameAcc_ > 0) {
-		float avgFrameTime = std::chrono::duration_cast<std::chrono::duration<float>>(frameTimeAcc_).count() / frameAcc_;
-		perf_.fps = std::round(1.0f / avgFrameTime);
-		frameAcc_ = 0;
-		frameTimeAcc_ = {};
-		fpsUpdateTime_ = now;
+	if (now - fpsUpdateTime_ >= 1) {
+		perf_.fps = frameCount_;
+		perf_.tps = tickCount_;
+		frameCount_ = 0;
+		tickCount_ = 0;
+		fpsUpdateTime_ += 1;
 	}
-	else {
-		frameTimeAcc_ += now - prevTime_;
-		frameAcc_ += 1;
-	}
-	prevTime_ = now;
 
 	if (debug_.show) {
 		drawDebugMenu();
@@ -469,6 +467,8 @@ void Game::update(float dt)
 
 void Game::tick()
 {
+	tickCount_ += 1;
+
 	if (triggerSave_) {
 		save();
 		triggerSave_ = false;

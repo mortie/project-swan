@@ -68,6 +68,7 @@ public:
 		int tickCount = 0;
 
 		int fps = 0;
+		int tps = 0;
 		PerfRecord entityUpdateTime;
 		PerfRecord entityTickTime;
 		PerfRecord tileTickTime;
@@ -198,11 +199,10 @@ public:
 
 	bool tickInProgress_ = false;
 	RTDeadline tickDeadline_{2.0 / 1000};
-
-	int frameAcc_ = 0;
-	std::chrono::steady_clock::duration frameTimeAcc_;
-	std::chrono::steady_clock::time_point fpsUpdateTime_ = std::chrono::steady_clock::now();
-	std::chrono::steady_clock::time_point prevTime_;
+	double fpsUpdateTime_ = std::chrono::duration<double>(
+		std::chrono::steady_clock::now().time_since_epoch()).count();
+	int frameCount_ = 0;
+	int tickCount_ = 0;
 
 	std::shared_ptr<Cygnet::FontFace> notoSans_{Cygnet::loadFontFace(
 		"assets/NotoSans-Regular.ttf")};
