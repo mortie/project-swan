@@ -175,7 +175,6 @@ public:
 	void render();
 
 	void update(float dt);
-	void tick(float dt);
 	void save();
 
 	std::unique_ptr<World> world_ = NULL;
@@ -196,8 +195,6 @@ public:
 	Perf perf_;
 
 	bool tickInProgress_ = false;
-	bool pendingTick_ = false;
-	float tickDT_ = 0;
 	RTDeadline tickDeadline_{2.0 / 1000};
 
 	int frameAcc_ = 0;
@@ -213,6 +210,9 @@ public:
 
 private:
 	bool reload();
+	void tick();
+
+	float tickAcc_ = 0;
 
 	std::bitset<GLFW_KEY_LAST + 1> pressedKeys_;
 	std::bitset<GLFW_KEY_LAST + 1> didPressKeys_;

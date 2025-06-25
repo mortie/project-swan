@@ -19,6 +19,8 @@
 
 namespace Swan {
 
+static constexpr float TICK_DELTA = 1.0 / 20.0;
+
 void Game::createWorld(
 	const std::string &worldgen, std::span<std::string> modPaths)
 {
@@ -442,31 +444,29 @@ void Game::update(float dt)
 	didPressButtons_.reset();
 	didReleaseButtons_.reset();
 
-	// Continue running the ongoing tick if necessary
+	tickAcc_ += dt;
+	if (tickAcc_ > 2) {
+		warn << "Skipping ticks due to system overload!";
+		tickAcc_ = 1;
+	}
+
 	if (tickInProgress_) {
 		tickDeadline_.reset();
-		if (world_->tick(tickDT_, tickDeadline_)) {
+		if (world_->tick(TICK_DELTA, tickDeadline_)) {
 			tickInProgress_ = false;
 		}
-	} else if (pendingTick_) {
-		tick(tickDT_);
+	}
+	else if (tickAcc_ >= TICK_DELTA) {
+		tick();
+		tickAcc_ -= TICK_DELTA;
 	}
 }
 
-void Game::tick(float dt)
+void Game::tick()
 {
 	if (triggerSave_) {
 		save();
 		triggerSave_ = false;
-	}
-
-	if (tickInProgress_) {
-		if (pendingTick_) {
-			warn << "Skipping tick because previous tick is still not done!";
-		} else {
-			pendingTick_ = true;
-		}
-		return;
 	}
 
 	perf_.tickCount += 1;
@@ -480,17 +480,15 @@ void Game::tick(float dt)
 	if (fpsLimit_ > 0) {
 		// Allocate a quarter of a frame to a tick
 		tickDeadline_ = RTDeadline(0.25 / fpsLimit_);
-	} else {
+	}
+	else {
 		// If there's no FPS limit, allocate 2ms
 		tickDeadline_ = RTDeadline(2.0 / 1000.0);
 	}
 
-	pendingTick_ = false;
 	tickInProgress_ = true;
-	tickDT_ = dt;
-	if (world_->tick(tickDT_, tickDeadline_)) {
+	if (world_->tick(TICK_DELTA, tickDeadline_)) {
 		tickInProgress_ = false;
-		pendingTick_ = false;
 	}
 }
 
@@ -498,9 +496,8 @@ void Game::save()
 {
 	if (tickInProgress_) {
 		info << "Completing current tick...";
-		if (world_->tick(tickDT_, RTDeadline(2))) {
+		if (world_->tick(TICK_DELTA, RTDeadline(2))) {
 			tickInProgress_ = false;
-			pendingTick_ = false;
 		} else {
 			warn << "Failed to complete tick in 2 seconds!";
 		}
@@ -526,6 +523,8 @@ void Game::save()
 
 bool Game::reload()
 {
+	RTClock startTime;
+
 	if (!recompileMods_()) {
 		warn << "Failed to recompile mods!";
 		return false;
@@ -545,6 +544,8 @@ bool Game::reload()
 	auto bytes = worldFile->readAllBytes();
 	auto data = kj::ArrayInputStream(bytes);
 	loadWorld(data, mods);
+
+	info << "Reloaded in " << startTime.duration() << " seconds.";
 	return true;
 }
 

@@ -252,8 +252,6 @@ int main(int argc, char **argv)
 
 	auto prevTime = std::chrono::steady_clock::now();
 
-	float tickAcc = 0;
-
 	int slowFrames = 0;
 	while (!glfwWindowShouldClose(window)) {
 		ZoneScopedN("game loop");
@@ -332,14 +330,6 @@ int main(int argc, char **argv)
 				ZoneScopedN("game update");
 				game.update(delta);
 			}
-		}
-
-		// Tick at a consistent TICK_RATE
-		tickAcc += dt;
-		while (tickAcc >= 1.0 / TICK_RATE) {
-			ZoneScopedN("game tick");
-			tickAcc -= 1.0 / TICK_RATE;
-			game.tick(1.0 / TICK_RATE);
 		}
 
 		{
