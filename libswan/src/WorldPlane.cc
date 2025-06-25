@@ -222,7 +222,7 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 		Chunk *chunk = activeChunks_[i];
 
 		// Tick random tiles in the chunk
-		for (size_t i = 0; i < 64; ++i) {
+		for (size_t i = 0; i < 8; ++i) {
 			size_t randomPos = size_t(random() % (CHUNK_WIDTH * CHUNK_HEIGHT));
 			Tile &randomTile = world_->getTileByID(chunk->getTileData()[randomPos]);
 			if (randomTile.onWorldTick) {
