@@ -186,6 +186,7 @@ public:
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.onBreak = dropRandomItemCount<"core::rock", 5>,
+			.onTileUpdate = breakIfFloating,
 		});
 
 		registerTile({
