@@ -68,16 +68,8 @@ Vec2 fluidPosToWorldPos(FluidPos pos)
 
 FluidPos worldPosToFluidPos(Vec2 pos)
 {
-	if (pos.x > 0) {
-		pos.x += 1.0 / FLUID_RESOLUTION;
-	}
-
-	if (pos.y > 0) {
-		pos.y += 1.0 / FLUID_RESOLUTION;
-	}
-
-	pos.x -= 0.5 / FLUID_RESOLUTION;
-	pos.y -= 0.5 / FLUID_RESOLUTION;
+	pos.x += 0.5 / FLUID_RESOLUTION;
+	pos.y += 0.5 / FLUID_RESOLUTION;
 	return (pos * FLUID_RESOLUTION).as<int64_t>();
 }
 
