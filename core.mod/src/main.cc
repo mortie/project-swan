@@ -67,6 +67,32 @@ public:
 			.stepSound = "core::sounds/step/grass",
 			.placeSound = "core::sounds/place/dirt",
 			.droppedItem = "core::dirt",
+			.onWorldTick = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
+				if (ctx.plane.tiles().get(pos.add(0, -1)).isSolid) {
+					return;
+				}
+
+				auto isGrass = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
+					return ctx.plane.tiles().get(pos).name == "core::grass";
+				};
+				bool hasNearbyGrass =
+					isGrass(ctx, pos.add(-1, 0)) ||
+					isGrass(ctx, pos.add(1, 0)) ||
+					isGrass(ctx, pos.add(-1, -1)) ||
+					isGrass(ctx, pos.add(1, -1)) ||
+					isGrass(ctx, pos.add(-1, 1)) ||
+					isGrass(ctx, pos.add(1, 1));
+				if (!hasNearbyGrass) {
+					return;
+				}
+
+				auto fluid = ctx.plane.fluids().getAtPos(pos.as<float>().add(0.5, -0.2));
+				if (fluid.density > 0) {
+					return;
+				}
+
+				ctx.plane.tiles().set(pos, "core::grass");
+			},
 		});
 		registerTile({
 			.name = "sand",
@@ -89,6 +115,17 @@ public:
 			.stepSound = "core::sounds/step/grass",
 			.placeSound = "core::sounds/place/dirt",
 			.droppedItem = "core::dirt",
+			.onTileUpdate = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
+				if (ctx.plane.tiles().get(pos.add(0, -1)).isOpaque) {
+					ctx.plane.tiles().set(pos, "core::dirt");
+				}
+			},
+			.onWorldTick = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
+				auto fluid = ctx.plane.fluids().getAtPos(pos.as<float>().add(0.5, -0.2));
+				if (fluid.density > 0) {
+					ctx.plane.tiles().set(pos, "core::dirt");
+				}
+			},
 		});
 		registerTile({
 			.name = "wood-pole",

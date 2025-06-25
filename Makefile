@@ -19,7 +19,7 @@ SRCS = $(shell find include src core.mod libswan libcygnet -name '*.cc' -or -nam
 
 .PHONY: llrun
 llrun:
-	${MAKE} run CMD='lldb -o r'
+	${MAKE} run CMD='lldb -o r --'
 
 .PHONY: run
 run:

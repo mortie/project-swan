@@ -51,6 +51,7 @@ struct Tile {
 		void (*onBreak)(Ctx &ctx, TilePos pos) = nullptr;
 		void (*onTileUpdate)(Ctx &ctx, TilePos pos) = nullptr;
 		void (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta) = nullptr;
+		void (*onWorldTick)(Ctx &ctx, TilePos pos) = nullptr;
 
 		std::shared_ptr<Traits> traits = nullptr;
 	};
@@ -76,6 +77,7 @@ struct Tile {
 	void (*onBreak)(Ctx &ctx, TilePos pos);
 	void (*onTileUpdate)(Ctx &ctx, TilePos pos);
 	void (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta);
+	void (*onWorldTick)(Ctx &ctx, TilePos pos);
 
 	Cygnet::ByteColor particles[8][8];
 
@@ -91,6 +93,7 @@ struct Tile {
 		breakableBy(builder.breakableBy), tileEntity(builder.tileEntity),
 		onSpawn(builder.onSpawn), onBreak(builder.onBreak),
 		onTileUpdate(builder.onTileUpdate), onActivate(builder.onActivate),
+		onWorldTick(builder.onWorldTick),
 		traits(builder.traits)
 	{}
 };

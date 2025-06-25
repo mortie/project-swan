@@ -120,6 +120,7 @@ void Game::drawDebugMenu()
 
 	ImGui::Checkbox("Draw collision boxes", &debug_.drawCollisionBoxes);
 	ImGui::Checkbox("Draw chunk boundaries", &debug_.drawChunkBoundaries);
+	ImGui::Checkbox("Draw world ticks", &debug_.drawWorldTicks);
 
 	bool prevEnableVSync = enableVSync_;
 	ImGui::Checkbox("Enable VSync", &enableVSync_);
@@ -234,7 +235,8 @@ void Game::drawDebugMenu()
 	}
 
 	auto &tile = world_->currentPlane().tiles().get(getMouseTile());
-	ImGui::Text("Tile: %s\n", tile.name.c_str());
+	auto mouseTile = getMouseTile();
+	ImGui::Text("Tile: %s (%d, %d)\n", tile.name.c_str(), mouseTile.x, mouseTile.y);
 
 	if (!hasSortedItems_) {
 		sortedItems_.clear();
@@ -295,6 +297,8 @@ void Game::drawPerfMenu()
 		perf_.fluidUpdateTime.avgMs, perf_.fluidUpdateTime.maxMs);
 	ImGui::Text("Fluid tick:    %.2fms avg / %.2fms max",
 		perf_.fluidTickTime.avgMs, perf_.fluidTickTime.maxMs);
+	ImGui::Text("World tick:    %.2fms avg / %.2f max",
+		perf_.worldTickTime.avgMs, perf_.worldTickTime.maxMs);
 	ImGui::Text("Chunk count:   %zu (active: %zu)",
 		world_->currentPlane().getChunkCount(),
 		world_->currentPlane().getActiveChunkCount());
@@ -376,6 +380,7 @@ void Game::update(float dt)
 	if (perf_.updateCount >= 60) {
 		perf_.entityUpdateTime.capture(perf_.updateCount);
 		perf_.fluidUpdateTime.capture(perf_.updateCount);
+		perf_.worldTickTime.capture(perf_.updateCount);
 		perf_.updateCount = 0;
 	}
 
@@ -447,7 +452,7 @@ void Game::update(float dt)
 	tickAcc_ += dt;
 	if (tickAcc_ > 2) {
 		warn << "Skipping ticks due to system overload!";
-		tickAcc_ = 1;
+		tickAcc_ = TICK_DELTA;
 	}
 
 	if (tickInProgress_) {
@@ -478,8 +483,8 @@ void Game::tick()
 	}
 
 	if (fpsLimit_ > 0) {
-		// Allocate a quarter of a frame to a tick
-		tickDeadline_ = RTDeadline(0.25 / fpsLimit_);
+		// Allocate half a frame to a tick
+		tickDeadline_ = RTDeadline(0.5 / fpsLimit_);
 	}
 	else {
 		// If there's no FPS limit, allocate 2ms

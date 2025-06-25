@@ -215,19 +215,46 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 	}
 	tickChunks_.clear();
 
-	// Tick all chunks, figure out if any of them should be deleted or compressed
-	size_t activeChunkIndex = 0;
-	while (activeChunkIndex < activeChunks_.size()) {
-		auto &chunk = activeChunks_[activeChunkIndex];
-		auto action = chunk->tick(dt);
+	// Perform world ticks
+	RTClock worldTickClock;
+	for (size_t i = 0; i < activeChunks_.size(); ++i) {
+		// Avoid range-based for loop because activeChunks_ might get resized
+		Chunk *chunk = activeChunks_[i];
 
+		// Tick random tiles in the chunk
+		for (size_t i = 0; i < 64; ++i) {
+			size_t randomPos = size_t(random() % (CHUNK_WIDTH * CHUNK_HEIGHT));
+			Tile &randomTile = world_->getTileByID(chunk->getTileData()[randomPos]);
+			if (randomTile.onWorldTick) {
+				auto pos = chunk->pos().scale(CHUNK_WIDTH, CHUNK_HEIGHT);
+				pos.x += randomPos % CHUNK_WIDTH;
+				pos.y += randomPos / CHUNK_WIDTH;
+				randomTile.onWorldTick(getContext(), pos);
+
+				if (world_->game_->debug_.drawWorldTicks) {
+					world_->game_->renderer_.drawRect({
+						.pos = pos.as<float>(),
+						.size = {1, 1},
+						.fill = {1, 0, 1, 1},
+					});
+				}
+			}
+		}
+	}
+	world_->game_->perf_.worldTickTime.record(worldTickClock.duration());
+
+	// Tick all chunks, figure out if any of them should be deleted or compressed
+	for (size_t i = 0; i < activeChunks_.size();) {
+		Chunk *chunk = activeChunks_[i];
+
+		auto action = chunk->tick(dt);
 		switch (action) {
 		case Chunk::TickAction::DEACTIVATE:
 			info << "Compressing inactive modified chunk " << chunk->pos();
 			lightSystem_.removeChunk(chunk->pos());
 			chunk->destroyTextures(world_->game_->renderer_);
 			chunk->compress();
-			activeChunks_[activeChunkIndex] = activeChunks_.back();
+			activeChunks_[i] = activeChunks_.back();
 			activeChunks_.pop_back();
 			break;
 
@@ -236,12 +263,12 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 			lightSystem_.removeChunk(chunk->pos());
 			chunk->destroyTextures(world_->game_->renderer_);
 			chunks_.erase(chunk->pos());
-			activeChunks_[activeChunkIndex] = activeChunks_.back();
+			activeChunks_[i] = activeChunks_.back();
 			activeChunks_.pop_back();
 			break;
 
 		case Chunk::TickAction::NOTHING:
-			activeChunkIndex += 1;
+			i += 1;
 			break;
 		}
 	}

@@ -31,6 +31,7 @@ public:
 		bool show = false;
 		bool drawCollisionBoxes = false;
 		bool drawChunkBoundaries = false;
+		bool drawWorldTicks = false;
 		bool fluidParticleLocations = false;
 		bool disableShadows = false;
 		bool handBreakAny = false;
@@ -72,6 +73,7 @@ public:
 		PerfRecord tileTickTime;
 		PerfRecord fluidTickTime;
 		PerfRecord fluidUpdateTime;
+		PerfRecord worldTickTime;
 	};
 
 	void createWorld(
