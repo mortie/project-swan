@@ -26,12 +26,14 @@ static constexpr float LADDER_CLIMB_FORCE = 70 * PROPS.mass;
 static constexpr float LADDER_MAX_VEL = 5;
 static constexpr float SWIM_FORCE_UP = 12 * PROPS.mass;
 static constexpr float SWIM_FORCE_DOWN = 12 * PROPS.mass;
+static constexpr int MAX_HEALTH = 10;
 
 PlayerEntity::PlayerEntity(Swan::Ctx &ctx):
-	animations_(ctx),
+	sprites_(ctx),
 	sounds_(ctx),
 	inventorySprite_(ctx.world.getSprite("core::ui/inventory")),
 	selectedSlotSprite_(ctx.world.getSprite("core::ui/selected-slot")),
+	health_(MAX_HEALTH),
 	inventory_(INVENTORY_SIZE),
 	craftingInventory_(ctx.plane.entities().current()),
 	physicsBody_(PROPS)
@@ -75,6 +77,18 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 
 	rnd.drawRect({Swan::Vec2(placePos_).add(0.1, 0.1), {0.8, 0.8}});
 	rnd.drawRect({breakPos_, {1, 1}});
+
+	// Draw health
+	rnd.uiView({}, [&] {
+		for (int i = 0; i < std::max(MAX_HEALTH, health_); ++i) {
+			auto &sprite = i < health_ ? sprites_.heart : sprites_.emptyHeart;
+			rnd.drawUISprite({
+				.transform = Cygnet::Mat3gf{}
+					.translate({(i / 3.5f) + 0.25f, 0.25f}),
+				.sprite = sprite,
+			});
+		}
+	}, Cygnet::Anchor::TOP_LEFT);
 
 	// Draw hotbar
 	ui_.hotbarRect = rnd.uiView({
@@ -224,6 +238,13 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 	handleInventorySelection(ctx);
 	handleInventoryHover(ctx);
 
+	if (ctx.game.wasKeyPressed(GLFW_KEY_M)) {
+		health_ += 1;
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_N)) {
+		health_ -= 1;
+	}
+
 	// Break block, or click UI
 	if (ctx.game.wasMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
 		if (ui_.hoveredInventorySlot >= 0 || ui_.hoveredAuxInventorySlot >= 0) {
@@ -332,6 +353,7 @@ void PlayerEntity::serialize(
 	sp.setX(spawnPoint_.x);
 	sp.setY(spawnPoint_.y);
 	w.setInventorySlot(ui_.selectedInventorySlot);
+	w.setHealth(health_);
 }
 
 void PlayerEntity::deserialize(
@@ -347,6 +369,7 @@ void PlayerEntity::deserialize(
 	}
 
 	ui_.selectedInventorySlot = r.getInventorySlot();
+	health_ = r.getHealth();
 }
 
 bool PlayerEntity::askToOpenInventory(
@@ -711,7 +734,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	}
 
 	// Adjust running speed based on sprinting
-	animations_.running.setInterval(sprinting_ ? 0.07 : 0.1);
+	sprites_.running.setInterval(sprinting_ ? 0.07 : 0.1);
 
 	// If we hit the ground, override the desired state to be landing
 	if (physicsBody_.onGround && (oldState == State::FALLING || oldState == State::JUMPING)) {
@@ -719,7 +742,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	}
 
 	// Don't switch away from landing unless it's done!
-	if (oldState == State::LANDING && !animations_.landing.done()) {
+	if (oldState == State::LANDING && !sprites_.landing.done()) {
 		state_ = State::LANDING;
 	}
 
@@ -754,23 +777,23 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	if (state_ != oldState) {
 		switch (state_) {
 		case State::IDLE:
-			currentAnimation_ = &animations_.idle;
+			currentAnimation_ = &sprites_.idle;
 			break;
 
 		case State::RUNNING:
-			currentAnimation_ = &animations_.running;
+			currentAnimation_ = &sprites_.running;
 			break;
 
 		case State::FALLING:
-			currentAnimation_ = &animations_.falling;
+			currentAnimation_ = &sprites_.falling;
 			break;
 
 		case State::JUMPING:
-			currentAnimation_ = &animations_.jumping;
+			currentAnimation_ = &sprites_.jumping;
 			break;
 
 		case State::LANDING:
-			currentAnimation_ = &animations_.landing;
+			currentAnimation_ = &sprites_.landing;
 			break;
 		}
 		currentAnimation_->reset();

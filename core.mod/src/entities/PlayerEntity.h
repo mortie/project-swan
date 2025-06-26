@@ -63,13 +63,15 @@ private:
 		Swan::SoundAsset *crafting;
 	};
 
-	struct Animations {
-		Animations(Swan::Ctx &ctx):
+	struct Sprites {
+		Sprites(Swan::Ctx &ctx):
 			idle(ctx, "core::entities/player/idle", 0.2),
 			running(ctx, "core::entities/player/running", 0),
 			falling(ctx, "core::entities/player/falling", 0.1),
 			jumping(ctx, "core::entities/player/jumping", 0.1),
-			landing(ctx, "core::entities/player/landing", 0.1)
+			landing(ctx, "core::entities/player/landing", 0.1),
+			emptyHeart(ctx.world.getSprite("core::misc/empty-heart")),
+			heart(ctx.world.getSprite("core::misc/heart"))
 		{}
 
 		Swan::Animation idle;
@@ -77,6 +79,8 @@ private:
 		Swan::Animation falling;
 		Swan::Animation jumping;
 		Swan::Animation landing;
+		Cygnet::RenderSprite emptyHeart;
+		Cygnet::RenderSprite heart;
 	};
 
 	struct UI {
@@ -118,8 +122,8 @@ private:
 	void handleInventoryHover(Swan::Ctx &ctx);
 
 	State state_ = State::IDLE;
-	Animations animations_;
-	Swan::Animation *currentAnimation_ = &animations_.idle;
+	Sprites sprites_;
+	Swan::Animation *currentAnimation_ = &sprites_.idle;
 
 	Sounds sounds_;
 	Cygnet::RenderSprite inventorySprite_;
@@ -141,6 +145,7 @@ private:
 	int stepIndex_ = 0;
 	float interactTimer_ = 0;
 	Swan::TilePos spawnPoint_;
+	int health_ = 0;
 
 	int teleState_ = 0;
 	float teleportTimer_ = 0;

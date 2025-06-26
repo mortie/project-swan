@@ -33,6 +33,8 @@ public:
 		registerSprite("misc/background-cave");
 		registerSprite("misc/burning-dynamite");
 		registerSprite("misc/crucible-support");
+		registerSprite("misc/empty-heart");
+		registerSprite("misc/heart");
 		registerSprite("ui/selected-slot");
 		registerSprite("ui/inventory");
 

@@ -33,6 +33,7 @@ struct PlayerEntity {
 	heldStack @2 :ItemStack;
 	spawnPoint @3 :Vec2i;
 	inventorySlot @4 :UInt8;
+	health @5 :UInt8;
 }
 
 struct SpiderEntity {
