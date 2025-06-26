@@ -27,6 +27,7 @@ static constexpr float LADDER_MAX_VEL = 5;
 static constexpr float SWIM_FORCE_UP = 12 * PROPS.mass;
 static constexpr float SWIM_FORCE_DOWN = 12 * PROPS.mass;
 static constexpr int MAX_HEALTH = 10;
+static constexpr float BLACKOUT_TIME = 5;
 
 PlayerEntity::PlayerEntity(Swan::Ctx &ctx):
 	sprites_(ctx),
@@ -52,6 +53,24 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 		rnd.setGamma(gamma_ + invulnerable_ * 3);
 	} else {
 		rnd.setGamma(gamma_);
+	}
+
+	if (blackout_ > 0) {
+		float alpha = 1.0;
+		if (blackout_ < 0.3) {
+			alpha = blackout_ / 0.3;
+		}
+		else if (blackout_ > BLACKOUT_TIME - 0.5) {
+			alpha = 0;
+		}
+		else if (blackout_ > BLACKOUT_TIME - 2.0) {
+			alpha = (BLACKOUT_TIME - blackout_ - 0.5) / 1.5;
+		}
+		rnd.drawUIRect(Cygnet::RenderLayer::FOREGROUND, {
+			.pos = {},
+			.size = {100, 100},
+			.fill = {0, 0, 0, alpha},
+		});
 	}
 
 	Cygnet::Mat3gf mat;
@@ -208,6 +227,22 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 		interactTimer_ -= dt;
 	}
 
+	if (blackout_ > 0) {
+		float prevBlackout = blackout_;
+		blackout_ -= dt;
+		if (prevBlackout > 1 && blackout_ <= 1) {
+			ctx.game.playSound(sounds_.teleport);
+			physicsBody_.body.pos = spawnPoint_;
+			physicsBody_.vel = {};
+			state_ = State::IDLE;
+			currentAnimation_ = &sprites_.idle;
+		}
+
+		if (blackout_ > 0.5) {
+			return;
+		}
+	}
+
 	if (invulnerable_ > 0) {
 		invulnerable_ -= dt;
 	}
@@ -250,7 +285,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 		health_ += 1;
 	}
 	else if (ctx.game.wasKeyPressed(GLFW_KEY_N)) {
-		health_ -= 1;
+		hurt(1);
 	}
 
 	// Break block, or click UI
@@ -1111,8 +1146,9 @@ void PlayerEntity::hurt(int n)
 
 	Swan::info << "Hurt for " << n << " hearts";
 	health_ -= n;
-	if (health_ < 0) {
+	if (health_ <= 0) {
 		health_ = 0;
+		blackout_ = BLACKOUT_TIME;
 	}
 
 	invulnerable_ = 0.3;
