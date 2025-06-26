@@ -48,7 +48,11 @@ PlayerEntity::PlayerEntity(Swan::Ctx &ctx, Swan::Vec2 pos):
 
 void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
-	rnd.setGamma(gamma_);
+	if (invulnerable_ > 0) {
+		rnd.setGamma(gamma_ + invulnerable_ * 3);
+	} else {
+		rnd.setGamma(gamma_);
+	}
 
 	Cygnet::Mat3gf mat;
 
@@ -200,8 +204,12 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 
 void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 {
-	if (interactTimer_ >= 0) {
+	if (interactTimer_ > 0) {
 		interactTimer_ -= dt;
+	}
+
+	if (invulnerable_ > 0) {
+		invulnerable_ -= dt;
 	}
 
 	Swan::Vec2 facePos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.3};
@@ -1097,11 +1105,17 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 
 void PlayerEntity::hurt(int n)
 {
+	if (invulnerable_ > 0) {
+		return;
+	}
+
 	Swan::info << "Hurt for " << n << " hearts";
 	health_ -= n;
 	if (health_ < 0) {
 		health_ = 0;
 	}
+
+	invulnerable_ = 0.3;
 }
 
 }

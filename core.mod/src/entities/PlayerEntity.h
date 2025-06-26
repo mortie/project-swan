@@ -148,6 +148,7 @@ private:
 	float interactTimer_ = 0;
 	Swan::TilePos spawnPoint_;
 	int health_ = 0;
+	float invulnerable_ = 0;
 
 	int teleState_ = 0;
 	float teleportTimer_ = 0;
