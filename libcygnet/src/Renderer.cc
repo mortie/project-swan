@@ -650,8 +650,6 @@ void Renderer::renderUI(const RenderCamera &cam, RenderProps props)
 	for (int i = 0; i <= (int)RenderLayer::MAX; ++i) {
 		renderUILayer(RenderLayer(i), camMat);
 	}
-
-	gamma_ = 1;
 }
 
 void Renderer::renderUILayer(RenderLayer layer, Mat3gf camMat)
