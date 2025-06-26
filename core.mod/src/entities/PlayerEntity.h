@@ -121,6 +121,8 @@ private:
 	void handleInventorySelection(Swan::Ctx &ctx);
 	void handleInventoryHover(Swan::Ctx &ctx);
 
+	void hurt(int n);
+
 	State state_ = State::IDLE;
 	Sprites sprites_;
 	Swan::Animation *currentAnimation_ = &sprites_.idle;

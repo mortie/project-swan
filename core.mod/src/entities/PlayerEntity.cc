@@ -290,7 +290,26 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 		physicsBody_.updateNoclip(ctx, dt);
 	} else  {
 		handlePhysics(ctx, dt);
+
+		bool wasOnGround = physicsBody_.onGround;
+		auto oldVel = physicsBody_.vel;
 		physicsBody_.update(ctx, dt);
+		if (!wasOnGround && physicsBody_.onGround) {
+			auto squareSpeed = oldVel.squareLength();
+			if (squareSpeed >= 15 * 15) {
+				Swan::info << "Hit the ground with a speed of " << std::sqrt(squareSpeed);
+			}
+
+			if (squareSpeed >= 30 * 30) {
+				hurt(4);
+			}
+			else if (squareSpeed >= 25 * 25) {
+				hurt(3);
+			}
+			else if (squareSpeed >= 20 * 20) {
+				hurt(2);
+			}
+		}
 	}
 }
 
@@ -1073,6 +1092,15 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 			auxInventory_ = &craftingInventory_;
 			craftingInventory_.recompute(ctx, inventory_.content());
 		}
+	}
+}
+
+void PlayerEntity::hurt(int n)
+{
+	Swan::info << "Hurt for " << n << " hearts";
+	health_ -= n;
+	if (health_ < 0) {
+		health_ = 0;
 	}
 }
 
