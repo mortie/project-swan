@@ -104,11 +104,23 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	// Draw health
 	rnd.uiView({}, [&] {
 		for (int i = 0; i < std::max(MAX_HEALTH, health_); ++i) {
-			auto &sprite = i < health_ ? sprites_.heart : sprites_.emptyHeart;
+			Cygnet::RenderSprite *sprite;
+			if (i >= health_) {
+				sprite = &sprites_.emptyHeart;
+			}
+			else {
+				sprite = &sprites_.heart;
+			}
+
+			float y = 0.25;
+			if (vit_ != Vit::OK && i % 2 == 1) {
+				y += 0.05;
+			}
+
 			rnd.drawUISprite({
 				.transform = Cygnet::Mat3gf{}
-					.translate({(i / 3.5f) + 0.25f, 0.25f}),
-				.sprite = sprite,
+					.translate({(i / 3.5f) + 0.25f, y}),
+				.sprite = *sprite,
 			});
 		}
 	}, Cygnet::Anchor::TOP_LEFT);
@@ -230,7 +242,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 	if (blackout_ > 0) {
 		float prevBlackout = blackout_;
 		blackout_ -= dt;
-		if (prevBlackout > 1 && blackout_ <= 1) {
+		if (prevBlackout > 1.5 && blackout_ <= 1.5) {
 			ctx.game.playSound(sounds_.teleport);
 			physicsBody_.body.pos = spawnPoint_;
 			physicsBody_.vel = {};
@@ -245,6 +257,16 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 
 	if (invulnerable_ > 0) {
 		invulnerable_ -= dt;
+	}
+
+	if (health_ <= 0) {
+		vit_ = Vit::LETHARGIC;
+	}
+	else if (health_ <= 4) {
+		vit_ = Vit::WINDED;
+	}
+	else {
+		vit_ = Vit::OK;
 	}
 
 	Swan::Vec2 facePos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.3};
@@ -468,6 +490,29 @@ void PlayerEntity::askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent)
 	}
 }
 
+void PlayerEntity::hurt(int n)
+{
+	if (invulnerable_ > 0) {
+		return;
+	}
+
+	health_ -= n;
+	if (health_ <= 0) {
+		health_ = 0;
+		blackout_ = BLACKOUT_TIME;
+	}
+
+	invulnerable_ = 0.3;
+}
+
+void PlayerEntity::heal(int n)
+{
+	health_ += n;
+	if (health_ > MAX_HEALTH) {
+		health_ = MAX_HEALTH;
+	}
+}
+
 void PlayerEntity::onLeftClick(Swan::Ctx &ctx)
 {
 	if (interactTimer_ > 0) {
@@ -670,6 +715,20 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	};
 	auto &belowTile = ctx.plane.tiles().get(belowTilePos);
 
+	// Find a speed multiplier based on vitality
+	float speedMult = 1;
+	switch (vit_) {
+	case Vit::OK:
+		sprites_.idle.setInterval(0.2);
+		break;
+	case Vit::WINDED:
+		sprites_.idle.setInterval(0.25);
+	case Vit::LETHARGIC:
+		sprites_.idle.setInterval(0.4);
+		speedMult = 0.7;
+		break;
+	}
+
 	bool inLadder =
 		dynamic_cast<LadderTileTrait *>(midTile.traits.get()) ||
 		dynamic_cast<LadderTileTrait *>(topTile.traits.get());
@@ -738,6 +797,9 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	if (ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
 		sprinting_ = true;
 	}
+	if (vit_ == Vit::LETHARGIC) {
+		sprinting_ = false;
+	}
 
 	// Handle left/right key press
 	int runDirection = 0;
@@ -775,6 +837,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	else {
 		moveForce = MOVE_FORCE_AIR;
 	}
+	moveForce *= speedMult;
 
 	State oldState = state_;
 	state_ = State::IDLE;
@@ -796,7 +859,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	}
 
 	// Adjust running speed based on sprinting
-	sprites_.running.setInterval(sprinting_ ? 0.07 : 0.1);
+	sprites_.running.setInterval((sprinting_ ? 0.07 : 0.1) / speedMult);
 
 	// If we hit the ground, override the desired state to be landing
 	if (physicsBody_.onGround && (oldState == State::FALLING || oldState == State::JUMPING)) {
@@ -872,7 +935,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 			auto *sound = belowTile.stepSounds[stepIndex_];
 			ctx.game.playSound(sound, 0.2);
 			stepIndex_ = (stepIndex_ + 1) % 2;
-			stepTimer_ += sprinting_ ? 0.28 : 0.4;
+			stepTimer_ += (sprinting_ ? 0.28 : 0.4) / speedMult;
 		}
 	}
 	else if (state_ == State::LANDING && oldState != State::LANDING) {
@@ -1136,22 +1199,6 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 			craftingInventory_.recompute(ctx, inventory_.content());
 		}
 	}
-}
-
-void PlayerEntity::hurt(int n)
-{
-	if (invulnerable_ > 0) {
-		return;
-	}
-
-	Swan::info << "Hurt for " << n << " hearts";
-	health_ -= n;
-	if (health_ <= 0) {
-		health_ = 0;
-		blackout_ = BLACKOUT_TIME;
-	}
-
-	invulnerable_ = 0.3;
 }
 
 }

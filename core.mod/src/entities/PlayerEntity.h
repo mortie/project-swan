@@ -42,6 +42,9 @@ public:
 	bool askToOpenInventory(Swan::EntityRef ent, CloseInventoryCallback cb);
 	void askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent);
 
+	void hurt(int n);
+	void heal(int n);
+
 private:
 	struct Sounds {
 		Sounds(Swan::Ctx &ctx):
@@ -81,6 +84,7 @@ private:
 		Swan::Animation landing;
 		Cygnet::RenderSprite emptyHeart;
 		Cygnet::RenderSprite heart;
+		Cygnet::RenderSprite yellowHeart;
 	};
 
 	struct UI {
@@ -112,6 +116,12 @@ private:
 		LANDING,
 	};
 
+	enum class Vit {
+		OK,
+		WINDED,
+		LETHARGIC,
+	};
+
 	void onRightClick(Swan::Ctx &ctx);
 	void onLeftClick(Swan::Ctx &ctx);
 	void dropItem(Swan::Ctx &ctx);
@@ -121,9 +131,8 @@ private:
 	void handleInventorySelection(Swan::Ctx &ctx);
 	void handleInventoryHover(Swan::Ctx &ctx);
 
-	void hurt(int n);
-
 	State state_ = State::IDLE;
+	Vit vit_ = Vit::OK;
 	Sprites sprites_;
 	Swan::Animation *currentAnimation_ = &sprites_.idle;
 
