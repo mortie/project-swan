@@ -233,12 +233,11 @@ public:
 		registerItem({
 			.name = "dynamite",
 			.image = "core::items/dynamite",
-			.onActivate = [](
-				Swan::Ctx &ctx, Swan::ItemStack &stack,
-				Swan::Vec2 pos, Swan::Vec2 dir)
-			{
-				stack.remove(1);
-				ctx.plane.entities().spawn<DynamiteEntity>(pos, dir * 15);
+			.onActivate = [](Swan::Ctx &ctx, Swan::Item::ActivateMeta meta) {
+				meta.stack.remove(1);
+				auto pos = meta.activator.getBody()->topMid();
+				auto vel = meta.direction * 15;
+				ctx.plane.entities().spawn<DynamiteEntity>(pos, vel);
 			},
 		});
 
@@ -289,6 +288,17 @@ public:
 		registerItem({
 			.name = "unfired-crucible",
 			.image = "core::items/unfired-crucible",
+		});
+
+		registerItem({
+			.name = "potato",
+			.image = "core::items/potato",
+			.onActivate = foodItem<1>,
+		});
+		registerItem({
+			.name = "cooked-potato",
+			.image = "core::items/cooked-potato",
+			.onActivate = foodItem<3>,
 		});
 
 		registerFluid({
@@ -377,6 +387,11 @@ public:
 		registerRecipe({
 			.inputs = {{1, "core::unfired-crucible"}},
 			.output = {1, "core::crucible"},
+			.kind = "core::burning",
+		});
+		registerRecipe({
+			.inputs = {{1, "core::potato"}},
+			.output = {1, "core::cooked-potato"},
 			.kind = "core::burning",
 		});
 

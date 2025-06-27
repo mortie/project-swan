@@ -43,7 +43,7 @@ public:
 	void askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent);
 
 	void hurt(int n);
-	void heal(int n);
+	bool heal(int n);
 
 private:
 	struct Sounds {

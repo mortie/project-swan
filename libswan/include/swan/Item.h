@@ -13,6 +13,12 @@ struct Item {
 		virtual ~Traits() = default;
 	};
 
+	struct ActivateMeta {
+		EntityRef activator;
+		ItemStack &stack;
+		Vec2 direction;
+	};
+
 	struct Builder {
 		std::string name;
 		std::string image = "@::invalid";
@@ -21,8 +27,7 @@ struct Item {
 		ToolSet tool = Tool::NONE;
 		float lightLevel = 0;
 
-		void (*onActivate)(
-			Ctx &ctx, ItemStack &stack, Vec2 pos, Vec2 dir) = nullptr;
+		void (*onActivate)(Ctx &ctx, ActivateMeta meta) = nullptr;
 	};
 
 	Tile::ID id;
@@ -36,8 +41,7 @@ struct Item {
 	bool hidden = true;
 	float yOffset = 0;
 
-	void (*onActivate)(
-		Ctx &ctx, ItemStack &stack, Vec2 pos, Vec2 dir);
+	void (*onActivate)(Ctx &ctx, ActivateMeta meta) = nullptr;
 
 	Item() = default;
 	Item(Tile::ID id, std::string name, const Builder &builder):

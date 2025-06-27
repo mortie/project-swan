@@ -1,61 +1,26 @@
 #pragma once
 
-#include "entities/ItemStackEntity.h"
-#include "entities/FallingTileEntity.h"
-
 #include <swan/swan.h>
 
 namespace CoreMod {
 
-inline void dropItem(
-	Swan::Ctx &ctx, Swan::TilePos pos, Swan::Item &item)
+void dropItem(
+	Swan::Ctx &ctx, Swan::TilePos pos, Swan::Item &item);
+void dropItem(
+	Swan::Ctx &ctx, Swan::TilePos pos, const std::string &item);
+void breakTileAndDropItem(Swan::Ctx &ctx, Swan::TilePos pos);
+
+bool denyIfFloating(Swan::Ctx &ctx, Swan::TilePos pos);
+void breakIfFloating(Swan::Ctx &ctx, Swan::TilePos pos);
+void fallIfFloating(Swan::Ctx &ctx, Swan::TilePos pos);
+
+bool healPlayer(Swan::EntityRef player, int n);
+
+template<int N>
+void foodItem(Swan::Ctx &ctx, Swan::Item::ActivateMeta meta)
 {
-	ctx.plane.entities().spawn<ItemStackEntity>(
-		(Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, &item);
-}
-
-inline void dropItem(
-	Swan::Ctx &ctx, Swan::TilePos pos, const std::string &item)
-{
-	dropItem(ctx, pos, ctx.world.getItem(item));
-}
-
-inline void breakTileAndDropItem(Swan::Ctx &ctx, Swan::TilePos pos)
-{
-	auto &droppedItem = ctx.plane.tiles().get(pos).droppedItem;
-
-	if (droppedItem) {
-		dropItem(ctx, pos, *droppedItem);
-	}
-
-	ctx.plane.breakTile(pos);
-}
-
-inline bool denyIfFloating(Swan::Ctx &ctx, Swan::TilePos pos)
-{
-	auto below = pos + Swan::TilePos{0, 1};
-
-	return ctx.plane.tiles().get(below).isSupportV;
-}
-
-inline void breakIfFloating(Swan::Ctx &ctx, Swan::TilePos pos)
-{
-	auto below = pos + Swan::TilePos{0, 1};
-
-	if (!ctx.plane.tiles().get(below).isSupportV) {
-		breakTileAndDropItem(ctx, pos);
-	}
-}
-
-inline void fallIfFloating(Swan::Ctx &ctx, Swan::TilePos pos)
-{
-	auto below = pos + Swan::TilePos{0, 1};
-
-	if (!ctx.plane.tiles().get(below).isSupportV) {
-		auto &tile = ctx.plane.tiles().get(pos);
-		ctx.plane.tiles().setID(pos, Swan::World::AIR_TILE_ID);
-		ctx.plane.entities().spawn<FallingTileEntity>(
-			(Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, tile.id);
+	if (healPlayer(meta.activator, N)) {
+		meta.stack.remove(1);
 	}
 }
 

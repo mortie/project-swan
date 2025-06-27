@@ -505,12 +505,17 @@ void PlayerEntity::hurt(int n)
 	invulnerable_ = 0.3;
 }
 
-void PlayerEntity::heal(int n)
+bool PlayerEntity::heal(int n)
 {
+	if (health_ == MAX_HEALTH) {
+		return false;
+	}
+
 	health_ += n;
 	if (health_ > MAX_HEALTH) {
 		health_ = MAX_HEALTH;
 	}
+	return true;
 }
 
 void PlayerEntity::onLeftClick(Swan::Ctx &ctx)
@@ -579,7 +584,12 @@ void PlayerEntity::onRightClick(Swan::Ctx &ctx)
 	if (item.onActivate) {
 		Swan::Vec2 origin = physicsBody_.body.topMid().add(0, 0.25);
 		Swan::Vec2 mouse = ctx.game.getMousePos();
-		item.onActivate(ctx, stack, origin, (mouse - origin).norm());
+		Swan::Item::ActivateMeta meta = {
+			.activator = ctx.plane.entities().current(),
+			.stack = stack,
+			.direction = (mouse - origin).norm(),
+		};
+		item.onActivate(ctx, meta);
 		interactTimer_ = 0.5;
 		return;
 	}

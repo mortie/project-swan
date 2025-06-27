@@ -1,6 +1,7 @@
 #include <swan/swan.h>
 
 #include "world/util.h"
+#include "entities/ItemStackEntity.h"
 
 namespace CoreMod {
 
