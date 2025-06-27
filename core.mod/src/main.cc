@@ -291,6 +291,10 @@ public:
 		});
 
 		registerItem({
+			.name = "burned-food",
+			.image = "core::items/burned-food",
+		});
+		registerItem({
 			.name = "potato",
 			.image = "core::items/potato",
 			.onActivate = foodItem<1>,
@@ -392,6 +396,11 @@ public:
 		registerRecipe({
 			.inputs = {{1, "core::potato"}},
 			.output = {1, "core::cooked-potato"},
+			.kind = "core::burning",
+		});
+		registerRecipe({
+			.inputs = {{1, "core::cooked-potato"}},
+			.output = {1, "core::burned-food"},
 			.kind = "core::burning",
 		});
 
