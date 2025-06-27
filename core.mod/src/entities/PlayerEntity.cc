@@ -51,6 +51,8 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
 	if (invulnerable_ > 0) {
 		rnd.setGamma(gamma_ + invulnerable_ * 3);
+	} else if (vit_ == Vit::LETHARGIC) {
+		rnd.setGamma(gamma_ + 0.5);
 	} else {
 		rnd.setGamma(gamma_);
 	}
@@ -500,6 +502,8 @@ void PlayerEntity::hurt(int n)
 	if (health_ <= 0) {
 		health_ = 0;
 		blackout_ = BLACKOUT_TIME;
+		state_ = State::IDLE;
+		currentAnimation_ = &sprites_.idle;
 	}
 
 	invulnerable_ = 0.3;
