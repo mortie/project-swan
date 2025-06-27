@@ -14,6 +14,7 @@
 #include "world/ladder.h"
 #include "world/outcrop.h"
 #include "world/pipe.h"
+#include "world/potato.h"
 #include "world/torch.h"
 #include "world/tree.h"
 #include "world/util.h"
@@ -223,6 +224,7 @@ public:
 		registerOutcrop(*this, "copper", "copper-ore-chunk");
 		registerOutcrop(*this, "sulphur");
 		registerGlassPipe(*this);
+		registerPotato(*this);
 		registerTorch(*this);
 
 		registerItem({
@@ -297,7 +299,18 @@ public:
 		registerItem({
 			.name = "potato",
 			.image = "core::items/potato",
-			.onActivate = foodItem<1>,
+			.onActivate = +[](Swan::Ctx &ctx, Swan::Item::ActivateMeta meta) {
+				Swan::Tile &tile = ctx.plane.tiles().get(meta.cursor);
+				auto above = meta.cursor.add(0, -1);
+				bool plantPotato =
+					(tile.name == "core::dirt" || tile.name == "core::grass") &&
+					(ctx.plane.tiles().getID(above) == Swan::World::AIR_TILE_ID);
+				if (plantPotato) {
+					ctx.plane.tiles().set(above, "core::potato-bush::0");
+				} else {
+					foodItem<1>(ctx, meta);
+				}
+			},
 		});
 		registerItem({
 			.name = "cooked-potato",

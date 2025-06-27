@@ -17,6 +17,7 @@ struct Item {
 		EntityRef activator;
 		ItemStack &stack;
 		Vec2 direction;
+		TilePos cursor;
 	};
 
 	struct Builder {

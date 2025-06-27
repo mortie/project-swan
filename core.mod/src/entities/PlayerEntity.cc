@@ -311,6 +311,13 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 	else if (ctx.game.wasKeyPressed(GLFW_KEY_N)) {
 		hurt(1);
 	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_P)) {
+		auto &tile = ctx.plane.tiles().get(breakPos_);
+		if (tile.onWorldTick) {
+			Swan::info << "World ticking " << tile.name << " at " << breakPos_;
+			tile.onWorldTick(ctx, breakPos_);
+		}
+	}
 
 	// Break block, or click UI
 	if (ctx.game.wasMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
@@ -592,6 +599,7 @@ void PlayerEntity::onRightClick(Swan::Ctx &ctx)
 			.activator = ctx.plane.entities().current(),
 			.stack = stack,
 			.direction = (mouse - origin).norm(),
+			.cursor = breakPos_,
 		};
 		item.onActivate(ctx, meta);
 		interactTimer_ = 0.5;
