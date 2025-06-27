@@ -161,7 +161,7 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 				.scale({0.7, 0.7})
 				.translate({ctx.game.getMouseUIPos()})
 				.translate({0.1, 0.8}),
-			.text = std::to_string(heldStack_.count()).c_str(),
+			.text = Swan::strify(heldStack_.count()),
 		});
 	}
 

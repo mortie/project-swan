@@ -8,8 +8,8 @@ void registerPotatoBush(Swan::Mod &mod)
 {
 	if constexpr (Last) {
 		mod.registerTile({
-			.name = Swan::cat("potato-bush::", std::to_string(N)),
-			.image = Swan::cat("core::tiles/flora/potato-bush-", std::to_string(N)),
+			.name = Swan::cat("potato-bush::", N),
+			.image = Swan::cat("core::tiles/flora/potato-bush-", N),
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.breakSound = "core::sounds/step/grass1",
@@ -19,8 +19,8 @@ void registerPotatoBush(Swan::Mod &mod)
 		});
 	} else {
 		mod.registerTile({
-			.name = Swan::cat("potato-bush::", std::to_string(N)),
-			.image = Swan::cat("core::tiles/flora/potato-bush-", std::to_string(N)),
+			.name = Swan::cat("potato-bush::", N),
+			.image = Swan::cat("core::tiles/flora/potato-bush-", N),
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.breakSound = "core::sounds/step/grass1",
@@ -32,7 +32,7 @@ void registerPotatoBush(Swan::Mod &mod)
 				}
 
 				ctx.plane.tiles().set(pos, Swan::cat(
-					"core::potato-bush::", std::to_string(N + 1)));
+					"core::potato-bush::", N + 1));
 			},
 		});
 	}

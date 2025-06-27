@@ -317,8 +317,7 @@ Result<SoundAsset> loadSoundAsset(
 	stb_vorbis *vorbis = stb_vorbis_open_filename(
 		oggPath.c_str(), &err, nullptr);
 	if (!vorbis) {
-		return {Err, cat(
-			"Couldn't open ", oggPath, ": ", std::to_string(err))};
+		return {Err, cat("Couldn't open ", oggPath, ": ", err)};
 	}
 
 	SWAN_DEFER(stb_vorbis_close(vorbis));
@@ -339,16 +338,13 @@ Result<SoundAsset> loadSoundAsset(
 		asset.r = asset.data.get() + samples;
 	}
 	else {
-		return {Err, cat(
-			"Invalid channel count: ", std::to_string(info.channels))};
+		return {Err, cat("Invalid channel count: ", info.channels)};
 	}
 
 	float *bufs[] = {asset.l, asset.r};
 	int n = stb_vorbis_get_samples_float(vorbis, info.channels, bufs, samples);
 	if (n != (int)samples) {
-		return {Err, cat(
-			"Invalid sample count: ", std::to_string(n),
-			", expected ", std::to_string(samples))};
+		return {Err, cat("Invalid sample count: ", n, ", expected ", samples)};
 	}
 
 	return {Ok, std::move(asset)};

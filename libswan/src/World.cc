@@ -166,7 +166,7 @@ void World::buildResources()
 		}
 		else if (image->width != TILE_SIZE) {
 			warn << '\'' << path << "': Width must be " << TILE_SIZE << " pixels";
-			return {Err, cat("'", path, "': Width must be ", std::to_string(TILE_SIZE), " pixels")};
+			return {Err, cat("'", path, "': Width must be ", TILE_SIZE, " pixels")};
 		}
 		else {
 			return image;

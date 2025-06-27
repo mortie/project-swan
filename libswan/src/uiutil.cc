@@ -89,7 +89,7 @@ void inventory(
 				.scale({0.7, 0.7})
 				.translate({1.1, 1.5})
 				.translate({float(x), float(y)}),
-			.text = std::to_string(stack.count()).c_str(),
+			.text = strify(stack.count()),
 		}, Cygnet::Anchor::TOP_LEFT);
 
 	next:

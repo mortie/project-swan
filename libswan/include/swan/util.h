@@ -1,5 +1,6 @@
 #pragma once
 
+#include <charconv>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -240,11 +241,53 @@ auto callEnd(T &v)
 	return end(v);
 }
 
+struct CowStr {
+	CowStr(std::string s): v(std::move(s)) {}
+	CowStr(std::string_view s): v(s) {}
+
+	std::variant<std::string, std::string_view> v;
+
+	std::string_view str() const
+	{
+		if (auto *s = std::get_if<std::string>(&v); s) {
+			return *s;
+		}
+		if (auto *s = std::get_if<std::string_view>(&v); s) {
+			return *s;
+		}
+		abort();
+	}
+
+	operator std::string_view() const { return str(); }
+	const char *data() const { return str().data(); }
+	size_t size() const { return str().size(); }
+};
+
+template<typename T>
+CowStr strify(const T &v)
+    requires(std::is_integral_v<T>)
+{
+	char buf[32];
+	auto res = std::to_chars(std::begin(buf), std::end(buf), v);
+	if (res.ec == std::errc{}) {
+		return std::string(buf, res.ptr);
+	} else {
+		return std::string_view("<invalid>");
+	}
+}
+
+template<typename T>
+CowStr strify(const T &v)
+	requires(!std::is_integral_v<T>)
+{
+	return std::string_view(v);
+}
+
 // Concatinate strings
 template<typename ...Args>
 inline std::string cat(Args &&... args)
 {
-	std::string_view strs[] = {std::forward<Args>(args)...};
+	CowStr strs[] = {strify(args)...};
 
 	size_t size = 0;
 

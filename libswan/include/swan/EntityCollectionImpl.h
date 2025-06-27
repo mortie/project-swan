@@ -394,8 +394,7 @@ inline void EntityCollectionImpl<Ent>::serialize(
 		memcpy(&data.front(), &arr.front(), arr.size());
 
 		if (ctx.game.debug_.outputEntityProto) {
-			auto path = cat(
-				"ent.", sanitizedName, ".", std::to_string(wrapper.id), ".bin");
+			auto path = cat("ent.", sanitizedName, ".", wrapper.id, ".bin");
 			std::ofstream f(path);
 			if (f) {
 				info << "Writing entity to " << path << "...";
