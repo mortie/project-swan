@@ -33,6 +33,7 @@ build: $(OUT)/build.ninja
 .PHONY: pfx
 pfx: build
 	ninja -C $(OUT) install >/dev/null
+	$(OUT)/swan-build core.mod $(OUT)/pfx
 
 .PHONY: setup
 setup: $(OUT)/build.ninja

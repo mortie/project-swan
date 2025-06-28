@@ -24,6 +24,6 @@ jobs:
     - name: setup
       run: CXX=${{matrix.compiler}} meson setup build -Dwerror=true
     - name: compile
-      run: ninja -C build
+      run: make && make pfx
     - name: check
       run: make check
