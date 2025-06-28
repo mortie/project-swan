@@ -28,7 +28,7 @@ struct SoundAsset {
 
 Result<ImageAsset> loadImageAsset(
 	const HashMap<std::string> &modPaths,
-	std::string path);
+	std::string path, std::optional<int> defaultSize = {});
 
 Result<SoundAsset> loadSoundAsset(
 	const HashMap<std::string> &modPaths,

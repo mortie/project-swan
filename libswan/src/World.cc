@@ -159,7 +159,7 @@ void World::buildResources()
 			return {Ok, std::move(asset)};
 		}
 
-		auto image = loadImageAsset(modPaths_, path);
+		auto image = loadImageAsset(modPaths_, path, TILE_SIZE);
 		if (!image) {
 			warn << '\'' << path << "': " << image.err();
 			return {Err, cat("'", path, "': ", image.err())};

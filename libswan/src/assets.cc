@@ -145,7 +145,7 @@ static void makeVariant(
 
 Result<ImageAsset> loadImageAsset(
 	const HashMap<std::string> &modPaths,
-	std::string path)
+	std::string path, std::optional<int> defaultSize)
 {
 	auto sep = path.find("::");
 
@@ -256,7 +256,7 @@ Result<ImageAsset> loadImageAsset(
 	memcpy(bufferCopy.get(), buffer.get(), size);
 	buffer.reset();
 
-	int frameHeight = h;
+	int frameHeight = defaultSize.value_or(h);
 	int repeatFrom = 0;
 
 	if (toml) {
@@ -272,8 +272,17 @@ Result<ImageAsset> loadImageAsset(
 		.data = std::move(bufferCopy),
 	};
 
-	if (toml) {
-		auto frameWidth = toml->get_as<int>("width");
+	info << "Asset " << path << ": w=" << w << " h=" << frameHeight << " n=" << asset.frameCount;
+
+	if (toml || defaultSize) {
+		std::optional<int> frameWidth;
+		if (toml) {
+			frameWidth = toml->get_as<int>("width");
+		}
+		if (!frameWidth) {
+			frameWidth = defaultSize;
+		}
+
 		if (frameWidth) {
 			collapseGrid(asset, *frameWidth);
 		}
