@@ -44,7 +44,7 @@ void registerPotatoBush(Swan::Mod &mod)
 
 void registerPotato(Swan::Mod &mod)
 {
-	registerPotatoBush<3>(mod);
+	registerPotatoBush<4>(mod);
 }
 
 }
