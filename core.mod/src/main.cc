@@ -55,6 +55,7 @@ public:
 		registerSound("sounds/misc/teleport");
 		registerSound("sounds/misc/lock-open");
 		registerSound("sounds/misc/lock-close");
+		registerSound("sounds/misc/hurt");
 		registerSound("sounds/ui/crafting");
 		registerSound("sounds/ui/inventory-open");
 		registerSound("sounds/ui/inventory-close");

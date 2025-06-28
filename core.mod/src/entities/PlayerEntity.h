@@ -42,8 +42,8 @@ public:
 	bool askToOpenInventory(Swan::EntityRef ent, CloseInventoryCallback cb);
 	void askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent);
 
-	void hurt(int n);
-	bool heal(int n);
+	void hurt(Swan::Ctx &ctx, int n);
+	bool heal(Swan::Ctx &, int n);
 
 private:
 	struct Sounds {

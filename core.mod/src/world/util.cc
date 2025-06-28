@@ -58,14 +58,14 @@ void fallIfFloating(Swan::Ctx &ctx, Swan::TilePos pos)
 	}
 }
 
-bool healPlayer(Swan::EntityRef playerRef, int n)
+bool healPlayer(Swan::Ctx &ctx, Swan::EntityRef playerRef, int n)
 {
 	auto player = dynamic_cast<PlayerEntity *>(playerRef.get());
 	if (!player) {
 		return false;
 	}
 
-	return player->heal(n);
+	return player->heal(ctx, n);
 }
 
 }

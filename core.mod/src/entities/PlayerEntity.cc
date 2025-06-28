@@ -309,7 +309,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 		health_ += 1;
 	}
 	else if (ctx.game.wasKeyPressed(GLFW_KEY_N)) {
-		hurt(1);
+		hurt(ctx, 1);
 	}
 	else if (ctx.game.wasKeyPressed(GLFW_KEY_P)) {
 		auto &tile = ctx.plane.tiles().get(breakPos_);
@@ -370,18 +370,14 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 		physicsBody_.update(ctx, dt);
 		if (!wasOnGround && physicsBody_.onGround) {
 			auto squareSpeed = oldVel.squareLength();
-			if (squareSpeed >= 15 * 15) {
-				Swan::info << "Hit the ground with a speed of " << std::sqrt(squareSpeed);
-			}
-
 			if (squareSpeed >= 30 * 30) {
-				hurt(4);
+				hurt(ctx, 4);
 			}
 			else if (squareSpeed >= 25 * 25) {
-				hurt(3);
+				hurt(ctx, 3);
 			}
 			else if (squareSpeed >= 20 * 20) {
-				hurt(2);
+				hurt(ctx, 2);
 			}
 		}
 	}
@@ -499,12 +495,13 @@ void PlayerEntity::askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent)
 	}
 }
 
-void PlayerEntity::hurt(int n)
+void PlayerEntity::hurt(Swan::Ctx &ctx, int n)
 {
 	if (invulnerable_ > 0) {
 		return;
 	}
 
+	ctx.game.playSound(ctx.world.getSound("core::sounds/misc/hurt"), 0.2f * n);
 	health_ -= n;
 	if (health_ <= 0) {
 		health_ = 0;
@@ -516,7 +513,7 @@ void PlayerEntity::hurt(int n)
 	invulnerable_ = 0.3;
 }
 
-bool PlayerEntity::heal(int n)
+bool PlayerEntity::heal(Swan::Ctx &, int n)
 {
 	if (health_ == MAX_HEALTH) {
 		return false;

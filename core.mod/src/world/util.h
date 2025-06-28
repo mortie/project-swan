@@ -14,12 +14,12 @@ bool denyIfFloating(Swan::Ctx &ctx, Swan::TilePos pos);
 void breakIfFloating(Swan::Ctx &ctx, Swan::TilePos pos);
 void fallIfFloating(Swan::Ctx &ctx, Swan::TilePos pos);
 
-bool healPlayer(Swan::EntityRef player, int n);
+bool healPlayer(Swan::Ctx &ctx, Swan::EntityRef player, int n);
 
 template<int N>
 void foodItem(Swan::Ctx &ctx, Swan::Item::ActivateMeta meta)
 {
-	if (healPlayer(meta.activator, N)) {
+	if (healPlayer(ctx, meta.activator, N)) {
 		meta.stack.remove(1);
 	}
 }
