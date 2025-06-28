@@ -1,6 +1,7 @@
 #include "worlds.h"
 
 #include <filesystem>
+#include <algorithm>
 
 std::vector<std::string> listWorlds()
 {

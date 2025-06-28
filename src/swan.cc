@@ -12,7 +12,7 @@
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <cygnet/gl.h>
 #include <cygnet/Renderer.h>
-#include <kj/filesystem.h>
+#include <filesystem>
 
 #include <swan/swan.h>
 #include <swan/assets.h>

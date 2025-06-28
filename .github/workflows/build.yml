@@ -13,14 +13,19 @@ jobs:
       matrix:
         os: [ubuntu-24.04, ubuntu-22.04]
         compiler: [g++, clang++]
+        include:
+        - os: ubuntu-24.04
+          pkgs: libwxgtk3.2-dev
+        - os: ubuntu-22.04
+          pkgs:
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: true
     - uses: awalsh128/cache-apt-pkgs-action@v1
       with:
-        packages: build-essential meson cmake python3 capnproto libcapnp-dev libglfw3-dev clang
-        version: ${{matrix.os}}-1
+        packages: build-essential meson cmake python3 capnproto libcapnp-dev libglfw3-dev clang libwxgtk3.2-dev ${{matrix.pkgs}}
+        version: ${{matrix.os}}-2
     - name: setup
       run: CXX=${{matrix.compiler}} make setup && meson configure build -Dwerror=true
     - name: compile
