@@ -22,8 +22,8 @@ jobs:
         packages: build-essential meson cmake python3 capnproto libcapnp-dev libglfw3-dev clang
         version: ${{matrix.os}}-1
     - name: setup
-      run: CXX=${{matrix.compiler}} meson setup build -Dwerror=true
+      run: CXX=${{matrix.compiler}} make setup && meson configure build -Dwerror=true
     - name: compile
-      run: make && make pfx
+      run: make pfx
     - name: check
       run: make check
