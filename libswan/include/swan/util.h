@@ -4,6 +4,8 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <utility>
+#include <variant>
 #include <unordered_map>
 #include <cstddef>
 #include <cstdint>
