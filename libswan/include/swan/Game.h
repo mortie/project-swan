@@ -78,10 +78,11 @@ public:
 	};
 
 	void createWorld(
-		const std::string &worldgen, std::span<std::string> modPaths);
+		std::string worldPath, const std::string &worldgen,
+		std::span<std::string> modPaths);
 
 	void loadWorld(
-		kj::BufferedInputStream &is, std::span<const std::string> modPaths);
+		std::string worldPath, std::span<const std::string> modPaths);
 
 	void onKeyDown(int scancode, int key);
 	void onKeyUp(int scancode, int key);
@@ -181,6 +182,7 @@ public:
 	void save();
 
 	std::unique_ptr<World> world_ = NULL;
+	std::string worldPath_;
 	Cygnet::Renderer renderer_;
 	Cygnet::RenderCamera cam_{.zoom = 1.0 / 8};
 	Cygnet::RenderCamera uiCam_{.zoom = 1.0 / 16};
@@ -283,6 +285,5 @@ inline void Game::playSound(
 	soundPlayer_.play(
 		asset, volume, std::pair{center.x, center.y}, std::move(handle));
 }
-
 
 }

@@ -24,7 +24,7 @@ llrun:
 .PHONY: run
 run:
 	${MAKE} pfx
-	cd $(OUT)/pfx && $(CMD) ./bin/swan --mod $(abspath core.mod)
+	cd $(OUT)/pfx && $(CMD) ./bin/swan --mod $(abspath core.mod) --world default.swan
 
 .PHONY: build
 build: $(OUT)/build.ninja

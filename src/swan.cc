@@ -108,23 +108,32 @@ static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
 
 int main(int argc, char **argv)
 {
-	const char *swanRoot = getenv("SWAN_ROOT");
-	if (swanRoot != nullptr && swanRoot[0] != '\0') {
-		Swan::assetBasePath = swanRoot;
-	} else {
-		swanRoot = ".";
-	}
-
+	const char *worldPath = nullptr;
 	backward::SignalHandling sh;
 	std::vector<std::string> mods;
+	const char *swanRoot = ".";
 	for (int i = 1; i < argc; ++i) {
 		std::string_view arg = argv[i];
 		if (arg == "--mod") {
 			i += 1;
 			mods.push_back(argv[i]);
+		} else if (arg == "--swan") {
+			i += 1;
+			swanRoot = argv[i];
+		} else if (arg == "--world") {
+			i += 1;
+			worldPath = argv[i];
 		} else {
 			warn << "Unexpected option: " << arg;
 		}
+	}
+
+	if (mods.empty()) {
+		panic << "Empty mods list!";
+	}
+
+	if (!worldPath) {
+		panic << "Missing world path!";
 	}
 
 	auto compileMods = [&]() {
@@ -172,15 +181,11 @@ int main(int argc, char **argv)
 
 	// Load or create world
 	auto fs = kj::newDiskFilesystem();
-	kj::Path worldPath("world.swan");
-	if (fs->getCurrent().exists(worldPath)) {
-		auto worldFile = fs->getCurrent().openFile(worldPath);
-		auto bytes = worldFile->readAllBytes();
-		auto data = kj::ArrayInputStream(bytes);
-		game.loadWorld(data, mods);
-	}
-	else {
-		game.createWorld("core::default", mods);
+	kj::Path kjWorldPath(worldPath);
+	if (fs->getCurrent().exists(kjWorldPath)) {
+		game.loadWorld(worldPath, mods);
+	} else {
+		game.createWorld(worldPath, "core::default", mods);
 	}
 
 	gameptr = &game;

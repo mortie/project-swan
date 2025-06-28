@@ -22,7 +22,8 @@ namespace Swan {
 static constexpr float TICK_DELTA = 1.0 / 20.0;
 
 void Game::createWorld(
-	const std::string &worldgen, std::span<std::string> modPaths)
+	std::string worldPath, const std::string &worldgen,
+	std::span<std::string> modPaths)
 {
 	world_ = std::make_unique<World>(this, time(NULL), modPaths);
 	for (auto &mod: world_->mods_) {
@@ -33,12 +34,17 @@ void Game::createWorld(
 	world_->setCurrentPlane(world_->addPlane());
 	world_->spawnPlayer();
 	hasSortedItems_ = false;
+	worldPath_ = std::move(worldPath);
 }
 
 void Game::loadWorld(
-	kj::BufferedInputStream &is, std::span<const std::string> modPaths)
+	std::string worldPath, std::span<const std::string> modPaths)
 {
-	capnp::PackedMessageReader reader(is);
+	auto fs = kj::newDiskFilesystem();
+	auto worldFile = fs->getCurrent().openFile(kj::Path(worldPath));
+	auto bytes = worldFile->readAllBytes();
+	auto data = kj::ArrayInputStream(bytes);
+	capnp::PackedMessageReader reader(data);
 
 	world_ = std::make_unique<World>(this, time(NULL), modPaths);
 	for (auto &mod: world_->mods_) {
@@ -48,6 +54,7 @@ void Game::loadWorld(
 	auto world = reader.getRoot<proto::World>();
 	world_->deserialize(world);
 	hasSortedItems_ = false;
+	worldPath_ = std::move(worldPath);
 }
 
 void Game::onKeyDown(int scancode, int key)
@@ -516,9 +523,9 @@ void Game::save()
 	auto fs = kj::newDiskFilesystem();
 	auto &dir = fs->getCurrent();
 
-	info << "Writing to world.swan...";
+	info << "Writing to " << worldPath_ << "...";
 	auto replacer = dir.replaceFile(
-		kj::Path("world.swan"), kj::WriteMode::CREATE | kj::WriteMode::MODIFY);
+		kj::Path(worldPath_), kj::WriteMode::CREATE | kj::WriteMode::MODIFY);
 	auto appender = kj::newFileAppender(replacer->get().clone());
 	capnp::writePackedMessage(*appender, mb);
 
@@ -543,12 +550,7 @@ bool Game::reload()
 	save();
 	soundPlayer_.flush();
 	world_.reset();
-
-	auto fs = kj::newDiskFilesystem();
-	auto worldFile = fs->getCurrent().openFile(kj::Path("world.swan"));
-	auto bytes = worldFile->readAllBytes();
-	auto data = kj::ArrayInputStream(bytes);
-	loadWorld(data, mods);
+	loadWorld(worldPath_, mods);
 
 	info << "Reloaded in " << startTime.duration() << " seconds.";
 	return true;
