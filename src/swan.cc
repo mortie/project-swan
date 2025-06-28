@@ -19,6 +19,10 @@
 
 #include "build.h"
 
+#define HAS_MODERN_GLFW \
+	GLFW_VERSION_MAJOR > 3 || \
+	(GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 4)
+
 using namespace Swan;
 
 #define errassert(expr, str, errfn) do { \
@@ -193,9 +197,11 @@ int main(int argc, char **argv)
 	GLFWmonitor *currentMonitor = [&] {
 		int winX, winY, winW, winH;
 		glfwGetWindowPos(window, &winX, &winY);
+#if HAS_MODERN_GLFW
 		if (glfwGetError(nullptr) == GLFW_FEATURE_UNAVAILABLE) {
 			return glfwGetPrimaryMonitor();
 		}
+#endif
 
 		glfwGetWindowSize(window, &winW, &winH);
 		int centerX = winX + (winW / 2);
