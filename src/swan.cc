@@ -180,9 +180,7 @@ int main(int argc, char **argv)
 	Game game(compileMods);
 
 	// Load or create world
-	auto fs = kj::newDiskFilesystem();
-	kj::Path kjWorldPath(worldPath);
-	if (fs->getCurrent().exists(kjWorldPath)) {
+	if (std::filesystem::exists(worldPath)) {
 		game.loadWorld(worldPath, mods);
 	} else {
 		game.createWorld(worldPath, "core::default", mods);

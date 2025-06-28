@@ -67,9 +67,9 @@ struct ChunkProg: public GlProg<Shader::Chunk> {
 
 		glActiveTexture(GL_TEXTURE1);
 		glUniform1i(shader.uniTiles, 1);
-		for (auto &[pos, chunk]: drawChunks) {
-			glUniform2f(shader.uniPos, pos.x, pos.y);
-			glBindTexture(GL_TEXTURE_2D, chunk.tex);
+		for (const auto &dc: drawChunks) {
+			glUniform2f(shader.uniPos, dc.pos.x, dc.pos.y);
+			glBindTexture(GL_TEXTURE_2D, dc.chunk.tex);
 			glDrawArrays(
 				GL_TRIANGLES, 0,
 				6 * Swan::CHUNK_WIDTH * Swan::CHUNK_HEIGHT);
@@ -103,9 +103,9 @@ struct ChunkFluidProg: public GlProg<Shader::ChunkFluid> {
 
 		glActiveTexture(GL_TEXTURE1);
 		glUniform1i(shader.uniFluidGrid, 1);
-		for (auto &[pos, fluid]: drawChunkFluids) {
-			glUniform2f(shader.uniPos, pos.x, pos.y);
-			glBindTexture(GL_TEXTURE_2D, fluid.tex);
+		for (const auto &df: drawChunkFluids) {
+			glUniform2f(shader.uniPos, df.pos.x, df.pos.y);
+			glBindTexture(GL_TEXTURE_2D, df.fluids.tex);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			glCheck();
 		}
@@ -131,9 +131,9 @@ struct ChunkShadowProg: public GlProg<Shader::ChunkShadow> {
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);
-		for (auto &[pos, shadow]: drawChunkShadows) {
-			glUniform2f(shader.uniPos, pos.x, pos.y);
-			glBindTexture(GL_TEXTURE_2D, shadow.tex);
+		for (const auto &dcs: drawChunkShadows) {
+			glUniform2f(shader.uniPos, dcs.pos.x, dcs.pos.y);
+			glBindTexture(GL_TEXTURE_2D, dcs.shadow.tex);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			glCheck();
 		}
@@ -161,7 +161,7 @@ struct ParticleProg: public GlProg<Shader::Particle> {
 		auto prevSize = drawParticles.front().size;
 		glUniform2f(shader.uniSize, prevSize.x, prevSize.y);
 
-		for (auto &particle: drawParticles) {
+		for (const auto &particle: drawParticles) {
 			if (particle.color != prevColor) {
 				prevColor = particle.color;
 				glUniform4f(
@@ -194,7 +194,7 @@ struct RectProg: public GlProg<Shader::Rect> {
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
 		glCheck();
 
-		for (auto &rect: drawRects) {
+		for (const auto &rect: drawRects) {
 			glUniform2f(shader.uniPos, rect.pos.x, rect.pos.y);
 			glUniform2f(shader.uniSize, rect.size.x, rect.size.y);
 			glUniform4f(
@@ -229,16 +229,16 @@ struct SpriteProg: public GlProg<Shader::Sprite> {
 		float prevOpacity = 1;
 
 		glActiveTexture(GL_TEXTURE0);
-		for (auto &[mat, sprite, frame, opacity]: drawSprites) {
-			if (opacity != prevOpacity) {
-				glUniform1f(shader.uniOpacity, opacity);
-				prevOpacity = opacity;
+		for (const auto &ds: drawSprites) {
+			if (ds.opacity != prevOpacity) {
+				glUniform1f(shader.uniOpacity, ds.opacity);
+				prevOpacity = ds.opacity;
 			}
 
-			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, mat.data());
-			glUniform2f(shader.uniFrameSize, sprite.size.x, sprite.size.y);
-			glUniform2f(shader.uniFrameInfo, sprite.frameCount, frame);
-			glBindTexture(GL_TEXTURE_2D, sprite.tex);
+			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, ds.transform.data());
+			glUniform2f(shader.uniFrameSize, ds.sprite.size.x, ds.sprite.size.y);
+			glUniform2f(shader.uniFrameInfo, ds.sprite.frameCount, ds.frame);
+			glBindTexture(GL_TEXTURE_2D, ds.sprite.tex);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			glCheck();
 		}
@@ -261,29 +261,29 @@ struct SpriteProg: public GlProg<Shader::Sprite> {
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);
-		for (auto &[mat, sprite, w, h]: drawGrids) {
-			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, mat.data());
-			glUniform2f(shader.uniFrameSize, sprite.size.x, sprite.size.y);
-			glBindTexture(GL_TEXTURE_2D, sprite.tex);
+		for (const auto &dg: drawGrids) {
+			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, dg.transform.data());
+			glUniform2f(shader.uniFrameSize, dg.sprite.size.x, dg.sprite.size.y);
+			glBindTexture(GL_TEXTURE_2D, dg.sprite.tex);
 
 			// Draw top left, top middle, top right (0, 1, 2)
-			drawStrip(sprite, w, 0, 0, 1, 2);
+			drawStrip(dg.sprite, dg.w, 0, 0, 1, 2);
 			glCheck();
 
 			// Draw center left, center, center right (3, 4, 5)
-			for (int y = 0; y < h; ++y) {
-				drawStrip(sprite, w, y + 1, 3, 4, 5);
+			for (int y = 0; y < dg.h; ++y) {
+				drawStrip(dg.sprite, dg.w, y + 1, 3, 4, 5);
 				glCheck();
 			}
 
 			// Draw bottom left, bottom middle, bottom right (6, 7, 8)
-			drawStrip(sprite, w, h + 1, 6, 7, 8);
+			drawStrip(dg.sprite, dg.w, dg.h + 1, 6, 7, 8);
 			glCheck();
 		}
 	}
 
 private:
-	void drawStrip(RenderSprite &sprite, int w, int y, int l, int m, int r)
+	void drawStrip(const RenderSprite &sprite, int w, int y, int l, int m, int r)
 	{
 		// Left
 		glUniform2f(shader.uniFrameInfo, sprite.frameCount, l);
@@ -405,10 +405,10 @@ struct TileProg: public GlProg<Shader::Tile> {
 		glUniform1i(shader.uniTileAtlas, 0);
 		glCheck();
 
-		for (auto &[mat, id, brightness]: drawTiles) {
-			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, mat.data());
-			glUniform1ui(shader.uniTileID, id);
-			glUniform1f(shader.uniBrightness, brightness);
+		for (const auto &dt: drawTiles) {
+			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, dt.transform.data());
+			glUniform1ui(shader.uniTileID, dt.id);
+			glUniform1f(shader.uniBrightness, dt.brightness);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 			glCheck();

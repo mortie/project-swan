@@ -41,7 +41,7 @@ void Game::loadWorld(
 	std::string worldPath, std::span<const std::string> modPaths)
 {
 	auto fs = kj::newDiskFilesystem();
-	auto worldFile = fs->getCurrent().openFile(kj::Path(worldPath));
+	auto worldFile = fs->getCurrent().openFile(kj::Path::parse(worldPath));
 	auto bytes = worldFile->readAllBytes();
 	auto data = kj::ArrayInputStream(bytes);
 	capnp::PackedMessageReader reader(data);
@@ -525,7 +525,7 @@ void Game::save()
 
 	info << "Writing to " << worldPath_ << "...";
 	auto replacer = dir.replaceFile(
-		kj::Path(worldPath_), kj::WriteMode::CREATE | kj::WriteMode::MODIFY);
+		kj::Path::parse(worldPath_), kj::WriteMode::CREATE | kj::WriteMode::MODIFY);
 	auto appender = kj::newFileAppender(replacer->get().clone());
 	capnp::writePackedMessage(*appender, mb);
 

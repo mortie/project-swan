@@ -22,9 +22,12 @@ llrun:
 	${MAKE} run CMD='lldb --'
 
 .PHONY: run
-run:
-	${MAKE} pfx
+run: pfx
 	cd $(OUT)/pfx && $(CMD) ./bin/swan --mod $(abspath core.mod) --world default.swan
+
+.PHONY: launcher
+launcher: pfx
+	cd $(OUT)/pfx && $(CMD) ./bin/swan-launcher
 
 .PHONY: build
 build: $(OUT)/build.ninja

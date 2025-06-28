@@ -72,6 +72,7 @@ common = declare_dependency(
 
 subdir('libcygnet')
 subdir('libswan')
+subdir('launcher')
 install_subdir(
   'include/swan',
   install_dir: 'include',
@@ -102,3 +103,15 @@ executable(
 )
 
 install_subdir('assets', install_dir: '')
+install_subdir(
+  'core.mod',
+  install_dir: '',
+  exclude_directories: [
+    '.swanbuild',
+    '.cache',
+    'assets-src',
+  ],
+  exclude_files: [
+    'compile_commands.json',
+  ],
+)

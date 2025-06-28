@@ -490,6 +490,10 @@ void World::buildTileParticles(Tile &tile, ImageAsset &image)
 			}
 		}
 
+		if (count == 0) {
+			return Cygnet::ByteColor{0, 0, 0, 0};
+		}
+
 		return Cygnet::ByteColor{
 			uint8_t(avg.r / count),
 			uint8_t(avg.g / count),
