@@ -206,6 +206,15 @@ public:
 		drawSprite(RenderLayer::NORMAL, ds);
 	}
 
+	void drawTileSprite(RenderLayer layer, DrawSprite drawSprite)
+	{
+		drawTileSprites_[(int)layer].push_back(drawSprite);
+	}
+	void drawTileSprite(DrawSprite ds)
+	{
+		drawTileSprite(RenderLayer::NORMAL, ds);
+	}
+
 	void drawParticle(RenderLayer layer, DrawParticle drawParticle)
 	{
 		drawParticles_[(int)layer].push_back(drawParticle);
@@ -431,6 +440,7 @@ private:
 	std::vector<DrawChunkShadow> drawChunkShadows_;
 	std::vector<DrawTile> drawTiles_[LAYER_COUNT];
 	std::vector<DrawSprite> drawSprites_[LAYER_COUNT];
+	std::vector<DrawSprite> drawTileSprites_[LAYER_COUNT];
 	std::vector<DrawParticle> drawParticles_[LAYER_COUNT];
 	std::vector<DrawRect> drawRects_[LAYER_COUNT];
 	std::vector<TextSegment> drawTexts_[LAYER_COUNT];

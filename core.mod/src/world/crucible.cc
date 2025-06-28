@@ -46,7 +46,7 @@ void registerCrucible(Swan::Mod &mod)
 			if (ent) {
 				auto below = ctx.plane.tiles().get(pos.add(0, 1));
 				ent->drawSupports_ = !below.isSupportV;
-				ent->temperature_ = below.temperature;
+				ent->targetTemperature_ = below.temperature;
 			}
 		},
 		.onActivate = +[](Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta) {

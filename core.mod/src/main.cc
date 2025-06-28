@@ -33,6 +33,7 @@ public:
 		registerSprite("entities/spider/idle");
 		registerSprite("misc/background-cave");
 		registerSprite("misc/burning-dynamite");
+		registerSprite("misc/crucible-overlay");
 		registerSprite("misc/crucible-support");
 		registerSprite("misc/empty-heart");
 		registerSprite("misc/heart");

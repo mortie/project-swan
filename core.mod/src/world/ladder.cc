@@ -52,7 +52,7 @@ static void cascadeRopeLadder(Swan::Ctx &ctx, Swan::TilePos pos)
 	}
 
 	// Break if appropriate
-	int remainingLength = 15;
+	int remainingLength = 25;
 	if (ropeLadderTrait->isAnchor) {
 		Swan::TilePos adjacentPos;
 		if (ropeLadderTrait->direction == "left") {

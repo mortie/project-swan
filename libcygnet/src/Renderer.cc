@@ -492,6 +492,7 @@ void Renderer::clear()
 	for (int idx = 0; idx <= (int)RenderLayer::MAX; ++idx) {
 		drawChunks_[idx].clear();
 		drawTiles_[idx].clear();
+		drawTileSprites_[idx].clear();
 		drawSprites_[idx].clear();
 		drawChunkFluids_[idx].clear();
 		drawParticles_[idx].clear();
@@ -601,6 +602,7 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 	state_->chunkFluidProg.draw(drawChunkFluids_[idx], camMat, state_->fluidAtlasTex, 1);
 	state_->chunkProg.draw(drawChunks_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
 	state_->tileProg.draw(drawTiles_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
+	state_->spriteProg.draw(drawTileSprites_[idx], camMat);
 	state_->spriteProg.draw(drawSprites_[idx], camMat);
 	state_->particleProg.draw(drawParticles_[idx], camMat);
 

@@ -6,20 +6,52 @@ namespace CoreMod {
 
 void CrucibleTileEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
-	if (!drawSupports_) {
-		return;
+	if (temperature_ > 0) {
+		rnd.drawTileSprite({
+			.transform = Cygnet::Mat3gf{}
+				.translate(tileEntity_.pos.as<float>()),
+			.sprite = overlaySprite_,
+			.opacity = temperature_ * 0.7f,
+		});
 	}
 
-	rnd.drawSprite(Cygnet::RenderLayer::BEHIND, {
-		.transform = Cygnet::Mat3gf{}
-			.translate(tileEntity_.pos.as<float>().add(0, 1)),
-		.sprite = sprite_,
-	});
+	if (drawSupports_) {
+		rnd.drawSprite(Cygnet::RenderLayer::BEHIND, {
+			.transform = Cygnet::Mat3gf{}
+				.translate(tileEntity_.pos.as<float>().add(0, 1)),
+			.sprite = supportSprite_,
+		});
+	}
 }
 
 void CrucibleTileEntity::tick(Swan::Ctx &ctx, float dt)
 {
+	constexpr float delta = 0.1;
+
+	if (temperature_ > targetTemperature_) {
+		temperature_ -= delta * dt;
+		if (temperature_ < targetTemperature_) {
+			temperature_ = targetTemperature_;
+		}
+	}
+	else if (temperature_ < targetTemperature_) {
+		temperature_ += delta * dt;
+		if (temperature_ > targetTemperature_) {
+			temperature_ = targetTemperature_;
+		}
+	}
+
 	if (!progress_) {
+		return;
+	}
+
+	if (temperature_ <= 0) {
+		progress_.reset();
+		for (auto &item: items_) {
+			dropItem(ctx, tileEntity_.pos, *item);
+		}
+		items_.clear();
+		itemCounts_.clear();
 		return;
 	}
 
@@ -63,6 +95,7 @@ void CrucibleTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 	tileEntity_.serialize(w.initTileEntity());
 	w.setDrawSupports(drawSupports_);
 	w.setTemperature(temperature_);
+	w.setTargetTemperature(targetTemperature_);
 	auto items = w.initItems(items_.size());
 	for (size_t i = 0; i < items_.size(); ++i) {
 		items.set(i, items_[i]->name);
@@ -80,6 +113,7 @@ void CrucibleTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
 	tileEntity_.deserialize(r.getTileEntity());
 	drawSupports_ = r.getDrawSupports();
 	temperature_ = r.getTemperature();
+	targetTemperature_ = r.getTargetTemperature();
 	auto items = r.getItems();
 	items_.clear();
 	items_.reserve(items.size());

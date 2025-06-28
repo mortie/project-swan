@@ -57,6 +57,7 @@ struct CrucibleTileEntity {
 	temperature @2 :Float32;
 	items @3 :List(Text);
 	progress @4 :Progress;
+	targetTemperature @5 :Float32;
 
 	struct Progress {
 		timer @0 :Float32;

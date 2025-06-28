@@ -13,7 +13,8 @@ public:
 	using Proto = proto::CrucibleTileEntity;
 
 	CrucibleTileEntity(Swan::Ctx &ctx):
-		sprite_(ctx.world.getSprite("core::misc/crucible-support"))
+		overlaySprite_(ctx.world.getSprite("core::misc/crucible-overlay")),
+		supportSprite_(ctx.world.getSprite("core::misc/crucible-support"))
 	{}
 
 	TileEntity &get(TileEntityTrait::Tag) override
@@ -33,6 +34,7 @@ public:
 
 	bool drawSupports_ = false;
 	float temperature_ = 0;
+	float targetTemperature_ = 0;
 
 private:
 	struct Progress {
@@ -41,7 +43,8 @@ private:
 	};
 
 	TileEntity tileEntity_;
-	Cygnet::RenderSprite sprite_;
+	Cygnet::RenderSprite overlaySprite_;
+	Cygnet::RenderSprite supportSprite_;
 	std::vector<Swan::Item *> items_;
 	std::unordered_map<Swan::Item *, int> itemCounts_;
 	std::optional<Progress> progress_;

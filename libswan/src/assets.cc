@@ -272,8 +272,6 @@ Result<ImageAsset> loadImageAsset(
 		.data = std::move(bufferCopy),
 	};
 
-	info << "Asset " << path << ": w=" << w << " h=" << frameHeight << " n=" << asset.frameCount;
-
 	if (toml || defaultSize) {
 		std::optional<int> frameWidth;
 		if (toml) {
