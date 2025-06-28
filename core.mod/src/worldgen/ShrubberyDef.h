@@ -14,6 +14,7 @@ public:
 		tGrass_(world.getTileID("core::grass")),
 		tDeadShrub_(world.getTileID("core::dead-shrub")),
 		tBoulder_(world.getTileID("core::boulder")),
+		tPotatoBush_(world.getTileID("core::potato-bush")),
 		seed_(seed)
 	{}
 
@@ -23,6 +24,7 @@ private:
 	Swan::Tile::ID tGrass_;
 	Swan::Tile::ID tDeadShrub_;
 	Swan::Tile::ID tBoulder_;
+	Swan::Tile::ID tPotatoBush_;
 
 	uint32_t seed_;
 	siv::PerlinNoise perlin_{seed_};

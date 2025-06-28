@@ -3,12 +3,12 @@
 
 namespace CoreMod {
 
-template<int N, bool Last = true>
+template<int N, int Max = N>
 void registerPotatoBush(Swan::Mod &mod)
 {
-	if constexpr (Last) {
+	if constexpr (N == Max) {
 		mod.registerTile({
-			.name = Swan::cat("potato-bush::", N),
+			.name = Swan::cat("potato-bush"),
 			.image = Swan::cat("core::tiles/flora/potato-bush-", N),
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
@@ -31,14 +31,18 @@ void registerPotatoBush(Swan::Mod &mod)
 					return;
 				}
 
-				ctx.plane.tiles().set(pos, Swan::cat(
-					"core::potato-bush::", N + 1));
+				if constexpr (N == Max - 1) {
+					ctx.plane.tiles().set(pos, "core::potato-bush");
+				} else {
+					ctx.plane.tiles().set(pos, Swan::cat(
+						"core::potato-bush::", N + 1));
+				}
 			},
 		});
 	}
 
 	if constexpr (N > 0) {
-		registerPotatoBush<N - 1, false>(mod);
+		registerPotatoBush<N - 1, Max>(mod);
 	}
 }
 
