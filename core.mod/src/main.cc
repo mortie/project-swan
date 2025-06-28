@@ -416,6 +416,11 @@ public:
 			.output = {1, "core::burned-food"},
 			.kind = "core::burning",
 		});
+		registerRecipe({
+			.inputs = {{1, "core::burned-food"}},
+			.output = {},
+			.kind = "core::burning",
+		});
 
 		registerRecipeKind("smelting");
 		registerRecipe({
