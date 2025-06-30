@@ -12,7 +12,7 @@ void TreeDef::spawnTree(
 	int height = 4 + Swan::random(pos.x) % 3;
 
 	for (int y = pos.y; y >= pos.y - height; --y) {
-		area({pos.x, y}) = tTreeTrunk_;
+		area({pos.x, y}) = tWood_;
 	}
 
 	int radius = 2 + Swan::random(pos.x) % 2;
@@ -29,7 +29,7 @@ void TreeDef::spawnTree(
 				ry * ry + rx * rx,
 				(ry + 1) * (ry + 1) + rx * rx);
 			if (d2 <= radius2) {
-				area(top - Swan::Vec2i{rx, ry}) = tTreeLeaves_;
+				area(top - Swan::Vec2i{rx, ry}) = tLeaves_;
 			}
 		}
 	}

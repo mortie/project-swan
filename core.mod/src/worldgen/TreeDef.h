@@ -10,8 +10,8 @@ class TreeDef final: public StructureDef {
 public:
 	TreeDef(Swan::World &world, uint32_t seed):
 		tGrass_(world.getTileID("core::grass")),
-		tTreeTrunk_(world.getTileID("core::tree-trunk")),
-		tTreeLeaves_(world.getTileID("core::leaves")),
+		tWood_(world.getTileID("core::wood")),
+		tLeaves_(world.getTileID("core::leaves")),
 		seed_(seed)
 	{}
 
@@ -19,8 +19,8 @@ public:
 
 private:
 	Swan::Tile::ID tGrass_;
-	Swan::Tile::ID tTreeTrunk_;
-	Swan::Tile::ID tTreeLeaves_;
+	Swan::Tile::ID tWood_;
+	Swan::Tile::ID tLeaves_;
 
 	void spawnTree(Swan::TilePos base, Area &area);
 

@@ -143,13 +143,13 @@ public:
 			.onTileUpdate = breakIfFloating,
 		});
 		registerTile({
-			.name = "tree-trunk",
-			.image = "core::tiles/tree-trunk",
+			.name = "wood",
+			.image = "core::tiles/wood",
 			.isSolid = false,
 			.isSupportV = true,
 			.isSupportH = true,
 			.breakableBy = Swan::Tool::AXE,
-			.droppedItem = "core::tree-trunk",
+			.droppedItem = "core::wood",
 			.onSpawn = denyIfFloating,
 			.onTileUpdate = breakIfFloating,
 			.traits = std::make_shared<TreeTrunkTrait>(),
@@ -341,7 +341,7 @@ public:
 			.kind = "core::crafting",
 		});
 		registerRecipe({
-			.inputs = {{1, "core::tree-trunk"}},
+			.inputs = {{1, "core::wood"}},
 			.output = {8, "core::stick"},
 			.kind = "core::crafting",
 		});
@@ -376,7 +376,7 @@ public:
 		});
 		registerRecipe({
 			.inputs = {
-				{4, "core::tree-trunk"},
+				{4, "core::wood"},
 				{2, "core::rock"},
 				{1, "core::rope"},
 			},
