@@ -9,6 +9,7 @@ public:
 	MainWindow(SwanLauncher *launcher);
 
 	void OnExit(wxCommandEvent &);
+	void OnWorldListClick(wxMouseEvent &event);
 	void OnNewWorldClick(wxCommandEvent &);
 	void OnWorldLaunch(wxCommandEvent &);
 	void OnWorldDelete(wxCommandEvent &);
@@ -18,6 +19,7 @@ public:
 	void reload();
 	void disable();
 	void enable();
+	void updateSelection();
 
 private:
 	wxListBox *existingWorlds_;

@@ -58,6 +58,7 @@ MainWindow::MainWindow(SwanLauncher *launcher):
 	existingWorlds_ = new wxListBox(this, wxID_ANY);
 	existingWorlds_->Bind(wxEVT_LISTBOX, &MainWindow::OnWorldSelect, this);
 	existingWorlds_->Bind(wxEVT_LISTBOX_DCLICK, &MainWindow::OnWorldLaunch, this);
+	existingWorlds_->Bind(wxEVT_LEFT_DOWN, &MainWindow::OnWorldListClick, this);
 	box->Add(existingWorlds_, 1, wxEXPAND);
 
 	auto *editRow = new wxBoxSizer(wxHORIZONTAL);
@@ -65,7 +66,7 @@ MainWindow::MainWindow(SwanLauncher *launcher):
 
 	selectedWorld_ = new wxTextCtrl(this, wxID_ANY, wxT(""));
 	selectedWorld_->Enable(false);
-	editRow->Add(selectedWorld_, 1, wxEXPAND | wxRIGHT);
+	editRow->Add(selectedWorld_, 1, wxEXPAND | wxRIGHT, 5);
 
 	deleteBtn_ = new wxButton(this, wxID_ANY, wxT("Delete"));
 	deleteBtn_->Enable(false);
@@ -87,9 +88,9 @@ MainWindow::MainWindow(SwanLauncher *launcher):
 
 	newWorldName_ = new wxTextCtrl(this, wxID_ANY);
 	newWorldName_->Bind(wxEVT_TEXT_ENTER, &MainWindow::OnNewWorldClick, this);
-	newWorldRow->Add(newWorldName_, 1, wxEXPAND | wxRIGHT);
+	newWorldRow->Add(newWorldName_, 1, wxEXPAND | wxRIGHT, 5);
 
-	newWorldBtn_ = new wxButton(this, wxID_ANY, wxT("New World"));
+	newWorldBtn_ = new wxButton(this, wxID_ANY, wxT("Create World"));
 	newWorldBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnNewWorldClick, this);
 	newWorldRow->Add(newWorldBtn_, 0);
 
@@ -99,6 +100,15 @@ MainWindow::MainWindow(SwanLauncher *launcher):
 void MainWindow::OnExit(wxCommandEvent &)
 {
 	Close(true);
+}
+
+void MainWindow::OnWorldListClick(wxMouseEvent &evt)
+{
+	wxPoint pos = evt.GetPosition();
+	int index = existingWorlds_->HitTest(pos);
+	existingWorlds_->SetSelection(index);
+	updateSelection();
+	evt.Skip();
 }
 
 void MainWindow::OnNewWorldClick(wxCommandEvent &)
@@ -166,18 +176,7 @@ void MainWindow::OnWorldRename(wxCommandEvent &)
 
 void MainWindow::OnWorldSelect(wxCommandEvent &)
 {
-	int sel = existingWorlds_->GetSelection();
-	if (sel == wxNOT_FOUND) {
-		deleteBtn_->Enable(false);
-		renameBtn_->Enable(false);
-		loadBtn_->Enable(false);
-		selectedWorld_->SetLabel("");
-	} else {
-		deleteBtn_->Enable(true);
-		renameBtn_->Enable(true);
-		loadBtn_->Enable(true);
-		selectedWorld_->SetLabel(existingWorlds_->GetString(sel));
-	}
+	updateSelection();
 }
 
 void MainWindow::reload()
@@ -211,4 +210,22 @@ void MainWindow::enable()
 	existingWorlds_->Enable(true);
 	newWorldName_->Enable(true);
 	newWorldBtn_->Enable(true);
+}
+
+void MainWindow::updateSelection()
+{
+	int sel = existingWorlds_->GetSelection();
+	if (sel == wxNOT_FOUND) {
+		std::cerr << "On world not select\n";
+		deleteBtn_->Enable(false);
+		renameBtn_->Enable(false);
+		loadBtn_->Enable(false);
+		selectedWorld_->SetLabel("");
+	} else {
+		std::cerr << "On world select\n";
+		deleteBtn_->Enable(true);
+		renameBtn_->Enable(true);
+		loadBtn_->Enable(true);
+		selectedWorld_->SetLabel(existingWorlds_->GetString(sel));
+	}
 }
