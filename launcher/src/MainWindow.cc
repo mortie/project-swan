@@ -5,13 +5,13 @@
 #include <span>
 #include <string>
 
-static std::string getNewWorldName(std::span<std::string> worlds)
+static std::string getNewWorldName(std::span<World> worlds)
 {
 	constexpr const char *NAME = "Default";
 	std::string name = NAME;
 	bool collision = false;
 	for (auto &world: worlds) {
-		if (world == name) {
+		if (world.name == name) {
 			collision = true;
 			break;
 		}
@@ -29,7 +29,7 @@ static std::string getNewWorldName(std::span<std::string> worlds)
 
 		bool collision = false;
 		for (auto &world: worlds) {
-			if (world == name) {
+			if (world.name == name) {
 				collision = true;
 				break;
 			}
@@ -115,7 +115,8 @@ void MainWindow::OnNewWorldClick(wxCommandEvent &)
 {
 	std::string name = newWorldName_->GetLineText(0).utf8_string();
 	std::cerr << "Creating world: " << name << '\n';
-	launcher_->launch(name);
+	std::string id = makeWorld(name);
+	launcher_->launch(id);
 }
 
 void MainWindow::OnWorldLaunch(wxCommandEvent &)
@@ -125,15 +126,15 @@ void MainWindow::OnWorldLaunch(wxCommandEvent &)
 		return;
 	}
 
-	std::string name = existingWorlds_->GetString(sel).utf8_string();
-	if (!worldExists(name)) {
-		std::cerr << "Tried to open '" << name << "', which doesn't exist\n";
+	World &world = worlds_[sel];
+	if (!worldExists(world.id)) {
+		std::cerr << "Tried to open '" << world.id << "', which doesn't exist\n";
 		new wxDialog(this, wxID_ANY, "World doesn't exist");
 		return;
 	}
 
-	std::cerr << "Loading world: " << name << '\n';
-	launcher_->launch(name);
+	std::cerr << "Loading world: " << world.name << '\n';
+	launcher_->launch(world.id);
 }
 
 void MainWindow::OnWorldDelete(wxCommandEvent &)
@@ -143,8 +144,8 @@ void MainWindow::OnWorldDelete(wxCommandEvent &)
 		return;
 	}
 
-	std::string name = existingWorlds_->GetString(sel).utf8_string();
-	auto message = "Are you sure you want to delete '" + name + "'?";
+	World &world = worlds_[sel];
+	auto message = "Are you sure you want to delete '" + world.name + "'?";
 	auto *dialog = new wxMessageDialog(this, message);
 	dialog->SetMessageDialogStyle(wxYES_NO);
 	int ret = dialog->ShowModal();
@@ -152,7 +153,7 @@ void MainWindow::OnWorldDelete(wxCommandEvent &)
 		return;
 	}
 
-	deleteWorld(name);
+	deleteWorld(world.id);
 	reload();
 }
 
@@ -163,14 +164,14 @@ void MainWindow::OnWorldRename(wxCommandEvent &)
 		return;
 	}
 
-	std::string oldName = existingWorlds_->GetString(sel).utf8_string();
-	auto message = "New name for '" + oldName +"':";
+	World &world = worlds_[sel];
+	auto message = "New name for '" + world.name +"':";
 	auto newName = wxGetTextFromUser(message).utf8_string();
-	if (newName == oldName || newName == "") {
+	if (newName == world.name || newName == "") {
 		return;
 	}
 
-	renameWorld(oldName, newName);
+	renameWorld(world.id, newName);
 	reload();
 }
 
@@ -181,15 +182,15 @@ void MainWindow::OnWorldSelect(wxCommandEvent &)
 
 void MainWindow::reload()
 {
-	auto worlds = listWorlds();
+	worlds_ = listWorlds();
 	wxArrayString worldNames;
-	for (auto &world: worlds) {
-		worldNames.Add(world);
+	for (auto &world: worlds_) {
+		worldNames.Add(world.name + " (" + world.creationTime + ")");
 	}
 
 	selectedWorld_->SetLabelText(wxT(""));
 	existingWorlds_->Set(worldNames);
-	newWorldName_->SetLabelText(getNewWorldName(worlds));
+	newWorldName_->SetLabelText(getNewWorldName(worlds_));
 
 	existingWorlds_->SetSelection(-1);
 	updateSelection();
@@ -215,13 +216,11 @@ void MainWindow::updateSelection()
 {
 	int sel = existingWorlds_->GetSelection();
 	if (sel == wxNOT_FOUND) {
-		std::cerr << "On world not select\n";
 		deleteBtn_->Enable(false);
 		renameBtn_->Enable(false);
 		loadBtn_->Enable(false);
 		selectedWorld_->SetLabel("");
 	} else {
-		std::cerr << "On world select\n";
 		deleteBtn_->Enable(true);
 		renameBtn_->Enable(true);
 		loadBtn_->Enable(true);

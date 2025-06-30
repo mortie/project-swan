@@ -1,6 +1,9 @@
 #pragma once
 
+#include <string>
+#include <vector>
 #include <wx/wx.h>
+#include "worlds.h"
 
 class SwanLauncher;
 
@@ -23,6 +26,7 @@ public:
 
 private:
 	wxListBox *existingWorlds_;
+	std::vector<World> worlds_;
 
 	wxTextCtrl *selectedWorld_;
 	wxButton *deleteBtn_;

@@ -12,6 +12,8 @@ if libwxwidgets.found()
     install_rpath: get_option('libdir'),
     dependencies: [
       libwxwidgets,
-    ] + maybe_libtracy,
+      libcpptoml,
+      libdate,
+    ],
   )
 endif

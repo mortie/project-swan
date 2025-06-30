@@ -34,3 +34,6 @@
 [submodule "third-party/sha1"]
 	path = third-party/sha1
 	url = https://github.com/vog/sha1.git
+[submodule "third-party/date"]
+	path = third-party/date
+	url = https://github.com/HowardHinnant/date.git

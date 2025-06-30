@@ -2,6 +2,8 @@
 #include "MainWindow.h"
 #include "src/system.h"
 #include "worlds.h"
+#include <cstdlib>
+#include <ctime>
 
 wxDEFINE_EVENT(EVT_SWAN_CLOSED, wxEvent);
 
@@ -13,7 +15,6 @@ void SwanLauncher::launch(std::string world)
 
 	isRunning_ = true;
 	mainWindow_->disable();
-	makeWorldDir();
 
 	std::thread([&, world] {
 		std::string cmd = "./bin/swan";
@@ -37,6 +38,9 @@ void SwanLauncher::OnSwanClosed()
 
 bool SwanLauncher::OnInit()
 {
+	// We need rand() later
+	srand(time(nullptr));
+
 	Bind(EVT_SWAN_CLOSED, [&](auto &evt) { OnSwanClosed(); });
 
 	mainWindow_ = new MainWindow(this);
