@@ -9,8 +9,11 @@ public:
 	MainWindow(SwanLauncher *launcher);
 
 	void OnExit(wxCommandEvent &);
-	void CreateNewWorld(wxCommandEvent &);
-	void LoadWorld(wxCommandEvent &);
+	void OnNewWorldClick(wxCommandEvent &);
+	void OnWorldLaunch(wxCommandEvent &);
+	void OnWorldDelete(wxCommandEvent &);
+	void OnWorldRename(wxCommandEvent &);
+	void OnWorldSelect(wxCommandEvent &);
 
 	void reload();
 	void disable();
@@ -18,8 +21,15 @@ public:
 
 private:
 	wxListBox *existingWorlds_;
+
+	wxTextCtrl *selectedWorld_;
+	wxButton *deleteBtn_;
+	wxButton *renameBtn_;
+	wxButton *loadBtn_;
+
 	wxTextCtrl *newWorldName_;
 	wxButton *newWorldBtn_;
+
 	SwanLauncher *launcher_;
 };
 

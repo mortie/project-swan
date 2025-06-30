@@ -41,3 +41,13 @@ bool worldExists(std::string name)
 {
 	return std::filesystem::exists(worldPath(name));
 }
+
+void deleteWorld(std::string name)
+{
+	std::filesystem::remove(worldPath(name));
+}
+
+void renameWorld(std::string oldName, std::string newName)
+{
+	std::filesystem::rename(worldPath(oldName), worldPath(newName));
+}
