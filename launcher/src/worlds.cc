@@ -33,12 +33,26 @@ std::vector<World> listWorlds()
 		auto table = cpptoml::parse_file(tomlPath);
 		auto name = table->get_as<std::string>("name");
 		auto creationTime = table->get_as<std::string>("creation-time");
+		auto lastPlayedTime = table->get_as<std::string>("last-played-time");
+
+		Timestamp lastPlayedTimeStamp;
+		if (lastPlayedTime) {
+			std::istringstream str(*lastPlayedTime);
+			str >> date::parse("%F %T%z", lastPlayedTimeStamp);
+		}
+
 		worlds.push_back(World {
 			.id = id,
 			.name = name.value_or("Untitled"),
 			.creationTime = creationTime.value_or("Unknown"),
+			.lastPlayedTime = lastPlayedTime.value_or("Unknown"),
+			.lastPlayedTimeStamp = lastPlayedTimeStamp
 		});
 	}
+
+	std::sort(worlds.begin(), worlds.end(), [](World &a, World &b) {
+		return a.lastPlayedTimeStamp > b.lastPlayedTimeStamp;
+	});
 
 	return worlds;
 }
@@ -65,6 +79,7 @@ std::string makeWorld(std::string name)
 	auto table = cpptoml::make_table();
 	table->insert("name", name);
 	table->insert("creation-time", nowStr);
+	table->insert("last-played-time", nowStr);
 	std::fstream f("worlds/" + id + "/world.toml", std::ios_base::out);
 	f << *table;
 	f.close();
@@ -94,6 +109,23 @@ void renameWorld(std::string id, std::string newName)
 {
 	auto table = cpptoml::parse_file("worlds/" + id + "/world.toml");
 	table->insert("name", newName);
+	std::fstream f("worlds/" + id + "/world.toml", std::ios_base::out);
+	f << *table;
+	f.close();
+	if (f.fail()) {
+		throw std::runtime_error("Failed to write world toml");
+	}
+}
+
+void updateWorldLastPlayedTime(std::string id)
+{
+	auto now = std::chrono::floor<std::chrono::seconds>(
+		std::chrono::system_clock::now());
+	auto nowZoned = date::make_zoned(date::current_zone(), now);
+	auto nowStr = date::format({}, "%F %T%z", nowZoned);
+
+	auto table = cpptoml::parse_file("worlds/" + id + "/world.toml");
+	table->insert("last-played-time", nowStr);
 	std::fstream f("worlds/" + id + "/world.toml", std::ios_base::out);
 	f << *table;
 	f.close();

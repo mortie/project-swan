@@ -7,7 +7,7 @@
 
 wxDEFINE_EVENT(EVT_SWAN_CLOSED, wxEvent);
 
-void SwanLauncher::launch(std::string world)
+void SwanLauncher::launch(std::string id)
 {
 	if (isRunning_) {
 		return;
@@ -16,12 +16,13 @@ void SwanLauncher::launch(std::string world)
 	isRunning_ = true;
 	mainWindow_->disable();
 
-	std::thread([&, world] {
+	updateWorldLastPlayedTime(id);
+	std::thread([&, id] {
 		std::string cmd = "./bin/swan";
 		appendArg(cmd, "--mod");
 		appendArg(cmd, "core.mod");
 		appendArg(cmd, "--world");
-		appendArg(cmd, worldPath(world));
+		appendArg(cmd, worldPath(id));
 		std::cerr << "Running command: " << cmd << '\n';
 		runCommand(cmd.c_str());
 

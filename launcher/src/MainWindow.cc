@@ -185,7 +185,7 @@ void MainWindow::reload()
 	worlds_ = listWorlds();
 	wxArrayString worldNames;
 	for (auto &world: worlds_) {
-		worldNames.Add(world.name + " (" + world.creationTime + ")");
+		worldNames.Add(world.name);
 	}
 
 	selectedWorld_->SetLabelText(wxT(""));
@@ -224,6 +224,6 @@ void MainWindow::updateSelection()
 		deleteBtn_->Enable(true);
 		renameBtn_->Enable(true);
 		loadBtn_->Enable(true);
-		selectedWorld_->SetLabel(existingWorlds_->GetString(sel));
+		selectedWorld_->SetLabel(worlds_[sel].name);
 	}
 }
