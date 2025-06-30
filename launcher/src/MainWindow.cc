@@ -78,7 +78,7 @@ MainWindow::MainWindow(SwanLauncher *launcher):
 	renameBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnWorldRename, this);
 	editRow->Add(renameBtn_, 0);
 
-	loadBtn_ = new wxButton(this, wxID_ANY, wxT("Start"));
+	loadBtn_ = new wxButton(this, wxID_ANY, wxT("Launch"));
 	loadBtn_->Enable(false);
 	loadBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnWorldLaunch, this);
 	editRow->Add(loadBtn_, 0);
@@ -90,7 +90,7 @@ MainWindow::MainWindow(SwanLauncher *launcher):
 	newWorldName_->Bind(wxEVT_TEXT_ENTER, &MainWindow::OnNewWorldClick, this);
 	newWorldRow->Add(newWorldName_, 1, wxEXPAND | wxRIGHT, 5);
 
-	newWorldBtn_ = new wxButton(this, wxID_ANY, wxT("Create World"));
+	newWorldBtn_ = new wxButton(this, wxID_ANY, wxT("Create New World"));
 	newWorldBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnNewWorldClick, this);
 	newWorldRow->Add(newWorldBtn_, 0);
 
@@ -192,14 +192,13 @@ void MainWindow::reload()
 	newWorldName_->SetLabelText(getNewWorldName(worlds));
 
 	existingWorlds_->SetSelection(-1);
-	deleteBtn_->Enable(false);
-	renameBtn_->Enable(false);
-	loadBtn_->Enable(false);
-	selectedWorld_->SetLabel("");
+	updateSelection();
 }
 
 void MainWindow::disable()
 {
+	existingWorlds_->SetSelection(-1);
+	updateSelection();
 	existingWorlds_->Enable(false);
 	newWorldName_->Enable(false);
 	newWorldBtn_->Enable(false);
