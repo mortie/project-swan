@@ -29,6 +29,6 @@ jobs:
     - name: setup
       run: CXX=${{matrix.compiler}} make setup && meson configure build -Dwerror=true
     - name: compile
-      run: make pfx
+      run: make pfx && make core.mod
     - name: check
       run: make check
