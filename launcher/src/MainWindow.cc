@@ -87,6 +87,7 @@ MainWindow::MainWindow(SwanLauncher *launcher):
 	box->Add(newWorldRow, 0, wxEXPAND);
 
 	newWorldName_ = new wxTextCtrl(this, wxID_ANY);
+	newWorldName_->SetWindowStyleFlag(wxTE_PROCESS_ENTER);
 	newWorldName_->Bind(wxEVT_TEXT_ENTER, &MainWindow::OnNewWorldClick, this);
 	newWorldRow->Add(newWorldName_, 1, wxEXPAND | wxRIGHT, 5);
 
@@ -190,7 +191,8 @@ void MainWindow::reload()
 
 	selectedWorld_->SetLabelText(wxT(""));
 	existingWorlds_->Set(worldNames);
-	newWorldName_->SetLabelText(getNewWorldName(worlds_));
+	newWorldName_->Clear();
+	*newWorldName_ << getNewWorldName(worlds_);
 
 	existingWorlds_->SetSelection(-1);
 	updateSelection();

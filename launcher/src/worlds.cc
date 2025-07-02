@@ -1,7 +1,6 @@
 #include "worlds.h"
 
 #include <cstdlib>
-#include <ctime>
 #include <filesystem>
 #include <algorithm>
 #include <fstream>
@@ -35,10 +34,18 @@ std::vector<World> listWorlds()
 		auto creationTime = table->get_as<std::string>("creation-time");
 		auto lastPlayedTime = table->get_as<std::string>("last-played-time");
 
+		date::local_time<std::chrono::seconds> lastPlayedLocalTime;
 		Timestamp lastPlayedTimeStamp;
 		if (lastPlayedTime) {
+			// This is pretty much the worst API I have ever had to deal with T_T
+			// Parsing straight into a time_point works on macOS,
+			// but not on Linux (guessing it works on libc++ but not libstdc++).
+			// However, parsing into a local_time seems to work.
+			// If only the documentation suggested what type it expects...
 			std::istringstream str(*lastPlayedTime);
-			str >> date::parse("%F %T%z", lastPlayedTimeStamp);
+			std::chrono::minutes offset;
+			str >> date::parse("%F %T%z", lastPlayedLocalTime, offset);
+			lastPlayedTimeStamp = Timestamp((lastPlayedLocalTime - offset).time_since_epoch());
 		}
 
 		worlds.push_back(World {
@@ -46,7 +53,7 @@ std::vector<World> listWorlds()
 			.name = name.value_or("Untitled"),
 			.creationTime = creationTime.value_or("Unknown"),
 			.lastPlayedTime = lastPlayedTime.value_or("Unknown"),
-			.lastPlayedTimeStamp = lastPlayedTimeStamp
+			.lastPlayedTimeStamp = lastPlayedTimeStamp,
 		});
 	}
 
