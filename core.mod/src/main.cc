@@ -32,6 +32,7 @@ public:
 		registerSprite("entities/player/landing");
 		registerSprite("entities/spider/idle");
 		registerSprite("misc/background-cave");
+		registerSprite("misc/bubble");
 		registerSprite("misc/burning-dynamite");
 		registerSprite("misc/crucible-overlay");
 		registerSprite("misc/crucible-support");

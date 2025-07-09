@@ -74,7 +74,8 @@ private:
 			jumping(ctx, "core::entities/player/jumping", 0.1),
 			landing(ctx, "core::entities/player/landing", 0.1),
 			emptyHeart(ctx.world.getSprite("core::misc/empty-heart")),
-			heart(ctx.world.getSprite("core::misc/heart"))
+			heart(ctx.world.getSprite("core::misc/heart")),
+			bubble(ctx.world.getSprite("core::misc/bubble"))
 		{}
 
 		Swan::Animation idle;
@@ -84,7 +85,7 @@ private:
 		Swan::Animation landing;
 		Cygnet::RenderSprite emptyHeart;
 		Cygnet::RenderSprite heart;
-		Cygnet::RenderSprite yellowHeart;
+		Cygnet::RenderSprite bubble;
 	};
 
 	struct UI {
@@ -159,6 +160,7 @@ private:
 	int health_ = 0;
 	float invulnerable_ = 0;
 	float blackout_ = 0;
+	float oxygen_ = 0;
 
 	int teleState_ = 0;
 	float teleportTimer_ = 0;

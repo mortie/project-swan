@@ -28,6 +28,7 @@ static constexpr float SWIM_FORCE_UP = 12 * PROPS.mass;
 static constexpr float SWIM_FORCE_DOWN = 12 * PROPS.mass;
 static constexpr int MAX_HEALTH = 10;
 static constexpr float BLACKOUT_TIME = 5;
+static constexpr float MAX_OXYGEN = 12;
 
 PlayerEntity::PlayerEntity(Swan::Ctx &ctx):
 	sprites_(ctx),
@@ -35,6 +36,7 @@ PlayerEntity::PlayerEntity(Swan::Ctx &ctx):
 	inventorySprite_(ctx.world.getSprite("core::ui/inventory")),
 	selectedSlotSprite_(ctx.world.getSprite("core::ui/selected-slot")),
 	health_(MAX_HEALTH),
+	oxygen_(MAX_OXYGEN),
 	inventory_(INVENTORY_SIZE),
 	craftingInventory_(ctx.plane.entities().current()),
 	physicsBody_(PROPS)
@@ -57,6 +59,11 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 		rnd.setGamma(gamma_);
 	}
 
+	float blackoutAlpha = 0;
+	if (oxygen_ < 4) {
+		blackoutAlpha = (4 - oxygen_) / 3.5;
+	}
+
 	if (blackout_ > 0) {
 		float alpha = 1.0;
 		if (blackout_ < 0.3) {
@@ -68,10 +75,17 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 		else if (blackout_ > BLACKOUT_TIME - 2.0) {
 			alpha = (BLACKOUT_TIME - blackout_ - 0.5) / 1.5;
 		}
+
+		if (alpha > blackoutAlpha) {
+			blackoutAlpha = alpha;
+		}
+	}
+
+	if (blackoutAlpha > 0) {
 		rnd.drawUIRect(Cygnet::RenderLayer::FOREGROUND, {
 			.pos = {},
 			.size = {100, 100},
-			.fill = {0, 0, 0, alpha},
+			.fill = {0, 0, 0, blackoutAlpha},
 		});
 	}
 
@@ -123,6 +137,27 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 				.transform = Cygnet::Mat3gf{}
 					.translate({(i / 3.5f) + 0.25f, y}),
 				.sprite = *sprite,
+			});
+		}
+	}, Cygnet::Anchor::TOP_LEFT);
+
+	// Draw oxygen
+	rnd.uiView({}, [&] {
+		if (oxygen_ >= 11.5) {
+			return;
+		}
+
+		for (int i = 0; i < 10; ++i) {
+			if (oxygen_ < (i + 1.5)) {
+				break;
+			}
+
+			float y = 0.25 + (1.0 / 3.5);
+
+			rnd.drawUISprite({
+				.transform = Cygnet::Mat3gf{}
+					.translate({(i / 3.5f) + 0.25f, y}),
+				.sprite = sprites_.bubble,
 			});
 		}
 	}, Cygnet::Anchor::TOP_LEFT);
@@ -252,7 +287,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 			currentAnimation_ = &sprites_.idle;
 		}
 
-		if (blackout_ > 0.5) {
+		if (blackout_ > 1.5) {
 			return;
 		}
 	}
@@ -763,8 +798,29 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	};
 
 	// Figure out what fluids we're in
+	Swan::Fluid &fluidTop = ctx.plane.fluids().getAtPos(
+		physicsBody_.body.topMid().add(0, 0.1));
 	Swan::Fluid &fluidCenter = ctx.plane.fluids().getAtPos(fluidCenterPos);
 	Swan::Fluid &fluidBottom = ctx.plane.fluids().getAtPos(fluidBottomPos);
+
+	// Drown
+	if (fluidTop.id == Swan::World::AIR_FLUID_ID) {
+		oxygen_ += dt * 4;
+		if (oxygen_ > MAX_OXYGEN) {
+			oxygen_ = MAX_OXYGEN;
+		}
+	}
+	else if (blackout_ <= 0) {
+		oxygen_ -= dt * 0.75;
+		if (oxygen_ < 0) {
+			ctx.game.playSound(ctx.world.getSound("core::sounds/misc/hurt"), 0.4f);
+			oxygen_ = 0;
+			health_ = 0;
+			blackout_ = BLACKOUT_TIME;
+			state_ = State::IDLE;
+			currentAnimation_ = &sprites_.idle;
+		}
+	}
 
 	{ // Splash sound
 		bool oldInFluid = inFluid_;
