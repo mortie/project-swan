@@ -152,7 +152,7 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 				break;
 			}
 
-			float y = 0.25 + (1.0 / 3.5);
+			float y = 0.6;
 
 			rnd.drawUISprite({
 				.transform = Cygnet::Mat3gf{}
