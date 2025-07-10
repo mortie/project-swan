@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string.h>
+#include <filesystem>
 
 namespace Swan {
 
@@ -267,7 +268,7 @@ struct CowStr {
 
 template<typename T>
 CowStr strify(const T &v)
-    requires(std::is_integral_v<T>)
+	requires(std::is_integral_v<T>)
 {
 	char buf[32];
 	auto res = std::to_chars(std::begin(buf), std::end(buf), v);
@@ -280,7 +281,16 @@ CowStr strify(const T &v)
 
 template<typename T>
 CowStr strify(const T &v)
-	requires(!std::is_integral_v<T>)
+	requires(std::is_same_v<std::remove_cvref_t<T>, std::filesystem::path>)
+{
+	return std::string_view(v.c_str());
+}
+
+template<typename T>
+CowStr strify(const T &v)
+	requires(
+		!std::is_integral_v<T> &&
+		!std::is_same_v<std::remove_cvref_t<T>, std::filesystem::path>)
 {
 	return std::string_view(v);
 }

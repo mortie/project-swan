@@ -33,7 +33,7 @@ void registerClayTile(Swan::Mod &mod)
 	mod.registerTile({
 		.name = std::move(name),
 		.image = "core::tiles/clay",
-		.stepSound = "core::sounds/step/sand",
+		.stepSound = "core::step/sand",
 		.droppedItem = "core::clay",
 		.onTileUpdate = fallIfFloating,
 		.onActivate = activateClay<N>,

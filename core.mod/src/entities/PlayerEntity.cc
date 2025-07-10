@@ -536,7 +536,7 @@ void PlayerEntity::hurt(Swan::Ctx &ctx, int n)
 		return;
 	}
 
-	ctx.game.playSound(ctx.world.getSound("core::sounds/misc/hurt"), 0.2f * n);
+	ctx.game.playSound(ctx.world.getSound("core::misc/hurt"), 0.2f * n);
 	health_ -= n;
 	if (health_ <= 0) {
 		health_ = 0;
@@ -813,7 +813,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	else if (blackout_ <= 0) {
 		oxygen_ -= dt * 0.75;
 		if (oxygen_ < 0) {
-			ctx.game.playSound(ctx.world.getSound("core::sounds/misc/hurt"), 0.4f);
+			ctx.game.playSound(ctx.world.getSound("core::misc/hurt"), 0.4f);
 			oxygen_ = 0;
 			health_ = 0;
 			blackout_ = BLACKOUT_TIME;

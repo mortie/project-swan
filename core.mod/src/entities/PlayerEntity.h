@@ -48,13 +48,13 @@ public:
 private:
 	struct Sounds {
 		Sounds(Swan::Ctx &ctx):
-			snap(ctx.world.getSound("core::sounds/misc/snap")),
-			splash(ctx.world.getSound("core::sounds/misc/splash")),
-			shortSplash(ctx.world.getSound("core::sounds/misc/splash-short")),
-			teleport(ctx.world.getSound("core::sounds/misc/teleport")),
-			inventoryOpen(ctx.world.getSound("core::sounds/ui/inventory-open")),
-			inventoryClose(ctx.world.getSound("core::sounds/ui/inventory-close")),
-			crafting(ctx.world.getSound("core::sounds/ui/crafting"))
+			snap(ctx.world.getSound("core::misc/snap")),
+			splash(ctx.world.getSound("core::misc/splash")),
+			shortSplash(ctx.world.getSound("core::misc/splash-short")),
+			teleport(ctx.world.getSound("core::misc/teleport")),
+			inventoryOpen(ctx.world.getSound("core::ui/inventory-open")),
+			inventoryClose(ctx.world.getSound("core::ui/inventory-close")),
+			crafting(ctx.world.getSound("core::ui/crafting"))
 		{}
 
 		Swan::SoundAsset *snap;

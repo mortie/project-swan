@@ -8,9 +8,11 @@
 #include "util.h"
 #include "common.h"
 
-namespace Swan {
+namespace Cygnet {
+class ResourceBuilder;
+}
 
-extern std::string assetBasePath;
+namespace Swan {
 
 struct ImageAsset {
 	int width;
@@ -26,12 +28,16 @@ struct SoundAsset {
 	size_t length = 0;
 };
 
-Result<ImageAsset> loadImageAsset(
-	const HashMap<std::string> &modPaths,
-	std::string path, std::optional<int> defaultSize = {});
+void loadSpriteAssets(
+	std::string base, std::string path,
+	Cygnet::ResourceBuilder &builder);
 
-Result<SoundAsset> loadSoundAsset(
-	const HashMap<std::string> &modPaths,
-	std::string path);
+void loadTileOrItemAssets(
+	std::string base, std::string path,
+	HashMap<ImageAsset> &assets);
+
+void loadSoundAssets(
+	std::string base, std::string path,
+	HashMap<SoundAsset> &assets);
 
 }

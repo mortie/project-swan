@@ -64,37 +64,18 @@ void World::buildResources()
 
 	// Load built-in sounds.
 	sounds_[INVALID_SOUND_NAME] = SoundAsset{};
-	if (auto thud = loadSoundAsset(modPaths_, "@::sounds/thud")) {
-		sounds_[THUD_SOUND_NAME] = std::move(thud.value());
-	}
-	else {
-		warn
-			<< "Failed to load built-in sound " << THUD_SOUND_NAME
-			<< ": " << thud.err();
-		sounds_[THUD_SOUND_NAME] = SoundAsset{};
-	}
+	loadSoundAssets("@::", "./assets/sounds", sounds_);
 
-	// Load sounds.
+	// Load sounds and sprites.
 	for (auto &mod: mods_) {
-		for (auto soundPath: mod.sounds()) {
-			std::string name = cat(mod.name(), "::", soundPath);
-			auto soundResult = loadSoundAsset(modPaths_, name);
-			SoundAsset sound;
-
-			if (soundResult) {
-				sounds_[name] = std::move(soundResult.value());
-			}
-			else {
-				warn << '\'' << name << ": " << soundResult.err();
-				sounds_[name] = SoundAsset{};
-			}
-		}
+		auto base = cat(mod.name(), "::");
+		loadSoundAssets(base, cat(mod.path_, "/assets/sounds"), sounds_);
 	}
 
 	// After this point, 'sounds_' *must* be unchanged.
 	// We rely on pointers to be stable from now on.
 	SoundAsset *fallbackSound = &sounds_[INVALID_SOUND_NAME];
-	SoundAsset *thudSound = &sounds_[THUD_SOUND_NAME];
+	SoundAsset *thudSound = getSound(THUD_SOUND_NAME);
 
 	struct ImageAsset fallbackImage = {
 		.width = 32,
@@ -159,6 +140,8 @@ void World::buildResources()
 			return {Ok, std::move(asset)};
 		}
 
+		return {Err, "Loading of tile images not implemented yet"};
+		/*
 		auto image = loadImageAsset(modPaths_, path, TILE_SIZE);
 		if (!image) {
 			warn << '\'' << path << "': " << image.err();
@@ -171,6 +154,7 @@ void World::buildResources()
 		else {
 			return image;
 		}
+		*/
 	};
 
 	// Count number of tiles.
@@ -388,26 +372,8 @@ void World::buildResources()
 
 	// Load sprites.
 	for (auto &mod: mods_) {
-		for (auto spritePath: mod.sprites()) {
-			std::string name = cat(mod.name(), "::", spritePath);
-			auto imageResult = loadImageAsset(modPaths_, name);
-			ImageAsset *image;
-
-			if (imageResult) {
-				image = &imageResult.value();
-			}
-			else {
-				warn << '\'' << name << "': " << imageResult.err();
-				image = &fallbackImage;
-			}
-
-			builder.addSprite(name, image->data.get(), {
-				.width = image->width,
-				.height = image->frameHeight * image->frameCount,
-				.frameHeight = image->frameHeight,
-				.repeatFrom = image->repeatFrom,
-			});
-		}
+		auto base = cat(mod.name(), "::");
+		loadSpriteAssets(base, cat(mod.path_, "/assets/sprites"), builder);
 	}
 
 	// Fix up tiles.

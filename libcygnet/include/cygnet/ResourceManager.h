@@ -30,6 +30,7 @@ public:
 		int repeatFrom;
 	};
 
+	bool hasSprite(std::string_view name) { return sprites_.contains(name); }
 	RenderSprite addSprite(std::string name, void *data, SpriteMeta meta);
 	void addTile(Renderer::TileID id, void *data, int frames);
 	void addTile(Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames);
