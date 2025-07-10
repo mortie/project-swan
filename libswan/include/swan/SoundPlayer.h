@@ -8,21 +8,29 @@
 
 namespace Swan {
 
+class SoundPlayer;
+
+class SoundHandle {
+public:
+	static SoundHandle make();
+
+	bool done();
+	void stop();
+	void move(Vec2 newPos);
+
+private:
+	struct Data;
+	std::shared_ptr<Data> data_;
+	friend SoundPlayer;
+};
+
 class SoundPlayer {
 public:
-	struct Handle {
-		std::atomic<bool> done = false;
-	};
-
 	struct Context;
+	struct Playback;
 
 	SoundPlayer();
 	~SoundPlayer();
-
-	static std::shared_ptr<Handle> makeHandle()
-	{
-		return std::make_shared<Handle>();
-	}
 
 	void volume(float volume);
 	float volume();
@@ -38,12 +46,12 @@ public:
 	void play(
 		SoundAsset *asset, float volume,
 		std::optional<std::pair<float, float>> center,
-		std::shared_ptr<Handle> handle);
+		SoundHandle handle);
 
 	void setCenter(float x, float y);
 
 private:
-	std::shared_ptr<Handle> nullHandle_;
+	SoundHandle nullHandle_;
 
 	void *stream_;
 	bool ok_ = false;

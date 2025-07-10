@@ -12,7 +12,7 @@ static constexpr Swan::BasicPhysicsBody::Props PROPS = {
 	.mass = 30,
 	.isSolid = false,
 };
-static constexpr float FUSE_TIME = 5;
+static constexpr float FUSE_TIME = 4;
 
 static void explode(Swan::Ctx &ctx, Swan::Vec2 pos)
 {
@@ -83,6 +83,11 @@ DynamiteEntity::DynamiteEntity(
 {
 	physicsBody_.body.pos = pos;
 	physicsBody_.vel = vel;
+	fuseSound_ = Swan::SoundHandle::make();
+	ctx.game.playSound(
+		ctx.world.getSound("core::sounds/misc/fuse"),
+		physicsBody_.body.center(), fuseSound_);
+
 }
 
 void DynamiteEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
@@ -99,11 +104,14 @@ void DynamiteEntity::update(Swan::Ctx &ctx, float dt)
 	physicsBody_.update(ctx, dt);
 	animation_.tick(dt);
 
+	fuseSound_.move(physicsBody_.body.center());
+
 	fuse_ -= dt;
 	if (fuse_ <= 0) {
 		ctx.game.playSound(
 			ctx.world.getSound("core::sounds/misc/explosion"),
 			physicsBody_.body.center());
+		fuseSound_.stop();
 		ctx.plane.entities().despawn(ctx.plane.entities().current());
 		explode(ctx, physicsBody_.body.center());
 	}

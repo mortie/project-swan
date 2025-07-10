@@ -21,9 +21,9 @@ struct ImageAsset {
 };
 
 struct SoundAsset {
-	float *l, *r;
+	float *l = nullptr, *r = nullptr;
 	std::unique_ptr<float[]> data;
-	size_t length;
+	size_t length = 0;
 };
 
 Result<ImageAsset> loadImageAsset(

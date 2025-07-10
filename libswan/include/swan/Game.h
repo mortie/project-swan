@@ -25,8 +25,6 @@ class Game {
 public:
 	Game(std::function<bool()> recompileMods): recompileMods_(recompileMods) {}
 
-	using SoundHandle = std::shared_ptr<SoundPlayer::Handle>;
-
 	struct Debug {
 		bool show = false;
 		bool drawCollisionBoxes = false;

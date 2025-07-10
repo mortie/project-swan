@@ -12,8 +12,42 @@ namespace Swan {
 constexpr size_t MAX_PLAYBACKS = 64;
 constexpr size_t MAX_NEW_PLAYBACKS = 32;
 
-struct Playback {
-	std::shared_ptr<SoundPlayer::Handle> handle;
+struct SoundHandle::Data {
+	std::atomic<bool> done = false;
+	std::atomic<bool> stop = false;
+	std::atomic<bool> hasMoved = false;
+	std::atomic<float> centerX = 0, centerY= 0;
+};
+
+SoundHandle SoundHandle::make() {
+	SoundHandle handle;
+	handle.data_ = std::make_shared<Data>();
+	return handle;
+}
+
+bool SoundHandle::done()
+{
+	return data_ && data_->done;
+}
+
+void SoundHandle::stop()
+{
+	if (data_) {
+		data_->stop = true;
+	}
+}
+
+void SoundHandle::move(Vec2 newPos)
+{
+	if (data_) {
+		data_->centerX = newPos.x;
+		data_->centerY = newPos.y;
+		data_->hasMoved = true;
+	}
+}
+
+struct SoundPlayer::Playback {
+	std::shared_ptr<SoundHandle::Data> handle;
 	SoundAsset *asset;
 	float volume;
 	size_t position;
@@ -83,6 +117,17 @@ static int callback(
 	while (idx < ctx->playbackCount) {
 		auto &playback = ctx->playbacks[idx];
 
+		if (playback.handle->stop) {
+			ctx->playbacks[idx].handle->done = true;
+			ctx->playbacks[idx] = ctx->playbacks[--ctx->playbackCount];
+			continue;
+		}
+
+		if (playback.handle->hasMoved.exchange(false)) {
+			playback.center->first = playback.handle->centerX;
+			playback.center->second = playback.handle->centerY;
+		}
+
 		float attL = playback.volume;
 		float attR = playback.volume;
 		if (playback.center) {
@@ -148,8 +193,8 @@ static int callback(
 
 SoundPlayer::SoundPlayer()
 {
-	nullHandle_ = std::make_shared<Handle>();
-	nullHandle_->done = true;
+	nullHandle_ = SoundHandle::make();
+	nullHandle_.data_->done = true;
 
 	context_ = std::make_unique<Context>();
 
@@ -221,7 +266,7 @@ void SoundPlayer::flush()
 void SoundPlayer::play(
 	SoundAsset *asset, float volume,
 	std::optional<std::pair<float, float>> center,
-	std::shared_ptr<Handle> handle)
+	SoundHandle handle)
 {
 	if (!asset) {
 		warn << "Attempt to play null asset";
@@ -229,18 +274,18 @@ void SoundPlayer::play(
 	}
 
 	if (!ok_) {
-		handle->done = true;
+		handle.data_->done = true;
 		return;
 	}
 
 	if (!context_->newPlaybacks.canWrite()) {
 		warn << "Can't play sound: ring buffer full";
-		handle->done = true;
+		handle.data_->done = true;
 		return;
 	}
 
 	context_->newPlaybacks.write({
-		.handle = handle,
+		.handle = handle.data_,
 		.asset = asset,
 		.volume = volume,
 		.position = 0,

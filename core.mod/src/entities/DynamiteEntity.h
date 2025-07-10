@@ -35,6 +35,7 @@ public:
 private:
 	Swan::Animation animation_;
 
+	Swan::SoundHandle fuseSound_;
 	float fuse_;
 	Swan::BasicPhysicsBody physicsBody_;
 };
