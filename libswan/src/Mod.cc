@@ -2,10 +2,10 @@
 #include <fstream>
 #include <optional>
 
+#include <swan/util.h>
 #include "Mod.h"
 #include "EntityCollectionImpl.h"
 #include "log.h"
-#include "util.h"
 
 namespace Swan {
 

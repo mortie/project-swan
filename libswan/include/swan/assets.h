@@ -5,8 +5,8 @@
 #include <string>
 #include <stdint.h>
 
-#include "cygnet/util.h"
-#include "util.h"
+#include <cygnet/util.h>
+#include <swan/util.h>
 #include "common.h"
 
 namespace Cygnet {

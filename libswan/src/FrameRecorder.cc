@@ -36,8 +36,8 @@ extern "C" {
 }
 
 
+#include <swan/util.h>
 #include "log.h"
-#include "util.h"
 
 namespace Swan {
 

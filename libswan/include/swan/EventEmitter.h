@@ -4,7 +4,7 @@
 #include <vector>
 #include <unordered_map>
 
-#include "util.h"
+#include <swan/util.h>
 #include "log.h"
 
 namespace Swan {

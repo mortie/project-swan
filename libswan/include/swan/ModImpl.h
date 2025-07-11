@@ -1,8 +1,8 @@
 #pragma once
 
+#include <swan/util.h>
 #include "Mod.h"
 #include "EntityCollectionImpl.h"
-#include "util.h"
 
 namespace Swan {
 

@@ -4,8 +4,8 @@
 #include <bit>
 #include <optional>
 
+#include <swan/util.h>
 #include "Direction.h"
-#include "util.h"
 
 namespace Swan {
 
