@@ -5,6 +5,7 @@
 #include <string>
 #include <stdint.h>
 
+#include "cygnet/util.h"
 #include "util.h"
 #include "common.h"
 
@@ -13,6 +14,15 @@ class ResourceBuilder;
 }
 
 namespace Swan {
+
+struct TileParticles {
+	Cygnet::ByteColor particles[8][8];
+};
+
+struct TileAssetMeta {
+	float yOffset = 0;
+	std::shared_ptr<TileParticles> particles;
+};
 
 struct SoundAsset {
 	float *l = nullptr, *r = nullptr;
@@ -26,7 +36,7 @@ void loadSpriteAssets(
 
 void loadTileAssets(
 	std::string base, std::string path,
-	Cygnet::ResourceBuilder &builder);
+	Cygnet::ResourceBuilder &builder, HashMap<TileAssetMeta> &meta);
 
 void loadSoundAssets(
 	std::string base, std::string path,

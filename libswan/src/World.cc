@@ -73,6 +73,11 @@ void World::buildResources()
 	sounds_[INVALID_SOUND_NAME] = {};
 	loadSoundAssets("@::", "./assets/sounds", sounds_);
 
+	// Fallback particles for tiles which don't have an image
+	auto fallbackTileParticles = std::make_shared<TileParticles>();
+
+	HashMap<TileAssetMeta> tileMeta;
+
 	// Load assets from mods
 	for (auto &mod: mods_) {
 		loadSoundAssets(
@@ -82,11 +87,11 @@ void World::buildResources()
 		loadTileAssets(
 			cat(mod.name(), "::tiles/"),
 			cat(mod.path_, "/assets/tiles"),
-			builder);
+			builder, tileMeta);
 		loadTileAssets(
 			cat(mod.name(), "::items/"),
 			cat(mod.path_, "/assets/items"),
-			builder);
+			builder, tileMeta);
 		loadSpriteAssets(
 			cat(mod.name(), "::"),
 			cat(mod.path_, "/assets/sprites"),
@@ -150,22 +155,19 @@ void World::buildResources()
 			std::string tileName = cat(mod.name(), "::", tileBuilder.name);
 			Tile::ID tileId = tiles_.size();
 
+			auto metaIt = tileMeta.find(tileBuilder.image);
+
 			tilesMap_[tileName] = tileId;
 			tiles_.push_back(Tile(tileId, tileName, std::move(tileBuilder)));
 			auto &tile = tiles_.back();
 
 			float yOffset = 0;
-			/* TODO: particles and yOffset
-			if (image) {
-				buildTileParticles(tile, *image);
-				yOffset = findImageYOffset(*image);
-				builder.addTile(tileId, std::move(image->data), image->frameCount);
+			if (metaIt != tileMeta.end()) {
+				tile.particles = metaIt->second.particles;
+				yOffset = metaIt->second.yOffset;
+			} else {
+				tile.particles = fallbackTileParticles;
 			}
-			else {
-				warn << image.err();
-				builder.addTile(tileId, fallbackImage.data.get(), 1);
-			}
-			*/
 			builder.addTile(tileId, tileBuilder.image);
 
 			if (tileBuilder.placeSound) {
@@ -227,17 +229,12 @@ void World::buildResources()
 			std::string itemName = cat(mod.name(), "::", itemBuilder.name);
 			Tile::ID itemId = nextItemId++;
 
+			auto metaIt = tileMeta.find(itemBuilder.image);
+
 			float yOffset = 0;
-			/* TODO: yOffset
-			if (image) {
-				yOffset = findImageYOffset(*image);
-				builder.addTile(itemId, std::move(image->data), image->frameCount);
+			if (metaIt != tileMeta.end()) {
+				yOffset = metaIt->second.yOffset;
 			}
-			else {
-				warn << image.err();
-				builder.addTile(itemId, fallbackImage.data.get(), 1);
-			}
-			*/
 			builder.addTile(itemId, itemBuilder.image);
 
 			auto &item = items_[itemName] = Item(itemId, itemName, itemBuilder);
@@ -391,56 +388,6 @@ World::~World()
 	worldGenFactories_.clear();
 	entCollFactories_.clear();
 }
-
-/*
-void World::buildTileParticles(Tile &tile, ImageAsset &image)
-{
-	// This code has hard-coded assumptions that tiles are 32x32
-	// and particles are 8x8.
-	static_assert(TILE_SIZE == 32);
-	static_assert(sizeof(tile.particles) == 8 * 8 * 4);
-
-	auto averageColor = [&](int x, int y) {
-		Cygnet::Color avg = {0, 0, 0, 0};
-		float count = 0;
-
-		for (int ry = 0; ry < 4; ++ry) {
-			int py = (y * 4) + ry;
-			unsigned char *row = &image.data[py * 32 * 4];
-			for (int rx = 0; rx < 4; ++rx) {
-				int px = (x * 4) + rx;
-				unsigned char *pix = &row[px * 4];
-				if (pix[3] == 0) {
-					continue;
-				}
-
-				avg.r += pix[0];
-				avg.g += pix[1];
-				avg.b += pix[2];
-				avg.a += pix[3];
-				count += 1;
-			}
-		}
-
-		if (count == 0) {
-			return Cygnet::ByteColor{0, 0, 0, 0};
-		}
-
-		return Cygnet::ByteColor{
-			uint8_t(avg.r / count),
-			uint8_t(avg.g / count),
-			uint8_t(avg.b / count),
-			uint8_t(avg.a / count),
-		};
-	};
-
-	for (int y = 0; y < 8; ++y) {
-		for (int x = 0; x < 8; ++x) {
-			tile.particles[y][x] = averageColor(x, y);
-		}
-	}
-}
-*/
 
 /*
 float World::findImageYOffset(ImageAsset &image)

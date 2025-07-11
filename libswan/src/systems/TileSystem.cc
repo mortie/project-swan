@@ -314,7 +314,7 @@ void TileSystemImpl::spawnTileParticles(TilePos pos, const Tile &tile)
 					(randfloat() - 0.5f) * 2.0f,
 					-randfloat() * 2.0f,
 				},
-				.color = tile.particles[y][x],
+				.color = tile.particles->particles[y][x],
 				.lifetime = (randfloat() * 0.5f) + 0.1f,
 			});
 		}

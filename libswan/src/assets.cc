@@ -17,6 +17,76 @@
 
 namespace Swan {
 
+static std::unique_ptr<TileParticles> buildTileParticles(unsigned char *data)
+{
+	// This code has hard-coded assumptions that tiles are 32x32
+	// and particles are 8x8.
+	static_assert(TILE_SIZE == 32);
+	static_assert(sizeof(TileParticles{}.particles) == 8 * 8 * 4);
+
+	auto particles = std::make_unique<TileParticles>();
+
+	auto averageColor = [&](int x, int y) {
+		Cygnet::Color avg = {0, 0, 0, 0};
+		float count = 0;
+
+		for (int ry = 0; ry < 4; ++ry) {
+			int py = (y * 4) + ry;
+			unsigned char *row = &data[py * 32 * 4];
+			for (int rx = 0; rx < 4; ++rx) {
+				int px = (x * 4) + rx;
+				unsigned char *pix = &row[px * 4];
+				if (pix[3] == 0) {
+					continue;
+				}
+
+				avg.r += pix[0];
+				avg.g += pix[1];
+				avg.b += pix[2];
+				avg.a += pix[3];
+				count += 1;
+			}
+		}
+
+		if (count == 0) {
+			return Cygnet::ByteColor{0, 0, 0, 0};
+		}
+
+		return Cygnet::ByteColor{
+			uint8_t(avg.r / count),
+			uint8_t(avg.g / count),
+			uint8_t(avg.b / count),
+			uint8_t(avg.a / count),
+		};
+	};
+
+	for (int y = 0; y < 8; ++y) {
+		for (int x = 0; x < 8; ++x) {
+			particles->particles[y][x] = averageColor(x, y);
+		}
+	}
+
+	return particles;
+}
+
+static float findImageYOffset(unsigned char *data)
+{
+	int y;
+	bool done = false;
+	for (y = 0; y < TILE_SIZE && !done; ++y) {
+		unsigned char *row = &data[(TILE_SIZE - y - 1) * TILE_SIZE * 4];
+		for (int x = 0; x < TILE_SIZE; ++x) {
+			unsigned char *pix = &row[x * 4];
+			if (pix[3] > 0) {
+				done = true;
+				break;
+			}
+		}
+	}
+
+	return (y - 1) / float(TILE_SIZE);
+}
+
 static void applyHflip(unsigned char *data, size_t frameCount)
 {
 	size_t rowWidth = TILE_SIZE * 4;
@@ -182,8 +252,8 @@ static void loadSpriteAsset(
 }
 
 static void loadTileAsset(
-	std::string name, std::string_view dir,
-	cpptoml::table &toml, Cygnet::ResourceBuilder &builder)
+	std::string name, std::string_view dir, cpptoml::table &toml,
+	Cygnet::ResourceBuilder &builder, HashMap<TileAssetMeta> &meta)
 {
 	auto variants = toml.get_table("variants");
 	if (!variants) {
@@ -302,7 +372,11 @@ static void loadTileAsset(
 			}
 		}
 
-		builder.addTileAsset(std::move(assetName), variantImg, variantFrameCount);
+		builder.addTileAsset(assetName, variantImg, variantFrameCount);
+		meta[std::move(assetName)] = TileAssetMeta {
+			.yOffset = findImageYOffset(variantImg),
+			.particles = buildTileParticles(variantImg),
+		};
 	}
 }
 
@@ -392,7 +466,7 @@ void loadSpriteAssets(
 
 void loadTileAssets(
 	std::string base, std::string path,
-	Cygnet::ResourceBuilder &builder)
+	Cygnet::ResourceBuilder &builder, HashMap<TileAssetMeta> &meta)
 {
 	if (!std::filesystem::exists(path)) {
 		return;
@@ -409,13 +483,13 @@ void loadTileAssets(
 				toml = cpptoml::parse_file(tomlPath);
 				std::string name = cat(base, it.path().filename().stem());
 				loadTileAsset(
-					std::move(name), newPath,
-					*toml, builder);
+					std::move(name), newPath, *toml,
+					builder, meta);
 				continue;
 			}
 
 			std::string newBase = cat(base, it.path().filename(), "/");
-			loadTileAssets(std::move(newBase), std::move(newPath), builder);
+			loadTileAssets(std::move(newBase), std::move(newPath), builder, meta);
 			continue;
 		}
 
@@ -451,7 +525,7 @@ void loadTileAssets(
 			toml->insert("base", cat(it.path().filename().stem(), ".png"));
 		}
 
-		loadTileAsset(std::move(name), path, *toml, builder);
+		loadTileAsset(std::move(name), path, *toml, builder, meta);
 	}
 }
 
