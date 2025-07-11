@@ -179,7 +179,7 @@ void CrucibleTileEntity::activate(Swan::Ctx &ctx, Swan::ItemStack &stack)
 		}
 
 		if (complete) {
-			ctx.game.playSound(ctx.world.getSound("core::sounds/misc/snap"));
+			ctx.game.playSound(ctx.world.getSound("core::misc/snap"));
 			auto it = stack.remove(1);
 			items_.push_back(it.item());
 			progress_ = Progress {
@@ -194,7 +194,7 @@ void CrucibleTileEntity::activate(Swan::Ctx &ctx, Swan::ItemStack &stack)
 		return;
 	}
 
-	ctx.game.playSound(ctx.world.getSound("core::sounds/misc/snap"));
+	ctx.game.playSound(ctx.world.getSound("core::misc/snap"));
 	auto it = stack.remove(1);
 	items_.push_back(it.item());
 	itemCounts_[it.item()] += 1;

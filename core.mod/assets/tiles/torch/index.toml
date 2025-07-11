@@ -1,4 +1,4 @@
 [variants]
-normal = ['img:normal.png']
-left = ['img:wall.png']
-right = ['img:wall.png', 'hflip']
+normal = ['./normal.png']
+left = ['./wall.png']
+right = ['./wall.png', 'hflip']

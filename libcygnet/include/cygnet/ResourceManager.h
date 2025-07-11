@@ -11,10 +11,10 @@
 namespace Cygnet {
 
 struct ResourceTileAnimation {
-	uint16_t id;
-	int frames;
-	int index;
-	std::unique_ptr<unsigned char[]> data;
+	Renderer::TileID tileID;
+	uint16_t startIndex;
+	uint16_t frameCount;
+	uint16_t index;
 };
 
 class ResourceManager;
@@ -32,16 +32,28 @@ public:
 
 	bool hasSprite(std::string_view name) { return sprites_.contains(name); }
 	RenderSprite addSprite(std::string name, void *data, SpriteMeta meta);
-	void addTile(Renderer::TileID id, void *data, int frames);
-	void addTile(Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames);
+
+	bool hasTileAsset(std::string_view name) { return tileAssets_.contains(name); }
+	void addTileAsset(std::string name, void *data, int frames);
+
+	void addTile(Renderer::TileID id, std::string_view assetName);
 	void addFluid(uint8_t id, ByteColor fg, ByteColor bg);
 
 private:
+	struct TileMeta {
+		int startIndex;
+		int frameCount;
+	};
+
 	Renderer *rnd_;
 	Swan::HashMap<RenderSprite> sprites_;
-	std::vector<ResourceTileAnimation> tileAnims_;
+	Swan::HashMap<TileMeta> tileAssets_;
+	std::vector<uint16_t> tiles_;
+	std::vector<ResourceTileAnimation> tileAnimations_;
+
 	std::unique_ptr<uint8_t[]> fluids_;
 	TileAtlas atlas_;
+	uint16_t atlasIndex_ = 0;
 
 	friend ResourceManager;
 };
@@ -60,7 +72,7 @@ public:
 	Renderer *rnd_ = nullptr;
 	Swan::HashMap<RenderSprite> sprites_;
 	Swan::HashMap<Renderer::TileID> tiles_;
-	std::vector<ResourceTileAnimation> tileAnims_;
+	std::vector<ResourceTileAnimation> tileAnimations_;
 };
 
 }

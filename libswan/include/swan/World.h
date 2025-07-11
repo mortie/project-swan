@@ -139,8 +139,6 @@ public:
 	void serialize(proto::World::Builder w);
 	void deserialize(proto::World::Reader r);
 
-	HashMap<std::string> modPaths_;
-
 	// These things get filled in when the ctor loads mods.
 	std::vector<Tile> tiles_;
 	HashMap<Tile::ID> tilesMap_;
@@ -176,8 +174,6 @@ private:
 
 	std::vector<ModWrapper> loadMods(std::span<const std::string> paths);
 	void buildResources();
-	void buildTileParticles(Tile &tile, ImageAsset &image);
-	float findImageYOffset(ImageAsset &image);
 
 	ChunkRenderer chunkRenderer_;
 	WorldPlane::ID currentPlane_ = 0;

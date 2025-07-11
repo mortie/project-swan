@@ -1,7 +1,9 @@
 uniform mat3 camera;
 uniform mat3 transform;
 uniform sampler2D tileAtlas;
-uniform uvec2 tileAtlasSize;
+uniform vec2 tileAtlasSize;
+uniform usampler2D tileMap;
+uniform float tileMapSize;
 uniform uint tileID;
 uniform float brightness;
 
@@ -19,11 +21,14 @@ void main() {
 	vec3 pos = camera * transform * vec3(vertex, 1);
 	gl_Position = vec4(pos.xy, 0, 1);
 
+	vec2 assetPos = vec2((float(tileID) + 0.5f) / float(tileMapSize), 0.5f);
+	uint assetID = texture(tileMap, assetPos).r;
+
 	// 1/(TILE_SIZE*16) plays the same role here as in the sprite vertex shader.
 	vec2 pixoffset = (1.0 - vertex * 2.0) / (float(SWAN_TILE_SIZE) * 16.0);
 	v_atlasPos = vec2(
-		pixoffset.x + tileID + vertex.x,
-		pixoffset.y + floor(tileID / tileAtlasSize.x) + vertex.y);
+		pixoffset.x + assetID + vertex.x,
+		pixoffset.y + floor(assetID / tileAtlasSize.x) + vertex.y);
 }
 
 // @Fragment

@@ -25,6 +25,14 @@
 #define DYNLIB_EXT ".so"
 #endif
 
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define ASAN_ENABLED
+#endif
+#elif defined(__SANITIZE_ADDRESS__)
+#define ASAN_ENABLED
+#endif
+
 extern char **environ;
 
 namespace SwanBuild {
@@ -123,6 +131,9 @@ void buildCommand(std::string &cmd, const SourceFile &f, const BuildInfo &info)
 		quoteArg(cmd, info.compiler);
 		cmd += ' ';
 		cmd += info.cflags;
+#ifdef ASAN_ENABLED
+		cmd += " -fsanitize=address";
+#endif
 		cmd += " -include-pch";
 		appendArg(cmd, cat(info.modPath, "/.swanbuild/swan.h.pch"));
 		cmd += " -c -o";
@@ -328,6 +339,9 @@ static bool compilePCH(const BuildInfo &info, std::string_view pchPath)
 	quoteArg(cmd, info.compiler);
 	cmd += ' ';
 	cmd += info.cflags;
+#ifdef ASAN_ENABLED
+	cmd += " -fsanitize=address";
+#endif
 	cmd += " -xc++-header -c -o";
 	quoteArg(cmd, pchPath);
 	appendArg(cmd, cat(info.swanPath, "/include/swan/swan.h"));
@@ -341,6 +355,9 @@ static bool link(
 {
 	std::string cmd;
 	quoteArg(cmd, info.compiler);
+#ifdef ASAN_ENABLED
+	cmd += " -fsanitize=address";
+#endif
 	cmd += " -shared -o";
 	quoteArg(cmd, out);
 	cmd += ' ';
@@ -429,6 +446,14 @@ static void hashFiles(std::string path, SHA1 &sha)
 static std::string hashFiles(std::string path)
 {
 	SHA1 sha;
+
+	// We need to store whether asan is enabled or not
+#ifdef ASAN_ENABLED
+	sha.update("ASAN=1;");
+#else
+	sha.update("ASAN=0;");
+#endif
+
 	hashFiles(std::move(path), sha);
 	return sha.final();
 }
@@ -489,6 +514,11 @@ static bool buildMod(const BuildInfo &info)
 	auto pchPath = cat(info.modPath, "/.swanbuild/swan.h.pch");
 	auto manifestPath = cat(info.modPath, "/.swanbuild/manifest.toml");
 	bool allOutdated = isOutdated(manifestPath, info);
+
+	if (!std::filesystem::exists(cat(info.modPath, "/.swanbuild/mod.so"))) {
+		allOutdated = true;
+	}
+
 	bool pchOutdated = allOutdated;
 	if (allOutdated) {
 		std::cerr << modName << " v" << modVersion << " needs to be recompiled.\n";

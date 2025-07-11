@@ -14,14 +14,6 @@ class ResourceBuilder;
 
 namespace Swan {
 
-struct ImageAsset {
-	int width;
-	int frameHeight;
-	int frameCount;
-	int repeatFrom;
-	std::unique_ptr<unsigned char[]> data;
-};
-
 struct SoundAsset {
 	float *l = nullptr, *r = nullptr;
 	std::unique_ptr<float[]> data;
@@ -32,9 +24,9 @@ void loadSpriteAssets(
 	std::string base, std::string path,
 	Cygnet::ResourceBuilder &builder);
 
-void loadTileOrItemAssets(
+void loadTileAssets(
 	std::string base, std::string path,
-	HashMap<ImageAsset> &assets);
+	Cygnet::ResourceBuilder &builder);
 
 void loadSoundAssets(
 	std::string base, std::string path,

@@ -196,7 +196,7 @@ public:
 
 		registerItem({
 			.name = "axe",
-			.image = "core::tools/axe",
+			.image = "core::items/tools/axe",
 			.tool = Swan::Tool::AXE,
 		});
 		registerItem({

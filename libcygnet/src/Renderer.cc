@@ -43,7 +43,8 @@ struct BlendProg: public GlProg<Shader::Blend> {
 struct ChunkProg: public GlProg<Shader::Chunk> {
 	void draw(
 		std::span<Renderer::DrawChunk> drawChunks, const Mat3gf &cam,
-		GLuint atlasTex, Swan::Vec2 atlasTexSize)
+		GLuint atlasTex, Swan::Vec2 atlasTexSize,
+		GLuint mapTex, float mapTexSize)
 	{
 		if (drawChunks.size() == 0) {
 			return;
@@ -55,18 +56,26 @@ struct ChunkProg: public GlProg<Shader::Chunk> {
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
 		glCheck();
 
-		glUniform2ui(
-			shader.uniTileAtlasSize,
-			atlasTexSize.x, atlasTexSize.y);
-		glCheck();
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, atlasTex);
 		glUniform1i(shader.uniTileAtlas, 0);
 		glCheck();
 
+		glUniform2ui(shader.uniTileAtlasSize, atlasTexSize.x, atlasTexSize.y);
+		glCheck();
+
 		glActiveTexture(GL_TEXTURE1);
-		glUniform1i(shader.uniTiles, 1);
+		glBindTexture(GL_TEXTURE_2D, mapTex);
+		glUniform1i(shader.uniTileMap, 1);
+		glCheck();
+
+		glUniform1f(shader.uniTileMapSize, mapTexSize);
+		glCheck();
+
+		glActiveTexture(GL_TEXTURE2);
+		glUniform1i(shader.uniTiles, 2);
+		glCheck();
+
 		for (const auto &dc: drawChunks) {
 			glUniform2f(shader.uniPos, dc.pos.x, dc.pos.y);
 			glBindTexture(GL_TEXTURE_2D, dc.chunk.tex);
@@ -385,7 +394,8 @@ struct TextProg: public GlProg<Shader::Text> {
 struct TileProg: public GlProg<Shader::Tile> {
 	void draw(
 		std::span<Renderer::DrawTile> drawTiles, const Mat3gf &cam,
-		GLuint atlasTex, Swan::Vec2 atlasTexSize)
+		GLuint atlasTex, Swan::Vec2 atlasTexSize,
+		GLuint mapTex, float mapTexSize)
 	{
 		if (drawTiles.size() == 0) {
 			return;
@@ -397,12 +407,20 @@ struct TileProg: public GlProg<Shader::Tile> {
 		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
 		glCheck();
 
-		glUniform2ui(shader.uniTileAtlasSize, atlasTexSize.x, atlasTexSize.y);
-		glCheck();
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, atlasTex);
 		glUniform1i(shader.uniTileAtlas, 0);
+		glCheck();
+
+		glUniform2f(shader.uniTileAtlasSize, atlasTexSize.x, atlasTexSize.y);
+		glCheck();
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, mapTex);
+		glUniform1i(shader.uniTileMap, 1);
+		glCheck();
+
+		glUniform1f(shader.uniTileMapSize, mapTexSize);
 		glCheck();
 
 		for (const auto &dt: drawTiles) {
@@ -431,14 +449,19 @@ struct RendererState {
 	GLuint offscreenFramebuffer = 0;
 	GLuint offscreenTex = 0;
 	GLuint offscreenStencilTex = 0;
-	GLuint atlasTex = 0;
+	GLuint tileAtlasTex = 0;
+	Swan::Vec2 tileAtlasTexSize;
+	GLuint tileMapTex = 0;
+	float tileMapTexSize = 0;
 	GLuint fluidAtlasTex = 0;
-	Swan::Vec2 atlasTexSize;
 };
 
 Renderer::Renderer(): state_(std::make_unique<RendererState>())
 {
-	glGenTextures(1, &state_->atlasTex);
+	glGenTextures(1, &state_->tileAtlasTex);
+	glCheck();
+
+	glGenTextures(1, &state_->tileMapTex);
 	glCheck();
 
 	glGenTextures(1, &state_->fluidAtlasTex);
@@ -456,7 +479,8 @@ Renderer::~Renderer()
 	glDeleteFramebuffers(1, &state_->offscreenFramebuffer);
 	glDeleteTextures(1, &state_->offscreenStencilTex);
 	glDeleteTextures(1, &state_->offscreenTex);
-	glDeleteTextures(1, &state_->atlasTex);
+	glDeleteTextures(1, &state_->tileAtlasTex);
+	glDeleteTextures(1, &state_->tileMapTex);
 	glDeleteTextures(1, &state_->fluidAtlasTex);
 	glCheck();
 }
@@ -600,8 +624,12 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 	int idx = (int)layer;
 
 	state_->chunkFluidProg.draw(drawChunkFluids_[idx], camMat, state_->fluidAtlasTex, 1);
-	state_->chunkProg.draw(drawChunks_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
-	state_->tileProg.draw(drawTiles_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
+	state_->chunkProg.draw(
+		drawChunks_[idx], camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
+		state_->tileMapTex, state_->tileMapTexSize);
+	state_->tileProg.draw(
+		drawTiles_[idx], camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
+		state_->tileMapTex, state_->tileMapTexSize);
 	state_->spriteProg.draw(drawTileSprites_[idx], camMat);
 	state_->spriteProg.draw(drawSprites_[idx], camMat);
 	state_->particleProg.draw(drawParticles_[idx], camMat);
@@ -661,7 +689,8 @@ void Renderer::renderUILayer(RenderLayer layer, Mat3gf camMat)
 	state_->spriteProg.drawGrids(drawUIGrids_[idx], camMat);
 	state_->spriteProg.draw(drawUISprites_[idx], camMat);
 	state_->tileProg.draw(
-		drawUITiles_[idx], camMat, state_->atlasTex, state_->atlasTexSize);
+		drawUITiles_[idx], camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
+		state_->tileMapTex, state_->tileMapTexSize);
 	state_->rectProg.draw(drawUIRects_[idx], camMat);
 	state_->textProg.draw(
 		drawUITexts_[idx], textUIBuffer_, camMat, 1.0 / 64);
@@ -835,7 +864,7 @@ void Renderer::uploadFluidAtlas(const void *data)
 
 void Renderer::uploadTileAtlas(const void *data, int width, int height)
 {
-	glBindTexture(GL_TEXTURE_2D, state_->atlasTex);
+	glBindTexture(GL_TEXTURE_2D, state_->tileAtlasTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -843,23 +872,33 @@ void Renderer::uploadTileAtlas(const void *data, int width, int height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glCheck();
 
-	state_->atlasTexSize = {
+	state_->tileAtlasTexSize = {
 		(float)(int)(width / Swan::TILE_SIZE),
 		(float)(int)(height / Swan::TILE_SIZE)};
 }
 
-void Renderer::modifyTile(TileID id, const void *data)
+void Renderer::uploadTileMap(std::span<uint16_t> tiles)
 {
-	int w = (int)state_->atlasTexSize.x;
-	int x = id % w;
-	int y = id / w;
+	glBindTexture(GL_TEXTURE_2D, state_->tileMapTex);
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_R16UI, tiles.size(), 1,
+		0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, tiles.data());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glCheck();
 
+	state_->tileMapTexSize = tiles.size();
+}
+
+void Renderer::modifyTile(TileID id, uint16_t newAssetID)
+{
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, state_->atlasTex);
+	glBindTexture(GL_TEXTURE_2D, state_->tileMapTex);
 	glTexSubImage2D(
-		GL_TEXTURE_2D, 0, x * Swan::TILE_SIZE, y * Swan::TILE_SIZE,
-		Swan::TILE_SIZE, Swan::TILE_SIZE,
-		GL_RGBA, GL_UNSIGNED_BYTE, data);
+		GL_TEXTURE_2D, 0, id, 0, 1, 1,
+		GL_RED_INTEGER, GL_UNSIGNED_SHORT, &newAssetID);
 	glCheck();
 }
 
