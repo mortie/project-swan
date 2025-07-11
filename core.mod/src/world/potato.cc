@@ -9,7 +9,7 @@ void registerPotatoBush(Swan::Mod &mod)
 	if constexpr (N == Max) {
 		mod.registerTile({
 			.name = Swan::cat("potato-bush"),
-			.image = Swan::cat("core::tiles/flora/potato-bush-", N),
+			.image = Swan::cat("core::tiles/flora/potato-bush@", N),
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.breakSound = "core::step/grass1",
@@ -20,7 +20,7 @@ void registerPotatoBush(Swan::Mod &mod)
 	} else {
 		mod.registerTile({
 			.name = Swan::cat("potato-bush::", N),
-			.image = Swan::cat("core::tiles/flora/potato-bush-", N),
+			.image = Swan::cat("core::tiles/flora/potato-bush@", N),
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.breakSound = "core::step/grass1",

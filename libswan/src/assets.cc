@@ -373,6 +373,16 @@ static void loadTileAsset(
 		}
 
 		builder.addTileAsset(assetName, variantImg, variantFrameCount);
+
+		if (variantFrameCount > 0) {
+			for (int i = 0; i < variantFrameCount; ++i) {
+				unsigned char *data = variantImg + (TILE_SIZE * TILE_SIZE * 4 * i);
+				meta[cat(assetName, "@", i)] = TileAssetMeta {
+					.yOffset = findImageYOffset(data),
+					.particles = buildTileParticles(data),
+				};
+			}
+		}
 		meta[std::move(assetName)] = TileAssetMeta {
 			.yOffset = findImageYOffset(variantImg),
 			.particles = buildTileParticles(variantImg),

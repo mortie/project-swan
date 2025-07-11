@@ -25,7 +25,9 @@ void ResourceBuilder::addTileAsset(std::string name, void *data, int frames)
 		constexpr size_t size = Swan::TILE_SIZE * Swan::TILE_SIZE * 4;
 		unsigned char *ptr = (unsigned char *)data + size * i;
 		atlas_.addTile(atlasIndex_, ptr);
-		tileAssets_[Swan::cat(name, "@", i)] = { startIndex, 1 };
+		if (frames > 1) {
+			tileAssets_[Swan::cat(name, "@", i)] = { startIndex + i, 1 };
+		}
 		atlasIndex_ += 1;
 	}
 
