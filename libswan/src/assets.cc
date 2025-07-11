@@ -346,7 +346,22 @@ static void loadTileAsset(
 
 			variantImg = variantImgBuf.get();
 			startIndex = 1;
-		} else {
+		}
+		else if (variant.size() > 0) {
+			if (!ensureBase()) {
+				continue;
+			}
+
+			variantImgBuf.reset((unsigned char *)malloc(
+				TILE_SIZE * TILE_SIZE * 4 * baseFrameCount));
+			memcpy(
+				variantImgBuf.get(), baseImg.get(),
+				TILE_SIZE * TILE_SIZE * 4 * baseFrameCount);
+			variantImg = variantImgBuf.get();
+			variantFrameCount = baseFrameCount;
+			startIndex = 0;
+		}
+		else {
 			if (!ensureBase()) {
 				continue;
 			}
