@@ -540,9 +540,6 @@ void loadTileAssets(
 		if (!variants) {
 			variants = cpptoml::make_table();
 			toml->insert("variants", variants);
-		}
-
-		if (!variants->contains("default")) {
 			variants->insert("default", cpptoml::make_array());
 		}
 
