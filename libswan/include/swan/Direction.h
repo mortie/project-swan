@@ -2,8 +2,8 @@
 
 #include <ostream>
 
+#include <swan/util.h>
 #include "common.h"
-#include "util.h"
 #include "swan.capnp.h"
 
 namespace Swan {

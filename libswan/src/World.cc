@@ -45,74 +45,66 @@ void World::buildResources()
 {
 	Cygnet::ResourceBuilder builder(&game_->renderer_);
 
-	auto fillTileImage = [&](unsigned char *data, int r, int g, int b, int a) {
-		for (size_t i = 0; i < TILE_SIZE * TILE_SIZE; ++i) {
-			data[i * 4 + 0] = r;
-			data[i * 4 + 1] = g;
-			data[i * 4 + 2] = b;
-			data[i * 4 + 2] = a;
-		}
-	};
+	// We need a fallback image for when an image is missing
+	unsigned char tileImageBuffer[TILE_SIZE * TILE_SIZE * 4];
+	for (size_t i = 0; i < TILE_SIZE * TILE_SIZE; ++i) {
+		tileImageBuffer[i * 4 + 0] = PLACEHOLDER_RED;
+		tileImageBuffer[i * 4 + 1] = PLACEHOLDER_GREEN;
+		tileImageBuffer[i * 4 + 2] = PLACEHOLDER_BLUE;
+		tileImageBuffer[i * 4 + 3] = 255;
+	}
 
-	// Assets are namespaced on the mod, so if something references, say,
-	// "core::stone", we need to know which directory the "core" mod is in
+	// Built-in tile assets
+	builder.addTileAsset(INVALID_TILE_NAME, tileImageBuffer, 1);
+
+	// Built-in sprites
+	builder.addSprite(INVALID_SPRITE_NAME, tileImageBuffer, {
+		.width = TILE_SIZE,
+		.height = TILE_SIZE,
+		.frameHeight = TILE_SIZE,
+		.repeatFrom = 0,
+	});
+
+	// Re-use tile image buffer to create an air image asset
+	memset(tileImageBuffer, 0, TILE_SIZE * TILE_SIZE * 4);
+	builder.addTileAsset(AIR_TILE_NAME, tileImageBuffer, 1);
+
+	// Built-in sounds
+	sounds_[INVALID_SOUND_NAME] = {};
+	loadSoundAssets("@::", "./assets/sounds", sounds_);
+
+	// Fallback particles for tiles which don't have an image
+	auto fallbackTileParticles = std::make_shared<TileParticles>();
+
+	HashMap<TileAssetMeta> tileMeta;
+
+	// Load assets from mods
 	for (auto &mod: mods_) {
-		modPaths_[mod.name()] = mod.path_;
-	}
-
-	modPaths_["@"] = ".";
-
-	// Load built-in sounds.
-	sounds_[INVALID_SOUND_NAME] = SoundAsset{};
-	if (auto thud = loadSoundAsset(modPaths_, "@::sounds/thud")) {
-		sounds_[THUD_SOUND_NAME] = std::move(thud.value());
-	}
-	else {
-		warn
-			<< "Failed to load built-in sound " << THUD_SOUND_NAME
-			<< ": " << thud.err();
-		sounds_[THUD_SOUND_NAME] = SoundAsset{};
-	}
-
-	// Load sounds.
-	for (auto &mod: mods_) {
-		for (auto soundPath: mod.sounds()) {
-			std::string name = cat(mod.name(), "::", soundPath);
-			auto soundResult = loadSoundAsset(modPaths_, name);
-			SoundAsset sound;
-
-			if (soundResult) {
-				sounds_[name] = std::move(soundResult.value());
-			}
-			else {
-				warn << '\'' << name << ": " << soundResult.err();
-				sounds_[name] = SoundAsset{};
-			}
-		}
+		loadSoundAssets(
+			cat(mod.name(), "::"),
+			cat(mod.path_, "/assets/sounds"),
+			sounds_);
+		loadTileAssets(
+			cat(mod.name(), "::tiles/"),
+			cat(mod.path_, "/assets/tiles"),
+			builder, tileMeta);
+		loadTileAssets(
+			cat(mod.name(), "::items/"),
+			cat(mod.path_, "/assets/items"),
+			builder, tileMeta);
+		loadSpriteAssets(
+			cat(mod.name(), "::"),
+			cat(mod.path_, "/assets/sprites"),
+			builder);
 	}
 
 	// After this point, 'sounds_' *must* be unchanged.
 	// We rely on pointers to be stable from now on.
 	SoundAsset *fallbackSound = &sounds_[INVALID_SOUND_NAME];
-	SoundAsset *thudSound = &sounds_[THUD_SOUND_NAME];
-
-	struct ImageAsset fallbackImage = {
-		.width = 32,
-		.frameHeight = 32,
-		.frameCount = 1,
-		.repeatFrom = 0,
-		.data = std::make_unique<unsigned char[]>(TILE_SIZE * TILE_SIZE * 4),
-	};
-
-	fillTileImage(fallbackImage.data.get(),
-		PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE, 255);
-
-	auto airImage = std::make_unique<unsigned char[]>(TILE_SIZE * TILE_SIZE * 4);
-	fillTileImage(airImage.get(),
-		PLACEHOLDER_RED, PLACEHOLDER_GREEN, PLACEHOLDER_BLUE, 255);
+	SoundAsset *thudSound = getSound(THUD_SOUND_NAME);
 
 	// Let tile ID 0 be the invalid tile
-	builder.addTile(INVALID_TILE_ID, fallbackImage.data.get(), 1);
+	builder.addTile(INVALID_TILE_ID, INVALID_TILE_NAME);
 	tilesMap_[INVALID_TILE_NAME] = INVALID_TILE_ID;
 	tiles_.push_back(Tile(INVALID_TILE_ID, INVALID_TILE_NAME, {
 		.name = "", .image = "", // Not used in this case
@@ -124,7 +116,7 @@ void World::buildResources()
 	});
 
 	// ...And tile ID 1 be the air tile
-	builder.addTile(AIR_TILE_ID, std::move(airImage), 1);
+	builder.addTile(AIR_TILE_ID, AIR_TILE_NAME);
 	tilesMap_[AIR_TILE_NAME] = AIR_TILE_ID;
 	tiles_.push_back(Tile(AIR_TILE_ID, AIR_TILE_NAME, {
 		.name = "", .image = "", // Not used in this case
@@ -143,36 +135,6 @@ void World::buildResources()
 		tile.breakSound = fallbackSound;
 	}
 
-	auto loadTileImage = [&](std::string path) -> Result<ImageAsset> {
-		// Don't force all tiles/items to have an associated image.
-		// It could be that some tiles/items exist for a purpose which implies
-		// it should never actually be visible.
-		if (path == INVALID_TILE_NAME) {
-			ImageAsset asset{
-				.width = 32,
-				.frameHeight = 32,
-				.frameCount = 1,
-				.repeatFrom = 0,
-				.data = std::make_unique<unsigned char[]>(TILE_SIZE * TILE_SIZE * 4),
-			};
-			memcpy(asset.data.get(), fallbackImage.data.get(), TILE_SIZE * TILE_SIZE * 4);
-			return {Ok, std::move(asset)};
-		}
-
-		auto image = loadImageAsset(modPaths_, path, TILE_SIZE);
-		if (!image) {
-			warn << '\'' << path << "': " << image.err();
-			return {Err, cat("'", path, "': ", image.err())};
-		}
-		else if (image->width != TILE_SIZE) {
-			warn << '\'' << path << "': Width must be " << TILE_SIZE << " pixels";
-			return {Err, cat("'", path, "': Width must be ", TILE_SIZE, " pixels")};
-		}
-		else {
-			return image;
-		}
-	};
-
 	// Count number of tiles.
 	// This lets us avoid re-allocating the tiles vector
 	// while building tiles.
@@ -188,25 +150,25 @@ void World::buildResources()
 	tiles_.reserve(tileCount);
 	for (auto &mod: mods_) {
 		for (auto &tileBuilder: mod.tiles()) {
-			auto image = loadTileImage(tileBuilder.image);
+			//auto image = loadTileImage(tileBuilder.image);
 
 			std::string tileName = cat(mod.name(), "::", tileBuilder.name);
 			Tile::ID tileId = tiles_.size();
+
+			auto metaIt = tileMeta.find(tileBuilder.image);
 
 			tilesMap_[tileName] = tileId;
 			tiles_.push_back(Tile(tileId, tileName, std::move(tileBuilder)));
 			auto &tile = tiles_.back();
 
 			float yOffset = 0;
-			if (image) {
-				buildTileParticles(tile, *image);
-				yOffset = findImageYOffset(*image);
-				builder.addTile(tileId, std::move(image->data), image->frameCount);
+			if (metaIt != tileMeta.end()) {
+				tile.particles = metaIt->second.particles;
+				yOffset = metaIt->second.yOffset;
+			} else {
+				tile.particles = fallbackTileParticles;
 			}
-			else {
-				warn << image.err();
-				builder.addTile(tileId, fallbackImage.data.get(), 1);
-			}
+			builder.addTile(tileId, tileBuilder.image);
 
 			if (tileBuilder.placeSound) {
 				tile.placeSound = getSound(tileBuilder.placeSound.value());
@@ -262,20 +224,18 @@ void World::buildResources()
 	// Load all items which aren't just tiles in disguise.
 	for (auto &mod: mods_) {
 		for (auto &itemBuilder: mod.items()) {
-			auto image = loadTileImage(itemBuilder.image);
+			//auto image = loadTileImage(itemBuilder.image);
 
 			std::string itemName = cat(mod.name(), "::", itemBuilder.name);
 			Tile::ID itemId = nextItemId++;
 
+			auto metaIt = tileMeta.find(itemBuilder.image);
+
 			float yOffset = 0;
-			if (image) {
-				yOffset = findImageYOffset(*image);
-				builder.addTile(itemId, std::move(image->data), image->frameCount);
+			if (metaIt != tileMeta.end()) {
+				yOffset = metaIt->second.yOffset;
 			}
-			else {
-				warn << image.err();
-				builder.addTile(itemId, fallbackImage.data.get(), 1);
-			}
+			builder.addTile(itemId, itemBuilder.image);
 
 			auto &item = items_[itemName] = Item(itemId, itemName, itemBuilder);
 			item.displayName = mod.lang("items", itemBuilder.name);
@@ -378,38 +338,6 @@ void World::buildResources()
 		}
 	}
 
-	// Load built-in sprites.
-	builder.addSprite(INVALID_SPRITE_NAME, fallbackImage.data.get(), {
-		.width = fallbackImage.width,
-		.height = fallbackImage.frameHeight * fallbackImage.frameCount,
-		.frameHeight = fallbackImage.frameHeight,
-		.repeatFrom = fallbackImage.repeatFrom,
-	});
-
-	// Load sprites.
-	for (auto &mod: mods_) {
-		for (auto spritePath: mod.sprites()) {
-			std::string name = cat(mod.name(), "::", spritePath);
-			auto imageResult = loadImageAsset(modPaths_, name);
-			ImageAsset *image;
-
-			if (imageResult) {
-				image = &imageResult.value();
-			}
-			else {
-				warn << '\'' << name << "': " << imageResult.err();
-				image = &fallbackImage;
-			}
-
-			builder.addSprite(name, image->data.get(), {
-				.width = image->width,
-				.height = image->frameHeight * image->frameCount,
-				.frameHeight = image->frameHeight,
-				.repeatFrom = image->repeatFrom,
-			});
-		}
-	}
-
 	// Fix up tiles.
 	for (auto &mod: mods_) {
 		for (auto &tileBuilder: mod.tiles()) {
@@ -461,54 +389,7 @@ World::~World()
 	entCollFactories_.clear();
 }
 
-void World::buildTileParticles(Tile &tile, ImageAsset &image)
-{
-	// This code has hard-coded assumptions that tiles are 32x32
-	// and particles are 8x8.
-	static_assert(TILE_SIZE == 32);
-	static_assert(sizeof(tile.particles) == 8 * 8 * 4);
-
-	auto averageColor = [&](int x, int y) {
-		Cygnet::Color avg = {0, 0, 0, 0};
-		float count = 0;
-
-		for (int ry = 0; ry < 4; ++ry) {
-			int py = (y * 4) + ry;
-			unsigned char *row = &image.data[py * 32 * 4];
-			for (int rx = 0; rx < 4; ++rx) {
-				int px = (x * 4) + rx;
-				unsigned char *pix = &row[px * 4];
-				if (pix[3] == 0) {
-					continue;
-				}
-
-				avg.r += pix[0];
-				avg.g += pix[1];
-				avg.b += pix[2];
-				avg.a += pix[3];
-				count += 1;
-			}
-		}
-
-		if (count == 0) {
-			return Cygnet::ByteColor{0, 0, 0, 0};
-		}
-
-		return Cygnet::ByteColor{
-			uint8_t(avg.r / count),
-			uint8_t(avg.g / count),
-			uint8_t(avg.b / count),
-			uint8_t(avg.a / count),
-		};
-	};
-
-	for (int y = 0; y < 8; ++y) {
-		for (int x = 0; x < 8; ++x) {
-			tile.particles[y][x] = averageColor(x, y);
-		}
-	}
-}
-
+/*
 float World::findImageYOffset(ImageAsset &image)
 {
 	int y;
@@ -526,6 +407,7 @@ float World::findImageYOffset(ImageAsset &image)
 
 	return (y - 1) / float(TILE_SIZE);
 }
+*/
 
 void World::ChunkRenderer::tick(WorldPlane &plane, ChunkPos abspos)
 {

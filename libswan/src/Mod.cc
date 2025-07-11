@@ -29,16 +29,6 @@ void Mod::registerRecipe(Recipe::Builder &&recipe)
 	recipes_.push_back(std::move(recipe));
 }
 
-void Mod::registerSprite(std::string &&sprite)
-{
-	sprites_.push_back(std::move(sprite));
-}
-
-void Mod::registerSound(std::string &&sound)
-{
-	sounds_.push_back(std::move(sound));
-}
-
 void Mod::registerRecipeKind(std::string &&kind)
 {
 	recipeKinds_.push_back(std::move(kind));

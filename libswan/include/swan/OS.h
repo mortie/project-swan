@@ -3,7 +3,7 @@
 #include <string>
 #include <stdio.h>
 
-#include "util.h"
+#include <swan/util.h>
 
 namespace Swan {
 

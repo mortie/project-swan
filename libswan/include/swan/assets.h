@@ -5,19 +5,23 @@
 #include <string>
 #include <stdint.h>
 
+#include "cygnet/util.h"
 #include "util.h"
 #include "common.h"
 
+namespace Cygnet {
+class ResourceBuilder;
+}
+
 namespace Swan {
 
-extern std::string assetBasePath;
+struct TileParticles {
+	Cygnet::ByteColor particles[8][8];
+};
 
-struct ImageAsset {
-	int width;
-	int frameHeight;
-	int frameCount;
-	int repeatFrom;
-	std::unique_ptr<unsigned char[]> data;
+struct TileAssetMeta {
+	float yOffset = 0;
+	std::shared_ptr<TileParticles> particles;
 };
 
 struct SoundAsset {
@@ -26,12 +30,16 @@ struct SoundAsset {
 	size_t length = 0;
 };
 
-Result<ImageAsset> loadImageAsset(
-	const HashMap<std::string> &modPaths,
-	std::string path, std::optional<int> defaultSize = {});
+void loadSpriteAssets(
+	std::string base, std::string path,
+	Cygnet::ResourceBuilder &builder);
 
-Result<SoundAsset> loadSoundAsset(
-	const HashMap<std::string> &modPaths,
-	std::string path);
+void loadTileAssets(
+	std::string base, std::string path,
+	Cygnet::ResourceBuilder &builder, HashMap<TileAssetMeta> &meta);
+
+void loadSoundAssets(
+	std::string base, std::string path,
+	HashMap<SoundAsset> &assets);
 
 }

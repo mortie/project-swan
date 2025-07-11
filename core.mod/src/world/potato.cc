@@ -9,10 +9,10 @@ void registerPotatoBush(Swan::Mod &mod)
 	if constexpr (N == Max) {
 		mod.registerTile({
 			.name = Swan::cat("potato-bush"),
-			.image = Swan::cat("core::tiles/flora/potato-bush-", N),
+			.image = Swan::cat("core::tiles/flora/potato-bush@", N),
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
-			.breakSound = "core::sounds/step/grass1",
+			.breakSound = "core::step/grass1",
 			.droppedItem = "core::potato",
 			.onBreak = dropRandomItemCount<"core::potato", 5>,
 			.onTileUpdate = breakIfFloating,
@@ -20,10 +20,10 @@ void registerPotatoBush(Swan::Mod &mod)
 	} else {
 		mod.registerTile({
 			.name = Swan::cat("potato-bush::", N),
-			.image = Swan::cat("core::tiles/flora/potato-bush-", N),
+			.image = Swan::cat("core::tiles/flora/potato-bush@", N),
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
-			.breakSound = "core::sounds/step/grass1",
+			.breakSound = "core::step/grass1",
 			.droppedItem = "core::potato",
 			.onTileUpdate = breakIfFloating,
 			.onWorldTick = +[](Swan::Ctx &ctx, Swan::TilePos pos) {

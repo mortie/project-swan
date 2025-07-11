@@ -1,10 +1,9 @@
 #include "assets.h"
 
 #include "log.h"
-#include "util.h"
+#include <swan/util.h>
 
 #include <cstdio>
-#include <limits> // IWYU pragma: keep -- needed for cpptoml.h
 #include <memory>
 #include <optional>
 #include <string>
@@ -14,22 +13,91 @@
 #include <cpptoml.h>
 #include <string.h>
 #include <fstream>
+#include <cygnet/ResourceManager.h>
 
 namespace Swan {
 
-std::string assetBasePath = ".";
-
-static void applyHflip(ImageAsset &asset)
+static std::unique_ptr<TileParticles> buildTileParticles(unsigned char *data)
 {
-	size_t rowWidth = asset.width * 4;
+	// This code has hard-coded assumptions that tiles are 32x32
+	// and particles are 8x8.
+	static_assert(TILE_SIZE == 32);
+	static_assert(sizeof(TileParticles{}.particles) == 8 * 8 * 4);
+
+	auto particles = std::make_unique<TileParticles>();
+
+	auto averageColor = [&](int x, int y) {
+		Cygnet::Color avg = {0, 0, 0, 0};
+		float count = 0;
+
+		for (int ry = 0; ry < 4; ++ry) {
+			int py = (y * 4) + ry;
+			unsigned char *row = &data[py * 32 * 4];
+			for (int rx = 0; rx < 4; ++rx) {
+				int px = (x * 4) + rx;
+				unsigned char *pix = &row[px * 4];
+				if (pix[3] == 0) {
+					continue;
+				}
+
+				avg.r += pix[0];
+				avg.g += pix[1];
+				avg.b += pix[2];
+				avg.a += pix[3];
+				count += 1;
+			}
+		}
+
+		if (count == 0) {
+			return Cygnet::ByteColor{0, 0, 0, 0};
+		}
+
+		return Cygnet::ByteColor{
+			uint8_t(avg.r / count),
+			uint8_t(avg.g / count),
+			uint8_t(avg.b / count),
+			uint8_t(avg.a / count),
+		};
+	};
+
+	for (int y = 0; y < 8; ++y) {
+		for (int x = 0; x < 8; ++x) {
+			particles->particles[y][x] = averageColor(x, y);
+		}
+	}
+
+	return particles;
+}
+
+static float findImageYOffset(unsigned char *data)
+{
+	int y;
+	bool done = false;
+	for (y = 0; y < TILE_SIZE && !done; ++y) {
+		unsigned char *row = &data[(TILE_SIZE - y - 1) * TILE_SIZE * 4];
+		for (int x = 0; x < TILE_SIZE; ++x) {
+			unsigned char *pix = &row[x * 4];
+			if (pix[3] > 0) {
+				done = true;
+				break;
+			}
+		}
+	}
+
+	return (y - 1) / float(TILE_SIZE);
+}
+
+static void applyHflip(unsigned char *data, size_t frameCount)
+{
+	size_t rowWidth = TILE_SIZE * 4;
 	unsigned char tmp[4];
 
-	for (int y = 0; y < asset.frameHeight * asset.frameCount; ++y) {
-		for (int x = 0; x < asset.width / 2; ++x) {
+	for (size_t y = 0; y < TILE_SIZE * frameCount; ++y) {
+		for (size_t x = 0; x < TILE_SIZE / 2; ++x) {
 			unsigned char *a =
-				asset.data.get() + y * rowWidth + x * 4;
+				data + y * rowWidth + x * 4;
 			unsigned char *b =
-				asset.data.get() + y * rowWidth + (asset.width - x - 1) * 4;
+				data + y * rowWidth + (TILE_SIZE - x - 1) * 4;
 			memcpy(tmp, a, 4);
 			memcpy(a, b, 4);
 			memcpy(b, tmp, 4);
@@ -37,20 +105,20 @@ static void applyHflip(ImageAsset &asset)
 	}
 }
 
-static void applyVflip(ImageAsset &asset)
+static void applyVflip(unsigned char *data, size_t frameCount)
 {
-	size_t rowWidth = asset.width * 4;
+	size_t rowWidth = TILE_SIZE * 4;
 	unsigned char tmp[4];
 
-	for (int frameIdx = 0; frameIdx < asset.frameCount; ++frameIdx) {
+	for (size_t frameIdx = 0; frameIdx < frameCount; ++frameIdx) {
 		unsigned char *frame =
-			asset.data.get() + (rowWidth * asset.frameHeight * frameIdx);
-		for (int y = 0; y < asset.frameHeight / 2; ++y) {
-			for (int x = 0; x < asset.width; ++x) {
+			data + (rowWidth * TILE_SIZE * frameIdx);
+		for (int y = 0; y < TILE_SIZE / 2; ++y) {
+			for (int x = 0; x < TILE_SIZE; ++x) {
 				unsigned char *a =
 					frame + y * rowWidth + x * 4;
 				unsigned char *b =
-					frame + (asset.frameHeight - y - 1) * rowWidth + x * 4;
+					frame + (TILE_SIZE - y - 1) * rowWidth + x * 4;
 				memcpy(tmp, a, 4);
 				memcpy(a, b, 4);
 				memcpy(b, tmp, 4);
@@ -59,20 +127,15 @@ static void applyVflip(ImageAsset &asset)
 	}
 }
 
-static void applyTranspose(ImageAsset &asset)
+static void applyTranspose(unsigned char *data, size_t frameCount)
 {
-	if (asset.width != asset.frameHeight) {
-		warn << "Can't transpose non-square frames";
-		return;
-	}
-
-	size_t rowWidth = asset.width * 4;
+	size_t rowWidth = TILE_SIZE * 4;
 	char tmp[4];
-	for (int frameIdx = 0; frameIdx < asset.frameCount; ++frameIdx) {
+	for (size_t frameIdx = 0; frameIdx < frameCount; ++frameIdx) {
 		unsigned char *frame =
-			asset.data.get() + (rowWidth * asset.frameHeight * frameIdx);
-		for (int y = 0; y < asset.frameHeight; ++y) {
-			for (int x = y + 1; x < asset.width; ++x) {
+			data + (rowWidth * TILE_SIZE * frameIdx);
+		for (int y = 0; y < TILE_SIZE; ++y) {
+			for (int x = y + 1; x < TILE_SIZE; ++x) {
 				unsigned char *a =
 					frame + y * rowWidth + x * 4;
 				unsigned char *b =
@@ -85,276 +148,425 @@ static void applyTranspose(ImageAsset &asset)
 	}
 }
 
-static void collapseGrid(ImageAsset &asset, int frameWidth)
+static bool applyOp(
+	std::string_view op, unsigned char *data, size_t frameCount)
 {
-	int nx = asset.width / frameWidth;
-	int ny = asset.frameCount;
-	auto newData = std::make_unique<unsigned char[]>(
-		size_t(nx) * frameWidth * size_t(ny) * asset.frameHeight * 4);
+	if (op == "hflip") {
+		applyHflip(data, frameCount);
+		return true;
+	}
+	else if (op == "vflip") {
+		applyVflip(data, frameCount);
+		return true;
+	}
+	else if (op == "transpose") {
+		applyTranspose(data, frameCount);
+		return true;
+	}
+	else if (op == "rotate90") {
+		applyTranspose(data, frameCount);
+		applyVflip(data, frameCount);
+		return true;
+	}
+	else if (op == "rotate180") {
+		applyHflip(data, frameCount);
+		applyVflip(data, frameCount);
+		return true;
+	}
+	else if (op == "rotate270") {
+		applyTranspose(data, frameCount);
+		applyHflip(data, frameCount);
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+static void collapseGrid(
+	unsigned char *data, int width, int height,
+	int frameWidth, int frameHeight,
+	int *newFrameCount)
+{
+	int nx = width / frameWidth;
+	int ny = height / frameHeight;
+	size_t nbytes = size_t(nx) * frameWidth * size_t(ny) * frameHeight * 4;
+	auto newData = std::make_unique<unsigned char[]>(nbytes);
 	size_t destRowIdx = 0;
 	for (int fy = 0; fy < ny; ++fy) {
-		unsigned char *srcRow = &asset.data[fy * asset.width * asset.frameHeight * 4];
+		unsigned char *srcRow = &data[fy * width * frameHeight * 4];
 		for (int fx = 0; fx < nx; ++fx) {
 			unsigned char *srcCell = &srcRow[fx * frameWidth * 4];
-			for (int y = 0; y < asset.frameHeight; ++y) {
-				unsigned char *src = &srcCell[y * asset.width * 4];
+			for (int y = 0; y < frameHeight; ++y) {
+				unsigned char *src = &srcCell[y * width * 4];
 				unsigned char *dest = &newData[destRowIdx++ * frameWidth * 4];
 				memcpy(dest, src, frameWidth * 4);
 			}
 		}
 	}
 
-	asset.data = std::move(newData);
-	asset.width = frameWidth;
-	asset.frameCount = nx * ny;
+	memcpy(data, newData.get(), nbytes);
+	*newFrameCount = nx * ny;
 }
 
-static void makeVariant(
-	std::string &path, ImageAsset &asset,
-	std::vector<std::string> &ops, const std::string &name)
+static void loadSpriteAsset(
+	std::string name, const char *path, cpptoml::table *toml,
+	Cygnet::ResourceBuilder &builder)
 {
-	for (const auto &op: ops) {
-		if (op == "hflip") {
-			applyHflip(asset);
-		}
-		else if (op == "vflip") {
-			applyVflip(asset);
-		}
-		else if (op == "transpose") {
-			applyTranspose(asset);
-		}
-		else if (op == "rotate90") {
-			applyTranspose(asset);
-			applyVflip(asset);
-		}
-		else if (op == "rotate180") {
-			applyHflip(asset);
-			applyVflip(asset);
-		}
-		else if (op == "rotate270") {
-			applyTranspose(asset);
-			applyHflip(asset);
-		}
-		else {
-			warn
-				<< path << ": Unknown operation '" << op
-				<< "' for variant '" << name << "'";
-		}
-	}
-}
-
-Result<ImageAsset> loadImageAsset(
-	const HashMap<std::string> &modPaths,
-	std::string path, std::optional<int> defaultSize)
-{
-	auto sep = path.find("::");
-
-	if (sep == std::string::npos) {
-		return {Err, "No '::' mod separator"};
-	}
-
-	auto modPart = path.substr(0, sep);
-	auto pathPart = path.substr(sep + 2, path.size() - sep - 2);
-
-	std::optional<std::string> variantName;
-	sep = pathPart.find("::");
-	if (sep != std::string::npos) {
-		variantName = pathPart.substr(sep + 2, pathPart.size() - sep - 2);
-		pathPart = pathPart.substr(0, sep);
-	}
-
-	auto modPath = modPaths.find(modPart);
-	if (modPath == modPaths.end()) {
-		return {Err, cat("No mod named '", modPart, "'")};
-	}
-
-	std::string assetPath;
-	if (modPath->second[0] == '/') {
-		assetPath = cat(modPath->second, "/assets/", pathPart);
-	} else {
-		assetPath = cat(
-				assetBasePath, "/", modPath->second, "/assets/", pathPart);
-	}
-
-	std::string pngPath = cat(assetPath, ".png");
-	std::string tomlPath = cat(assetPath, ".toml");
-	if (!std::filesystem::exists(tomlPath)) {
-		tomlPath = cat(assetPath, "/index.toml");
-	}
-
-	std::optional<std::string> variantPngPath;
-	if (variantName) {
-		variantPngPath = cat(assetPath, "/", variantName.value(), ".png");
-	}
-
-	std::shared_ptr<cpptoml::table> toml;
-	std::shared_ptr<cpptoml::table> variants;
-	std::vector<std::string> variant;
-
-	// Load TOML if it exists
-	std::ifstream tomlFile(tomlPath);
-	if (tomlFile) {
-		cpptoml::parser parser(tomlFile);
-		try {
-			toml = parser.parse();
-		} catch (cpptoml::parse_exception &exc) {
-			return {Err, cat("Failed to parse toml file ", tomlPath, ": ", exc.what())};
-		}
-
-		variants = toml->get_table("variants");
-		std::shared_ptr<cpptoml::array> tomlVariant;
-
-		if (variants && variantName) {
-			tomlVariant = variants->get_array(*variantName);
-		}
-
-		if (tomlVariant) {
-			for (auto part: *tomlVariant) {
-				auto tomlStr = part->as<std::string>();
-				if (!tomlStr) {
-					continue;
-				}
-
-				variant.push_back(std::move(tomlStr->get()));
-			}
-		}
-	}
-	else if (errno != ENOENT) {
-		return {Err, cat("Couldn't open ", tomlPath, ": ", strerror(errno))};
-	}
-
-	if (variantPngPath && !std::filesystem::exists(*variantPngPath)) {
-		variantPngPath = std::nullopt;
-	}
-
-	if (variant.size() > 0 && variant[0].starts_with("img:")) {
-		std::string path = std::move(variant[0]).substr(4, variant[0].npos);
-		variantPngPath = cat(assetPath, "/", path);
-		variant.erase(variant.begin());
+	if (builder.hasSprite(name)) {
+		info << "Sprite asset " << path << " was overwritten.";
+		return;
 	}
 
 	int w, h;
-	MallocedPtr<unsigned char> buffer;
-	if (variantPngPath) {
-		buffer.reset(stbi_load(variantPngPath->c_str(), &w, &h, nullptr, 4));
-		if (!buffer) {
-			return {Err, cat("Loading image ", *variantPngPath, " failed")};
-		}
-	}
-	else {
-		buffer.reset(stbi_load(pngPath.c_str(), &w, &h, nullptr, 4));
-		if (!buffer) {
-			return {Err, cat("Loading image ", pngPath, " failed")};
-		}
+	MallocedPtr<unsigned char> buffer(stbi_load(path, &w, &h, nullptr, 4));
+	if (!buffer) {
+		warn << "Failed to load asset " << path;
+		return;
 	}
 
-	// Need to make a new buffer in order to be able to use a plain unique_ptr
-	// which uses the delete[] deleter.
-	// TODO(perf): Re-structure stuff so that we can avoid the copy
-	size_t size = (size_t)w * (size_t)h * 4;
-	auto bufferCopy = std::make_unique<unsigned char[]>(size);
-	memcpy(bufferCopy.get(), buffer.get(), size);
-	buffer.reset();
-
-	int frameHeight = defaultSize.value_or(h);
-	int repeatFrom = 0;
-
-	if (toml) {
-		frameHeight = toml->get_as<int>("height").value_or(frameHeight);
-		repeatFrom = toml->get_as<int>("repeatFrom").value_or(repeatFrom);
-	}
-
-	ImageAsset asset{
+	Cygnet::ResourceBuilder::SpriteMeta meta = {
 		.width = w,
-		.frameHeight = frameHeight,
-		.frameCount = h / frameHeight,
-		.repeatFrom = repeatFrom,
-		.data = std::move(bufferCopy),
+		.height = h,
+		.frameHeight = h,
+		.repeatFrom = 0,
 	};
 
-	if (toml || defaultSize) {
-		std::optional<int> frameWidth;
-		if (toml) {
-			frameWidth = toml->get_as<int>("width");
-		}
-		if (!frameWidth) {
-			frameWidth = defaultSize;
-		}
+	if (toml) {
+		meta.frameHeight = toml->get_as<int>("height").value_or(meta.frameHeight);
+		meta.repeatFrom = toml->get_as<int>("repeat-from").value_or(0);
 
+		auto frameWidth = toml->get_as<int>("width");
+		int frameCount;
 		if (frameWidth) {
-			collapseGrid(asset, *frameWidth);
+			collapseGrid(
+				buffer.get(), w, h,
+				*frameWidth, meta.frameHeight,
+				&frameCount);
+			meta.width = *frameWidth;
+			meta.height = frameCount * meta.frameHeight;
 		}
 	}
 
-	if (variant.size() > 0) {
-		makeVariant(path, asset, variant, *variantName);
-	}
-
-	return {Ok, std::move(asset)};
+	builder.addSprite(std::move(name), buffer.get(), meta);
 }
 
-Result<SoundAsset> loadSoundAsset(
-	const HashMap<std::string> &modPaths,
-	std::string path)
+static void loadTileAsset(
+	std::string name, std::string_view dir, cpptoml::table &toml,
+	Cygnet::ResourceBuilder &builder, HashMap<TileAssetMeta> &meta)
 {
-	auto sep = path.find("::");
-
-	if (sep == std::string::npos) {
-		return {Err, "No '::' mod separator"};
+	auto variants = toml.get_table("variants");
+	if (!variants) {
+		warn << "No variants for "<< name;
+		return;
 	}
 
-	auto modPart = path.substr(0, sep);
-	auto pathPart = path.substr(sep + 2, path.size() - sep - 2);
+	auto baseName = toml.get_as<std::string>("base");
 
-	auto modPath = modPaths.find(modPart);
-	if (modPath == modPaths.end()) {
-		return {Err, cat("No mod named '", modPart, "'")};
-	}
+	MallocedPtr<unsigned char> baseImg;
+	int baseFrameCount = 0;
 
-	std::string assetPath;
-	if (modPath->second[0] == '/') {
-		assetPath = cat(modPath->second, "/assets/", pathPart);
-	} else {
-		assetPath = cat(
-			assetBasePath, "/", modPath->second, "/assets/", pathPart);
+	auto loadImg = [&](std::string_view name, int *fc) -> MallocedPtr<unsigned char> {
+		auto path = cat(dir, "/", name);
+		int w, h;
+		MallocedPtr<unsigned char> buffer(stbi_load(path.c_str(), &w, &h, nullptr, 4));
+		if (!buffer) {
+			warn << "Failed to load tile " << path;
+			return nullptr;
+		}
+
+		if (w < TILE_SIZE || w % TILE_SIZE != 0) {
+			warn << "Invalid width for " << path << ": " << w;
+			return nullptr;
+		}
+
+		if (h < TILE_SIZE || h % TILE_SIZE != 0) {
+			warn << "Invalid height for " << path << ": " << h;
+			return nullptr;
+		}
+
+		collapseGrid(buffer.get(), w, h, TILE_SIZE, TILE_SIZE, fc);
+		return buffer;
+	};
+
+	auto ensureBase = [&]() -> bool {
+		if (baseImg) {
+			return true;
+		}
+
+		if (!baseName) {
+			warn << "Variant requires 'img:' for " << name;
+			return false;
+		}
+
+		baseImg = loadImg(*baseName, &baseFrameCount);
+		return baseImg != nullptr;
+	};
+
+	for (auto &[variantName, variantToml]: *variants) {
+		std::string assetName;
+		if (variantName == "default") {
+			assetName = name;
+		} else {
+			assetName = cat(name, "::", variantName);
+		}
+
+		if (builder.hasTileAsset(assetName)) {
+			info << "Tile asset " << name << " was overwritten.";
+			continue;
+		}
+
+		MallocedPtr<unsigned char> variantImgBuf;
+		unsigned char *variantImg;
+		int variantFrameCount = 0;
+		auto variantPtr = variantToml->as_array();
+		if (!variantPtr) {
+			warn << "Invalid variant " << variantName << " for " << name;
+			continue;
+		}
+		auto &variant = *variantPtr;
+
+		std::shared_ptr<cpptoml::value<std::string>> firstVariant;
+		if (variant.size() > 0) {
+			firstVariant = variant.at(0)->as<std::string>();
+			if (!firstVariant) {
+				warn
+					<< "Invalid variant part in " << variantName
+					<< " for " << name << ": " << variant.at(0);
+				break;
+			}
+		}
+
+		size_t startIndex;
+		if (firstVariant && firstVariant->get().starts_with(".")) {
+			variantImgBuf = loadImg(firstVariant->get(), &variantFrameCount);
+			if (!variantImgBuf) {
+				continue;
+			}
+
+			variantImg = variantImgBuf.get();
+			startIndex = 1;
+		} else {
+			if (!ensureBase()) {
+				continue;
+			}
+
+			variantImg = baseImg.get();
+			variantFrameCount = baseFrameCount;
+			startIndex = 0;
+		}
+
+		for (size_t idx = startIndex; idx < variant.size(); ++idx) {
+			auto op = variant.at(idx)->as<std::string>();
+			if (!op) {
+				warn
+					<< "Invalid variant operation in " << variantName
+					<< " for " << name << ": " << variant.at(idx);
+				break;
+			}
+
+			if (!applyOp(op->get(), variantImg, variantFrameCount)) {
+				warn
+					<< "Invalid variant operation " << op->get() << " in "
+					<< variantName << " for " << name;
+			}
+		}
+
+		builder.addTileAsset(assetName, variantImg, variantFrameCount);
+
+		if (variantFrameCount > 0) {
+			for (int i = 0; i < variantFrameCount; ++i) {
+				unsigned char *data = variantImg + (TILE_SIZE * TILE_SIZE * 4 * i);
+				meta[cat(assetName, "@", i)] = TileAssetMeta {
+					.yOffset = findImageYOffset(data),
+					.particles = buildTileParticles(data),
+				};
+			}
+		}
+		meta[std::move(assetName)] = TileAssetMeta {
+			.yOffset = findImageYOffset(variantImg),
+			.particles = buildTileParticles(variantImg),
+		};
 	}
-	std::string oggPath = cat(assetPath, ".ogg");
+}
+
+static void loadSoundAsset(
+	std::string name, const char *path, HashMap<SoundAsset> &assets)
+{
+	if (assets.contains(name)) {
+		info << "Sound asset " << path << " was overwritten.";
+		return;
+	}
 
 	int err;
 	stb_vorbis *vorbis = stb_vorbis_open_filename(
-		oggPath.c_str(), &err, nullptr);
+			path, &err, nullptr);
 	if (!vorbis) {
-		return {Err, cat("Couldn't open ", oggPath, ": ", err)};
+		warn << "Couldn't open " << path << ": " << err;
+		return;
 	}
 
-	SWAN_DEFER(stb_vorbis_close(vorbis));
+	stb_vorbis_info vinfo = stb_vorbis_get_info(vorbis);
+	if (vinfo.sample_rate != 48000) {
+		warn << path << ": Sample rate is " << vinfo.sample_rate << ", expected 48000.";
+	}
 
-	stb_vorbis_info info = stb_vorbis_get_info(vorbis);
 	unsigned int samples = stb_vorbis_stream_length_in_samples(vorbis);
-
 	SoundAsset asset;
 	asset.length = samples;
-	if (info.channels == 1) {
+	if (vinfo.channels == 1) {
 		asset.data = std::make_unique<float[]>(samples);
 		asset.l = asset.data.get();
 		asset.r = asset.data.get();
-	}
-	else if (info.channels == 2) {
+	} else if (vinfo.channels == 2) {
 		asset.data = std::make_unique<float[]>(samples * 2);
 		asset.l = asset.data.get();
 		asset.r = asset.data.get() + samples;
-	}
-	else {
-		return {Err, cat("Invalid channel count: ", info.channels)};
+	} else {
+		warn << path << ": Unexpected channel count: " << vinfo.channels;
+		return;
 	}
 
 	float *bufs[] = {asset.l, asset.r};
-	int n = stb_vorbis_get_samples_float(vorbis, info.channels, bufs, samples);
+	int n = stb_vorbis_get_samples_float(vorbis, vinfo.channels, bufs, samples);
 	if (n != (int)samples) {
-		return {Err, cat("Invalid sample count: ", n, ", expected ", samples)};
+		warn << "Invalid sample count: " << n << ", expected " << samples;
+		return;
 	}
 
-	return {Ok, std::move(asset)};
+	assets[std::move(name)] = std::move(asset);
+}
+
+void loadSpriteAssets(
+	std::string base, std::string path,
+	Cygnet::ResourceBuilder &builder)
+{
+	if (!std::filesystem::exists(path)) {
+		return;
+	}
+
+	for (auto &it: std::filesystem::directory_iterator(path)) {
+		if (it.is_directory()) {
+			std::string newPath = cat(path, "/", it.path().filename());
+			std::string newBase = cat(base, it.path().filename(), "/");
+			loadSpriteAssets(std::move(newBase), std::move(newPath), builder);
+			continue;
+		}
+
+		auto ext = it.path().filename().extension();
+		if (ext == ".txt" || ext == ".toml") {
+			continue;
+		} else if (ext != ".png") {
+			warn << it.path() << ": Unknown extension " << ext;
+			continue;
+		}
+
+		std::string name = cat(base, it.path().filename().stem());
+		std::string assetPath = cat(path, "/", it.path().filename());
+		std::string tomlPath = cat(path, "/", it.path().filename().stem(), ".toml");
+
+		std::shared_ptr<cpptoml::table> toml;
+		if (std::filesystem::exists(tomlPath)) {
+			toml = cpptoml::parse_file(tomlPath);
+		}
+
+		loadSpriteAsset(std::move(name), assetPath.c_str(), toml.get(), builder);
+	}
+}
+
+void loadTileAssets(
+	std::string base, std::string path,
+	Cygnet::ResourceBuilder &builder, HashMap<TileAssetMeta> &meta)
+{
+	if (!std::filesystem::exists(path)) {
+		return;
+	}
+
+	for (auto &it: std::filesystem::directory_iterator(path)) {
+		if (it.is_directory()) {
+			std::string newPath = cat(path, "/", it.path().filename());
+
+			// Load tile asset from a directory with an index.toml
+			std::string tomlPath = cat(newPath, "/index.toml");
+			if (std::filesystem::exists(tomlPath)) {
+				std::shared_ptr<cpptoml::table> toml;
+				toml = cpptoml::parse_file(tomlPath);
+				std::string name = cat(base, it.path().filename().stem());
+				loadTileAsset(
+					std::move(name), newPath, *toml,
+					builder, meta);
+				continue;
+			}
+
+			std::string newBase = cat(base, it.path().filename(), "/");
+			loadTileAssets(std::move(newBase), std::move(newPath), builder, meta);
+			continue;
+		}
+
+		auto ext = it.path().filename().extension();
+		if (ext == ".txt" || ext == ".toml") {
+			continue;
+		} else if (ext != ".png") {
+			warn << it.path() << ": Unknown extension " << ext;
+			continue;
+		}
+
+		std::string name = cat(base, it.path().filename().stem());
+		std::string tomlPath = cat(path, "/", it.path().filename().stem(), ".toml");
+
+		std::shared_ptr<cpptoml::table> toml;
+		if (std::filesystem::exists(tomlPath)) {
+			toml = cpptoml::parse_file(tomlPath);
+		} else {
+			toml = cpptoml::make_table();
+		}
+
+		auto variants = toml->get_table("variants");
+		if (!variants) {
+			variants = cpptoml::make_table();
+			toml->insert("variants", variants);
+		}
+
+		if (!variants->contains("default")) {
+			variants->insert("default", cpptoml::make_array());
+		}
+
+		if (!toml->contains("base")) {
+			toml->insert("base", cat(it.path().filename().stem(), ".png"));
+		}
+
+		loadTileAsset(std::move(name), path, *toml, builder, meta);
+	}
+}
+
+void loadSoundAssets(
+	std::string base, std::string path,
+	HashMap<SoundAsset> &assets)
+{
+	if (!std::filesystem::exists(path)) {
+		return;
+	}
+
+	for (auto &it: std::filesystem::directory_iterator(path)) {
+		if (it.is_directory()) {
+			std::string newBase = cat(base, it.path().filename(), "/");
+			std::string newPath = cat(path, "/", it.path().filename());
+			loadSoundAssets(std::move(newBase), std::move(newPath), assets);
+			continue;
+		}
+
+		auto ext = it.path().filename().extension();
+		if (ext == ".txt") {
+			continue;
+		} else if (ext != ".ogg") {
+			warn << it.path() << ": Unknown extension " << ext;
+			continue;
+		}
+
+		std::string name = cat(base, it.path().filename().stem());
+		std::string assetPath = cat(path, "/", it.path().filename());
+		loadSoundAsset(std::move(name), assetPath.c_str(), assets);
+	}
 }
 
 }

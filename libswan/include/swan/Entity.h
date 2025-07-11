@@ -1,7 +1,7 @@
 #pragma once
 
+#include <swan/util.h>
 #include "common.h"
-#include "util.h"
 
 namespace Swan {
 

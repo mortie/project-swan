@@ -1,6 +1,8 @@
 #include "ResourceManager.h"
 
+#include <swan/util.h>
 #include <string.h>
+#include <iostream>
 
 namespace Cygnet {
 
@@ -16,31 +18,45 @@ RenderSprite ResourceBuilder::addSprite(
 		data, meta.width, meta.height, meta.frameHeight, meta.repeatFrom);
 }
 
-void ResourceBuilder::addTile(uint16_t id, void *data, int frames)
+void ResourceBuilder::addTileAsset(std::string name, void *data, int frames)
 {
-	if (frames == 0) {
-		atlas_.addTile(id, data);
+	uint16_t startIndex = atlasIndex_;
+	for (int i = 0; i < frames; ++i) {
+		constexpr size_t size = Swan::TILE_SIZE * Swan::TILE_SIZE * 4;
+		unsigned char *ptr = (unsigned char *)data + size * i;
+		atlas_.addTile(atlasIndex_, ptr);
+		if (frames > 1) {
+			tileAssets_[Swan::cat(name, "@", i)] = { startIndex + i, 1 };
+		}
+		atlasIndex_ += 1;
 	}
-	else {
-		auto ptr = std::make_unique<unsigned char[]>(
-			Swan::TILE_SIZE * Swan::TILE_SIZE * 4 * frames);
-		memcpy(ptr.get(), data, Swan::TILE_SIZE * Swan::TILE_SIZE * 4 * frames);
-		addTile(id, std::move(ptr), frames);
-	}
+
+	tileAssets_[std::move(name)] = { startIndex, uint16_t(frames) };
 }
 
-void ResourceBuilder::addTile(
-	Renderer::TileID id, std::unique_ptr<unsigned char[]> data, int frames)
+void ResourceBuilder::addTile(Renderer::TileID id, std::string_view assetName)
 {
-	atlas_.addTile(id, data.get());
-	if (frames > 1) {
-		tileAnims_.push_back({
-			.id = id,
-			.frames = frames,
-			.index = 0,
-			.data = std::move(data),
-		});
+	int assetIndex = 0;
+	auto it = tileAssets_.find(assetName);
+	if (it == tileAssets_.end()) {
+		std::cerr << "Cygnet: Referenced unknown tile asset " << assetName << '\n';
+	} else {
+		auto &asset = it->second;
+		assetIndex = asset.startIndex;
+		if (asset.frameCount > 1) {
+			tileAnimations_.push_back({
+				.tileID = id,
+				.startIndex = uint16_t(asset.startIndex),
+				.frameCount = uint16_t(asset.frameCount),
+				.index = 0,
+			});
+		}
 	}
+
+	while (tiles_.size() <= id) {
+		tiles_.push_back(0);
+	}
+	tiles_[id] = assetIndex;
 }
 
 void ResourceBuilder::addFluid(uint8_t id, ByteColor fg, ByteColor bg)
@@ -64,12 +80,13 @@ void ResourceBuilder::addFluid(uint8_t id, ByteColor fg, ByteColor bg)
 
 ResourceManager::ResourceManager(ResourceBuilder &&builder):
 	rnd_(builder.rnd_), sprites_(std::move(builder.sprites_)),
-	tileAnims_(std::move(builder.tileAnims_))
+	tileAnimations_(std::move(builder.tileAnimations_))
 {
 	size_t width, height;
 	const unsigned char *data = builder.atlas_.getImage(&width, &height);
 
 	rnd_->uploadTileAtlas(data, width, height);
+	rnd_->uploadTileMap(builder.tiles_);
 	rnd_->uploadFluidAtlas(builder.fluids_.get());
 }
 
@@ -82,12 +99,9 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::tick()
 {
-	// TODO: Maybe do a GPU->GPU copy instead of an upload from the CPU?
-	for (auto &anim: tileAnims_) {
-		anim.index = (anim.index + 1) % anim.frames;
-		unsigned char *data = anim.data.get() +
-			Swan::TILE_SIZE * Swan::TILE_SIZE * 4 * anim.index;
-		rnd_->modifyTile(anim.id, data);
+	for (auto &anim: tileAnimations_) {
+		anim.index = (anim.index + 1) % anim.frameCount;
+		rnd_->modifyTile(anim.tileID, uint16_t(anim.startIndex + anim.index));
 	}
 }
 

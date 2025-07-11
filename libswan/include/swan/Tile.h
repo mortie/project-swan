@@ -79,7 +79,7 @@ struct Tile {
 	void (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta);
 	void (*onWorldTick)(Ctx &ctx, TilePos pos);
 
-	Cygnet::ByteColor particles[8][8];
+	std::shared_ptr<TileParticles> particles;
 
 	std::shared_ptr<Traits> traits;
 

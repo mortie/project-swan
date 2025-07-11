@@ -25,54 +25,17 @@ class CoreMod: public Swan::Mod {
 public:
 	CoreMod(): Swan::Mod("core")
 	{
-		registerSprite("entities/player/idle");
-		registerSprite("entities/player/running");
-		registerSprite("entities/player/falling");
-		registerSprite("entities/player/jumping");
-		registerSprite("entities/player/landing");
-		registerSprite("entities/spider/idle");
-		registerSprite("misc/background-cave");
-		registerSprite("misc/bubble");
-		registerSprite("misc/burning-dynamite");
-		registerSprite("misc/crucible-overlay");
-		registerSprite("misc/crucible-support");
-		registerSprite("misc/empty-heart");
-		registerSprite("misc/heart");
-		registerSprite("ui/selected-slot");
-		registerSprite("ui/inventory");
-
-		registerSound("sounds/break/glass");
-		registerSound("sounds/place/dirt");
-		registerSound("sounds/place/leaves");
-		registerStepSounds("sounds/step/glass");
-		registerStepSounds("sounds/step/grass");
-		registerStepSounds("sounds/step/metal");
-		registerStepSounds("sounds/step/sand");
-		registerStepSounds("sounds/step/stone");
-		registerSound("sounds/misc/explosion");
-		registerSound("sounds/misc/fuse");
-		registerSound("sounds/misc/snap");
-		registerSound("sounds/misc/splash");
-		registerSound("sounds/misc/splash-short");
-		registerSound("sounds/misc/teleport");
-		registerSound("sounds/misc/lock-open");
-		registerSound("sounds/misc/lock-close");
-		registerSound("sounds/misc/hurt");
-		registerSound("sounds/ui/crafting");
-		registerSound("sounds/ui/inventory-open");
-		registerSound("sounds/ui/inventory-close");
-
 		registerTile({
 			.name = "stone",
 			.image = "core::tiles/stone",
-			.stepSound = "core::sounds/step/stone",
+			.stepSound = "core::step/stone",
 			.droppedItem = "core::stone",
 		});
 		registerTile({
 			.name = "dirt",
 			.image = "core::tiles/dirt",
-			.stepSound = "core::sounds/step/grass",
-			.placeSound = "core::sounds/place/dirt",
+			.stepSound = "core::step/grass",
+			.placeSound = "core::place/dirt",
 			.droppedItem = "core::dirt",
 			.onWorldTick = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
 				if (ctx.plane.tiles().get(pos.add(0, -1)).isSolid) {
@@ -104,7 +67,7 @@ public:
 		registerTile({
 			.name = "sand",
 			.image = "core::tiles/sand",
-			.stepSound = "core::sounds/step/sand",
+			.stepSound = "core::step/sand",
 			.droppedItem = "core::sand",
 			.onTileUpdate = fallIfFloating,
 		});
@@ -113,14 +76,14 @@ public:
 			.image = "core::tiles/glass",
 			.isOpaque = false,
 			.breakableBy = Swan::Tool::HAND,
-			.stepSound = "core::sounds/step/glass",
-			.breakSound = "core::sounds/break/glass",
+			.stepSound = "core::step/glass",
+			.breakSound = "core::break/glass",
 		});
 		registerTile({
 			.name = "grass",
 			.image = "core::tiles/grass",
-			.stepSound = "core::sounds/step/grass",
-			.placeSound = "core::sounds/place/dirt",
+			.stepSound = "core::step/grass",
+			.placeSound = "core::place/dirt",
 			.droppedItem = "core::dirt",
 			.onTileUpdate = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
 				if (ctx.plane.tiles().get(pos.add(0, -1)).isOpaque) {
@@ -161,8 +124,8 @@ public:
 			.image = "core::tiles/leaves",
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
-			.stepSound = "core::sounds/step/grass",
-			.placeSound = "core::sounds/place/leaves",
+			.stepSound = "core::step/grass",
+			.placeSound = "core::place/leaves",
 			.onBreak = dropRandomItemCount<"core::stick">,
 			.onTileUpdate = breakTreeLeavesIfFloating,
 			.traits = std::make_shared<TreeLeavesTrait>(),
@@ -174,7 +137,7 @@ public:
 			.isSolid = false,
 			.isReplacable = true,
 			.breakableBy = Swan::Tool::HAND,
-			.placeSound = "core::sounds/place/leaves",
+			.placeSound = "core::place/leaves",
 			.onBreak = dropRandomItemCount<"core::fiber">,
 			.onTileUpdate = breakIfFloating,
 		});
@@ -183,7 +146,7 @@ public:
 			.image = "core::tiles/flora/dead-shrub",
 			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
-			.placeSound = "core::sounds/place/leaves",
+			.placeSound = "core::place/leaves",
 			.onBreak = dropRandomItemCount<"core::stick">,
 			.onTileUpdate = breakIfFloating,
 		});
@@ -233,7 +196,7 @@ public:
 
 		registerItem({
 			.name = "axe",
-			.image = "core::tools/axe",
+			.image = "core::items/tools/axe",
 			.tool = Swan::Tool::AXE,
 		});
 		registerItem({

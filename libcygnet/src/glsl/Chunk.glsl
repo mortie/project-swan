@@ -2,6 +2,8 @@ uniform mat3 camera;
 uniform vec2 pos;
 uniform sampler2D tileAtlas;
 uniform uvec2 tileAtlasSize;
+uniform usampler2D tileMap;
+uniform float tileMapSize;
 uniform usampler2D tiles;
 
 // @Vertex
@@ -29,8 +31,12 @@ void main() {
 	uint tileID = texture(tiles,
 		(vec2(tilePos) + vec2(0.5, 0.5)) /
 		vec2(SWAN_CHUNK_WIDTH, SWAN_CHUNK_HEIGHT)).r;
+
+	vec2 assetPos = vec2((float(tileID) + 0.5f) / float(tileMapSize), 0.5f);
+	uint assetID = texture(tileMap, assetPos).r;
+
 	vec2 atlasPos =
-		vec2(tileID % tileAtlasSize.x, tileID / tileAtlasSize.x) +
+		vec2(assetID % tileAtlasSize.x, assetID / tileAtlasSize.x) +
 		(relPos * 0.99 + vec2(0.005, 0.005));
 	v_texCoord = atlasPos / tileAtlasSize;
 }

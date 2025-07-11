@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <span>
 #include <string_view>
 #include <vector>
 #include <stdint.h>
@@ -360,7 +361,8 @@ public:
 	void uploadFluidAtlas(const void *data);
 
 	void uploadTileAtlas(const void *data, int width, int height);
-	void modifyTile(TileID id, const void *data);
+	void uploadTileMap(std::span<uint16_t> tiles);
+	void modifyTile(TileID id, uint16_t newAssetId);
 
 	static constexpr size_t CHUNK_SIZE = Swan::CHUNK_WIDTH * Swan::CHUNK_HEIGHT;
 	RenderChunk createChunk(
