@@ -8,13 +8,13 @@
 #include <unordered_map>
 #include <functional>
 
+#include <swan/util.h>
 #include "Clock.h"
 #include "common.h"
 #include "systems/EntitySystem.h"
 #include "systems/FluidSystem.h"
 #include "systems/LightSystem.h"
 #include "systems/TileSystem.h"
-#include "util.h"
 #include "Chunk.h"
 #include "Tile.h"
 #include "WorldGen.h"
