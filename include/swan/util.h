@@ -245,6 +245,7 @@ auto callEnd(T &v)
 }
 
 struct CowStr {
+	CowStr(): v(std::string_view("")) {}
 	CowStr(std::string s): v(std::move(s)) {}
 	CowStr(std::string_view s): v(s) {}
 

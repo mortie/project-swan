@@ -134,7 +134,7 @@ void buildCommand(std::string &cmd, const SourceFile &f, const BuildInfo &info)
 #ifdef ASAN_ENABLED
 		cmd += " -fsanitize=address";
 #endif
-		cmd += " -include-pch";
+		cmd += " -g -include-pch";
 		appendArg(cmd, cat(info.modPath, "/.swanbuild/swan.h.pch"));
 		cmd += " -c -o";
 		quoteArg(cmd, f.outPath);

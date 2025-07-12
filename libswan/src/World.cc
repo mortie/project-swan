@@ -127,12 +127,13 @@ void World::buildResources()
 		.name = "", .image = "", // Not used in this case
 	});
 
-	// Set sounds for all built-in tiles
+	// Set attributes for all built-in tiles
 	for (auto &tile: tiles_) {
 		tile.stepSounds[0] = fallbackSound;
 		tile.stepSounds[1] = fallbackSound;
 		tile.placeSound = fallbackSound;
 		tile.breakSound = fallbackSound;
+		tile.particles = fallbackTileParticles;
 	}
 
 	// Count number of tiles.
