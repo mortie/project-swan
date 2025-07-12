@@ -6,6 +6,7 @@
 #include "entities/ItemStackEntity.h"
 #include "entities/SpiderEntity.h"
 #include "entities/FallingTileEntity.h"
+#include "world/aqueduct.h"
 #include "world/bonfire.h"
 #include "world/chest.h"
 #include "world/clay.h"
@@ -180,6 +181,7 @@ public:
 			},
 		});
 
+		registerAqueduct(*this);
 		registerBonfire(*this);
 		registerChest(*this);
 		registerClay(*this);
