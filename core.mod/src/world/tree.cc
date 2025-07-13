@@ -60,4 +60,62 @@ void breakTreeLeavesIfFloating(Swan::Ctx &ctx, Swan::TilePos pos)
 	}
 }
 
+void registerTree(Swan::Mod &mod)
+{
+	auto treeTrunkTrait = std::make_shared<TreeTrunkTrait>();
+	auto treeLeavesTrait = std::make_shared<TreeLeavesTrait>();
+
+	mod.registerItem({
+		.name = "wood",
+		.image = "core::tiles/tree@11",
+	});
+
+	std::pair<const char *, const char *> treeSpecs[] = {
+		{"tree::base", "core::tiles/tree@10"},
+		{"tree::stem", "core::tiles/tree@11"},
+		{"tree::cross", "core::tiles/tree@4"},
+		{"tree::top", "core::tiles/tree@1"},
+	};
+	for (auto [name, image]: treeSpecs) {
+		mod.registerTile({
+			.name = name,
+			.image = image,
+			.isSolid = false,
+			.isSupportV = std::string_view(name) != "tree::top",
+			.isSupportH = false,
+			.breakableBy = Swan::Tool::AXE,
+			.droppedItem = "core::wood",
+			.onSpawn = denyIfFloating,
+			.onTileUpdate = breakIfFloating,
+			.traits = treeTrunkTrait,
+		});
+	}
+
+	std::pair<const char *, const char *> leavesSpecs[] = {
+		{"tree::leaves", "core::tiles/tree@9"},
+		{"tree::leaves::left", "core::tiles/tree@0"},
+		{"tree::leaves::right", "core::tiles/tree@2"},
+		{"tree::top", "core::tiles/tree@1"},
+		{"tree::branch::left", "core::tiles/tree@6"},
+		{"tree::branch::right", "core::tiles/tree@8"},
+		{"tree::center", "core::tiles/tree@7"},
+		{"tree::stub::left", "core::tiles/tree@3"},
+		{"tree::stub::right", "core::tiles/tree@5"},
+		{"tree::cross", "core::tiles/tree@4"},
+	};
+	for (auto [name, image]: leavesSpecs) {
+		mod.registerTile({
+			.name = name,
+			.image = image,
+			.isSolid = false,
+			.breakableBy = Swan::Tool::HAND,
+			.stepSound = "core::step/grass",
+			.placeSound = "core::place/leaves",
+			.onBreak = dropRandomItemCount<"core::stick">,
+			.onTileUpdate = breakTreeLeavesIfFloating,
+			.traits = treeLeavesTrait,
+		});
+	}
+}
+
 }

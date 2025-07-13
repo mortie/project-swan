@@ -4,7 +4,7 @@
 #include <swan/swan.h>
 #include <PerlinNoise.hpp>
 
-#include "StructureDef.h"
+#include "../StructureDef.h"
 
 namespace CoreMod {
 

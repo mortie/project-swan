@@ -5,6 +5,8 @@
 
 namespace CoreMod {
 
+struct Prefab;
+
 class StructureDef {
 public:
 	struct Area {
@@ -14,7 +16,7 @@ public:
 		int *surfaceLevels;
 		bool hasSurface = false;
 
-		Swan::Tile::ID &operator()(Swan::TilePos tp)
+		Swan::Tile::ID &get(Swan::TilePos tp)
 		{
 			if (
 				tp.x < begin.x || tp.y < begin.y ||
@@ -26,6 +28,8 @@ public:
 			return rows[tp.y - begin.y][tp.x - begin.x];
 		}
 
+		Swan::Tile::ID &operator()(Swan::TilePos tp) { return get(tp); }
+
 		int &surfaceLevel(int x)
 		{
 			if (x < begin.x || x >= end.x) {
@@ -34,6 +38,8 @@ public:
 
 			return surfaceLevels[x - begin.x];
 		}
+
+		void place(const Prefab &prefab, Swan::TilePos pos);
 
 	private:
 		Swan::Tile::ID dummyTile;

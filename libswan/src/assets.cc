@@ -417,9 +417,10 @@ static void loadSoundAsset(
 	stb_vorbis *vorbis = stb_vorbis_open_filename(
 			path, &err, nullptr);
 	if (!vorbis) {
-		warn << "Couldn't open " << path << ": " << err;
+		warn << "Couldn't open " << path << ": " << err << " (" << strerror(errno) << ')';
 		return;
 	}
+	SWAN_DEFER(stb_vorbis_close(vorbis));
 
 	stb_vorbis_info vinfo = stb_vorbis_get_info(vorbis);
 	if (vinfo.sample_rate != 48000) {

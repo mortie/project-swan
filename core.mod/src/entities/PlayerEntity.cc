@@ -340,6 +340,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 	handleInventorySelection(ctx);
 	handleInventoryHover(ctx);
 
+	// Cheats
 	if (ctx.game.wasKeyPressed(GLFW_KEY_M)) {
 		health_ += 1;
 	}
@@ -352,6 +353,15 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 			Swan::info << "World ticking " << tile.name << " at " << breakPos_;
 			tile.onWorldTick(ctx, breakPos_);
 		}
+	}
+	else if (ctx.game.wasKeyPressed(GLFW_KEY_G)) {
+		auto &tile = ctx.plane.tiles().get(breakPos_);
+		int count = 1;
+		if (ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+			count = 16;
+		}
+		Swan::ItemStack stack(&ctx.world.getItem(tile.name), count);
+		inventory_.insert(stack);
 	}
 
 	// Break block, or click UI

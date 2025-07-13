@@ -108,29 +108,6 @@ public:
 			.onSpawn = denyIfFloating,
 			.onTileUpdate = breakIfFloating,
 		});
-		registerTile({
-			.name = "wood",
-			.image = "core::tiles/wood",
-			.isSolid = false,
-			.isSupportV = true,
-			.isSupportH = true,
-			.breakableBy = Swan::Tool::AXE,
-			.droppedItem = "core::wood",
-			.onSpawn = denyIfFloating,
-			.onTileUpdate = breakIfFloating,
-			.traits = std::make_shared<TreeTrunkTrait>(),
-		});
-		registerTile({
-			.name = "leaves",
-			.image = "core::tiles/leaves",
-			.isSolid = false,
-			.breakableBy = Swan::Tool::HAND,
-			.stepSound = "core::step/grass",
-			.placeSound = "core::place/leaves",
-			.onBreak = dropRandomItemCount<"core::stick">,
-			.onTileUpdate = breakTreeLeavesIfFloating,
-			.traits = std::make_shared<TreeLeavesTrait>(),
-		});
 
 		registerTile({
 			.name = "tall-grass",
@@ -195,6 +172,7 @@ public:
 		registerGlassPipe(*this);
 		registerPotato(*this);
 		registerTorch(*this);
+		registerTree(*this);
 
 		registerItem({
 			.name = "axe",

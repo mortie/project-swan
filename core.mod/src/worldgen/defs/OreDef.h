@@ -2,7 +2,7 @@
 
 #include <swan/swan.h>
 
-#include "StructureDef.h"
+#include "../StructureDef.h"
 
 namespace CoreMod {
 

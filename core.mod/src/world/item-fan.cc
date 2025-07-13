@@ -43,7 +43,7 @@ void registerItemFan(Swan::Mod &mod)
 
 	mod.registerTile({
 		.name = "item-fan",
-		.image = "core::tiles/item-fan",
+		.image = "core::tiles/item-fan::left",
 		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::item-fan",

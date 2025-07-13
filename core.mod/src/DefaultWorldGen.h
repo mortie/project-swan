@@ -3,10 +3,10 @@
 #include <swan/swan.h>
 #include <PerlinNoise.hpp>
 
-#include "worldgen/OreDef.h"
-#include "worldgen/ShrubberyDef.h"
-#include "worldgen/TallGrassDef.h"
-#include "worldgen/TreeDef.h"
+#include "worldgen/defs/OreDef.h"
+#include "worldgen/defs/ShrubberyDef.h"
+#include "worldgen/defs/TallGrassDef.h"
+#include "worldgen/defs/TreeDef.h"
 
 namespace CoreMod {
 
