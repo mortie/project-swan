@@ -23,7 +23,7 @@ void TreeDef::spawnTree(
 		return;
 	}
 
-	int height = 4 + Swan::random(pos.x ^ seed_) % 3;
+	int height = 3 + Swan::random(Swan::random(pos.x ^ seed_)) % 5;
 	for (int y = 0; y < height; ++y) {
 		auto ap = pos.add(0, -y);
 		if (y == 0) {

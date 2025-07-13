@@ -23,7 +23,7 @@ void breakTreeLeavesIfFloating(Swan::Ctx &ctx, Swan::TilePos pos)
 	std::queue<SearchTile> queue;
 
 	auto searchStep = [&](SearchTile searchTile) {
-		if (searchTile.dist > 4 || searched.contains(searchTile.pos)) {
+		if (searchTile.dist > 5 || searched.contains(searchTile.pos)) {
 			return;
 		}
 
