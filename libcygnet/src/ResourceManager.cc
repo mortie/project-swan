@@ -1,5 +1,7 @@
 #include "ResourceManager.h"
 
+#include <cstdio>
+#include <cstdlib>
 #include <swan/util.h>
 #include <string.h>
 #include <iostream>
@@ -84,6 +86,16 @@ ResourceManager::ResourceManager(ResourceBuilder &&builder):
 {
 	size_t width, height;
 	const unsigned char *data = builder.atlas_.getImage(&width, &height);
+
+	const char *exportAtlas = getenv("SWAN_EXPORT_ATLAS");
+	if (exportAtlas && std::string_view(exportAtlas) == "1") {
+		FILE *f = fopen("atlas.rgba", "wb");
+		fwrite(data, 1, width * Swan::TILE_SIZE * height * Swan::TILE_SIZE, f);
+		fclose(f);
+		std::cerr
+			<< "Cygnet: Wrote tile atlas to atlas.rgba ("
+			<< width << 'x' << height << ")\n";
+	}
 
 	rnd_->uploadTileAtlas(data, width, height);
 	rnd_->uploadTileMap(builder.tiles_);
