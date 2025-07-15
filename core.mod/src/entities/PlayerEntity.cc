@@ -123,6 +123,11 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 		.size = {1, 1},
 	});
 
+	rnd.drawTileClip({
+		.pos = breakPos_,
+		.clip = Cygnet::TileClip::TOP_LEFT | Cygnet::TileClip::TOP_RIGHT,
+	});
+
 	// Draw health
 	rnd.uiView({}, [&] {
 		for (int i = 0; i < std::max(MAX_HEALTH, health_); ++i) {

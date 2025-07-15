@@ -24,6 +24,7 @@ libcygnet = declare_dependency(
       'src/glsl/Sprite.glsl',
       'src/glsl/Text.glsl',
       'src/glsl/Tile.glsl',
+      'src/glsl/TileClip.glsl',
     ),
     dependencies: [
       common, libthreads, libgl, libglfw3, libstb_truetype,

@@ -28,6 +28,22 @@ enum class Anchor {
 	BOTTOM_RIGHT,
 };
 
+enum class TileClip: uint8_t {
+	NONE = 0,
+	TOP_LEFT = 1 << 0,
+	TOP_RIGHT = 1 << 1,
+};
+
+inline constexpr TileClip operator|(TileClip a, TileClip b)
+{
+	return TileClip(uint8_t(a) | uint8_t(b));
+}
+
+inline constexpr bool operator&(TileClip a, TileClip b)
+{
+	return uint8_t(a) & uint8_t(b);
+}
+
 struct RenderChunk {
 	GLuint tex = ~(GLuint)0;
 };
@@ -106,6 +122,11 @@ public:
 		float brightness = 1.0;
 	};
 
+	struct DrawTileClip {
+		Swan::Vec2 pos;
+		TileClip clip;
+	};
+
 	struct DrawSprite {
 		Mat3gf transform;
 		RenderSprite sprite;
@@ -179,6 +200,11 @@ public:
 	void drawChunkShadow(DrawChunkShadow chunkShadow)
 	{
 		drawChunkShadows_.push_back(chunkShadow);
+	}
+
+	void drawTileClip(DrawTileClip dtc)
+	{
+		drawTileClips_.push_back(dtc);
 	}
 
 	void drawTile(RenderLayer layer, DrawTile drawTile)
@@ -432,6 +458,7 @@ private:
 	std::vector<DrawChunk> drawChunks_;
 	std::vector<DrawChunkFluid> drawChunkFluids_;
 	std::vector<DrawChunkShadow> drawChunkShadows_;
+	std::vector<DrawTileClip> drawTileClips_;
 
 	std::vector<DrawTile> drawTiles_[LAYER_COUNT];
 	std::vector<DrawSprite> drawSprites_[LAYER_COUNT];
