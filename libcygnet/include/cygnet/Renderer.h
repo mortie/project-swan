@@ -166,22 +166,14 @@ public:
 	Renderer();
 	~Renderer();
 
-	void drawChunk(RenderLayer layer, DrawChunk chunk)
-	{
-		drawChunks_[(int)layer].push_back(chunk);
-	}
 	void drawChunk(DrawChunk chunk)
 	{
-		drawChunk(RenderLayer::NORMAL, chunk);
+		drawChunks_.push_back(chunk);
 	}
 
-	void drawChunkFluid(RenderLayer layer, DrawChunkFluid chunkFluid)
-	{
-		drawChunkFluids_[(int)layer].push_back(chunkFluid);
-	}
 	void drawChunkFluid(DrawChunkFluid chunkFluid)
 	{
-		drawChunkFluid(RenderLayer::NORMAL, chunkFluid);
+		drawChunkFluids_.push_back(chunkFluid);
 	}
 
 	void drawChunkShadow(DrawChunkShadow chunkShadow)
@@ -437,9 +429,10 @@ private:
 
 	std::vector<Rect> uiViewStack_ = {{{0, 0}, {1, 1}}};
 
-	std::vector<DrawChunk> drawChunks_[LAYER_COUNT];
-	std::vector<DrawChunkFluid> drawChunkFluids_[LAYER_COUNT];
+	std::vector<DrawChunk> drawChunks_;
+	std::vector<DrawChunkFluid> drawChunkFluids_;
 	std::vector<DrawChunkShadow> drawChunkShadows_;
+
 	std::vector<DrawTile> drawTiles_[LAYER_COUNT];
 	std::vector<DrawSprite> drawSprites_[LAYER_COUNT];
 	std::vector<DrawSprite> drawTileSprites_[LAYER_COUNT];

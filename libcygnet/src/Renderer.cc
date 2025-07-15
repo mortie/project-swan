@@ -10,429 +10,17 @@
 #include "GlWrappers.h"
 #include "util.h"
 
-#include "Blend.glsl.h"
-#include "Chunk.glsl.h"
-#include "ChunkFluid.glsl.h"
-#include "ChunkShadow.glsl.h"
-#include "Particle.glsl.h"
-#include "Rect.glsl.h"
-#include "Sprite.glsl.h"
-#include "Text.glsl.h"
-#include "Tile.glsl.h"
+#include "glsl/Blend.h"
+#include "glsl/Chunk.h"
+#include "glsl/ChunkFluid.h"
+#include "glsl/ChunkShadow.h"
+#include "glsl/Particle.h"
+#include "glsl/Rect.h"
+#include "glsl/Sprite.h"
+#include "glsl/Text.h"
+#include "glsl/Tile.h"
 
 namespace Cygnet {
-
-struct BlendProg: public GlProg<Shader::Blend> {
-	void draw(GLuint tex, float gamma)
-	{
-		glUseProgram(id());
-		glCheck();
-
-		glUniform1i(shader.uniTex, 0);
-		glCheck();
-		glUniform1f(shader.uniDesaturate, std::min(gamma - 1.0, 1.0));
-		glCheck();
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, tex);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		glCheck();
-	}
-};
-
-struct ChunkProg: public GlProg<Shader::Chunk> {
-	void draw(
-		std::span<Renderer::DrawChunk> drawChunks, const Mat3gf &cam,
-		GLuint atlasTex, Swan::Vec2 atlasTexSize,
-		GLuint mapTex, float mapTexSize)
-	{
-		if (drawChunks.size() == 0) {
-			return;
-		}
-
-		glUseProgram(id());
-		glCheck();
-
-		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
-		glCheck();
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, atlasTex);
-		glUniform1i(shader.uniTileAtlas, 0);
-		glCheck();
-
-		glUniform2ui(shader.uniTileAtlasSize, atlasTexSize.x, atlasTexSize.y);
-		glCheck();
-
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, mapTex);
-		glUniform1i(shader.uniTileMap, 1);
-		glCheck();
-
-		glUniform1f(shader.uniTileMapSize, mapTexSize);
-		glCheck();
-
-		glActiveTexture(GL_TEXTURE2);
-		glUniform1i(shader.uniTiles, 2);
-		glCheck();
-
-		for (const auto &dc: drawChunks) {
-			glUniform2f(shader.uniPos, dc.pos.x, dc.pos.y);
-			glBindTexture(GL_TEXTURE_2D, dc.chunk.tex);
-			glDrawArrays(
-				GL_TRIANGLES, 0,
-				6 * Swan::CHUNK_WIDTH * Swan::CHUNK_HEIGHT);
-			glCheck();
-		}
-	}
-};
-
-struct ChunkFluidProg: public GlProg<Shader::ChunkFluid> {
-	void draw(
-		std::span<Renderer::DrawChunkFluid> drawChunkFluids, const Mat3gf &cam,
-		GLuint fluidsTex, float row)
-	{
-		if (drawChunkFluids.size() == 0) {
-			return;
-		}
-
-		glUseProgram(id());
-		glCheck();
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, fluidsTex);
-		glUniform1i(shader.uniFluids, 0);
-		glCheck();
-
-		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
-		glCheck();
-
-		glUniform1f(shader.uniRow, row);
-		glCheck();
-
-		glActiveTexture(GL_TEXTURE1);
-		glUniform1i(shader.uniFluidGrid, 1);
-		for (const auto &df: drawChunkFluids) {
-			glUniform2f(shader.uniPos, df.pos.x, df.pos.y);
-			glBindTexture(GL_TEXTURE_2D, df.fluids.tex);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-			glCheck();
-		}
-	}
-};
-
-struct ChunkShadowProg: public GlProg<Shader::ChunkShadow> {
-	void draw(
-		std::span<Renderer::DrawChunkShadow> drawChunkShadows,
-		const Mat3gf &cam,
-		float desaturate)
-	{
-		if (drawChunkShadows.size() == 0) {
-			return;
-		}
-
-		glUseProgram(id());
-		glCheck();
-
-		glUniform1f(shader.uniGamma, desaturate);
-		glUniform1i(shader.uniTex, 0);
-		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
-		glCheck();
-
-		glActiveTexture(GL_TEXTURE0);
-		for (const auto &dcs: drawChunkShadows) {
-			glUniform2f(shader.uniPos, dcs.pos.x, dcs.pos.y);
-			glBindTexture(GL_TEXTURE_2D, dcs.shadow.tex);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-			glCheck();
-		}
-	}
-};
-
-struct ParticleProg: public GlProg<Shader::Particle> {
-	void draw(std::span<Renderer::DrawParticle> drawParticles, const Mat3gf &cam)
-	{
-		if (drawParticles.size() == 0) {
-			return;
-		}
-
-		glUseProgram(id());
-		glCheck();
-
-		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
-		glCheck();
-
-		auto prevColor = drawParticles.front().color;
-		glUniform4f(
-			shader.uniFill, prevColor.r, prevColor.g,
-			prevColor.b, prevColor.a);
-
-		auto prevSize = drawParticles.front().size;
-		glUniform2f(shader.uniSize, prevSize.x, prevSize.y);
-
-		for (const auto &particle: drawParticles) {
-			if (particle.color != prevColor) {
-				prevColor = particle.color;
-				glUniform4f(
-					shader.uniFill, prevColor.r, prevColor.g,
-					prevColor.b, prevColor.a);
-			}
-
-			if (particle.size != prevSize) {
-				prevSize = particle.size;
-				glUniform2f(shader.uniSize, prevSize.x, prevSize.y);
-			}
-
-			glUniform2f(shader.uniPos, particle.pos.x, particle.pos.y);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-			glCheck();
-		}
-	}
-};
-
-struct RectProg: public GlProg<Shader::Rect> {
-	void draw(std::span<Renderer::DrawRect> drawRects, const Mat3gf &cam)
-	{
-		if (drawRects.size() == 0) {
-			return;
-		}
-
-		glUseProgram(id());
-		glCheck();
-
-		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
-		glCheck();
-
-		for (const auto &rect: drawRects) {
-			glUniform2f(shader.uniPos, rect.pos.x, rect.pos.y);
-			glUniform2f(shader.uniSize, rect.size.x, rect.size.y);
-			glUniform4f(
-				shader.uniOutline, rect.outline.r, rect.outline.g,
-				rect.outline.b, rect.outline.a);
-			glUniform4f(
-				shader.uniFill, rect.fill.r, rect.fill.g,
-				rect.fill.b, rect.fill.a);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-			glCheck();
-		}
-	}
-};
-
-struct SpriteProg: public GlProg<Shader::Sprite> {
-	void draw(std::span<Renderer::DrawSprite> drawSprites, const Mat3gf &cam)
-	{
-		if (drawSprites.size() == 0) {
-			return;
-		}
-
-		glUseProgram(id());
-		glCheck();
-
-		glUniform2f(shader.uniTranslate, 0, 0);
-		glUniform1i(shader.uniTex, 0);
-		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
-		glCheck();
-
-		glUniform1f(shader.uniOpacity, 1.0);
-		glCheck();
-		float prevOpacity = 1;
-
-		glActiveTexture(GL_TEXTURE0);
-		for (const auto &ds: drawSprites) {
-			if (ds.opacity != prevOpacity) {
-				glUniform1f(shader.uniOpacity, ds.opacity);
-				prevOpacity = ds.opacity;
-			}
-
-			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, ds.transform.data());
-			glUniform2f(shader.uniFrameSize, ds.sprite.size.x, ds.sprite.size.y);
-			glUniform2f(shader.uniFrameInfo, ds.sprite.frameCount, ds.frame);
-			glBindTexture(GL_TEXTURE_2D, ds.sprite.tex);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-			glCheck();
-		}
-	}
-
-	void drawGrids(std::span<Renderer::DrawGrid> drawGrids, const Mat3gf &cam)
-	{
-		if (drawGrids.size() == 0) {
-			return;
-		}
-
-		glUseProgram(id());
-		glCheck();
-
-		glUniform1i(shader.uniTex, 0);
-		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
-		glCheck();
-
-		glUniform1f(shader.uniOpacity, 1.0);
-		glCheck();
-
-		glActiveTexture(GL_TEXTURE0);
-		for (const auto &dg: drawGrids) {
-			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, dg.transform.data());
-			glUniform2f(shader.uniFrameSize, dg.sprite.size.x, dg.sprite.size.y);
-			glBindTexture(GL_TEXTURE_2D, dg.sprite.tex);
-
-			// Draw top left, top middle, top right (0, 1, 2)
-			drawStrip(dg.sprite, dg.w, 0, 0, 1, 2);
-			glCheck();
-
-			// Draw center left, center, center right (3, 4, 5)
-			for (int y = 0; y < dg.h; ++y) {
-				drawStrip(dg.sprite, dg.w, y + 1, 3, 4, 5);
-				glCheck();
-			}
-
-			// Draw bottom left, bottom middle, bottom right (6, 7, 8)
-			drawStrip(dg.sprite, dg.w, dg.h + 1, 6, 7, 8);
-			glCheck();
-		}
-	}
-
-private:
-	void drawStrip(const RenderSprite &sprite, int w, int y, int l, int m, int r)
-	{
-		// Left
-		glUniform2f(shader.uniFrameInfo, sprite.frameCount, l);
-		glUniform2f(shader.uniTranslate, 0, y);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		glCheck();
-
-		// Middle
-		glUniform2f(shader.uniFrameInfo, sprite.frameCount, m);
-		for (int x = 0; x < w; ++x) {
-			glUniform2f(shader.uniTranslate, x + 1, y);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-			glCheck();
-		}
-
-		// Right
-		glUniform2f(shader.uniFrameInfo, sprite.frameCount, r);
-		glUniform2f(shader.uniTranslate, w + 1, y);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		glCheck();
-	}
-};
-
-struct TextProg: public GlProg<Shader::Text> {
-	void draw(
-		std::span<Renderer::TextSegment> drawTexts,
-		std::span<TextCache::RenderedCodepoint> textBuffer,
-		const Mat3gf &cam, float scale)
-	{
-		if (drawTexts.size() == 0) {
-			return;
-		}
-
-		glUseProgram(id());
-		glCheck();
-
-		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
-		glUniform1i(shader.uniTextAtlas, 0);
-		glUniform1f(shader.uniTextScale, scale);
-		glCheck();
-
-		TextAtlas *prevAtlas = nullptr;
-
-		for (const auto &segment: drawTexts) {
-			glUniformMatrix3fv(
-				shader.uniTransform, 1, GL_TRUE,
-				segment.drawText.transform.data());
-			glCheck();
-
-			glUniform4f(
-				shader.uniColor,
-				segment.drawText.color.r, segment.drawText.color.g,
-				segment.drawText.color.b, segment.drawText.color.a);
-			glCheck();
-
-			if (&segment.atlas != prevAtlas) {
-				glUniform2ui(
-					shader.uniTextAtlasSize,
-					segment.atlas.sideLength * segment.atlas.charWidth,
-					segment.atlas.sideLength * segment.atlas.charHeight);
-				glCheck();
-
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, segment.atlas.tex);
-				glCheck();
-
-				prevAtlas = &segment.atlas;
-			}
-
-			int x = 0;
-			for (size_t i = segment.start; i < segment.end; ++i) {
-				const auto &rendered = textBuffer[i];
-
-				glUniform2ui(
-					shader.uniCharPosition,
-					rendered.textureX, rendered.textureY);
-				glCheck();
-
-				glUniform2ui(
-					shader.uniCharSize,
-					rendered.width, segment.atlas.charHeight);
-				glCheck();
-
-				x += rendered.x;
-
-				glUniform2i(
-					shader.uniPositionOffset,
-					x, rendered.y);
-
-				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-				glCheck();
-
-				x += rendered.width + 1;
-			}
-		}
-	}
-};
-
-struct TileProg: public GlProg<Shader::Tile> {
-	void draw(
-		std::span<Renderer::DrawTile> drawTiles, const Mat3gf &cam,
-		GLuint atlasTex, Swan::Vec2 atlasTexSize,
-		GLuint mapTex, float mapTexSize)
-	{
-		if (drawTiles.size() == 0) {
-			return;
-		}
-
-		glUseProgram(id());
-		glCheck();
-
-		glUniformMatrix3fv(shader.uniCamera, 1, GL_TRUE, cam.data());
-		glCheck();
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, atlasTex);
-		glUniform1i(shader.uniTileAtlas, 0);
-		glCheck();
-
-		glUniform2f(shader.uniTileAtlasSize, atlasTexSize.x, atlasTexSize.y);
-		glCheck();
-
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, mapTex);
-		glUniform1i(shader.uniTileMap, 1);
-		glCheck();
-
-		glUniform1f(shader.uniTileMapSize, mapTexSize);
-		glCheck();
-
-		for (const auto &dt: drawTiles) {
-			glUniformMatrix3fv(shader.uniTransform, 1, GL_TRUE, dt.transform.data());
-			glUniform1ui(shader.uniTileID, dt.id);
-			glUniform1f(shader.uniBrightness, dt.brightness);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-			glCheck();
-		}
-	}
-};
 
 struct RendererState {
 	BlendProg blendProg{};
@@ -514,11 +102,9 @@ void Renderer::update(float dt)
 void Renderer::clear()
 {
 	for (int idx = 0; idx <= (int)RenderLayer::MAX; ++idx) {
-		drawChunks_[idx].clear();
 		drawTiles_[idx].clear();
 		drawTileSprites_[idx].clear();
 		drawSprites_[idx].clear();
-		drawChunkFluids_[idx].clear();
 		drawParticles_[idx].clear();
 		drawRects_[idx].clear();
 		drawTexts_[idx].clear();
@@ -530,6 +116,8 @@ void Renderer::clear()
 		drawUITexts_[idx].clear();
 	}
 
+	drawChunks_.clear();
+	drawChunkFluids_.clear();
 	drawChunkShadows_.clear();
 	textBuffer_.clear();
 	textUIBuffer_.clear();
@@ -566,8 +154,8 @@ void Renderer::render(const RenderCamera &cam, RenderProps props)
 		glBindTexture(GL_TEXTURE_2D, state_->offscreenTex);
 		glCheck();
 		glTexImage2D(
-				GL_TEXTURE_2D, 0, GL_RGBA, cam.size.x, cam.size.y, 0,
-				GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			GL_TEXTURE_2D, 0, GL_RGBA, cam.size.x, cam.size.y, 0,
+			GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glCheck();
@@ -576,8 +164,8 @@ void Renderer::render(const RenderCamera &cam, RenderProps props)
 		glBindTexture(GL_TEXTURE_2D, state_->offscreenStencilTex);
 		glCheck();
 		glTexImage2D(
-				GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, cam.size.x, cam.size.y, 0,
-				GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+			GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, cam.size.x, cam.size.y, 0,
+			GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glCheck();
@@ -587,25 +175,44 @@ void Renderer::render(const RenderCamera &cam, RenderProps props)
 		glBindFramebuffer(GL_FRAMEBUFFER, state_->offscreenFramebuffer);
 		glCheck();
 		glFramebufferTexture2D(
-				GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-				state_->offscreenTex, 0);
+			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+			state_->offscreenTex, 0);
 		glFramebufferTexture2D(
-				GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
-				state_->offscreenStencilTex, 0);
+			GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
+			state_->offscreenStencilTex, 0);
 		glCheck();
 	}
 
+	// Set up and clear the offscreen frame buffer
 	glBindFramebuffer(GL_FRAMEBUFFER, state_->offscreenFramebuffer);
 	glFramebufferTexture2D(
-			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-			state_->offscreenTex, 0);
+		GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+		state_->offscreenTex, 0);
 	glClearColor(
 		backgroundColor_.r, backgroundColor_.g,
 		backgroundColor_.b, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glCheck();
 
-	for (int i = 0; i <= (int)RenderLayer::MAX; ++i) {
+	// Render background layers
+	for (int i = 0; i < (int)RenderLayer::NORMAL; ++i) {
+		renderLayer(RenderLayer(i), camMat);
+	}
+
+	// Render the world, behind the normal layer
+	state_->chunkFluidProg.draw(drawChunkFluids_, camMat, state_->fluidAtlasTex, 1);
+	state_->chunkProg.draw(
+		drawChunks_, camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
+		state_->tileMapTex, state_->tileMapTexSize);
+
+	// Render the normal layer
+	renderLayer(RenderLayer::NORMAL, camMat);
+
+	// Render another layer of fluids, above the normal layer
+	state_->chunkFluidProg.draw(drawChunkFluids_, camMat, state_->fluidAtlasTex, 0);
+
+	// Render the foreground layers
+	for (int i = (int)RenderLayer::NORMAL + 1; i <= (int)RenderLayer::MAX; ++i) {
 		renderLayer(RenderLayer(i), camMat);
 	}
 
@@ -623,10 +230,6 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 {
 	int idx = (int)layer;
 
-	state_->chunkFluidProg.draw(drawChunkFluids_[idx], camMat, state_->fluidAtlasTex, 1);
-	state_->chunkProg.draw(
-		drawChunks_[idx], camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
-		state_->tileMapTex, state_->tileMapTexSize);
 	state_->tileProg.draw(
 		drawTiles_[idx], camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
 		state_->tileMapTex, state_->tileMapTexSize);
@@ -647,7 +250,6 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 		glDisable(GL_STENCIL_TEST);
 	}
 
-	state_->chunkFluidProg.draw(drawChunkFluids_[idx], camMat, state_->fluidAtlasTex, 0);
 	state_->rectProg.draw(drawRects_[idx], camMat);
 	state_->textProg.draw(drawTexts_[idx], textBuffer_, camMat, 1.0 / 128);
 

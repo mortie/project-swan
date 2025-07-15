@@ -114,8 +114,14 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 
 	currentAnimation_->draw(rnd, mat);
 
-	rnd.drawRect({Swan::Vec2(placePos_).add(0.1, 0.1), {0.8, 0.8}});
-	rnd.drawRect({breakPos_, {1, 1}});
+	rnd.drawRect(Cygnet::RenderLayer::FOREGROUND, {
+		.pos = Swan::Vec2(placePos_).add(0.1, 0.1),
+		.size = {0.8, 0.8},
+	});
+	rnd.drawRect(Cygnet::RenderLayer::FOREGROUND, {
+		.pos = breakPos_,
+		.size = {1, 1},
+	});
 
 	// Draw health
 	rnd.uiView({}, [&] {
