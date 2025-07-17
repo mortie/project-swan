@@ -19,7 +19,6 @@
 #include "glsl/Sprite.h"
 #include "glsl/Text.h"
 #include "glsl/Tile.h"
-#include "glsl/TileClip.h"
 
 namespace Cygnet {
 
@@ -33,7 +32,6 @@ struct RendererState {
 	SpriteProg spriteProg{};
 	TextProg textProg{};
 	TileProg tileProg{};
-	TileClipProg tileClipProg{};
 
 	Swan::Vec2i screenSize;
 	GLuint offscreenFramebuffer = 0;
@@ -205,20 +203,10 @@ void Renderer::render(const RenderCamera &cam, RenderProps props)
 	// Render Fluids
 	state_->chunkFluidProg.draw(drawChunkFluids_, camMat, state_->fluidAtlasTex, 1);
 
-	// Render to the stencil buffer for corner clipping
-	glColorMask(false, false, false, false);
-	glEnable(GL_STENCIL_TEST);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
-	glStencilFunc(GL_EQUAL, 0, 0x01);
-	state_->tileClipProg.draw(drawTileClips_, camMat);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	glColorMask(true, true, true, true);
-
-	// Render the world, with the stencil test active to clip corners
+	// Render the world
 	state_->chunkProg.draw(
 		drawChunks_, camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
 		state_->tileMapTex, state_->tileMapTexSize);
-	glDisable(GL_STENCIL_TEST);
 
 	// Render the normal layer
 	renderLayer(RenderLayer::NORMAL, camMat);

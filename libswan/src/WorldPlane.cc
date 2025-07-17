@@ -176,8 +176,6 @@ void WorldPlane::update(float dt)
 				}
 			}
 		}
-
-		chunk->computeTileClips(getContext());
 	}
 
 	{

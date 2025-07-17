@@ -47,10 +47,6 @@ void Chunk::compress()
 		std::unordered_set<EntityRef> empty;
 		entities_.swap(empty);
 	}
-
-	hasTileClips_ = false;
-	tileClips_.clear();
-	tileClipList_.clear();
 }
 
 void Chunk::decompress()
@@ -110,24 +106,6 @@ void Chunk::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 
 	if (!ctx.game.debug_.disableShadows) {
 		rnd.drawChunkShadow({pos, renderChunkShadow_});
-	}
-
-	if (!hasTileClips_) {
-		computeTileClips(ctx);
-	}
-	if (tileClips_.size() != tileClipList_.size()) {
-		tileClipList_.clear();
-		tileClipList_.reserve(tileClipList_.size());
-		for (auto &[rpos, clip]: tileClips_) {
-			tileClipList_.push_back({
-				.pos = pos + rpos,
-				.clip = clip,
-			});
-			info << "Clip tile " << (pos + rpos);
-		}
-	}
-	for (auto &dtc: tileClipList_) {
-		rnd.drawTileClip(dtc);
 	}
 }
 
@@ -201,49 +179,6 @@ void Chunk::deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap)
 		compress();
 		deactivateTimer_ = 0;
 	}
-
-	hasTileClips_ = false;
-	tileClips_.clear();
-	tileClipList_.clear();
-}
-
-void Chunk::computeTileClips(Ctx &ctx)
-{
-	if (isCompressed()) {
-		return;
-	}
-
-	tileClips_.clear();
-	for (int y = 1; y < CHUNK_HEIGHT; ++y) {
-		for (int x = 1; x < CHUNK_WIDTH - 1; ++x) {
-			ChunkRelPos rpos = {x, y};
-			Tile &tile = ctx.world.getTileByID(getTileID(rpos));
-			if (!tile.isSolid) {
-				continue;
-			}
-
-			Tile &top = ctx.world.getTileByID(getTileID(rpos.add(0, -1)));
-			if (top.isSolid) {
-				continue;
-			}
-
-			Tile &left = ctx.world.getTileByID(getTileID(rpos.add(-1, 0)));
-			Tile &right = ctx.world.getTileByID(getTileID(rpos.add(1, 0)));
-			Cygnet::TileClip clip = Cygnet::TileClip::NONE;
-			if (!left.isSolid) {
-				clip = clip | Cygnet::TileClip::TOP_LEFT;
-			}
-			if (!right.isSolid) {
-				clip = clip | Cygnet::TileClip::TOP_RIGHT;
-			}
-
-			if (clip != Cygnet::TileClip::NONE) {
-				tileClips_[rpos] = clip;
-			}
-		}
-	}
-
-	hasTileClips_ = true;
 }
 
 Chunk::TickAction Chunk::tick(float dt)

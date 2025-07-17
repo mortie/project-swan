@@ -165,8 +165,6 @@ public:
 	void serialize(proto::Chunk::Builder w);
 	void deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap);
 
-	void computeTileClips(Ctx &ctx);
-
 	std::unordered_set<EntityRef> entities_;
 
 private:
@@ -189,10 +187,6 @@ private:
 	bool isModified_ = false;
 	bool isFluidModified_ = false;
 	bool isRendered_ = false;
-
-	bool hasTileClips_ = false;
-	std::unordered_map<ChunkRelPos, Cygnet::TileClip> tileClips_;
-	std::vector<Cygnet::Renderer::DrawTileClip> tileClipList_;
 
 	ChunkPos pos_;
 };
