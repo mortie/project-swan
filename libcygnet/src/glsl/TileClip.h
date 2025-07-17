@@ -24,14 +24,28 @@ struct TileClipProg: public GlProg<Shader::TileClip> {
 
 			if (clip & TileClip::TOP_LEFT) {
 				buf[0][0] = 1;
+				buf[1][1] = 1;
+
 				buf[0][1] = 1;
+				buf[0][2] = 1;
+				buf[0][3] = 1;
+
 				buf[1][0] = 1;
+				buf[2][0] = 1;
+				buf[3][0] = 1;
 			}
 
 			if (clip & TileClip::TOP_RIGHT) {
 				buf[0][Swan::TILE_SIZE - 1] = 1;
+				buf[1][Swan::TILE_SIZE - 2] = 1;
+
 				buf[0][Swan::TILE_SIZE - 2] = 1;
+				buf[0][Swan::TILE_SIZE - 3] = 1;
+				buf[0][Swan::TILE_SIZE - 4] = 1;
+
 				buf[1][Swan::TILE_SIZE - 1] = 1;
+				buf[2][Swan::TILE_SIZE - 1] = 1;
+				buf[3][Swan::TILE_SIZE - 1] = 1;
 			}
 
 			glBindTexture(GL_TEXTURE_2D, textures[i]);

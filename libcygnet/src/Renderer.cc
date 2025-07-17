@@ -211,6 +211,7 @@ void Renderer::render(const RenderCamera &cam, RenderProps props)
 	glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
 	glStencilFunc(GL_EQUAL, 0, 0x01);
 	state_->tileClipProg.draw(drawTileClips_, camMat);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	glColorMask(true, true, true, true);
 
 	// Render the world, with the stencil test active to clip corners
