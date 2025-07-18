@@ -45,6 +45,10 @@ void World::buildResources()
 {
 	Cygnet::ResourceBuilder builder(&game_->renderer_);
 
+	// We need default all-filled fluid collision
+	auto solidFluidCollision = std::make_shared<FluidCollision>();
+	solidFluidCollision->set();
+
 	// We need a fallback image for when an image is missing
 	unsigned char tileImageBuffer[TILE_SIZE * TILE_SIZE * 4];
 	for (size_t i = 0; i < TILE_SIZE * TILE_SIZE; ++i) {
@@ -151,8 +155,6 @@ void World::buildResources()
 	tiles_.reserve(tileCount);
 	for (auto &mod: mods_) {
 		for (auto &tileBuilder: mod.tiles()) {
-			//auto image = loadTileImage(tileBuilder.image);
-
 			std::string tileName = cat(mod.name(), "::", tileBuilder.name);
 			Tile::ID tileId = tiles_.size();
 
@@ -161,6 +163,10 @@ void World::buildResources()
 			tilesMap_[tileName] = tileId;
 			tiles_.push_back(Tile(tileId, tileName, std::move(tileBuilder)));
 			auto &tile = tiles_.back();
+
+			if (!tile.fluidCollision && tile.isSolid) {
+				tile.fluidCollision = solidFluidCollision;
+			}
 
 			float yOffset = 0;
 			if (metaIt != tileMeta.end()) {

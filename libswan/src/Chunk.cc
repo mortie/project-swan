@@ -199,6 +199,49 @@ Chunk::TickAction Chunk::tick(float dt)
 	return TickAction::NOTHING;
 }
 
+void Chunk::setFluidID(ChunkRelPos pos, Fluid::ID fluid)
+{
+	auto xStart = pos.x * FLUID_RESOLUTION;
+	auto yStart = pos.y * FLUID_RESOLUTION;
+	for (auto y = yStart; y < yStart + FLUID_RESOLUTION; ++y) {
+		auto *row = getFluidData() + (y * CHUNK_WIDTH * FLUID_RESOLUTION);
+		memset(row + xStart, fluid, FLUID_RESOLUTION);
+	}
+	isFluidModified_ = true;
+}
+
+void Chunk::setFluidSolid(ChunkRelPos pos, const FluidCollision &set)
+{
+	for (int y = 0; y < FLUID_RESOLUTION; ++y) {
+		auto *row = getFluidData() +
+			(pos.y * FLUID_RESOLUTION + y) * CHUNK_WIDTH * FLUID_RESOLUTION +
+			pos.x * FLUID_RESOLUTION;
+		for (int x = 0; x < FLUID_RESOLUTION; ++x) {
+			if (set[y * FLUID_RESOLUTION + x]) {
+				row[x] = World::SOLID_FLUID_ID;
+			} else if (row[x] == World::SOLID_FLUID_ID) {
+				row[x] = World::AIR_FLUID_ID;
+			}
+		}
+	}
+	isFluidModified_ = true;
+}
+
+void Chunk::clearFluidSolid(ChunkRelPos pos)
+{
+	for (int y = 0; y < FLUID_RESOLUTION; ++y) {
+		auto *row = getFluidData() +
+			(pos.y * FLUID_RESOLUTION + y) * CHUNK_WIDTH * FLUID_RESOLUTION +
+			pos.x * FLUID_RESOLUTION;
+		for (int x = 0; x < FLUID_RESOLUTION; ++x) {
+			if (row[x] == World::SOLID_FLUID_ID) {
+				row[x] = World::AIR_FLUID_ID;
+			}
+		}
+	}
+	isFluidModified_ = true;
+}
+
 void Chunk::keepActive()
 {
 	deactivateTimer_ = DEACTIVATE_INTERVAL;

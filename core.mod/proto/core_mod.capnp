@@ -92,3 +92,9 @@ struct ItemPipeTileEntity {
 		timer @3 :UInt8;
 	}
 }
+
+struct AqueductTileEntity {
+	tileEntity @0 :TileEntity;
+	fluidLevel @1 :Float32;
+	fluidType @2 :Text;
+}

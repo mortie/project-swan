@@ -43,6 +43,7 @@ Chunk &WorldPlane::getChunk(ChunkPos pos)
 	}
 
 	Chunk &chunk = slowGetChunk(pos);
+	chunk.keepActive();
 	tickChunks_.push_back({pos, &chunk});
 	return chunk;
 }
@@ -335,11 +336,9 @@ void WorldPlane::serialize(proto::WorldPlane::Builder w)
 
 void WorldPlane::deserialize(proto::WorldPlane::Reader r, std::span<Tile::ID> tileMap)
 {
-	entitySystem_.deserialize(r.getEntitySystem());
-	fluidSystem_.deserialize(r.getFluidSystem());
-
 	chunks_.clear();
 	activeChunks_.clear();
+	tickChunks_.clear();
 	chunkInitList_.clear();
 	for (auto chunkR: r.getChunks()) {
 		Chunk tempChunk({0, 0});
@@ -352,6 +351,9 @@ void WorldPlane::deserialize(proto::WorldPlane::Reader r, std::span<Tile::ID> ti
 			activeChunks_.push_back(&chunk);
 		}
 	}
+
+	fluidSystem_.deserialize(r.getFluidSystem());
+	entitySystem_.deserialize(r.getEntitySystem());
 }
 
 }

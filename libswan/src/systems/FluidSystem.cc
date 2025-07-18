@@ -205,6 +205,65 @@ void FluidSystemImpl::replaceInTile(TilePos pos, Fluid::ID fluid)
 	triggerUpdateInTile(pos);
 }
 
+void FluidSystemImpl::setSolid(TilePos pos, const FluidCollision &set)
+{
+	auto chunkPos = tilePosToChunkPos(pos);
+	auto relPos = tilePosToChunkRelPos(pos);
+	auto &chunk = plane_.getChunk(chunkPos);
+
+	uint8_t *data = chunk.getFluidData();
+	for (size_t y = 0; y < FLUID_RESOLUTION; ++y) {
+		uint8_t *row = &data[
+			(relPos.y * FLUID_RESOLUTION + y) * CHUNK_WIDTH * FLUID_RESOLUTION];
+		for (size_t x = 0; x < FLUID_RESOLUTION; ++x) {
+			if (!set[y * FLUID_RESOLUTION + x]) {
+				continue;
+			}
+
+			Fluid::ID id = row[relPos.x * FLUID_RESOLUTION + x] & 0x3f;
+			if (id == World::AIR_FLUID_ID || id == World::SOLID_FLUID_ID) {
+				continue;
+			}
+
+			float vx = (x - (FLUID_RESOLUTION / 2.0 - 0.5));
+			float vy = (y - (FLUID_RESOLUTION / 2.0 - 0.5));
+
+			particles_.push_back({
+				.pos = pos.as<float>().add(
+					float(x) / FLUID_RESOLUTION,
+					float(y) / FLUID_RESOLUTION),
+				.vel = {vx, vy},
+				.color = plane_.world_->getFluidByID(id).fg,
+				.id = id,
+				.remainingTime = 255,
+			});
+		}
+	}
+
+	chunk.setFluidSolid(relPos, set);
+	triggerUpdateInTile(pos);
+}
+
+void FluidSystemImpl::clearSolid(TilePos pos)
+{
+	auto chunkPos = tilePosToChunkPos(pos);
+	auto relPos = tilePosToChunkRelPos(pos);
+	auto &chunk = plane_.getChunk(chunkPos);
+	chunk.clearFluidSolid(relPos);
+	triggerUpdateInTile(pos);
+}
+
+void FluidSystemImpl::spawnFluidParticle(Vec2 pos, Fluid::ID fluid)
+{
+	particles_.push_back({
+		.pos = pos,
+		.vel = {0, 0},
+		.color = plane_.world_->getFluidByID(fluid).fg,
+		.id = fluid,
+		.remainingTime = 255,
+	});
+}
+
 Fluid &FluidSystemImpl::getAtPos(Vec2 pos) {
 	return plane_.world_->getFluidByID(getFluidCell(worldPosToFluidPos(pos)).id());
 }

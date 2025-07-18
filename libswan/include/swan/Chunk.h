@@ -93,16 +93,9 @@ public:
 		getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
 	}
 
-	void setFluidID(ChunkRelPos pos, Fluid::ID fluid)
-	{
-		auto xStart = pos.x * FLUID_RESOLUTION;
-		auto yStart = pos.y * FLUID_RESOLUTION;
-		for (auto y = yStart; y < yStart + FLUID_RESOLUTION; ++y) {
-			auto *row = getFluidData() + (y * CHUNK_WIDTH * FLUID_RESOLUTION);
-			memset(row + xStart, fluid, FLUID_RESOLUTION);
-		}
-		isFluidModified_ = true;
-	}
+	void setFluidID(ChunkRelPos pos, Fluid::ID fluid);
+	void setFluidSolid(ChunkRelPos pos, const FluidCollision &set);
+	void clearFluidSolid(ChunkRelPos pos);
 
 	uint8_t getLightLevel(ChunkRelPos pos)
 	{

@@ -15,9 +15,10 @@ public:
 
 	constexpr DirectionSet() = default;
 	constexpr DirectionSet(const DirectionSet &) = default;
+	constexpr DirectionSet(Direction::Value dir):
+		value_(Direction(dir).asInt()) {}
 	constexpr DirectionSet(Direction dir):
-		value_(dir.asInt())
-	{}
+		value_(dir.asInt()) {}
 
 	constexpr DirectionSet &operator=(const DirectionSet &) = default;
 

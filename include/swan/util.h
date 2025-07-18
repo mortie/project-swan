@@ -381,6 +381,11 @@ struct FixedString {
 		return buf;
 	}
 
+	constexpr operator std::string_view() const
+	{
+		return buf;
+	}
+
 	constexpr const char *cStr() const
 	{
 		return buf;

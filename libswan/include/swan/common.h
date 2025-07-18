@@ -1,6 +1,7 @@
 #pragma once
 
 // IWYU pragma: begin_exports
+#include <bitset>
 #include <swan/trace.h>
 #include <swan/Vector2.h>
 #include <swan/HashMap.h>
@@ -26,6 +27,7 @@ using TilePos = Vec2i;
 using FluidPos = Vector2<int64_t>;
 using ChunkPos = Vec2i;
 using ChunkRelPos = Vec2i;
+using FluidCollision = std::bitset<FLUID_RESOLUTION * FLUID_RESOLUTION>;
 
 inline ChunkPos tilePosToChunkPos(TilePos pos)
 {

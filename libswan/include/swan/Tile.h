@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bitset>
 #include <cstdint>
 #include <memory>
 #include <stdint.h>
@@ -11,6 +12,7 @@
 #include "Tool.h"
 #include "EntityCollection.h"
 #include "cygnet/util.h"
+#include "swan/constants.h"
 
 namespace Swan {
 
@@ -53,6 +55,7 @@ struct Tile {
 		void (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta) = nullptr;
 		void (*onWorldTick)(Ctx &ctx, TilePos pos) = nullptr;
 
+		std::shared_ptr<FluidCollision> fluidCollision = nullptr;
 		std::shared_ptr<Traits> traits = nullptr;
 	};
 
@@ -80,7 +83,7 @@ struct Tile {
 	void (*onWorldTick)(Ctx &ctx, TilePos pos);
 
 	std::shared_ptr<TileParticles> particles;
-
+	std::shared_ptr<FluidCollision> fluidCollision;
 	std::shared_ptr<Traits> traits;
 
 	Tile() = default;
@@ -94,7 +97,7 @@ struct Tile {
 		onSpawn(builder.onSpawn), onBreak(builder.onBreak),
 		onTileUpdate(builder.onTileUpdate), onActivate(builder.onActivate),
 		onWorldTick(builder.onWorldTick),
-		traits(builder.traits)
+		fluidCollision(builder.fluidCollision), traits(builder.traits)
 	{}
 };
 

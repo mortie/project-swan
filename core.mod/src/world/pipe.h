@@ -9,9 +9,6 @@ struct PipeConnectibleTileTrait: Swan::Tile::Traits {
 	PipeConnectibleTileTrait(Swan::DirectionSet dirs):
 		pipeConnectDirections(dirs)
 	{}
-	PipeConnectibleTileTrait(Swan::Direction dir):
-		pipeConnectDirections(dir)
-	{}
 
 	Swan::DirectionSet pipeConnectDirections = Swan::DirectionSet::all();
 };

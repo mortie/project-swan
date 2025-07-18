@@ -47,7 +47,9 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 	bool keepTileEntity = false;
 	if (oldTile.tileEntity && oldTile.tileEntity == newTile.tileEntity) {
 		auto te = plane_.entities().getTileEntity(pos);
-		keepTileEntity = te.trait<TileEntityTrait>()->keep;
+		if (te) {
+			keepTileEntity = te.trait<TileEntityTrait>()->keep;
+		}
 	}
 
 	if (oldTile.onBreak) {
@@ -77,11 +79,11 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 		}
 	}
 
-	if (oldTile.isSolid && !newTile.isSolid) {
-		plane_.fluids().setInTile(pos, World::AIR_FLUID_ID);
+	if (oldTile.fluidCollision && !newTile.fluidCollision) {
+		plane_.fluids().clearSolid(pos);
 	}
-	else if (!oldTile.isSolid && newTile.isSolid) {
-		plane_.fluids().setInTile(pos, World::SOLID_FLUID_ID);
+	else if (newTile.fluidCollision) {
+		plane_.fluids().setSolid(pos, *newTile.fluidCollision);
 	}
 
 	if (newTile.onSpawn) {
@@ -202,11 +204,11 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 		}
 	}
 
-	if (oldTile.isSolid && !newTile.isSolid) {
-		plane_.fluids().setInTile(pos, World::AIR_FLUID_ID);
+	if (oldTile.fluidCollision && !newTile.fluidCollision) {
+		plane_.fluids().clearSolid(pos);
 	}
-	else if (!oldTile.isSolid && newTile.isSolid) {
-		plane_.fluids().setInTile(pos, World::SOLID_FLUID_ID);
+	else if (newTile.fluidCollision) {
+		plane_.fluids().setSolid(pos, *newTile.fluidCollision);
 	}
 
 	if (newTile.tileEntity) {
