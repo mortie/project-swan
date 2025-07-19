@@ -106,6 +106,23 @@ public:
 		return Value(1 << rand);
 	}
 
+	const char *name() {
+		switch (value_) {
+		case Value::NONE:
+			return "None";
+		case Value::UP:
+			return "Up";
+		case Value::DOWN:
+			return "Down";
+		case Value::LEFT:
+			return "Left";
+		case Value::RIGHT:
+			return "Right";
+		}
+
+		return "Unknown";
+	}
+
 	void serialize(proto::Direction::Builder w)
 	{
 		w.setValue(asInt());

@@ -196,6 +196,7 @@ public:
 	float fpsLimit_ = 0;
 	Debug debug_;
 	Perf perf_;
+	std::vector<EntityRef> debugEntities_;
 
 	bool tickInProgress_ = false;
 	RTDeadline tickDeadline_{2.0 / 1000};

@@ -30,6 +30,10 @@ public:
 	{}
 	virtual void onDespawn(Ctx &ctx)
 	{}
+	virtual void onWorldLoaded(Ctx &ctx)
+	{}
+	virtual void drawDebug(Ctx &ctx)
+	{}
 
 	template<typename T>
 	auto trait()

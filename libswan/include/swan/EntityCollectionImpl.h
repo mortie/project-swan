@@ -68,6 +68,7 @@ public:
 	void tick2(Ctx &ctx, float dt) override;
 	void draw(Ctx &ctx, Cygnet::Renderer &rnd) override;
 	void erase(Ctx &ctx, uint64_t id) override;
+	void onWorldLoaded(Ctx &ctx) override;
 
 	void serialize(
 		Ctx &ctx, proto::EntitySystem::Collection::Builder w) override;
@@ -359,6 +360,14 @@ inline void EntityCollectionImpl<Ent>::erase(Ctx &ctx, uint64_t id)
 	entities_.pop_back();
 	idToIndex_.erase(id);
 	idToIndex_[entities_[index].id] = index;
+}
+
+template<typename Ent>
+inline void EntityCollectionImpl<Ent>::onWorldLoaded(Ctx &ctx)
+{
+	for (auto &w: entities_) {
+		w.ent.onWorldLoaded(ctx);
+	}
 }
 
 template<typename Ent>

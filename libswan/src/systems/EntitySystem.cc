@@ -299,6 +299,10 @@ void EntitySystemImpl::deserialize(proto::EntitySystem::Reader r)
 			ent.pos = pos;
 		});
 	}
+
+	for (auto &coll: collections_) {
+		coll->onWorldLoaded(ctx);
+	}
 }
 
 Context EntitySystemImpl::getContext() {

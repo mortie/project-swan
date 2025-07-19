@@ -116,7 +116,7 @@ void registerAqueduct(Swan::Mod &mod)
 		.onTileUpdate = updateAqueductTileEntity,
 		.onActivate = activateAqueduct<"core::aqueduct::left">,
 		.fluidCollision = fc(0b1110'0000'0000'0000),
-		.traits = std::make_shared<AqueductTrait>(RIGHT, RIGHT),
+		.traits = std::make_shared<AqueductTrait>(RIGHT, LEFT | RIGHT),
 	});
 
 	mod.registerTile({
@@ -129,7 +129,7 @@ void registerAqueduct(Swan::Mod &mod)
 		.onTileUpdate = updateAqueductTileEntity,
 		.onActivate = activateAqueduct<"core::aqueduct::right">,
 		.fluidCollision = fc(0b0111'0000'0000'0000),
-		.traits = std::make_shared<AqueductTrait>(LEFT, LEFT),
+		.traits = std::make_shared<AqueductTrait>(LEFT, LEFT | RIGHT),
 	});
 }
 

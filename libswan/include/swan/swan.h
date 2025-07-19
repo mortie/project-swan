@@ -33,4 +33,6 @@
 
 #include <swan/EntityCollectionImpl.h>
 #include <swan/ModImpl.h>
+
+#include <imgui/imgui.h>
 // IWYU pragma: end_exports

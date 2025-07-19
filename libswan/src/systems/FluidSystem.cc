@@ -253,11 +253,11 @@ void FluidSystemImpl::clearSolid(TilePos pos)
 	triggerUpdateInTile(pos);
 }
 
-void FluidSystemImpl::spawnFluidParticle(Vec2 pos, Fluid::ID fluid)
+void FluidSystemImpl::spawnFluidParticle(Vec2 pos, Fluid::ID fluid, Vec2 vel)
 {
 	particles_.push_back({
 		.pos = pos,
-		.vel = {0, 0},
+		.vel = vel,
 		.color = plane_.world_->getFluidByID(fluid).fg,
 		.id = fluid,
 		.remainingTime = 255,
@@ -266,6 +266,69 @@ void FluidSystemImpl::spawnFluidParticle(Vec2 pos, Fluid::ID fluid)
 
 Fluid &FluidSystemImpl::getAtPos(Vec2 pos) {
 	return plane_.world_->getFluidByID(getFluidCell(worldPosToFluidPos(pos)).id());
+}
+
+bool FluidSystemImpl::takeFluidFromRow(TilePos pos, int y, Fluid::ID fluid) {
+	FluidPos fpos = pos.as<int64_t>() * FLUID_RESOLUTION;
+	fpos.y += y;
+
+	// Serach the center tiles first, then the ones at the side.
+	// Randomly decide whether to search left then right or right then left.
+	int offsets[4];
+	if (random() % 2) {
+		offsets[0] = 1;
+		offsets[1] = 2;
+		offsets[2] = 0;
+		offsets[3] = 3;
+	} else {
+		offsets[0] = 2;
+		offsets[1] = 1;
+		offsets[2] = 3;
+		offsets[3] = 0;
+	}
+
+	for (int offset: offsets) {
+		auto cell = getFluidCell(fpos.add(offset, 0));
+		if (cell.id() == fluid) {
+			cell.setAir();
+			return true;
+		}
+	}
+
+	return false;
+}
+
+Fluid &FluidSystemImpl::takeAnyFromRow(TilePos pos, int y) {
+	FluidPos fpos = pos.as<int64_t>() * FLUID_RESOLUTION;
+	fpos.y += y;
+
+	// Serach the center tiles first, then the ones at the side.
+	// Randomly decide whether to search left then right or right then left.
+	int offsets[4];
+	if (random() % 2) {
+		offsets[0] = 1;
+		offsets[1] = 2;
+		offsets[2] = 0;
+		offsets[3] = 3;
+	} else {
+		offsets[0] = 2;
+		offsets[1] = 1;
+		offsets[2] = 3;
+		offsets[3] = 0;
+	}
+
+	for (int offset: offsets) {
+		auto cell = getFluidCell(fpos.add(offset, 0));
+		if (cell.isAir() || cell.isSolid()) {
+			continue;
+		}
+
+		auto id = cell.id();
+		cell.setAir();
+		return plane_.world_->getFluidByID(id);
+	}
+
+	return plane_.world_->getFluidByID(World::AIR_FLUID_ID);
 }
 
 void FluidSystemImpl::draw(Cygnet::Renderer &rnd)

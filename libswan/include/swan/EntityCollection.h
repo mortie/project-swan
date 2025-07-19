@@ -125,6 +125,7 @@ public:
 	virtual void tick2(Ctx &ctx, float dt) = 0;
 	virtual void draw(Ctx &ctx, Cygnet::Renderer &rnd) = 0;
 	virtual void erase(Ctx &ctx, uint64_t id) = 0;
+	virtual void onWorldLoaded(Ctx &ctx) = 0;
 
 	virtual void serialize(
 		Ctx &ctx, proto::EntitySystem::Collection::Builder w) = 0;

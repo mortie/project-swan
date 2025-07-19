@@ -36,10 +36,12 @@ public:
 	void replaceInTile(TilePos pos, Fluid::ID fluid);
 	void setSolid(TilePos pos, const FluidCollision &collision);
 	void clearSolid(TilePos pos);
-	void spawnFluidParticle(Vec2 pos, Fluid::ID fluid);
+	void spawnFluidParticle(Vec2 pos, Fluid::ID fluid, Vec2 vel = {});
 	int numUpdates() { return updatesB_.size(); }
 	int numParticles() { return particles_.size(); }
 	Fluid &getAtPos(Vec2 pos);
+	bool takeFluidFromRow(TilePos pos, int y, Fluid::ID fluid);
+	Fluid &takeAnyFromRow(TilePos pos, int y);
 
 	/*
 	 * Available to friends
@@ -107,6 +109,8 @@ public:
 	using FluidSystemImpl::numUpdates;
 	using FluidSystemImpl::numParticles;
 	using FluidSystemImpl::getAtPos;
+	using FluidSystemImpl::takeFluidFromRow;
+	using FluidSystemImpl::takeAnyFromRow;
 
 	friend WorldPlane;
 };

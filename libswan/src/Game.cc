@@ -334,6 +334,21 @@ void Game::draw()
 		drawDebugMenu();
 	}
 
+	for (size_t i = 0; i < debugEntities_.size(); ++i) {
+		auto &ref = debugEntities_[i];
+		auto ent = ref.get();
+		if (!ent) {
+			continue;
+		}
+
+		ImGui::Begin(
+			cat("Entity debug window [", i, "]").c_str(), nullptr,
+			ImGuiWindowFlags_AlwaysAutoResize);
+		ImGui::Text("Debug for %s %" PRIu64, ref.collection()->name().c_str(), ref.id());
+		ent->drawDebug(world_->currentPlane().getContext());
+		ImGui::End();
+	}
+
 	if (perf_.show) {
 		drawPerfMenu();
 	}
@@ -403,6 +418,27 @@ void Game::update(float dt)
 		.pos = cam_.pos,
 		.size = {1 / cam_.zoom, 1 / cam_.zoom},
 	});
+
+	if (wasLiteralKeyPressed(GLFW_KEY_F1)) {
+		bool found = false;
+
+		auto tile = getMouseTile();
+		auto ents = world_->currentPlane().entities().getInTile(tile);
+		for (auto &ent: ents) {
+			debugEntities_.push_back(ent.ref);
+			found = true;
+		}
+
+		auto ent = world_->currentPlane().entities().getTileEntity(tile);
+		if (ent) {
+			debugEntities_.push_back(ent);
+			found = true;
+		}
+
+		if (!found) {
+			debugEntities_.clear();
+		}
+	}
 
 	if (wasLiteralKeyPressed(GLFW_KEY_F3)) {
 		debug_.show = !debug_.show;
@@ -551,6 +587,7 @@ bool Game::reload()
 	soundPlayer_.flush();
 	world_.reset();
 	loadWorld(worldPath_, mods);
+	debugEntities_.clear();
 
 	info << "Reloaded in " << startTime.duration() << " seconds.";
 	return true;

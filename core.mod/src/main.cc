@@ -58,7 +58,7 @@ public:
 				}
 
 				auto fluid = ctx.plane.fluids().getAtPos(pos.as<float>().add(0.5, -0.2));
-				if (fluid.density > 0) {
+				if (fluid.density > 0 && fluid.name != "@::solid") {
 					return;
 				}
 
@@ -93,7 +93,7 @@ public:
 			},
 			.onWorldTick = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
 				auto fluid = ctx.plane.fluids().getAtPos(pos.as<float>().add(0.5, -0.2));
-				if (fluid.density > 0) {
+				if (fluid.density > 0 && fluid.name != "@::solid") {
 					ctx.plane.tiles().set(pos, "core::dirt");
 				}
 			},

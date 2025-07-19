@@ -669,6 +669,7 @@ bool build(const char *modPath, const char *swanPath)
 	std::vector<std::string> libs = {
 		cat(swanPath, "/lib/libswan" DYNLIB_EXT),
 		cat(swanPath, "/lib/libcygnet" DYNLIB_EXT),
+		cat(swanPath, "/lib/libimgui" DYNLIB_EXT),
 	};
 
 	auto pkgCFlags = pkgconfig("--cflags", pkgs);
