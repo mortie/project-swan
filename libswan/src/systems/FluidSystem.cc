@@ -265,7 +265,11 @@ void FluidSystemImpl::spawnFluidParticle(Vec2 pos, Fluid::ID fluid, Vec2 vel)
 }
 
 Fluid &FluidSystemImpl::getAtPos(Vec2 pos) {
-	return plane_.world_->getFluidByID(getFluidCell(worldPosToFluidPos(pos)).id());
+	auto id = getFluidCell(worldPosToFluidPos(pos)).id();
+	if (id == World::SOLID_FLUID_ID) {
+		id = World::AIR_FLUID_ID;
+	}
+	return plane_.world_->getFluidByID(id);
 }
 
 bool FluidSystemImpl::takeFluidFromRow(TilePos pos, int y, Fluid::ID fluid) {
