@@ -243,6 +243,15 @@ public:
 		drawParticle(RenderLayer::NORMAL, dp);
 	}
 
+	void drawTileParticle(RenderLayer layer, DrawParticle drawParticle)
+	{
+		drawTileParticles_[(int)layer].push_back(drawParticle);
+	}
+	void drawTileParticle(DrawParticle dp)
+	{
+		drawTileParticle(RenderLayer::NORMAL, dp);
+	}
+
 	void spawnParticle(RenderLayer layer, SpawnParticle particle)
 	{
 		spawnedParticles_[(int)layer].push_back({
@@ -464,6 +473,7 @@ private:
 	std::vector<DrawSprite> drawSprites_[LAYER_COUNT];
 	std::vector<DrawSprite> drawTileSprites_[LAYER_COUNT];
 	std::vector<DrawParticle> drawParticles_[LAYER_COUNT];
+	std::vector<DrawParticle> drawTileParticles_[LAYER_COUNT];
 	std::vector<DrawRect> drawRects_[LAYER_COUNT];
 	std::vector<TextSegment> drawTexts_[LAYER_COUNT];
 	std::vector<TextCache::RenderedCodepoint> textBuffer_;

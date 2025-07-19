@@ -106,6 +106,7 @@ void Renderer::clear()
 		drawTileSprites_[idx].clear();
 		drawSprites_[idx].clear();
 		drawParticles_[idx].clear();
+		drawTileParticles_[idx].clear();
 		drawRects_[idx].clear();
 		drawTexts_[idx].clear();
 
@@ -237,6 +238,7 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 		drawTiles_[idx], camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
 		state_->tileMapTex, state_->tileMapTexSize);
 	state_->spriteProg.draw(drawTileSprites_[idx], camMat);
+	state_->particleProg.draw(drawTileParticles_[idx], camMat);
 	state_->spriteProg.draw(drawSprites_[idx], camMat);
 	state_->particleProg.draw(drawParticles_[idx], camMat);
 

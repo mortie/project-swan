@@ -47,7 +47,7 @@ void AqueductTileEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 
 	float width = endX - startX;
 	float height = content_.level * 0.25;
-	rnd.drawParticle({
+	rnd.drawTileParticle({
 		.pos = tileEntity_.pos.as<float>().add(startX, 1 - height - 0.215),
 		.size = {width, height},
 		.color = content_.fluid->fg,
