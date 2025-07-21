@@ -18,11 +18,11 @@ static void updateAqueductTileEntity(Swan::Ctx &ctx, Swan::TilePos pos)
 static void updateAqueduct(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	auto &leftTile = ctx.plane.tiles().get(pos.add(-1, 0));
-	auto left = dynamic_cast<AqueductTrait *>(leftTile.traits.get());
+	auto left = dynamic_cast<AqueductTrait *>(leftTile.more->traits.get());
 	bool hasLeft = left && left->connectable.has(Swan::Direction::RIGHT);
 
 	auto &rightTile = ctx.plane.tiles().get(pos.add(1, 0));
-	auto right = dynamic_cast<AqueductTrait *>(rightTile.traits.get());
+	auto right = dynamic_cast<AqueductTrait *>(rightTile.more->traits.get());
 	bool hasRight = right && right->connectable.has(Swan::Direction::LEFT);
 
 	if (hasLeft && hasRight) {

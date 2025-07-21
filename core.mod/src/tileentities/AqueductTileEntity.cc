@@ -9,7 +9,7 @@ void AqueductTileEntity::onTileUpdate(Swan::Ctx &ctx)
 	auto pos = tileEntity_.pos;
 
 	auto &tile = ctx.plane.tiles().get(pos);
-	auto aqueduct = dynamic_cast<AqueductTrait *>(tile.traits.get());
+	auto aqueduct = dynamic_cast<AqueductTrait *>(tile.more->traits.get());
 	if (!aqueduct) {
 		Swan::warn << "Aqueduct tile entity on a tile without an aqueduct?";
 		return;

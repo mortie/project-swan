@@ -22,6 +22,23 @@ class ItemStack;
 struct Tile {
 	using ID = uint16_t;
 
+	enum Flags: uint8_t {
+		NONE = 0,
+		IS_SOLID = 1 << 0,
+		IS_OPAQUE = 1 << 1,
+		IS_SUPPORT_V = 1 << 2,
+		IS_SUPPORT_H = 1 << 3,
+		IS_REPLACABLE = 1 << 4,
+	};
+
+	friend constexpr Tile::Flags operator|(Tile::Flags a, Tile::Flags b) {
+		return Tile::Flags(int(a) | int(b));
+	}
+
+	friend constexpr bool operator&(Tile::Flags a, Tile::Flags b) {
+		return int(a) & int(b);
+	}
+
 	struct Traits {
 		virtual ~Traits() = default;
 	};
@@ -59,46 +76,70 @@ struct Tile {
 		std::shared_ptr<Traits> traits = nullptr;
 	};
 
+	struct More {
+		More(const Builder &builder):
+			onSpawn(builder.onSpawn),
+			onBreak(builder.onBreak),
+			onTileUpdate(builder.onTileUpdate),
+			onActivate(builder.onActivate),
+			onWorldTick(builder.onWorldTick),
+			fluidCollision(builder.fluidCollision),
+			traits(builder.traits),
+			tileEntity(builder.tileEntity),
+			lightLevel(builder.lightLevel),
+			temperature(builder.temperature)
+		{}
+
+		bool (*onSpawn)(Ctx &ctx, TilePos pos);
+		void (*onBreak)(Ctx &ctx, TilePos pos);
+		void (*onTileUpdate)(Ctx &ctx, TilePos pos);
+		void (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta);
+		void (*onWorldTick)(Ctx &ctx, TilePos pos);
+
+		std::shared_ptr<TileParticles> particles;
+		std::shared_ptr<FluidCollision> fluidCollision;
+		std::shared_ptr<Traits> traits;
+
+		SoundAsset *stepSounds[2] = {nullptr, nullptr};
+		SoundAsset *placeSound = nullptr;
+		SoundAsset *breakSound = nullptr;
+		Item *droppedItem = nullptr;
+		ROString tileEntity;
+
+		float lightLevel;
+		float temperature;
+	};
+
 	ID id;
-	std::string name;
-	bool isSolid;
-	bool isOpaque;
-	bool isSupportV;
-	bool isSupportH;
-	bool isReplacable;
-	float lightLevel;
-	float temperature;
+	Flags flags;
 	ToolSet breakableBy;
+	// 4 bytes padding
+	ROString name;
 
-	SoundAsset *stepSounds[2] = {nullptr, nullptr};
-	SoundAsset *placeSound = nullptr;
-	SoundAsset *breakSound = nullptr;
-	Item *droppedItem = nullptr;
-	std::optional<std::string> tileEntity;
-
-	bool (*onSpawn)(Ctx &ctx, TilePos pos);
-	void (*onBreak)(Ctx &ctx, TilePos pos);
-	void (*onTileUpdate)(Ctx &ctx, TilePos pos);
-	void (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta);
-	void (*onWorldTick)(Ctx &ctx, TilePos pos);
-
-	std::shared_ptr<TileParticles> particles;
-	std::shared_ptr<FluidCollision> fluidCollision;
-	std::shared_ptr<Traits> traits;
+	std::unique_ptr<More> more;
 
 	Tile() = default;
+	Tile(const Tile &) = delete;
+	Tile(Tile &&) = default;
+
 	Tile(ID id, std::string name, const Builder &builder):
-		id(id), name(name),
-		isSolid(builder.isSolid), isOpaque(builder.isOpaque),
-		isSupportV(builder.isSupportV), isSupportH(builder.isSupportH),
-		isReplacable(builder.isReplacable), lightLevel(builder.lightLevel),
-		temperature(builder.temperature),
-		breakableBy(builder.breakableBy), tileEntity(builder.tileEntity),
-		onSpawn(builder.onSpawn), onBreak(builder.onBreak),
-		onTileUpdate(builder.onTileUpdate), onActivate(builder.onActivate),
-		onWorldTick(builder.onWorldTick),
-		fluidCollision(builder.fluidCollision), traits(builder.traits)
+		id(id),
+		flags(
+			(builder.isSolid ? IS_SOLID : NONE) |
+			(builder.isOpaque ? IS_OPAQUE : NONE) |
+			(builder.isSupportV ? IS_SUPPORT_V : NONE) |
+			(builder.isSupportH ? IS_SUPPORT_H : NONE) |
+			(builder.isReplacable ? IS_REPLACABLE : NONE)),
+		breakableBy(builder.breakableBy),
+		name(name),
+		more(std::make_unique<More>(builder))
 	{}
+
+	bool isSolid() const { return flags & IS_SOLID; }
+	bool isOpaque() const { return flags & IS_OPAQUE; }
+	bool isSupportV() const { return flags & IS_SUPPORT_V; }
+	bool isSupportH() const { return flags & IS_SUPPORT_H; }
+	bool isReplacable() const { return flags & IS_REPLACABLE; }
 };
 
 }

@@ -31,12 +31,12 @@ void breakTreeLeavesIfFloating(Swan::Ctx &ctx, Swan::TilePos pos)
 
 		// If this is a trunk, we've found our trunk!
 		auto &tile = ctx.plane.tiles().get(searchTile.pos);
-		if (dynamic_cast<TreeTrunkTrait *>(tile.traits.get())) {
+		if (dynamic_cast<TreeTrunkTrait *>(tile.more->traits.get())) {
 			foundTrunk = true;
 		}
 
 		// If it's leaves, continue our search
-		else if (dynamic_cast<TreeLeavesTrait *>(tile.traits.get())) {
+		else if (dynamic_cast<TreeLeavesTrait *>(tile.more->traits.get())) {
 			queue.push({searchTile.pos.add(-1, 0), searchTile.dist + 1});
 			queue.push({searchTile.pos.add(1, 0), searchTile.dist + 1});
 			queue.push({searchTile.pos.add(0, 1), searchTile.dist + 1});

@@ -18,7 +18,7 @@ static void collideX(BasicPhysicsBody &phys, WorldPlane &plane)
 	for (int y = firstY; y <= lastY; ++y) {
 		int lx = (int)floor(phys.body.left());
 		Tile &left = plane.tiles().get({lx, y});
-		if (left.isSolid) {
+		if (left.isSolid()) {
 			phys.body.pos.x = (float)lx + 1.0;
 			collided = true;
 			break;
@@ -26,7 +26,7 @@ static void collideX(BasicPhysicsBody &phys, WorldPlane &plane)
 
 		int rx = (int)floor(phys.body.right());
 		Tile &right = plane.tiles().get({rx, y});
-		if (right.isSolid) {
+		if (right.isSolid()) {
 			phys.body.pos.x = (float)rx - phys.body.size.x;
 			collided = true;
 			break;
@@ -52,7 +52,7 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane)
 	for (int x = firstX; x <= lastX; ++x) {
 		int by = (int)floor(phys.body.bottom() + 0.04);
 		Tile &bottom = plane.tiles().get({x, by});
-		if (bottom.isSolid) {
+		if (bottom.isSolid()) {
 			phys.body.pos.y = (float)by - phys.body.size.y;
 			collided = true;
 			phys.onGround = true;
@@ -61,7 +61,7 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane)
 
 		int ty = (int)floor(phys.body.top() + 0.01);
 		Tile &top = plane.tiles().get({x, ty});
-		if (top.isSolid) {
+		if (top.isSolid()) {
 			phys.body.pos.y = (float)ty + 1.0;
 			collided = true;
 			break;
@@ -134,14 +134,14 @@ void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 
 	// Teleport out of the center of a block, if possible
 	auto tpos = body.center().as<int>();
-	if (ctx.plane.tiles().get(tpos).isSolid) {
-		if (!ctx.plane.tiles().get(tpos.add(0, -1)).isSolid) {
+	if (ctx.plane.tiles().get(tpos).isSolid()) {
+		if (!(ctx.plane.tiles().get(tpos.add(0, -1)).isSolid())) {
 			body.setBottom(tpos.y - 0.01);
-		} else if (!ctx.plane.tiles().get(tpos.add(-1, 0)).isSolid) {
+		} else if (!(ctx.plane.tiles().get(tpos.add(-1, 0)).isSolid())) {
 			body.setRight(tpos.x - 0.01);
-		} else if (!ctx.plane.tiles().get(tpos.add(1, 0)).isSolid) {
+		} else if (!(ctx.plane.tiles().get(tpos.add(1, 0)).isSolid())) {
 			body.setLeft(tpos.x + 1.01);
-		} else if (!ctx.plane.tiles().get(tpos.add(0, -1)).isSolid) {
+		} else if (!(ctx.plane.tiles().get(tpos.add(0, -1)).isSolid())) {
 			body.setTop(tpos.y + 1.01);
 		} else {
 			body.setBottom(tpos.y - 0.01);

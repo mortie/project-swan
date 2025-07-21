@@ -39,14 +39,14 @@ constexpr std::array<const char *, 16> DIRECTION_LUT = []() {
 static void onPipeUpdate(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	auto &tile = ctx.plane.tiles().get(pos);
-	auto &prefix = dynamic_cast<PipeTileTrait *>(tile.traits.get())->prefix;
+	auto &prefix = dynamic_cast<PipeTileTrait *>(tile.more->traits.get())->prefix;
 
 	auto check = [&](Swan::Direction dir) {
 		auto checkPos = pos + dir;
 
-		auto tile = ctx.plane.tiles().get(checkPos);
+		auto &tile = ctx.plane.tiles().get(checkPos);
 		auto *connectible = dynamic_cast<PipeConnectibleTileTrait *>(
-			tile.traits.get());
+			tile.more->traits.get());
 		if (
 				connectible &&
 				connectible->pipeConnectDirections.has(dir.opposite())) {

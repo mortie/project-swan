@@ -244,19 +244,73 @@ auto callEnd(T &v)
 	return end(v);
 }
 
-struct CowStr {
-	CowStr(): v(std::string_view("")) {}
-	CowStr(std::string s): v(std::move(s)) {}
-	CowStr(std::string_view s): v(s) {}
+class ROString {
+public:
+	ROString() = default;
+	ROString(ROString &&other)
+	{
+		str_ = other.str_;
+		other.str_ = nullptr;
+	}
 
-	std::variant<std::string, std::string_view> v;
+	ROString(std::string_view str)
+	{
+		str_ = new char[str.size() + 1];
+		memcpy(str_, str.data(), str.size());
+		str_[str.size()] = '\0';
+	}
+
+	template<typename T>
+	ROString(const std::optional<T> &v)
+	{
+		if (v) {
+			str_ = new char[v->size() + 1];
+			memcpy(str_, v->data(), v->size());
+			str_[v->size()] = '\0';
+		}
+	}
+
+	~ROString()
+	{
+		delete[] str_;
+	}
+
+	std::string_view str() const { return str_; }
+	const char *data() const { return str_; }
+	const char *c_str() const { return str_; }
+	size_t size() const { return str().size(); }
+
+	std::string string() const { return std::string(str()); }
+
+	operator std::string_view() const { return str_; }
+	operator bool() const { return str_; }
+
+	friend bool operator==(const ROString &a, std::string_view b)
+	{
+		return a.str() == b;
+	}
+
+	friend bool operator==(const ROString &a, const ROString &b)
+	{
+		return a.str() == b.str();
+	}
+
+private:
+	char *str_ = nullptr;
+};
+
+class CowStr {
+public:
+	CowStr(): v_(std::string_view("")) {}
+	CowStr(std::string s): v_(std::move(s)) {}
+	CowStr(std::string_view s): v_(s) {}
 
 	std::string_view str() const
 	{
-		if (auto *s = std::get_if<std::string>(&v); s) {
+		if (auto *s = std::get_if<std::string>(&v_); s) {
 			return *s;
 		}
-		if (auto *s = std::get_if<std::string_view>(&v); s) {
+		if (auto *s = std::get_if<std::string_view>(&v_); s) {
 			return *s;
 		}
 		abort();
@@ -265,6 +319,9 @@ struct CowStr {
 	operator std::string_view() const { return str(); }
 	const char *data() const { return str().data(); }
 	size_t size() const { return str().size(); }
+
+private:
+	std::variant<std::string, std::string_view> v_;
 };
 
 template<typename T>

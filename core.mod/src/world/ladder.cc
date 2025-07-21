@@ -15,10 +15,10 @@ struct RopeLadderTileTrait: LadderTileTrait {
 
 static bool spawnRopeLadderAnchor(Swan::Ctx &ctx, Swan::TilePos pos)
 {
-	if (ctx.plane.tiles().get(pos.add(-1, 0)).isSupportH) {
+	if (ctx.plane.tiles().get(pos.add(-1, 0)).isSupportH()) {
 		ctx.plane.tiles().set(pos, "core::rope-ladder::anchor::left");
 	}
-	else if (ctx.plane.tiles().get(pos.add(1, 0)).isSupportH) {
+	else if (ctx.plane.tiles().get(pos.add(1, 0)).isSupportH()) {
 		ctx.plane.tiles().set(pos, "core::rope-ladder::anchor::right");
 	}
 	else {
@@ -28,7 +28,7 @@ static bool spawnRopeLadderAnchor(Swan::Ctx &ctx, Swan::TilePos pos)
 	Swan::TilePos below = pos.add(0, 1);
 	while (true) {
 		auto &tile = ctx.plane.tiles().get(below);
-		if (!dynamic_cast<RopeLadderTileTrait *>(tile.traits.get())) {
+		if (!dynamic_cast<RopeLadderTileTrait *>(tile.more->traits.get())) {
 			break;
 		}
 
@@ -42,7 +42,7 @@ static bool spawnRopeLadderAnchor(Swan::Ctx &ctx, Swan::TilePos pos)
 static void cascadeRopeLadder(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	auto &tile = ctx.plane.tiles().get(pos);
-	auto *ropeLadderTrait = dynamic_cast<RopeLadderTileTrait *>(tile.traits.get());
+	auto *ropeLadderTrait = dynamic_cast<RopeLadderTileTrait *>(tile.more->traits.get());
 
 	if (!ropeLadderTrait) {
 		Swan::warn
@@ -62,7 +62,7 @@ static void cascadeRopeLadder(Swan::Ctx &ctx, Swan::TilePos pos)
 			adjacentPos = pos.add(1, 0);
 		}
 
-		if (!ctx.plane.tiles().get(adjacentPos).isSupportH) {
+		if (!ctx.plane.tiles().get(adjacentPos).isSupportH()) {
 			breakTileAndDropItem(ctx, pos);
 			return;
 		}
@@ -75,7 +75,7 @@ static void cascadeRopeLadder(Swan::Ctx &ctx, Swan::TilePos pos)
 			abovePos = abovePos.add(0, -1);
 
 			auto &aboveTile = ctx.plane.tiles().get(abovePos);
-			auto *rlt = dynamic_cast<RopeLadderTileTrait *>(aboveTile.traits.get());
+			auto *rlt = dynamic_cast<RopeLadderTileTrait *>(aboveTile.more->traits.get());
 			if (!rlt) {
 				break;
 			}

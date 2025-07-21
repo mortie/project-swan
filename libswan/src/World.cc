@@ -133,11 +133,11 @@ void World::buildResources()
 
 	// Set attributes for all built-in tiles
 	for (auto &tile: tiles_) {
-		tile.stepSounds[0] = fallbackSound;
-		tile.stepSounds[1] = fallbackSound;
-		tile.placeSound = fallbackSound;
-		tile.breakSound = fallbackSound;
-		tile.particles = fallbackTileParticles;
+		tile.more->stepSounds[0] = fallbackSound;
+		tile.more->stepSounds[1] = fallbackSound;
+		tile.more->placeSound = fallbackSound;
+		tile.more->breakSound = fallbackSound;
+		tile.more->particles = fallbackTileParticles;
 	}
 
 	// Count number of tiles.
@@ -164,54 +164,55 @@ void World::buildResources()
 			tiles_.push_back(Tile(tileId, tileName, std::move(tileBuilder)));
 			auto &tile = tiles_.back();
 
-			if (!tile.fluidCollision && tile.isSolid) {
-				tile.fluidCollision = solidFluidCollision;
+			if (!tile.more->fluidCollision && (tile.isSolid())) {
+				tile.more->fluidCollision = solidFluidCollision;
 			}
 
 			float yOffset = 0;
 			if (metaIt != tileMeta.end()) {
-				tile.particles = metaIt->second.particles;
+				tile.more->particles = metaIt->second.particles;
 				yOffset = metaIt->second.yOffset;
 			} else {
-				tile.particles = fallbackTileParticles;
+				tile.more->particles = fallbackTileParticles;
 			}
 			builder.addTile(tileId, tileBuilder.image);
 
 			if (tileBuilder.placeSound) {
-				tile.placeSound = getSound(tileBuilder.placeSound.value());
+				tile.more->placeSound = getSound(tileBuilder.placeSound.value());
 			}
 			else {
-				tile.placeSound = thudSound;
+				tile.more->placeSound = thudSound;
 			}
 
 			if (tileBuilder.breakSound) {
-				tile.breakSound = getSound(tileBuilder.breakSound.value());
+				tile.more->breakSound = getSound(tileBuilder.breakSound.value());
 			}
 			else {
-				tile.breakSound = tile.placeSound;
+				tile.more->breakSound = tile.more->placeSound;
 			}
 
 			if (tileBuilder.stepSound) {
 				auto &s = tileBuilder.stepSound.value();
-				tile.stepSounds[0] = getSound(cat(s, "1"));
-				tile.stepSounds[1] = getSound(cat(s, "2"));
+				tile.more->stepSounds[0] = getSound(cat(s, "1"));
+				tile.more->stepSounds[1] = getSound(cat(s, "2"));
 			}
-			else if (tile.isSolid) {
-				tile.stepSounds[0] = thudSound;
-				tile.stepSounds[1] = thudSound;
+			else if (tile.isSolid()) {
+				tile.more->stepSounds[0] = thudSound;
+				tile.more->stepSounds[1] = thudSound;
 			}
 			else {
-				tile.stepSounds[0] = fallbackSound;
-				tile.stepSounds[1] = fallbackSound;
+				tile.more->stepSounds[0] = fallbackSound;
+				tile.more->stepSounds[1] = fallbackSound;
 			}
 
 			/*
 			 * Create item representing the tile
 			 */
 
-			auto &item = items_[tile.name] = Item(tile.id, tile.name, {
+			auto name = tile.name.string();
+			auto &item = items_[name] = Item(tile.id, name, {
 				.name = "",
-				.lightLevel = tile.lightLevel,
+				.lightLevel = tile.more->lightLevel,
 			});
 			item.displayName = mod.lang("items", tileBuilder.name);
 			item.tile = &tile;
@@ -351,7 +352,7 @@ void World::buildResources()
 			std::string name = cat(mod.name(), "::", tileBuilder.name);
 			Tile &tile = tiles_[tilesMap_[name]];
 			if (tileBuilder.droppedItem) {
-				tile.droppedItem = &getItem(tileBuilder.droppedItem.value());
+				tile.more->droppedItem = &getItem(tileBuilder.droppedItem.value());
 			}
 		}
 	}
@@ -599,7 +600,7 @@ void World::serialize(proto::World::Builder w)
 {
 	auto tilesBuilder = w.initTiles(tiles_.size());
 	for (size_t i = 0; i < tiles_.size(); ++i) {
-		tilesBuilder.set(i, tiles_[i].name);
+		tilesBuilder.set(i, tiles_[i].name.string());
 	}
 
 	auto planesBuilder = w.initPlanes(planes_.size());

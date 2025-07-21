@@ -18,8 +18,8 @@ void TileSystemImpl::setID(TilePos pos, Tile::ID id)
 	if (setIDWithoutUpdate(pos, id)) {
 		// Update the new tile immediately
 		auto &tile = get(pos);
-		if (tile.onTileUpdate) {
-			tile.onTileUpdate(plane_.getContext(), pos);
+		if (tile.more->onTileUpdate) {
+			tile.more->onTileUpdate(plane_.getContext(), pos);
 		}
 
 		// Schedule surrounding tile updates for later
@@ -45,53 +45,55 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 	Tile &oldTile = plane_.world_->getTileByID(old);
 
 	bool keepTileEntity = false;
-	if (oldTile.tileEntity && oldTile.tileEntity == newTile.tileEntity) {
+	if (
+			oldTile.more->tileEntity &&
+			oldTile.more->tileEntity == newTile.more->tileEntity) {
 		auto te = plane_.entities().getTileEntity(pos);
 		if (te) {
 			keepTileEntity = te.trait<TileEntityTrait>()->keep;
 		}
 	}
 
-	if (oldTile.onBreak) {
-		oldTile.onBreak(plane_.getContext(), pos);
+	if (oldTile.more->onBreak) {
+		oldTile.more->onBreak(plane_.getContext(), pos);
 	}
 
-	if (oldTile.tileEntity && !keepTileEntity) {
+	if (oldTile.more->tileEntity && !keepTileEntity) {
 		plane_.entities().despawnTileEntity(pos);
 	}
 
 	chunk.setTileID(rp, id);
 
-	if (!oldTile.isOpaque && newTile.isOpaque) {
+	if (!oldTile.isOpaque() && newTile.isOpaque()) {
 		plane_.lights().addSolidBlock(pos);
 	}
-	else if (oldTile.isOpaque && !newTile.isOpaque) {
+	else if (oldTile.isOpaque() && !newTile.isOpaque()) {
 		plane_.lights().removeSolidBlock(pos);
 	}
 
-	if (newTile.lightLevel != oldTile.lightLevel) {
-		if (oldTile.lightLevel > 0) {
-			plane_.lights().removeLight(pos, oldTile.lightLevel);
+	if (newTile.more->lightLevel != oldTile.more->lightLevel) {
+		if (oldTile.more->lightLevel > 0) {
+			plane_.lights().removeLight(pos, oldTile.more->lightLevel);
 		}
 
-		if (newTile.lightLevel > 0) {
-			plane_.lights().addLight(pos, newTile.lightLevel);
+		if (newTile.more->lightLevel > 0) {
+			plane_.lights().addLight(pos, newTile.more->lightLevel);
 		}
 	}
 
-	if (oldTile.fluidCollision && !newTile.fluidCollision) {
+	if (oldTile.more->fluidCollision && !newTile.more->fluidCollision) {
 		plane_.fluids().clearSolid(pos);
 	}
-	else if (newTile.fluidCollision) {
-		plane_.fluids().setSolid(pos, *newTile.fluidCollision);
+	else if (newTile.more->fluidCollision) {
+		plane_.fluids().setSolid(pos, *newTile.more->fluidCollision);
 	}
 
-	if (newTile.onSpawn) {
-		newTile.onSpawn(plane_.getContext(), pos);
+	if (newTile.more->onSpawn) {
+		newTile.more->onSpawn(plane_.getContext(), pos);
 	}
 
-	if (newTile.tileEntity && !keepTileEntity) {
-		plane_.entities().spawnTileEntity(pos, *newTile.tileEntity);
+	if (newTile.more->tileEntity && !keepTileEntity) {
+		plane_.entities().spawnTileEntity(pos, newTile.more->tileEntity);
 	}
 
 	return true;
@@ -128,8 +130,8 @@ bool TileSystemImpl::breakTile(TilePos pos)
 	Tile &tile = plane_.world_->getTileByID(id);
 	spawnTileParticles(pos, tile);
 
-	if (tile.breakSound) {
-		plane_.world_->game_->playSound(tile.breakSound, pos);
+	if (tile.more->breakSound) {
+		plane_.world_->game_->playSound(tile.more->breakSound, pos);
 	}
 	else {
 		plane_.world_->game_->playSound(
@@ -149,7 +151,7 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 	Tile::ID old = chunk.getTileID(rp);
 	auto &oldTile = plane_.world_->getTileByID(old);
 
-	if (!oldTile.isReplacable) {
+	if (!oldTile.isReplacable()) {
 		return false;
 	}
 
@@ -163,8 +165,8 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 	// and revert if it returns false
 	chunk.setTileID(rp, id);
 	if (
-		newTileBeforeSpawn.onSpawn &&
-		!newTileBeforeSpawn.onSpawn(plane_.getContext(), pos)) {
+		newTileBeforeSpawn.more->onSpawn &&
+		!newTileBeforeSpawn.more->onSpawn(plane_.getContext(), pos)) {
 		chunk.setTileID(rp, old);
 		return false;
 	}
@@ -173,51 +175,51 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 	id = chunk.getTileID(rp);
 	auto &newTile = plane_.world_->getTileByID(id);
 
-	plane_.world_->game_->playSound(oldTile.breakSound, pos);
-	plane_.world_->game_->playSound(newTile.placeSound, pos);
+	plane_.world_->game_->playSound(oldTile.more->breakSound, pos);
+	plane_.world_->game_->playSound(newTile.more->placeSound, pos);
 
 	// We didn't run the onBreak and despawn tile entities yet,
 	// so let's do that
 	chunk.setTileID(rp, old);
-	if (oldTile.onBreak) {
-		oldTile.onBreak(plane_.getContext(), pos);
+	if (oldTile.more->onBreak) {
+		oldTile.more->onBreak(plane_.getContext(), pos);
 	}
-	if (oldTile.tileEntity) {
+	if (oldTile.more->tileEntity) {
 		plane_.entities().despawnTileEntity(pos);
 	}
 	chunk.setTileID(rp, id);
 
-	if (!oldTile.isOpaque && newTile.isOpaque) {
+	if (!oldTile.isOpaque() && newTile.isOpaque()) {
 		plane_.lights().addSolidBlock(pos);
 	}
-	else if (oldTile.isOpaque && !newTile.isOpaque) {
+	else if (oldTile.isOpaque() && !newTile.isOpaque()) {
 		plane_.lights().removeSolidBlock(pos);
 	}
 
-	if (newTile.lightLevel != oldTile.lightLevel) {
-		if (oldTile.lightLevel > 0) {
-			plane_.lights().removeLight(pos, oldTile.lightLevel);
+	if (newTile.more->lightLevel != oldTile.more->lightLevel) {
+		if (oldTile.more->lightLevel > 0) {
+			plane_.lights().removeLight(pos, oldTile.more->lightLevel);
 		}
 
-		if (newTile.lightLevel > 0) {
-			plane_.lights().addLight(pos, newTile.lightLevel);
+		if (newTile.more->lightLevel > 0) {
+			plane_.lights().addLight(pos, newTile.more->lightLevel);
 		}
 	}
 
-	if (oldTile.fluidCollision && !newTile.fluidCollision) {
+	if (oldTile.more->fluidCollision && !newTile.more->fluidCollision) {
 		plane_.fluids().clearSolid(pos);
 	}
-	else if (newTile.fluidCollision) {
-		plane_.fluids().setSolid(pos, *newTile.fluidCollision);
+	else if (newTile.more->fluidCollision) {
+		plane_.fluids().setSolid(pos, *newTile.more->fluidCollision);
 	}
 
-	if (newTile.tileEntity) {
-		plane_.entities().spawnTileEntity(pos, newTile.tileEntity.value());
+	if (newTile.more->tileEntity) {
+		plane_.entities().spawnTileEntity(pos, newTile.more->tileEntity);
 	}
 
 	// Run a tile update immediately
-	if (newTile.onTileUpdate) {
-		newTile.onTileUpdate(plane_.getContext(), pos);
+	if (newTile.more->onTileUpdate) {
+		newTile.more->onTileUpdate(plane_.getContext(), pos);
 	}
 
 	// Schedule surrounding tile updates for later
@@ -243,7 +245,7 @@ Raycast TileSystemImpl::raycast(
 
 	auto isFaceValid = [&](TilePos tp, Vec2i face) {
 		tp += face;
-		return !get(tp).isSolid;
+		return !get(tp).isSolid();
 	};
 
 	while (true) {
@@ -264,7 +266,7 @@ Raycast TileSystemImpl::raycast(
 		prevTP = tp;
 
 		tile = &get(tp);
-		if (!tile->isSolid) {
+		if (!tile->isSolid()) {
 			continue;
 		}
 
@@ -316,7 +318,7 @@ void TileSystemImpl::spawnTileParticles(TilePos pos, const Tile &tile)
 					(randfloat() - 0.5f) * 2.0f,
 					-randfloat() * 2.0f,
 				},
-				.color = tile.particles->particles[y][x],
+				.color = tile.more->particles->particles[y][x],
 				.lifetime = (randfloat() * 0.5f) + 0.1f,
 			});
 		}
@@ -333,8 +335,8 @@ void TileSystemImpl::endTick()
 	auto ctx = plane_.getContext();
 	for (auto &pos: scheduledUpdatesB_) {
 		auto &tile = get(pos);
-		if (tile.onTileUpdate) {
-			tile.onTileUpdate(ctx, pos);
+		if (tile.more->onTileUpdate) {
+			tile.more->onTileUpdate(ctx, pos);
 		}
 	}
 

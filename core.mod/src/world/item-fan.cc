@@ -14,11 +14,11 @@ static void updateItemFan(Swan::Ctx &ctx, Swan::TilePos pos)
 
 	auto &tile = ctx.plane.tiles().get(pos);
 
-	if (tile.name.ends_with("::left") && hasLeft) {
+	if (tile.name.str().ends_with("::left") && hasLeft) {
 		return;
 	}
 
-	if (tile.name.ends_with("::right") && hasRight) {
+	if (tile.name.str().ends_with("::right") && hasRight) {
 		return;
 	}
 

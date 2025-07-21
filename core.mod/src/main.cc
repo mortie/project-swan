@@ -39,7 +39,7 @@ public:
 			.placeSound = "core::place/dirt",
 			.droppedItem = "core::dirt",
 			.onWorldTick = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
-				if (ctx.plane.tiles().get(pos.add(0, -1)).isSolid) {
+				if (ctx.plane.tiles().get(pos.add(0, -1)).isSolid()) {
 					return;
 				}
 
@@ -87,7 +87,7 @@ public:
 			.placeSound = "core::place/dirt",
 			.droppedItem = "core::dirt",
 			.onTileUpdate = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
-				if (ctx.plane.tiles().get(pos.add(0, -1)).isOpaque) {
+				if (ctx.plane.tiles().get(pos.add(0, -1)).isOpaque()) {
 					ctx.plane.tiles().set(pos, "core::dirt");
 				}
 			},

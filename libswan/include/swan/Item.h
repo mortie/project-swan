@@ -45,11 +45,15 @@ struct Item {
 	void (*onActivate)(Ctx &ctx, ActivateMeta meta) = nullptr;
 
 	Item() = default;
+	Item(const Item &) = delete;
+	Item(Item &&) = default;
 	Item(Tile::ID id, std::string name, const Builder &builder):
 		id(id), name(name), maxStack(builder.maxStack), tile(nullptr),
 		tool(builder.tool), lightLevel(builder.lightLevel),
 		onActivate(builder.onActivate)
 	{}
+
+	Item &operator=(Item &&) = default;
 };
 
 }

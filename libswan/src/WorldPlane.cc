@@ -168,12 +168,12 @@ void WorldPlane::update(float dt)
 				Tile::ID id = chunk->getTileID({x, y});
 				Tile &tile = world_->getTileByID(id);
 
-				if (tile.isSolid) {
+				if (tile.isSolid()) {
 					chunk->setFluidID({x, y}, World::SOLID_FLUID_ID);
 				}
 
-				if (tile.onSpawn) {
-					tile.onSpawn(getContext(), base + Vec2i{x, y});
+				if (tile.more->onSpawn) {
+					tile.more->onSpawn(getContext(), base + Vec2i{x, y});
 				}
 			}
 		}
@@ -226,11 +226,11 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 		for (size_t i = 0; i < 8; ++i) {
 			size_t randomPos = size_t(random() % (CHUNK_WIDTH * CHUNK_HEIGHT));
 			Tile &randomTile = world_->getTileByID(chunk->getTileData()[randomPos]);
-			if (randomTile.onWorldTick) {
+			if (randomTile.more->onWorldTick) {
 				auto pos = chunk->pos().scale(CHUNK_WIDTH, CHUNK_HEIGHT);
 				pos.x += randomPos % CHUNK_WIDTH;
 				pos.y += randomPos / CHUNK_WIDTH;
-				randomTile.onWorldTick(getContext(), pos);
+				randomTile.more->onWorldTick(getContext(), pos);
 
 				if (world_->game_->debug_.drawWorldTicks) {
 					world_->game_->renderer_.drawRect({

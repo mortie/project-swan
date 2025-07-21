@@ -64,11 +64,11 @@ NewLightChunk LightSystemImpl::computeLightChunk(const Chunk &chunk)
 		for (int x = 0; x < CHUNK_WIDTH; ++x) {
 			Tile::ID id = chunk.getTileID({x, y});
 			Tile &tile = plane_.world_->getTileByID(id);
-			if (tile.isOpaque) {
+			if (tile.isOpaque()) {
 				lc.blocks[y * CHUNK_HEIGHT + x] = true;
 			}
-			if (tile.lightLevel > 0) {
-				lc.lightSources[{x, y}] = tile.lightLevel;
+			if (tile.more->lightLevel > 0) {
+				lc.lightSources[{x, y}] = tile.more->lightLevel;
 			}
 		}
 	}

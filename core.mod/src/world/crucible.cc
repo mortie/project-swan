@@ -8,16 +8,16 @@ namespace CoreMod {
 static bool isSupported(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	auto &below = ctx.plane.tiles().get(pos.add(0, 1));
-	if (below.isSupportV) {
+	if (below.isSupportV()) {
 		return true;
 	}
 
 	auto &below2 = ctx.plane.tiles().get(pos.add(0, 2));
-	if (!below2.isSolid) {
+	if (!below2.isSolid()) {
 		return false;
 	}
 
-	if (below.temperature > 0 && !below.isOpaque) {
+	if (below.more->temperature > 0 && !below.isOpaque()) {
 		return true;
 	}
 
@@ -44,9 +44,9 @@ void registerCrucible(Swan::Mod &mod)
 
 			auto ent = ctx.plane.entities().getTileEntity(pos).as<CrucibleTileEntity>();
 			if (ent) {
-				auto below = ctx.plane.tiles().get(pos.add(0, 1));
-				ent->drawSupports_ = !below.isSupportV;
-				ent->targetTemperature_ = below.temperature;
+				auto &below = ctx.plane.tiles().get(pos.add(0, 1));
+				ent->drawSupports_ = !below.isSupportV();
+				ent->targetTemperature_ = below.more->temperature;
 			}
 		},
 		.onActivate = +[](Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta) {

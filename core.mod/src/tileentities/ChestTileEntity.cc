@@ -7,8 +7,8 @@ void ChestTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 {
 	// Close the chest on load if it's open
 	auto &tile = ctx.plane.tiles().get(tileEntity_.pos);
-	if (tile.name.ends_with("::open")) {
-		auto newName = tile.name.substr(0, tile.name.length() - 6);
+	if (tile.name.str().ends_with("::open")) {
+		auto newName = tile.name.str().substr(0, tile.name.size() - 6);
 		ctx.plane.tiles().set(tileEntity_.pos, newName);
 	}
 

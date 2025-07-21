@@ -355,9 +355,9 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 	}
 	else if (ctx.game.wasKeyPressed(GLFW_KEY_P)) {
 		auto &tile = ctx.plane.tiles().get(breakPos_);
-		if (tile.onWorldTick) {
+		if (tile.more->onWorldTick) {
 			Swan::info << "World ticking " << tile.name << " at " << breakPos_;
-			tile.onWorldTick(ctx, breakPos_);
+			tile.more->onWorldTick(ctx, breakPos_);
 		}
 	}
 	else if (ctx.game.wasKeyPressed(GLFW_KEY_G)) {
@@ -613,7 +613,7 @@ void PlayerEntity::onRightClick(Swan::Ctx &ctx)
 
 	// First priority: activate the hovered tile if it can be activated
 	Swan::Tile &hoveredTile = ctx.plane.tiles().get(breakPos_);
-	if (hoveredTile.onActivate) {
+	if (hoveredTile.more->onActivate) {
 		auto &stack = [&]() -> Swan::ItemStack & {
 			if (!heldStack_.empty()) {
 				return heldStack_;
@@ -625,7 +625,7 @@ void PlayerEntity::onRightClick(Swan::Ctx &ctx)
 			.activator = ctx.plane.entities().current(),
 			.stack = stack,
 		};
-		hoveredTile.onActivate(ctx, breakPos_, meta);
+		hoveredTile.more->onActivate(ctx, breakPos_, meta);
 		interactTimer_ = 0.2;
 		return;
 	}
@@ -659,7 +659,7 @@ void PlayerEntity::onRightClick(Swan::Ctx &ctx)
 	}
 
 	if (
-		item.tile->isSolid &&
+		item.tile->isSolid() &&
 		!ctx.plane.entities().getInTile(placePos_).empty()) {
 		return;
 	}
@@ -800,8 +800,8 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	}
 
 	bool inLadder =
-		dynamic_cast<LadderTileTrait *>(midTile.traits.get()) ||
-		dynamic_cast<LadderTileTrait *>(topTile.traits.get());
+		dynamic_cast<LadderTileTrait *>(midTile.more->traits.get()) ||
+		dynamic_cast<LadderTileTrait *>(topTile.more->traits.get());
 
 	auto fluidCenterPos = Swan::Vec2{
 		physicsBody_.body.midX(),
@@ -1023,14 +1023,14 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	if (state_ == State::RUNNING) {
 		stepTimer_ -= dt;
 		if (stepTimer_ <= 0) {
-			auto *sound = belowTile.stepSounds[stepIndex_];
+			auto *sound = belowTile.more->stepSounds[stepIndex_];
 			ctx.game.playSound(sound, 0.2);
 			stepIndex_ = (stepIndex_ + 1) % 2;
 			stepTimer_ += (sprinting_ ? 0.28 : 0.4) / speedMult;
 		}
 	}
 	else if (state_ == State::LANDING && oldState != State::LANDING) {
-		auto *sound = belowTile.stepSounds[stepIndex_];
+		auto *sound = belowTile.more->stepSounds[stepIndex_];
 		stepIndex_ = (stepIndex_ + 1) % 2;
 		ctx.game.playSound(sound, 0.2);
 		stepTimer_ = 0.2;
