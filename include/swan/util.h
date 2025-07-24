@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <string.h>
 #include <filesystem>
+#include <optional>
 
 namespace Swan {
 
