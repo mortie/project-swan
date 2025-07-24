@@ -13,6 +13,13 @@ cmake = import('cmake')
 shaderpp_prog = find_program('./scripts/shaderpp.py')
 capnp_prog = find_program('capnp')
 
+if host_machine.system() == 'darwin'
+  origin_rpath = '@loader_path'
+else
+  origin_rpath = '$ORIGIN'
+endif
+bin_rpath = origin_rpath + '/../' + get_option('libdir')
+
 add_project_arguments('-Wno-unused-parameter', language: 'cpp')
 if meson.get_compiler('cpp').get_id() == 'clang'
   add_global_arguments('-Werror=reorder-init-list', language : 'cpp')
@@ -83,7 +90,7 @@ executable(
   'src/build.cc',
   'src/swan.cc',
   install: true,
-  install_rpath: get_option('libdir'),
+  install_rpath: bin_rpath,
   dependencies: [
     libswan, libcygnet, common, libimgui, libgl, libglfw3, libbackwardcpp,
     libcpptoml, libsha1,
@@ -95,7 +102,7 @@ executable(
   'src/build.cc',
   'src/swan-build.cc',
   install: true,
-  install_rpath: get_option('libdir'),
+  install_rpath: bin_rpath,
   dependencies: [
     libcpptoml,
     libsha1,

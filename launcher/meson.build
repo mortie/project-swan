@@ -9,7 +9,7 @@ if libwxwidgets.found()
     'src/system.cc',
     'src/worlds.cc',
     install: true,
-    install_rpath: get_option('libdir'),
+    install_rpath: bin_rpath,
     dependencies: [
       libwxwidgets,
       libcpptoml,

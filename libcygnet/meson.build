@@ -29,8 +29,8 @@ libcygnet = declare_dependency(
       common, libthreads, libgl, libglfw3, libstb_truetype,
     ] + maybe_libtracy,
     install: true,
-    install_rpath: get_option('libdir'),
-    include_directories: 'include/cygnet',
+    install_rpath: origin_rpath,
+    include_directories: ['include/cygnet', 'src']
   ),
 )
 install_subdir(

@@ -55,7 +55,7 @@ libswan = declare_dependency(
     ] + maybe_libtracy,
     cpp_args: libswan_cflags,
     install: true,
-    install_rpath: get_option('libdir'),
+    install_rpath: origin_rpath,
     include_directories: 'include/swan',
   ),
 )

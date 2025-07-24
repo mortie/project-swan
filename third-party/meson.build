@@ -5,7 +5,7 @@ libfmt = declare_dependency(
     'fmt/src/os.cc',
     include_directories: 'fmt/include',
     install: true,
-    install_rpath: get_option('libdir'),
+    install_rpath: origin_rpath,
   ),
 )
 
@@ -23,7 +23,7 @@ libimgui = declare_dependency(
     cpp_args: ['-Wno-sign-compare', '-Wno-deprecated-enum-enum-conversion'],
     dependencies: [libglfw3],
     install: true,
-    install_rpath: get_option('libdir'),
+    install_rpath: origin_rpath,
   ),
 )
 install_headers(
@@ -58,7 +58,7 @@ libstb_truetype = declare_dependency(
     'stb-support/stb_truetype.cc',
     include_directories: '.',
     install: true,
-    install_rpath: get_option('libdir'),
+    install_rpath: origin_rpath,
   ),
 )
 
@@ -68,7 +68,7 @@ libstb_image = declare_dependency(
     'stb-support/stb_image.cc',
     include_directories: '.',
     install: true,
-    install_rpath: get_option('libdir'),
+    install_rpath: origin_rpath,
   ),
 )
 
@@ -77,7 +77,7 @@ libstb_vorbis = declare_dependency(
   link_with: shared_library('stb_vorbis',
     'stb-support/stb_vorbis.cc',
     install: true,
-    install_rpath: get_option('libdir'),
+    install_rpath: origin_rpath,
   ),
 )
 
@@ -86,7 +86,7 @@ libsha1 = declare_dependency(
   link_with: shared_library('libsha1',
     'sha1/sha1.cpp',
     install: true,
-    install_rpath: get_option('libdir'),
+    install_rpath: origin_rpath,
   ),
 )
 
