@@ -6,15 +6,15 @@ namespace CoreMod {
 
 TreeDef::TreeDef(Swan::World &world, uint32_t seed):
 	seed_(seed),
-	tiles_(world),
-	crowns_({
-		{world, TreeCrown::map, TreeCrown::variant1},
-		{world, TreeCrown::map, TreeCrown::variant2},
-		{world, TreeCrown::map, TreeCrown::variant3},
-		{world, TreeCrown::map, TreeCrown::variant4},
-		{world, TreeCrown::map, TreeCrown::variant5},
-	})
-{}
+	tiles_(world)
+{
+	crowns_.reserve(5);
+	crowns_.emplace_back(world, TreeCrown::map, TreeCrown::variant1);
+	crowns_.emplace_back(world, TreeCrown::map, TreeCrown::variant2);
+	crowns_.emplace_back(world, TreeCrown::map, TreeCrown::variant3);
+	crowns_.emplace_back(world, TreeCrown::map, TreeCrown::variant4);
+	crowns_.emplace_back(world, TreeCrown::map, TreeCrown::variant5);
+}
 
 void TreeDef::spawnTree(
 	Swan::TilePos pos, Area &area)

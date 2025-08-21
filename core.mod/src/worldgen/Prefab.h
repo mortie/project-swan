@@ -8,7 +8,6 @@
 namespace CoreMod {
 
 struct Prefab {
-public:
 	struct Mapping {
 		char symbol;
 		const char *name;
@@ -22,6 +21,7 @@ public:
 	std::unique_ptr<Swan::Tile::ID[]> tiles;
 
 	Prefab(Swan::World &world, Map map, Data data);
+	Prefab(Prefab &&) = default;
 };
 
 }

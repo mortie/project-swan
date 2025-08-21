@@ -3,8 +3,8 @@
 #include "../StructureDef.h"
 #include "../Prefab.h"
 
-#include <array>
 #include <stdint.h>
+#include <vector>
 
 namespace CoreMod {
 
@@ -34,7 +34,7 @@ private:
 
 	uint32_t seed_;
 	Tiles tiles_;
-	std::array<Prefab, 5> crowns_;
+	std::vector<Prefab> crowns_;
 };
 
 }
