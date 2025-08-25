@@ -256,9 +256,11 @@ public:
 
 	ROString(std::string_view str)
 	{
-		str_ = new char[str.size() + 1];
-		memcpy(str_, str.data(), str.size());
-		str_[str.size()] = '\0';
+		if (str != "") {
+			str_ = new char[str.size() + 1];
+			memcpy(str_, str.data(), str.size());
+			str_[str.size()] = '\0';
+		}
 	}
 
 	template<typename T>
@@ -273,7 +275,9 @@ public:
 
 	~ROString()
 	{
-		delete[] str_;
+		if (str_ != EMPTY) {
+			delete[] str_;
+		}
 	}
 
 	std::string_view str() const { return str_; }
@@ -284,7 +288,7 @@ public:
 	std::string string() const { return std::string(str()); }
 
 	operator std::string_view() const { return str_; }
-	operator bool() const { return str_; }
+	operator bool() const { return str_[0]; }
 
 	friend bool operator==(const ROString &a, std::string_view b)
 	{
@@ -297,7 +301,8 @@ public:
 	}
 
 private:
-	char *str_ = nullptr;
+	char *str_ = EMPTY;
+	static inline char *EMPTY = (char *)"";
 };
 
 class CowStr {
