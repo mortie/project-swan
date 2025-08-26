@@ -46,12 +46,29 @@ void AqueductTileEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	}
 
 	float width = endX - startX;
-	float height = content_.level * 0.25;
+	float height = graphicalLevel_ * 0.25;
 	rnd.drawTileParticle({
 		.pos = tileEntity_.pos.as<float>().add(startX, 1 - height - 0.215),
 		.size = {width, height},
 		.color = content_.fluid->fg,
 	});
+}
+
+void AqueductTileEntity::update(Swan::Ctx &ctx, float dt)
+{
+	constexpr float SPEED = 0.5;
+
+	if (graphicalLevel_ < content_.level) {
+		graphicalLevel_ += SPEED * dt;
+		if (graphicalLevel_ > content_.level) {
+			graphicalLevel_ = content_.level;
+		}
+	} else if (graphicalLevel_ > content_.level) {
+		graphicalLevel_ -= SPEED * dt;
+		if (graphicalLevel_ < content_.level) {
+			graphicalLevel_ = content_.level;
+		}
+	}
 }
 
 void AqueductTileEntity::tick(Swan::Ctx &ctx, float dt)
@@ -193,6 +210,7 @@ void AqueductTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
 	velLeft_ = 0;
 	velRight_ = 0;
 	dropAcc_ = 0;
+	graphicalLevel_ = content_.level;
 }
 
 }

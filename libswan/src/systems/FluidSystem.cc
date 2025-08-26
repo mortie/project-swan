@@ -292,9 +292,11 @@ bool FluidSystemImpl::takeFluidFromRow(TilePos pos, int y, Fluid::ID fluid) {
 	}
 
 	for (int offset: offsets) {
-		auto cell = getFluidCell(fpos.add(offset, 0));
+		auto offsetPos = fpos.add(offset, 0);
+		auto cell = getFluidCell(offsetPos);
 		if (cell.id() == fluid) {
 			cell.setAir();
+			triggerUpdateAround(offsetPos);
 			return true;
 		}
 	}
@@ -322,13 +324,15 @@ Fluid &FluidSystemImpl::takeAnyFromRow(TilePos pos, int y) {
 	}
 
 	for (int offset: offsets) {
-		auto cell = getFluidCell(fpos.add(offset, 0));
+		auto offsetPos = fpos.add(offset, 0);
+		auto cell = getFluidCell(offsetPos);
 		if (cell.isAir() || cell.isSolid()) {
 			continue;
 		}
 
 		auto id = cell.id();
 		cell.setAir();
+		triggerUpdateAround(offsetPos);
 		return plane_.world_->getFluidByID(id);
 	}
 

@@ -22,6 +22,7 @@ public:
 	void onTileUpdate(Swan::Ctx &ctx);
 
 	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
+	void update(Swan::Ctx &ctx, float dt) override;
 	void tick(Swan::Ctx &ctx, float dt) override;
 	void tick2(Swan::Ctx &ctx, float dt) override;
 	void drawDebug(Swan::Ctx &ctx) override;
@@ -51,6 +52,10 @@ private:
 	// levelSnapshot_ contains the amount of fluid in the aqueduct after a tick().
 	// It is used by tick2() as the basis for how much fluid to move.
 	float levelSnapshot_;
+
+	// graphicalLevel_ is the aqueduct's level as it appears visually.
+	// It smoothly tracks the actual level.
+	float graphicalLevel_ = 0;
 
 	Swan::EntityRef left_;
 	Swan::EntityRef right_;

@@ -11,6 +11,7 @@
 #include "world/chest.h"
 #include "world/clay.h"
 #include "world/crucible.h"
+#include "world/drain.h"
 #include "world/item-fan.h"
 #include "world/ladder.h"
 #include "world/outcrop.h"
@@ -163,6 +164,7 @@ public:
 		registerChest(*this);
 		registerClay(*this);
 		registerCrucible(*this);
+		registerDrain(*this);
 		registerItemFan(*this);
 		registerRopeLadder(*this);
 		registerOutcrop(*this, "coal");
