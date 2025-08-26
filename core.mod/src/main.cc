@@ -73,7 +73,7 @@ public:
 			.droppedItem = "core::sand",
 			.onTileUpdate = fallIfFloating,
 		});
-		registerTile({
+		registerConnected(*this, {
 			.name = "glass",
 			.image = "core::tiles/glass",
 			.isOpaque = false,

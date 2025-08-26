@@ -16,6 +16,8 @@ void fallIfFloating(Swan::Ctx &ctx, Swan::TilePos pos);
 
 bool healPlayer(Swan::Ctx &ctx, Swan::EntityRef player, int n);
 
+void registerConnected(Swan::Mod &mod, Swan::Tile::Builder builder);
+
 template<int N>
 void foodItem(Swan::Ctx &ctx, Swan::Item::ActivateMeta meta)
 {

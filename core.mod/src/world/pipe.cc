@@ -3,7 +3,6 @@
 
 #include <array>
 #include <swan/swan.h>
-#include <unordered_map>
 
 namespace CoreMod {
 
@@ -14,7 +13,7 @@ struct PipeTileTrait: PipeConnectibleTileTrait {
 	std::string prefix;
 };
 
-constexpr std::array<const char *, 16> DIRECTION_LUT = []() {
+static constexpr std::array<const char *, 16> DIRECTION_LUT = []() {
 	// LEFT | RIGHT | UP | DOWN
 	std::array<const char *, 16> lut;
 	lut[0b0000] = "lone";
