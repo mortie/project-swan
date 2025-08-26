@@ -72,21 +72,21 @@ static constexpr std::array<const char *, 16> CONNECTION_LUT = []() {
 	// LEFT | RIGHT | UP | DOWN
 	std::array<const char *, 16> lut;
 	lut[0b0000] = "";
-	lut[0b1000] = "14";
-	lut[0b0100] = "12";
-	lut[0b0010] = "11";
-	lut[0b0001] = "3";
-	lut[0b1100] = "13";
-	lut[0b0011] = "7";
-	lut[0b1010] = "10";
-	lut[0b1001] = "2";
-	lut[0b0110] = "8";
-	lut[0b0101] = "0";
-	lut[0b1110] = "9";
-	lut[0b1101] = "1";
-	lut[0b1011] = "6";
-	lut[0b0111] = "4";
-	lut[0b1111] = "5";
+	lut[0b1000] = "::@14";
+	lut[0b0100] = "::@12";
+	lut[0b0010] = "::@11";
+	lut[0b0001] = "::@3";
+	lut[0b1100] = "::@13";
+	lut[0b0011] = "::@7";
+	lut[0b1010] = "::@10";
+	lut[0b1001] = "::@2";
+	lut[0b0110] = "::@8";
+	lut[0b0101] = "::@0";
+	lut[0b1110] = "::@9";
+	lut[0b1101] = "::@1";
+	lut[0b1011] = "::@6";
+	lut[0b0111] = "::@4";
+	lut[0b1111] = "::@5";
 	return lut;
 }();
 
@@ -97,9 +97,11 @@ static void updateConnected(Swan::Ctx &ctx, Swan::TilePos pos)
 	auto name = tile.name.str();
 
 	auto baseName = name;
+	std::string_view suffix;
 	size_t atIndex = name.find("::@");
 	if (atIndex != name.npos) {
 		baseName.remove_suffix(name.size() - atIndex);
+		suffix = name.substr(atIndex);
 	}
 
 	auto isConnected = [&tiles = ctx.plane.tiles(), baseName](Swan::TilePos pos) {
@@ -125,17 +127,15 @@ static void updateConnected(Swan::Ctx &ctx, Swan::TilePos pos)
 		(up << 1) |
 		(down << 0);
 
-	const char *desiredDir = CONNECTION_LUT[connection];
-	std::string buf;
-	auto desiredName = baseName;
-	if (desiredDir[0]) {
-		buf = Swan::cat(baseName, "::@", desiredDir);
-		desiredName = buf;
+	const char *desiredSuffix = CONNECTION_LUT[connection];
+	if (suffix == desiredSuffix) {
+		return;
 	}
 
-	Swan::info << pos << ": " << desiredName;
-	if (desiredName != name) {
-		ctx.plane.tiles().set(pos, desiredName);
+	if (desiredSuffix[0]) {
+		ctx.plane.tiles().set(pos, Swan::cat(baseName, desiredSuffix));
+	} else {
+		ctx.plane.tiles().set(pos, baseName);
 	}
 }
 
