@@ -3,7 +3,7 @@
 #include "WorldPlane.h"
 #include "World.h"
 #include "Game.h"
-#include "EntityCollectionImpl.h"
+#include "EntityCollectionImpl.h" // IWYU pragma: keep
 #include "traits/TileEntityTrait.h"
 
 namespace Swan {
@@ -66,8 +66,7 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 
 	if (!oldTile.isOpaque() && newTile.isOpaque()) {
 		plane_.lights().addSolidBlock(pos);
-	}
-	else if (oldTile.isOpaque() && !newTile.isOpaque()) {
+	} else if (oldTile.isOpaque() && !newTile.isOpaque()) {
 		plane_.lights().removeSolidBlock(pos);
 	}
 
@@ -83,8 +82,7 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 
 	if (oldTile.more->fluidCollision && !newTile.more->fluidCollision) {
 		plane_.fluids().clearSolid(pos);
-	}
-	else if (newTile.more->fluidCollision) {
+	} else if (newTile.more->fluidCollision) {
 		plane_.fluids().setSolid(pos, *newTile.more->fluidCollision);
 	}
 
@@ -94,6 +92,12 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 
 	if (newTile.more->tileEntity && !keepTileEntity) {
 		plane_.entities().spawnTileEntity(pos, newTile.more->tileEntity);
+	}
+
+	if (oldTile.more->fluidMask && !newTile.more->fluidMask) {
+		chunk.clearFluidMask(rp);
+	} else if (newTile.more->fluidMask) {
+		chunk.setFluidMask(rp, newTile.more->fluidMask);
 	}
 
 	return true;
@@ -215,6 +219,12 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 
 	if (newTile.more->tileEntity) {
 		plane_.entities().spawnTileEntity(pos, newTile.more->tileEntity);
+	}
+
+	if (oldTile.more->fluidMask && !newTile.more->fluidMask) {
+		chunk.clearFluidMask(rp);
+	} else if (newTile.more->fluidMask) {
+		chunk.setFluidMask(rp, newTile.more->fluidMask);
 	}
 
 	// Run a tile update immediately

@@ -44,8 +44,17 @@ void Chunk::compress()
 	}
 
 	if (entities_.empty()) {
+		// Properly free entities array memory
 		std::unordered_set<EntityRef> empty;
 		entities_.swap(empty);
+	}
+
+	{
+		// Properly free fluid masks memory
+		std::vector<std::pair<ChunkRelPos, Cygnet::Renderer::DrawMask>> empty;
+		fluidMasks_.swap(empty);
+		std::unordered_map<ChunkRelPos, size_t> emptyMap;
+		fluidMaskMap_.swap(emptyMap);
 	}
 }
 
@@ -80,6 +89,30 @@ void Chunk::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 		renderChunk_ = rnd.createChunk(getTileData());
 		renderChunkFluid_ = rnd.createChunkFluid(getFluidData());
 		renderChunkShadow_ = rnd.createChunkShadow(getLightData());
+
+		// Populate fluid masks
+		for (int y = 0; y < CHUNK_HEIGHT; ++y) {
+			auto *row = getTileData() + (y * CHUNK_WIDTH);
+			for (int x = 0; x < CHUNK_WIDTH; ++x) {
+				Tile::ID id = row[x];
+				auto &tile = ctx.world.getTileByID(id);
+				auto mask = tile.more->fluidMask;
+				if (!mask) {
+					continue;
+				}
+
+				ChunkRelPos rp = {x, y};
+				fluidMasks_.push_back({rp, Cygnet::Renderer::DrawMask {
+					.pos = pos_.scale(CHUNK_WIDTH, CHUNK_HEIGHT) + rp,
+					.mask = mask,
+				}});
+			}
+		}
+		fluidMaskMap_.reserve(fluidMasks_.size());
+		for (size_t i = 0; i < fluidMasks_.size(); ++i) {
+			fluidMaskMap_[fluidMasks_[i].first] = i;
+		}
+
 		isRendered_ = true;
 		needLightRender_ = false;
 		isFluidModified_ = false;
@@ -103,6 +136,10 @@ void Chunk::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 	Vec2 pos = (Vec2)pos_ * Vec2{CHUNK_WIDTH, CHUNK_HEIGHT};
 	rnd.drawChunk({pos, renderChunk_});
 	rnd.drawChunkFluid({pos, renderChunkFluid_});
+
+	for (auto &[_, mask]: fluidMasks_) {
+		rnd.drawFluidMask(mask);
+	}
 
 	if (!ctx.game.debug_.disableShadows) {
 		rnd.drawChunkShadow({pos, renderChunkShadow_});
@@ -240,6 +277,42 @@ void Chunk::clearFluidSolid(ChunkRelPos pos)
 		}
 	}
 	isFluidModified_ = true;
+}
+
+void Chunk::setFluidMask(ChunkRelPos pos, Cygnet::RenderMask mask)
+{
+	Cygnet::Renderer::DrawMask dm = {
+		.pos = pos_.scale(CHUNK_WIDTH, CHUNK_HEIGHT) + pos,
+		.mask = mask,
+	};
+
+	auto it = fluidMaskMap_.find(pos);
+	if (it == fluidMaskMap_.end()) {
+		fluidMaskMap_[pos] = fluidMasks_.size();
+		fluidMasks_.push_back({pos, dm});
+	} else {
+		auto idx = it->second;
+		fluidMasks_[idx].second = dm;
+	}
+}
+
+void Chunk::clearFluidMask(ChunkRelPos pos)
+{
+	auto it = fluidMaskMap_.find(pos);
+	if (it == fluidMaskMap_.end()) {
+		warn << "Attempt to clear fluid mask where there is none";
+		return;
+	}
+
+	auto idx = it->second;
+	if (idx != fluidMasks_.size() - 1) {
+		auto back = fluidMasks_.back();
+		fluidMasks_[idx] = fluidMasks_.back();
+		fluidMaskMap_[back.first] = idx;
+	}
+
+	fluidMaskMap_.erase(pos);
+	fluidMasks_.pop_back();
 }
 
 void Chunk::keepActive()

@@ -61,6 +61,15 @@ struct RenderSprite {
 	Swan::Vec2 size;
 	int frameCount;
 	int repeatFrom;
+
+	operator bool() const { return tex != ~(GLuint)0; }
+};
+
+struct RenderMask {
+	GLuint tex = ~(GLuint)0;
+	Swan::Vec2 size;
+
+	operator bool() const { return tex != ~(GLuint)0; }
 };
 
 struct RenderCamera {
@@ -132,6 +141,11 @@ public:
 		RenderSprite sprite;
 		int frame = 0;
 		float opacity = 1.0;
+	};
+
+	struct DrawMask {
+		Swan::Vec2 pos;
+		RenderMask mask;
 	};
 
 	struct DrawGrid {
@@ -225,13 +239,9 @@ public:
 		drawSprite(RenderLayer::NORMAL, ds);
 	}
 
-	void drawTileSprite(RenderLayer layer, DrawSprite drawSprite)
+	void drawTileSprite(DrawSprite drawSprite)
 	{
-		drawTileSprites_[(int)layer].push_back(drawSprite);
-	}
-	void drawTileSprite(DrawSprite ds)
-	{
-		drawTileSprite(RenderLayer::NORMAL, ds);
+		drawTileSprites_.push_back(drawSprite);
 	}
 
 	void drawParticle(RenderLayer layer, DrawParticle drawParticle)
@@ -243,13 +253,14 @@ public:
 		drawParticle(RenderLayer::NORMAL, dp);
 	}
 
-	void drawTileParticle(RenderLayer layer, DrawParticle drawParticle)
+	void drawTileParticle(DrawParticle drawParticle)
 	{
-		drawTileParticles_[(int)layer].push_back(drawParticle);
+		drawTileParticles_.push_back(drawParticle);
 	}
-	void drawTileParticle(DrawParticle dp)
+
+	void drawFluidMask(DrawMask drawMask)
 	{
-		drawTileParticle(RenderLayer::NORMAL, dp);
+		drawFluidMasks_.push_back(drawMask);
 	}
 
 	void spawnParticle(RenderLayer layer, SpawnParticle particle)
@@ -416,6 +427,9 @@ public:
 	RenderSprite createSprite(void *data, int width, int height, int fh, int repeatFrom);
 	void destroySprite(RenderSprite sprite);
 
+	RenderMask createMask(void *data, int width, int height);
+	void destroyMask(RenderMask sprite);
+
 	void setGamma(float gamma)
 	{
 		gamma_ = gamma;
@@ -468,12 +482,13 @@ private:
 	std::vector<DrawChunkFluid> drawChunkFluids_;
 	std::vector<DrawChunkShadow> drawChunkShadows_;
 	std::vector<DrawTileClip> drawTileClips_;
+	std::vector<DrawSprite> drawTileSprites_;
+	std::vector<DrawParticle> drawTileParticles_;
+	std::vector<DrawMask> drawFluidMasks_;
 
 	std::vector<DrawTile> drawTiles_[LAYER_COUNT];
 	std::vector<DrawSprite> drawSprites_[LAYER_COUNT];
-	std::vector<DrawSprite> drawTileSprites_[LAYER_COUNT];
 	std::vector<DrawParticle> drawParticles_[LAYER_COUNT];
-	std::vector<DrawParticle> drawTileParticles_[LAYER_COUNT];
 	std::vector<DrawRect> drawRects_[LAYER_COUNT];
 	std::vector<TextSegment> drawTexts_[LAYER_COUNT];
 	std::vector<TextCache::RenderedCodepoint> textBuffer_;

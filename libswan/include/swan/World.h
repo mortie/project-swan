@@ -4,7 +4,6 @@
 #include <unordered_set>
 #include <vector>
 #include <string>
-#include <random>
 #include <span>
 #include <cygnet/Renderer.h>
 #include <cygnet/ResourceManager.h>
@@ -53,7 +52,7 @@ public:
 		std::unordered_set<WorldPlane::ID> tickedPlanes;
 	};
 
-	World(Game *game, unsigned long randSeed, std::span<const std::string> modPaths);
+	World(Game *game, std::span<const std::string> modPaths);
 	~World();
 
 	void setWorldGen(std::string gen);
@@ -148,9 +147,9 @@ public:
 	HashMap<std::vector<Recipe>> recipes_;
 	HashMap<WorldGen::Factory> worldGenFactories_;
 	HashMap<EntityCollection::Factory> entCollFactories_;
+	HashMap<Cygnet::RenderSprite> sprites_;
 
 	Game *game_;
-	std::mt19937 random_;
 
 	// Mods must be loaded before resources.
 	std::vector<ModWrapper> mods_;

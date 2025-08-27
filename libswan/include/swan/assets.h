@@ -1,13 +1,13 @@
 #pragma once
 
 #include <memory>
-#include <unordered_map>
 #include <string>
 #include <stdint.h>
 
 #include <cygnet/util.h>
 #include <swan/util.h>
 #include "common.h"
+#include "cygnet/Renderer.h"
 
 namespace Cygnet {
 class ResourceBuilder;
@@ -32,7 +32,11 @@ struct SoundAsset {
 
 void loadSpriteAssets(
 	std::string base, std::string path,
-	Cygnet::ResourceBuilder &builder);
+	Cygnet::ResourceBuilder &builder, HashMap<Cygnet::RenderSprite> &sprites);
+
+void loadMaskAssets(
+	std::string base, std::string path,
+	Cygnet::ResourceBuilder &builder, HashMap<Cygnet::RenderMask> &masks);
 
 void loadTileAssets(
 	std::string base, std::string path,

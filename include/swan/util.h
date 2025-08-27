@@ -37,6 +37,11 @@ inline float randfloat()
 	return (random() & 0xffff) / (float)0xffff;
 }
 
+inline float randfloat(float min, float max)
+{
+	return (randfloat() * (max - min)) + min;
+}
+
 template<typename T, typename U>
 inline constexpr T lerp(T a, T b, U t, U max = 1)
 {

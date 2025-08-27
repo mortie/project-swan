@@ -58,11 +58,11 @@ void World::buildResources()
 		tileImageBuffer[i * 4 + 3] = 255;
 	}
 
-	// Built-in tile assets
+	// Built-in tile asset
 	builder.addTileAsset(INVALID_TILE_NAME, tileImageBuffer, 1);
 
-	// Built-in sprites
-	builder.addSprite(INVALID_SPRITE_NAME, tileImageBuffer, {
+	// Built-in sprite
+	sprites_[INVALID_SPRITE_NAME] = builder.addSprite(tileImageBuffer, {
 		.width = TILE_SIZE,
 		.height = TILE_SIZE,
 		.frameHeight = TILE_SIZE,
@@ -81,6 +81,7 @@ void World::buildResources()
 	auto fallbackTileParticles = std::make_shared<TileParticles>();
 
 	HashMap<TileAssetMeta> tileMeta;
+	HashMap<Cygnet::RenderMask> masks;
 
 	// Load assets from mods
 	for (auto &mod: mods_) {
@@ -99,7 +100,11 @@ void World::buildResources()
 		loadSpriteAssets(
 			cat(mod.name(), "::"),
 			cat(mod.path_, "/assets/sprites"),
-			builder);
+			builder, sprites_);
+		loadMaskAssets(
+			cat(mod.name(), "::masks/"),
+			cat(mod.path_, "/assets/masks"),
+			builder, masks);
 	}
 
 	// After this point, 'sounds_' *must* be unchanged.
@@ -163,6 +168,17 @@ void World::buildResources()
 			tilesMap_[tileName] = tileId;
 			tiles_.push_back(Tile(tileId, tileName, std::move(tileBuilder)));
 			auto &tile = tiles_.back();
+
+			if (tileBuilder.fluidMask) {
+				auto maskIt = masks.find(*tileBuilder.fluidMask);
+				if (maskIt == masks.end()) {
+					warn
+						<< "Tile " << tileName << " referenced unknown mask "
+						<< *tileBuilder.fluidMask;
+				} else {
+					tile.more->fluidMask = maskIt->second;
+				}
+			}
 
 			if (!tile.more->fluidCollision && (tile.isSolid())) {
 				tile.more->fluidCollision = solidFluidCollision;
@@ -373,8 +389,8 @@ void World::buildResources()
 	resources_ = Cygnet::ResourceManager(std::move(builder));
 }
 
-World::World(Game *game, unsigned long randSeed, std::span<const std::string> modPaths):
-	game_(game), random_(randSeed)
+World::World(Game *game, std::span<const std::string> modPaths):
+	game_(game)
 {
 	mods_ = loadMods(modPaths);
 	buildResources();
@@ -513,11 +529,11 @@ Fluid::ID World::getFluidID(std::string_view name)
 
 Cygnet::RenderSprite &World::getSprite(std::string_view name)
 {
-	auto iter = resources_.sprites_.find(name);
+	auto iter = sprites_.find(name);
 
-	if (iter == resources_.sprites_.end()) {
+	if (iter == sprites_.end()) {
 		warn << "Tried to get non-existent sprite " << name << "!";
-		return resources_.sprites_.at(INVALID_SPRITE_NAME);
+		return sprites_.at(INVALID_SPRITE_NAME);
 	}
 
 	return iter->second;

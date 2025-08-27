@@ -1,12 +1,9 @@
 #include "TileAtlas.h"
 
 #include <vector>
-#include <algorithm>
 #include <stdio.h>
 #include <string.h>
 #include <swan/constants.h>
-
-#include "gl.h"
 
 namespace Cygnet {
 

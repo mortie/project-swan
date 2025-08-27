@@ -97,6 +97,9 @@ public:
 	void setFluidSolid(ChunkRelPos pos, const FluidCollision &set);
 	void clearFluidSolid(ChunkRelPos pos);
 
+	void setFluidMask(ChunkRelPos pos, Cygnet::RenderMask mask);
+	void clearFluidMask(ChunkRelPos pos);
+
 	uint8_t getLightLevel(ChunkRelPos pos)
 	{
 		return getLightData()[pos.y * CHUNK_WIDTH + pos.x];
@@ -170,6 +173,9 @@ private:
 
 	std::unique_ptr<uint8_t[]> data_;
 	std::vector<std::pair<ChunkRelPos, Tile::ID>> changeList_;
+
+	std::vector<std::pair<ChunkRelPos, Cygnet::Renderer::DrawMask>> fluidMasks_;
+	std::unordered_map<ChunkRelPos, size_t> fluidMaskMap_;
 
 	ssize_t compressedSize_ = -1; // -1 if not compressed, a positive number if compressed
 	Cygnet::RenderChunk renderChunk_;

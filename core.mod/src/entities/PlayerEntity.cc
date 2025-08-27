@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <imgui/imgui.h>
-#include <string>
 
 #include "ItemStackEntity.h"
 #include "world/util.h"

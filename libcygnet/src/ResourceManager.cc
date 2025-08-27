@@ -13,11 +13,18 @@ ResourceBuilder::ResourceBuilder(Renderer *rnd): rnd_(rnd)
 	fluids_ = std::make_unique<uint8_t[]>(256 * 4 * 2);
 }
 
-RenderSprite ResourceBuilder::addSprite(
-	std::string name, void *data, SpriteMeta meta)
+RenderSprite ResourceBuilder::addSprite(void *data, SpriteMeta meta)
 {
-	return sprites_[std::move(name)] = rnd_->createSprite(
-		data, meta.width, meta.height, meta.frameHeight, meta.repeatFrom);
+	sprites_.push_back(rnd_->createSprite(
+		data, meta.width, meta.height, meta.frameHeight, meta.repeatFrom));
+	return sprites_.back();
+}
+
+RenderMask ResourceBuilder::addMask(void *data, MaskMeta meta)
+{
+	masks_.push_back(rnd_->createMask(
+		data, meta.width, meta.height));
+	return masks_.back();
 }
 
 void ResourceBuilder::addTileAsset(std::string name, void *data, int frames)
@@ -104,8 +111,12 @@ ResourceManager::ResourceManager(ResourceBuilder &&builder):
 
 ResourceManager::~ResourceManager()
 {
-	for (auto &[name, sprite]: sprites_) {
+	for (auto &sprite: sprites_) {
 		rnd_->destroySprite(sprite);
+	}
+
+	for (auto &mask: masks_) {
+		rnd_->destroyMask(mask);
 	}
 }
 

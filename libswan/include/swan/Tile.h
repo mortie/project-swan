@@ -1,6 +1,5 @@
 #pragma once
 
-#include <bitset>
 #include <cstdint>
 #include <memory>
 #include <stdint.h>
@@ -11,8 +10,6 @@
 #include "assets.h"
 #include "Tool.h"
 #include "EntityCollection.h"
-#include "cygnet/util.h"
-#include "swan/constants.h"
 
 namespace Swan {
 
@@ -21,6 +18,8 @@ class ItemStack;
 
 struct Tile {
 	using ID = uint16_t;
+
+	using FluidMaskIndex = uint16_t;
 
 	enum Flags: uint8_t {
 		NONE = 0,
@@ -51,6 +50,7 @@ struct Tile {
 	struct Builder {
 		std::string name;
 		std::string image = "@::invalid";
+		std::optional<std::string> fluidMask = std::nullopt;
 		bool isSolid = true;
 		bool isOpaque = isSolid;
 		bool isSupportV = isSolid;
@@ -96,6 +96,7 @@ struct Tile {
 		void (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta);
 		void (*onWorldTick)(Ctx &ctx, TilePos pos);
 
+		Cygnet::RenderMask fluidMask;
 		std::shared_ptr<TileParticles> particles;
 		std::shared_ptr<FluidCollision> fluidCollision;
 		std::shared_ptr<Traits> traits;

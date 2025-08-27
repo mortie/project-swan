@@ -12,7 +12,6 @@
 #include <stb/stb_vorbis.h>
 #include <cpptoml.h>
 #include <string.h>
-#include <fstream>
 #include <cygnet/ResourceManager.h>
 
 namespace Swan {
@@ -211,13 +210,8 @@ static void collapseGrid(
 
 static void loadSpriteAsset(
 	std::string name, const char *path, cpptoml::table *toml,
-	Cygnet::ResourceBuilder &builder)
+	Cygnet::ResourceBuilder &builder, HashMap<Cygnet::RenderSprite> &sprites)
 {
-	if (builder.hasSprite(name)) {
-		info << "Sprite asset " << path << " was overwritten.";
-		return;
-	}
-
 	int w, h;
 	MallocedPtr<unsigned char> buffer(stbi_load(path, &w, &h, nullptr, 4));
 	if (!buffer) {
@@ -248,9 +242,27 @@ static void loadSpriteAsset(
 		}
 	}
 
-	builder.addSprite(std::move(name), buffer.get(), meta);
+	sprites[std::move(name)] = builder.addSprite(buffer.get(), meta);
 }
 
+static void loadMaskAsset(
+	std::string name, const char *path,
+	Cygnet::ResourceBuilder &builder, HashMap<Cygnet::RenderMask> &masks)
+{
+	int w, h;
+	MallocedPtr<unsigned char> buffer(stbi_load(path, &w, &h, nullptr, 1));
+	if (!buffer) {
+		warn << "Failed to load asset " << path;
+		return;
+	}
+
+	Cygnet::ResourceBuilder::MaskMeta meta = {
+		.width = w,
+		.height = h,
+	};
+
+	masks[std::move(name)] = builder.addMask(buffer.get(), meta);
+}
 static void loadTileAsset(
 	std::string name, std::string_view dir, cpptoml::table &toml,
 	Cygnet::ResourceBuilder &builder, HashMap<TileAssetMeta> &meta)
@@ -455,7 +467,7 @@ static void loadSoundAsset(
 
 void loadSpriteAssets(
 	std::string base, std::string path,
-	Cygnet::ResourceBuilder &builder)
+	Cygnet::ResourceBuilder &builder, HashMap<Cygnet::RenderSprite> &sprites)
 {
 	if (!std::filesystem::exists(path)) {
 		return;
@@ -465,7 +477,7 @@ void loadSpriteAssets(
 		if (it.is_directory()) {
 			std::string newPath = cat(path, "/", it.path().filename());
 			std::string newBase = cat(base, it.path().filename(), "/");
-			loadSpriteAssets(std::move(newBase), std::move(newPath), builder);
+			loadSpriteAssets(std::move(newBase), std::move(newPath), builder, sprites);
 			continue;
 		}
 
@@ -486,7 +498,36 @@ void loadSpriteAssets(
 			toml = cpptoml::parse_file(tomlPath);
 		}
 
-		loadSpriteAsset(std::move(name), assetPath.c_str(), toml.get(), builder);
+		loadSpriteAsset(std::move(name), assetPath.c_str(), toml.get(), builder, sprites);
+	}
+}
+
+void loadMaskAssets(
+	std::string base, std::string path,
+	Cygnet::ResourceBuilder &builder, HashMap<Cygnet::RenderMask> &masks)
+{
+	if (!std::filesystem::exists(path)) {
+		return;
+	}
+
+	for (auto &it: std::filesystem::directory_iterator(path)) {
+		if (it.is_directory()) {
+			std::string newPath = cat(path, "/", it.path().filename());
+			std::string newBase = cat(base, it.path().filename(), "/");
+			loadMaskAssets(std::move(newBase), std::move(newPath), builder, masks);
+			continue;
+		}
+
+		auto ext = it.path().filename().extension();
+		if (ext != ".png") {
+			warn << it.path() << ": Unknown extension " << ext;
+			continue;
+		}
+
+		std::string name = cat(base, it.path().filename().stem());
+		std::string assetPath = cat(path, "/", it.path().filename());
+
+		loadMaskAsset(std::move(name), assetPath.c_str(), builder, masks);
 	}
 }
 

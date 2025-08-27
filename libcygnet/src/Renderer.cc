@@ -7,13 +7,13 @@
 #include <string.h>
 #include <span>
 
-#include "GlWrappers.h"
 #include "util.h"
 
 #include "glsl/Blend.h"
 #include "glsl/Chunk.h"
 #include "glsl/ChunkFluid.h"
 #include "glsl/ChunkShadow.h"
+#include "glsl/Mask.h"
 #include "glsl/Particle.h"
 #include "glsl/Rect.h"
 #include "glsl/Sprite.h"
@@ -27,6 +27,7 @@ struct RendererState {
 	ChunkProg chunkProg{};
 	ChunkFluidProg chunkFluidProg{};
 	ChunkShadowProg chunkShadowProg{};
+	MaskProg maskProg{};
 	ParticleProg particleProg{};
 	RectProg rectProg{};
 	SpriteProg spriteProg{};
@@ -103,10 +104,8 @@ void Renderer::clear()
 {
 	for (int idx = 0; idx <= (int)RenderLayer::MAX; ++idx) {
 		drawTiles_[idx].clear();
-		drawTileSprites_[idx].clear();
 		drawSprites_[idx].clear();
 		drawParticles_[idx].clear();
-		drawTileParticles_[idx].clear();
 		drawRects_[idx].clear();
 		drawTexts_[idx].clear();
 
@@ -121,6 +120,9 @@ void Renderer::clear()
 	drawChunkFluids_.clear();
 	drawChunkShadows_.clear();
 	drawTileClips_.clear();
+	drawTileSprites_.clear();
+	drawTileParticles_.clear();
+	drawFluidMasks_.clear();
 	textBuffer_.clear();
 	textUIBuffer_.clear();
 }
@@ -201,19 +203,38 @@ void Renderer::render(const RenderCamera &cam, RenderProps props)
 		renderLayer(RenderLayer(i), camMat);
 	}
 
+	glEnable(GL_STENCIL_TEST);
+	glStencilFunc(GL_EQUAL, 0, 0x03);
+
+	// Stencil out fluid masks
+	if (!drawFluidMasks_.empty()) {
+		glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+		state_->maskProg.draw(drawFluidMasks_, camMat);
+	}
+
 	// Render Fluids
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	state_->chunkFluidProg.draw(drawChunkFluids_, camMat, state_->fluidAtlasTex, 1);
+
+	glDisable(GL_STENCIL_TEST);
 
 	// Render the world
 	state_->chunkProg.draw(
 		drawChunks_, camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
 		state_->tileMapTex, state_->tileMapTexSize);
+	state_->spriteProg.draw(drawTileSprites_, camMat);
+
+	glEnable(GL_STENCIL_TEST);
+	state_->particleProg.draw(drawTileParticles_, camMat);
+	glDisable(GL_STENCIL_TEST);
 
 	// Render the normal layer
 	renderLayer(RenderLayer::NORMAL, camMat);
 
 	// Render another layer of fluids, above the normal layer
+	glEnable(GL_STENCIL_TEST);
 	state_->chunkFluidProg.draw(drawChunkFluids_, camMat, state_->fluidAtlasTex, 0);
+	glDisable(GL_STENCIL_TEST);
 
 	// Render the foreground layers
 	for (int i = (int)RenderLayer::NORMAL + 1; i <= (int)RenderLayer::MAX; ++i) {
@@ -237,10 +258,10 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 	state_->tileProg.draw(
 		drawTiles_[idx], camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
 		state_->tileMapTex, state_->tileMapTexSize);
-	state_->spriteProg.draw(drawTileSprites_[idx], camMat);
-	state_->particleProg.draw(drawTileParticles_[idx], camMat);
 	state_->spriteProg.draw(drawSprites_[idx], camMat);
+	glEnable(GL_STENCIL_TEST);
 	state_->particleProg.draw(drawParticles_[idx], camMat);
+	glDisable(GL_STENCIL_TEST);
 
 	// Use the stencil buffer to ensure that spawned particles don't
 	// draw over each other.
@@ -684,6 +705,39 @@ void Renderer::destroySprite(RenderSprite sprite)
 {
 	assert(sprite.tex != ~(GLuint)0);
 	glDeleteTextures(1, &sprite.tex);
+	glCheck();
+}
+
+RenderMask Renderer::createMask(void *data, int width, int height)
+{
+	RenderMask mask;
+
+	mask.size = {
+		(float)width / Swan::TILE_SIZE,
+		(float)height / Swan::TILE_SIZE};
+	glGenTextures(1, &mask.tex);
+	glCheck();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, mask.tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glCheck();
+
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RED, width, height,
+		0, GL_RED, GL_UNSIGNED_BYTE, data);
+	glCheck();
+
+	return mask;
+}
+
+void Renderer::destroyMask(RenderMask mask)
+{
+	assert(mask.tex != ~(GLuint)0);
+	glDeleteTextures(1, &mask.tex);
 	glCheck();
 }
 

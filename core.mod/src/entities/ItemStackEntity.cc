@@ -1,7 +1,5 @@
 #include "ItemStackEntity.h"
 
-#include <random>
-
 namespace CoreMod {
 
 static constexpr Swan::BasicPhysicsBody::Props PROPS = {
@@ -20,11 +18,11 @@ ItemStackEntity::ItemStackEntity(
 	Swan::Ctx &ctx, Swan::Vec2 pos, Swan::Item *item):
 	ItemStackEntity(ctx)
 {
-	static std::uniform_real_distribution vx(-2.3f, 2.3f);
-	static std::uniform_real_distribution vy(-2.3f, -1.2f);
-
 	physicsBody_.body.pos = pos;
-	physicsBody_.vel += Swan::Vec2{vx(ctx.world.random_), vy(ctx.world.random_)};
+	physicsBody_.vel += Swan::Vec2{
+		Swan::randfloat(-2.3, 2.3),
+		Swan::randfloat(-2.3, -1.2),
+	};
 	item_ = item;
 }
 

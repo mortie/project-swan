@@ -30,8 +30,13 @@ public:
 		int repeatFrom;
 	};
 
-	bool hasSprite(std::string_view name) { return sprites_.contains(name); }
-	RenderSprite addSprite(std::string name, void *data, SpriteMeta meta);
+	struct MaskMeta {
+		int width;
+		int height;
+	};
+
+	RenderSprite addSprite(void *data, SpriteMeta meta);
+	RenderMask addMask(void *data, MaskMeta meta);
 
 	bool hasTileAsset(std::string_view name) { return tileAssets_.contains(name); }
 	void addTileAsset(std::string name, void *data, int frames);
@@ -46,7 +51,8 @@ private:
 	};
 
 	Renderer *rnd_;
-	Swan::HashMap<RenderSprite> sprites_;
+	std::vector<RenderSprite> sprites_;
+	std::vector<RenderMask> masks_;
 	Swan::HashMap<TileMeta> tileAssets_;
 	std::vector<uint16_t> tiles_;
 	std::vector<ResourceTileAnimation> tileAnimations_;
@@ -69,8 +75,10 @@ public:
 
 	void tick();
 
+private:
 	Renderer *rnd_ = nullptr;
-	Swan::HashMap<RenderSprite> sprites_;
+	std::vector<RenderSprite> sprites_;
+	std::vector<RenderMask> masks_;
 	Swan::HashMap<Renderer::TileID> tiles_;
 	std::vector<ResourceTileAnimation> tileAnimations_;
 };

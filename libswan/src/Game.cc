@@ -25,7 +25,7 @@ void Game::createWorld(
 	std::string worldPath, const std::string &worldgen,
 	std::span<std::string> modPaths)
 {
-	world_ = std::make_unique<World>(this, time(NULL), modPaths);
+	world_ = std::make_unique<World>(this, modPaths);
 	for (auto &mod: world_->mods_) {
 		mod.mod_->start(*world_);
 	}
@@ -46,7 +46,7 @@ void Game::loadWorld(
 	auto data = kj::ArrayInputStream(bytes);
 	capnp::PackedMessageReader reader(data);
 
-	world_ = std::make_unique<World>(this, time(NULL), modPaths);
+	world_ = std::make_unique<World>(this, modPaths);
 	for (auto &mod: world_->mods_) {
 		mod.mod_->start(*world_);
 	}
