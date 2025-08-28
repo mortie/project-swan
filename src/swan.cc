@@ -112,6 +112,7 @@ int main(int argc, char **argv)
 	backward::SignalHandling sh;
 	std::vector<std::string> mods;
 	const char *swanRoot = ".";
+	bool doCompileMods = true;
 	for (int i = 1; i < argc; ++i) {
 		std::string_view arg = argv[i];
 		if (arg == "--mod") {
@@ -123,6 +124,8 @@ int main(int argc, char **argv)
 		} else if (arg == "--world") {
 			i += 1;
 			worldPath = argv[i];
+		} else if (arg == "--no-compile") {
+			doCompileMods = false;
 		} else {
 			warn << "Unexpected option: " << arg;
 		}
@@ -137,6 +140,10 @@ int main(int argc, char **argv)
 	}
 
 	auto compileMods = [&]() {
+		if (!doCompileMods) {
+			return true;
+		}
+
 		for (auto &mod: mods) {
 			if (!SwanBuild::build(mod.c_str(), swanRoot)) {
 				return false;
