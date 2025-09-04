@@ -47,6 +47,14 @@ static void onTorchUpdate(Swan::Ctx &ctx, Swan::TilePos pos)
 	}
 }
 
+static void onTorchWorldTick(Swan::Ctx &ctx, Swan::TilePos pos)
+{
+	auto fluid = ctx.plane.fluids().getAtPos(pos.as<float>().add(0.5, 0.5));
+	if (fluid.density > 0) {
+		breakTileAndDropItem(ctx, pos);
+	}
+}
+
 void registerTorch(Swan::Mod &mod)
 {
 	float lightLevel = 80 / 255.0;
@@ -61,6 +69,7 @@ void registerTorch(Swan::Mod &mod)
 		.droppedItem = "core::torch",
 		.onSpawn = onTorchSpawn,
 		.onTileUpdate = onTorchUpdate,
+		.onWorldTick = onTorchWorldTick,
 	});
 
 	mod.registerTile({
@@ -72,6 +81,7 @@ void registerTorch(Swan::Mod &mod)
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::torch",
 		.onTileUpdate = onTorchUpdate,
+		.onWorldTick = onTorchWorldTick,
 	});
 
 	mod.registerTile({
@@ -83,6 +93,7 @@ void registerTorch(Swan::Mod &mod)
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::torch",
 		.onTileUpdate = onTorchUpdate,
+		.onWorldTick = onTorchWorldTick,
 	});
 }
 
