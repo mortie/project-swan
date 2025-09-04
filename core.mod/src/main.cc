@@ -257,8 +257,6 @@ public:
 				if (plantPotato) {
 					ctx.plane.tiles().set(above, "core::potato-bush::0");
 					meta.stack.remove(1);
-				} else {
-					foodItem<1>(ctx, meta);
 				}
 			},
 		});
