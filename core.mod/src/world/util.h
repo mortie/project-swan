@@ -13,6 +13,7 @@ void breakTileAndDropItem(Swan::Ctx &ctx, Swan::TilePos pos);
 bool denyIfFloating(Swan::Ctx &ctx, Swan::TilePos pos);
 void breakIfFloating(Swan::Ctx &ctx, Swan::TilePos pos);
 void fallIfFloating(Swan::Ctx &ctx, Swan::TilePos pos);
+void breakIfInFluid(Swan::Ctx &ctx, Swan::TilePos pos);
 
 bool healPlayer(Swan::Ctx &ctx, Swan::EntityRef player, int n);
 

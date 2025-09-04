@@ -20,6 +20,7 @@ void registerBonfire(Swan::Mod &mod)
 		.tileEntity = "core::tile::bonfire",
 		.onSpawn = denyIfFloating,
 		.onTileUpdate = fallIfFloating,
+		.onWorldTick = breakIfInFluid,
 	});
 }
 

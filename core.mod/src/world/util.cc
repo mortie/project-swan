@@ -58,6 +58,15 @@ void fallIfFloating(Swan::Ctx &ctx, Swan::TilePos pos)
 	}
 }
 
+void breakIfInFluid(Swan::Ctx &ctx, Swan::TilePos pos)
+{
+	auto fluid = ctx.plane.fluids().getAtPos(
+		pos.as<float>().add(Swan::randfloat(0.4, 0.6), 0.5));
+	if (fluid.density > 0) {
+		breakTileAndDropItem(ctx, pos);
+	}
+}
+
 bool healPlayer(Swan::Ctx &ctx, Swan::EntityRef playerRef, int n)
 {
 	auto player = dynamic_cast<PlayerEntity *>(playerRef.get());
