@@ -676,7 +676,9 @@ void PlayerEntity::onRightClick(Swan::Ctx &ctx)
 	}
 
 	interactTimer_ = 0.2;
-	stack.remove(1);
+	if (!ctx.game.debug_.infiniteItems) {
+		stack.remove(1);
+	}
 }
 
 void PlayerEntity::dropItem(Swan::Ctx &ctx)

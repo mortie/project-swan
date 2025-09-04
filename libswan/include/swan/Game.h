@@ -35,6 +35,7 @@ public:
 		bool handBreakAny = false;
 		bool outputEntityProto = false;
 		bool godMode = false;
+		bool infiniteItems = false;
 	};
 
 	struct PerfRecord {

@@ -143,6 +143,7 @@ void Game::drawDebugMenu()
 
 	ImGui::Checkbox("Hand-break any tile", &debug_.handBreakAny);
 	ImGui::Checkbox("God mode", &debug_.godMode);
+	ImGui::Checkbox("Infinite items", &debug_.infiniteItems);
 
 	ImGui::Checkbox("Individually serialize entities", &debug_.outputEntityProto);
 	if (ImGui::Button("Save")) {
