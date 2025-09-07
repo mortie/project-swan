@@ -45,6 +45,7 @@ libswan = declare_dependency(
     'src/Mod.cc',
     'src/OS.cc',
     'src/SoundPlayer.cc',
+    'src/Tile.cc',
     'src/World.cc',
     'src/WorldPlane.cc',
     swan_proto,

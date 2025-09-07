@@ -76,6 +76,36 @@ struct Tile {
 
 		std::shared_ptr<FluidCollision> fluidCollision = nullptr;
 		std::shared_ptr<Traits> traits = nullptr;
+
+		Builder clone() { return *this; }
+
+		Builder &withName(std::string name);
+		Builder &withImage(std::string image);
+		Builder &withFluidMask(std::string fluidMask);
+		Builder &withIsSolid(bool isSolid);
+		Builder &withIsOpaque(bool isOpaque);
+		Builder &withIsSupportV(bool isSupportV);
+		Builder &withIsSupportH(bool isSupportH);
+		Builder &withIsPlatform(bool isPlatform);
+		Builder &withIsReplacable(bool isReplacable);
+		Builder &withLightLevel(float lightLevel);
+		Builder &withTemperature(float temperature);
+		Builder &withBreakableBy(ToolSet breakableBy);
+
+		Builder &withStepSound(std::string stepSound);
+		Builder &withPlaceSound(std::string placeSound);
+		Builder &withBreakSound(std::string breakSound);
+		Builder &withDroppedItem(std::string droppedItem);
+		Builder &withTileEntity(std::string tileEntity);
+
+		Builder &withOnSpawn(bool (*onSpawn)(Ctx &, TilePos));
+		Builder &withOnBreak(void (*onBreak)(Ctx &, TilePos));
+		Builder &withOnTileUpdate(void (*onTileUpdate)(Ctx &, TilePos));
+		Builder &withOnActivate(void (*onActivate)(Ctx &, TilePos, ActivateMeta));
+		Builder &withOnWorldTick(void (*onWorldTick)(Ctx &, TilePos));
+
+		Builder &withFluidCollision(std::shared_ptr<FluidCollision> fluidCollision);
+		Builder &withTraits(std::shared_ptr<Traits> traits);
 	};
 
 	struct More {

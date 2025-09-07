@@ -26,12 +26,12 @@ public:
 	{}
 	virtual ~Mod() = default;
 
-	void registerTile(Tile::Builder &&tile);
-	void registerItem(Item::Builder &&item);
-	void registerFluid(Fluid::Builder &&item);
-	void registerRecipe(Recipe::Builder &&recipe);
-	void registerSound(std::string &&sprite);
-	void registerRecipeKind(std::string &&kind);
+	void registerTile(Tile::Builder tile);
+	void registerItem(Item::Builder item);
+	void registerFluid(Fluid::Builder item);
+	void registerRecipe(Recipe::Builder recipe);
+	void registerSound(std::string sprite);
+	void registerRecipeKind(std::string kind);
 
 	template<typename WG>
 	void registerWorldGen(std::string name);
