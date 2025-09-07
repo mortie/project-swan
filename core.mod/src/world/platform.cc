@@ -130,15 +130,15 @@ void registerPlatform(Swan::Mod &mod)
 	auto supportTraits = std::make_shared<SupportPlatformTraits>();
 
 	Swan::Tile::Builder tile = {
-		.breakableBy = Swan::Tool::HAND,
-		.droppedItem = "core::platform",
 		.isSolid = false,
-		.isPlatform = true,
 		.isSupportV = true,
 		.isSupportH = true,
+		.isPlatform = true,
 		.isFullSupportH = false,
-		.onTileUpdate = updatePlatform,
+		.breakableBy = Swan::Tool::HAND,
+		.droppedItem = "core::platform",
 		.onSpawn = spawnPlatform,
+		.onTileUpdate = updatePlatform,
 	};
 
 	mod.registerTile(tile
