@@ -16,6 +16,7 @@
 #include "world/ladder.h"
 #include "world/outcrop.h"
 #include "world/pipe.h"
+#include "world/platform.h"
 #include "world/potato.h"
 #include "world/torch.h"
 #include "world/tree.h"
@@ -172,6 +173,7 @@ public:
 		registerOutcrop(*this, "copper", "copper-ore-chunk");
 		registerOutcrop(*this, "sulphur");
 		registerGlassPipe(*this);
+		registerPlatform(*this);
 		registerPotato(*this);
 		registerTorch(*this);
 		registerTree(*this);

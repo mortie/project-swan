@@ -52,7 +52,10 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane)
 	for (int x = firstX; x <= lastX; ++x) {
 		int by = (int)floor(phys.body.bottom() + 0.04);
 		Tile &bottom = plane.tiles().get({x, by});
-		if (bottom.isSolid()) {
+		bool onGround =
+			bottom.isSolid() ||
+			(phys.platformCollision && bottom.isPlatform() && phys.vel.y >= -0.1);
+		if (onGround) {
 			phys.body.pos.y = (float)by - phys.body.size.y;
 			collided = true;
 			phys.onGround = true;

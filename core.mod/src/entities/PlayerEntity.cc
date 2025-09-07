@@ -771,6 +771,17 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 		}
 	}
 
+	// Fall through platforms
+	if (ctx.game.isKeyPressed(GLFW_KEY_S)) {
+		platformCollisionTimer_ = 0.2;
+		physicsBody_.platformCollision = false;
+	} else if (platformCollisionTimer_ > 0) {
+		platformCollisionTimer_ -= dt;
+		if (platformCollisionTimer_ <= 0) {
+			physicsBody_.platformCollision = true;
+		}
+	}
+
 	// Figure out what tile we're in
 	auto midTilePos = Swan::TilePos{
 		(int)floor(physicsBody_.body.midX()),

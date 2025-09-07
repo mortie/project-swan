@@ -165,6 +165,8 @@ private:
 	int teleState_ = 0;
 	float teleportTimer_ = 0;
 
+	float platformCollisionTimer_ = 0;
+
 	float gamma_ = 1;
 
 	Swan::TilePos breakPos_;

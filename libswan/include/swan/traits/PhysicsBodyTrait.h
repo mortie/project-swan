@@ -51,6 +51,7 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 	Vec2 vel{};
 	Vec2 force{};
 	bool onGround = false;
+	bool platformCollision = true;
 
 	void friction();
 	void friction(Vec2 coef);
