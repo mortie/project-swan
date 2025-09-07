@@ -6,6 +6,9 @@
 
 namespace CoreMod {
 
+struct PlatformTraits: Swan::Tile::Traits {};
+struct SupportPlatformTraits: PlatformTraits {};
+
 static bool spawnPlatform(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	auto &left = ctx.plane.tiles().get(pos.add(-1, 0));
@@ -31,12 +34,12 @@ static void updatePlatform(Swan::Ctx &ctx, Swan::TilePos pos)
 
 	auto &self = ctx.plane.tiles().get(pos);
 	bool hasSolidBelow = below.isSolid();
-	bool hasPlatformLeft = left.more->traits == self.more->traits;
+	bool hasPlatformLeft = dynamic_cast<PlatformTraits *>(left.more->traits.get());
 	bool hasSolidLeft = left.isSupportH() && !hasPlatformLeft;
-	bool hasPlatformRight = right.more->traits == self.more->traits;
+	bool hasPlatformRight = dynamic_cast<PlatformTraits *>(right.more->traits.get());
 	bool hasSolidRight = right.isSupportH() && !hasPlatformRight;
 
-	std::string_view desired = "core::platform::lone";
+	std::string_view desired = "";
 	if (hasSolidBelow) {
 		if (hasPlatformLeft && hasPlatformRight) {
 			desired = "core::platform::supported::center";
@@ -45,7 +48,7 @@ static void updatePlatform(Swan::Ctx &ctx, Swan::TilePos pos)
 		} else if (hasPlatformRight) {
 			desired = "core::platform::supported::left";
 		} else {
-			desired = "core::platform";
+			desired = "core::platform::supported::lone";
 		}
 	} else {
 		if (hasPlatformLeft && hasPlatformRight) {
@@ -65,14 +68,66 @@ static void updatePlatform(Swan::Ctx &ctx, Swan::TilePos pos)
 		}
 	}
 
-	if (self.name != desired) {
-		ctx.plane.tiles().set(pos, desired);
+	if (desired == "") {
+		breakTileAndDropItem(ctx, pos);
+		return;
+	}
+
+	if (self.name == desired) {
+		return;
+	}
+
+	auto &desiredSelf = ctx.world.getTile(desired);
+
+	auto tileIsPlatform = [](Swan::Tile &t) {
+		auto ptr = dynamic_cast<PlatformTraits *>(t.more->traits.get());
+		return ptr != nullptr;
+	};
+
+	auto tileIsSupport = [](Swan::Tile &t) {
+		auto ptr = dynamic_cast<SupportPlatformTraits *>(t.more->traits.get());
+		return ptr != nullptr;
+	};
+
+	// Search for supporting tiles nearby
+	bool isSupported = tileIsSupport(desiredSelf);
+	if (!isSupported) {
+		bool continueLeft = true;
+		bool continueRight = true;
+		for (int x = 1; x < 20 && (continueLeft || continueRight); ++x) {
+			if (continueLeft) {
+				auto &left = ctx.plane.tiles().get(pos.add(-x, 0));
+				if (tileIsSupport(left)) {
+					isSupported = true;
+					break;
+				} else if (!tileIsPlatform(left)) {
+					continueLeft = false;
+				}
+			}
+
+			if (continueRight) {
+				auto &right = ctx.plane.tiles().get(pos.add(x, 0));
+				if (tileIsSupport(right)) {
+					isSupported = true;
+					break;
+				} else if (!tileIsPlatform(right)) {
+					continueRight = false;
+				}
+			}
+		}
+	}
+
+	if (isSupported) {
+		ctx.plane.tiles().setID(pos, desiredSelf.id);
+	} else {
+		breakTileAndDropItem(ctx, pos);
 	}
 }
 
 void registerPlatform(Swan::Mod &mod)
 {
-	auto traits = std::make_shared<Swan::Tile::Traits>();
+	auto traits = std::make_shared<PlatformTraits>();
+	auto supportTraits = std::make_shared<SupportPlatformTraits>();
 
 	Swan::Tile::Builder tile = {
 		.breakableBy = Swan::Tool::HAND,
@@ -83,48 +138,59 @@ void registerPlatform(Swan::Mod &mod)
 		.isSupportH = true,
 		.onTileUpdate = updatePlatform,
 		.onSpawn = spawnPlatform,
-		.traits = traits,
 	};
 
 	mod.registerTile(tile
 		.withName("platform::left")
-		.withImage("core::tiles/platform@0"));
+		.withImage("core::tiles/platform@0")
+		.withTraits(traits));
 	mod.registerTile(tile
 		.withName("platform::right")
-		.withImage("core::tiles/platform@2"));
+		.withImage("core::tiles/platform@2")
+		.withTraits(traits));
 	mod.registerTile(tile
 		.withName("platform::center")
-		.withImage("core::tiles/platform@1"));
+		.withImage("core::tiles/platform@1")
+		.withTraits(traits));
 
 	mod.registerTile(tile
 		.withName("platform::anchored::stub::left")
-		.withImage("core::tiles/platform@3"));
+		.withImage("core::tiles/platform@3")
+		.withTraits(supportTraits));
 	mod.registerTile(tile
 		.withName("platform::anchored::stub::right")
-		.withImage("core::tiles/platform@5"));
+		.withImage("core::tiles/platform@5")
+		.withTraits(supportTraits));
 	mod.registerTile(tile
-		.withName("platform::lone")
-		.withImage("core::tiles/platform@4"));
+		.withName("platform")
+		.withImage("core::tiles/platform@4")
+		.withTraits(traits));
 
 	mod.registerTile(tile
 		.withName("platform::anchored::left")
-		.withImage("core::tiles/platform@6"));
+		.withImage("core::tiles/platform@6")
+		.withTraits(supportTraits));
 	mod.registerTile(tile
 		.withName("platform::anchored::right")
-		.withImage("core::tiles/platform@8"));
+		.withImage("core::tiles/platform@8")
+		.withTraits(supportTraits));
 	mod.registerTile(tile
-		.withName("platform")
-		.withImage("core::tiles/platform@7"));
+		.withName("platform::supported::lone")
+		.withImage("core::tiles/platform@7")
+		.withTraits(supportTraits));
 
 	mod.registerTile(tile
 		.withName("platform::supported::left")
-		.withImage("core::tiles/platform@9"));
+		.withImage("core::tiles/platform@9")
+		.withTraits(supportTraits));
 	mod.registerTile(tile
 		.withName("platform::supported::right")
-		.withImage("core::tiles/platform@11"));
+		.withImage("core::tiles/platform@11")
+		.withTraits(supportTraits));
 	mod.registerTile(tile
 		.withName("platform::supported::center")
-		.withImage("core::tiles/platform@10"));
+		.withImage("core::tiles/platform@10")
+		.withTraits(supportTraits));
 }
 
 }
