@@ -344,6 +344,11 @@ public:
 			.output = {1, "core::unfired-crucible"},
 			.kind = "core::crafting",
 		});
+		registerRecipe({
+			.inputs = {{1, "core::wood"}},
+			.output = {2, "core::platform"},
+			.kind = "core::crafting",
+		});
 
 		registerRecipeKind("burning");
 		registerRecipe({
