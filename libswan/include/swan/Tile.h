@@ -29,6 +29,7 @@ struct Tile {
 		IS_SUPPORT_H = 1 << 3,
 		IS_REPLACABLE = 1 << 4,
 		IS_PLATFORM = 1 << 5,
+		IS_FULL_SUPPORT_H = 1 << 6,
 	};
 
 	friend constexpr Tile::Flags operator|(Tile::Flags a, Tile::Flags b) {
@@ -58,6 +59,7 @@ struct Tile {
 		bool isSupportH = isSolid;
 		bool isReplacable = false;
 		bool isPlatform = isSolid;
+		bool isFullSupportH = isSupportH;
 		float lightLevel = 0;
 		float temperature = 0;
 		ToolSet breakableBy = Tool::NONE;
@@ -163,7 +165,8 @@ struct Tile {
 			(builder.isSupportV ? IS_SUPPORT_V : NONE) |
 			(builder.isSupportH ? IS_SUPPORT_H : NONE) |
 			(builder.isReplacable ? IS_REPLACABLE : NONE) |
-			(builder.isPlatform ? IS_PLATFORM : NONE)),
+			(builder.isPlatform ? IS_PLATFORM : NONE) |
+			(builder.isFullSupportH ? IS_FULL_SUPPORT_H : NONE)),
 		breakableBy(builder.breakableBy),
 		name(name),
 		more(std::make_unique<More>(builder))
@@ -175,6 +178,7 @@ struct Tile {
 	bool isSupportH() const { return flags & IS_SUPPORT_H; }
 	bool isReplacable() const { return flags & IS_REPLACABLE; }
 	bool isPlatform() const { return flags & IS_PLATFORM; }
+	bool isFullSupportH() const { return flags & IS_FULL_SUPPORT_H; }
 };
 
 }

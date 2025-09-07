@@ -136,6 +136,7 @@ void registerPlatform(Swan::Mod &mod)
 		.isPlatform = true,
 		.isSupportV = true,
 		.isSupportH = true,
+		.isFullSupportH = false,
 		.onTileUpdate = updatePlatform,
 		.onSpawn = spawnPlatform,
 	};
