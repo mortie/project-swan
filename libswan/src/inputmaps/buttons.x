@@ -1,0 +1,17 @@
+// This file encodes GLFW_GAMEPAD_BUTTON macros from GLFW 3.4
+
+X("A", 0)
+X("B", 1)
+X("X", 2)
+X("Y", 3)
+X("LEFT_BUMPER", 4)
+X("RIGHT_BUMPER", 5)
+X("BACK", 6)
+X("START", 7)
+X("GUIDE", 8)
+X("LEFT_THUMB", 9)
+X("RIGHT_THUMB", 10)
+X("DPAD_UP", 11)
+X("DPAD_RIGHT", 12)
+X("DPAD_DOWN", 13)
+X("DPAD_LEFT", 14)
