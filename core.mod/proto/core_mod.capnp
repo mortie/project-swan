@@ -70,6 +70,10 @@ struct ChestTileEntity {
 	inventory @1 :BasicInventory;
 }
 
+struct ComputerTileEntity {
+	tileEntity @0 :TileEntity;
+}
+
 struct ItemFanTileEntity {
 	tileEntity @0 :TileEntity;
 	direction @1 :Direction;

@@ -10,6 +10,7 @@
 #include "world/bonfire.h"
 #include "world/chest.h"
 #include "world/clay.h"
+#include "world/computer.h"
 #include "world/crucible.h"
 #include "world/drain.h"
 #include "world/item-fan.h"
@@ -164,6 +165,7 @@ public:
 		registerBonfire(*this);
 		registerChest(*this);
 		registerClay(*this);
+		registerComputer(*this);
 		registerCrucible(*this);
 		registerDrain(*this);
 		registerItemFan(*this);

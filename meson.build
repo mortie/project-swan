@@ -71,6 +71,10 @@ libdw = dependency('libdw', required: false)
 
 libthreads = dependency('threads')
 
+# The game engine doesn't use scisa,
+# but we want it available to mods
+subproject('scisa')
+
 subdir('third-party')
 
 common = declare_dependency(

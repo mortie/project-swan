@@ -37,3 +37,6 @@
 [submodule "subprojects/cpptoml-ng"]
 	path = subprojects/cpptoml-ng
 	url = https://github.com/mortie/cpptoml-ng.git
+[submodule "subprojects/scisa"]
+	path = subprojects/scisa
+	url = https://github.com/mortie/scisa.git

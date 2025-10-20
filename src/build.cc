@@ -670,6 +670,8 @@ bool build(const char *modPath, const char *swanPath)
 		cat(swanPath, "/lib/libswan" DYNLIB_EXT),
 		cat(swanPath, "/lib/libcygnet" DYNLIB_EXT),
 		cat(swanPath, "/lib/libimgui" DYNLIB_EXT),
+		cat(swanPath, "/lib/libscisasm" DYNLIB_EXT),
+		cat(swanPath, "/lib/libscisavm" DYNLIB_EXT),
 	};
 
 	auto pkgCFlags = pkgconfig("--cflags", pkgs);

@@ -19,6 +19,7 @@ libimgui = declare_dependency(
     'imgui/imgui_tables.cpp',
     'imgui/imgui_widgets.cpp',
     'imgui/imgui.cpp',
+    'imgui/misc/cpp/imgui_stdlib.cpp',
     include_directories: 'imgui',
     cpp_args: ['-Wno-sign-compare', '-Wno-deprecated-enum-enum-conversion'],
     dependencies: [libglfw3],
@@ -30,6 +31,10 @@ install_headers(
   'imgui/imgui.h',
   'imgui/imconfig.h',
   install_dir: 'include/imgui',
+)
+install_headers(
+  'imgui/misc/cpp/imgui_stdlib.h',
+  install_dir: 'include/imgui/misc/cpp',
 )
 
 libperlinnoise = declare_dependency(

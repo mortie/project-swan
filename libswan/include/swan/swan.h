@@ -35,4 +35,5 @@
 #include <swan/ModImpl.h>
 
 #include <imgui/imgui.h>
+#include <imgui/misc/cpp/imgui_stdlib.h>
 // IWYU pragma: end_exports
