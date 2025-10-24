@@ -27,7 +27,7 @@ void ComputerTileEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 			running_ = false;
 		}
 	} else {
-		ImGui::BeginDisabled(asmError_ || textSize_ == 0);
+		ImGui::BeginDisabled(asmError_ != "" || textSize_ == 0);
 		if (ImGui::Button("Run")) {
 			running_ = true;
 		}
@@ -36,7 +36,7 @@ void ComputerTileEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 
 	ImGui::SameLine();
 
-	ImGui::BeginDisabled(asmError_ || textSize_ == 0 || running_);
+	ImGui::BeginDisabled(asmError_ != "" || textSize_ == 0 || running_);
 	if (ImGui::Button("Step")) {
 		cpu_.step(1);
 	}
@@ -53,8 +53,8 @@ void ComputerTileEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 		debugIO_->output.clear();
 	}
 
-	if (asmError_) {
-		ImGui::TextColored({255, 0, 0, 255}, "ASM: %s", asmError_);
+	if (asmError_ != "") {
+		ImGui::TextColored({255, 0, 0, 255}, "ASM: %s", asmError_.c_str());
 	} else {
 		ImGui::Text("ASM OK");
 	}
@@ -101,6 +101,7 @@ void ComputerTileEntity::assemble()
 	std::stringstream in(std::move(assembly_));
 
 	scisasm::Assembly a;
+	asmError_ = "";
 	if (scisasm::assemble(in, a, &asmError_) < 0) {
 		assembly_ = std::move(in).str();
 		return;
@@ -130,7 +131,7 @@ void ComputerTileEntity::assemble()
 		.size = 1,
 	});
 
-	asmError_ = nullptr;
+	asmError_ = "";
 	assembly_ = std::move(in).str();
 }
 

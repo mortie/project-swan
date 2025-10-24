@@ -43,7 +43,7 @@ private:
 	TileEntity tileEntity_;
 	bool running_ = false;
 	bool showGUI_ = false;
-	const char *asmError_ = nullptr;
+	std::string asmError_;
 	std::string assembly_;
 
 	scisavm::CPU8 cpu_;
