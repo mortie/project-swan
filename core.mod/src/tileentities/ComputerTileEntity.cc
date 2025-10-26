@@ -96,6 +96,19 @@ void ComputerTileEntity::tick(Swan::Ctx &ctx, float dt)
 	cpu_.step(1);
 }
 
+void ComputerTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
+{
+	tileEntity_.serialize(w.initTileEntity());
+	w.setAssembly(assembly_);
+}
+
+void ComputerTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
+{
+	tileEntity_.deserialize(r.getTileEntity());
+	assembly_ = r.getAssembly();
+	assemble();
+}
+
 void ComputerTileEntity::assemble()
 {
 	std::stringstream in(std::move(assembly_));

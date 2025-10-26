@@ -72,6 +72,7 @@ struct ChestTileEntity {
 
 struct ComputerTileEntity {
 	tileEntity @0 :TileEntity;
+	assembly @1 :Text;
 }
 
 struct ItemFanTileEntity {
