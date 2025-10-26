@@ -135,13 +135,13 @@ void ComputerTileEntity::assemble()
 	pmem_.resize(256);
 	cpu_.dmem.clear();
 	cpu_.dmem.push_back({
-		.data = dmem_,
 		.start = 0,
+		.data = dmem_,
 	});
 	cpu_.io.push_back({
-		.io = debugIO_.get(),
 		.start = 255,
 		.size = 1,
+		.io = debugIO_.get(),
 	});
 
 	asmError_ = "";
