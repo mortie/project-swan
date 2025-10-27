@@ -189,7 +189,7 @@ void MainWindow::reload()
 		worldNames.Add(world.name);
 	}
 
-	selectedWorld_->SetLabelText(wxT(""));
+	selectedWorld_->SetValue(wxT(""));
 	existingWorlds_->Set(worldNames);
 	newWorldName_->Clear();
 	*newWorldName_ << getNewWorldName(worlds_);
@@ -221,11 +221,11 @@ void MainWindow::updateSelection()
 		deleteBtn_->Enable(false);
 		renameBtn_->Enable(false);
 		loadBtn_->Enable(false);
-		selectedWorld_->SetLabel("");
+		selectedWorld_->SetValue("");
 	} else {
 		deleteBtn_->Enable(true);
 		renameBtn_->Enable(true);
 		loadBtn_->Enable(true);
-		selectedWorld_->SetLabel(worlds_[sel].name);
+		selectedWorld_->SetValue(worlds_[sel].name);
 	}
 }
