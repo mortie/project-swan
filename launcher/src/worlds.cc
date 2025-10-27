@@ -102,6 +102,11 @@ std::string worldPath(std::string id)
 	return "worlds/" + id + "/world.swan";
 }
 
+std::string thumbnailPath(std::string id)
+{
+	return "worlds/" + id + "/thumb.png";
+}
+
 bool worldExists(std::string id)
 {
 	return std::filesystem::exists("worlds/" + id);

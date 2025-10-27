@@ -113,6 +113,7 @@ int main(int argc, char **argv)
 	std::vector<std::string> mods;
 	const char *swanRoot = ".";
 	bool doCompileMods = true;
+	const char *thumbnailPath = nullptr;
 	for (int i = 1; i < argc; ++i) {
 		std::string_view arg = argv[i];
 		if (arg == "--mod") {
@@ -126,6 +127,9 @@ int main(int argc, char **argv)
 			worldPath = argv[i];
 		} else if (arg == "--no-compile") {
 			doCompileMods = false;
+		} else if (arg == "--thumbnail") {
+			i += 1;
+			thumbnailPath = argv[i];
 		} else {
 			warn << "Unexpected option: " << arg;
 		}
@@ -379,6 +383,10 @@ int main(int argc, char **argv)
 		}
 
 		FrameMark;
+	}
+
+	if (thumbnailPath) {
+		game.screenshot(thumbnailPath, 256, 256);
 	}
 
 	game.save();

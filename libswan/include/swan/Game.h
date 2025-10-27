@@ -176,6 +176,7 @@ public:
 	void drawPerfMenu();
 	void draw();
 	void render();
+	void screenshot(const char *path, int w = -1, int h = -1);
 
 	void update(float dt);
 	void save();

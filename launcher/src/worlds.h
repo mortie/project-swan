@@ -19,6 +19,7 @@ struct World {
 std::vector<World> listWorlds();
 std::string makeWorld(std::string name);
 std::string worldPath(std::string id);
+std::string thumbnailPath(std::string id);
 bool worldExists(std::string id);
 void deleteWorld(std::string id);
 void renameWorld(std::string id, std::string newName);

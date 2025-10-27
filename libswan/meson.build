@@ -52,7 +52,7 @@ libswan = declare_dependency(
     dependencies: [
       common, libcygnet, libthreads, libstb_image,
       libstb_vorbis, libcpptoml, libdl, libz, libgl, libglfw3,
-      libimgui, libportaudio, libcapnp, libffmpeg,
+      libimgui, libportaudio, libcapnp, libffmpeg, libdate,
     ] + maybe_libtracy,
     cpp_args: libswan_cflags,
     install: true,

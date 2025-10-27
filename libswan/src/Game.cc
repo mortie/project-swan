@@ -6,6 +6,10 @@
 #include <time.h>
 #include <memory>
 #include <imgui/imgui.h>
+#include <cygnet/gl.h>
+#include <stb/stb_image_write.h>
+#include <date/date.h>
+#include <date/tz.h>
 
 #include <capnp/message.h>
 #include <capnp/serialize-packed.h>
@@ -148,6 +152,15 @@ void Game::drawDebugMenu()
 	ImGui::Checkbox("Individually serialize entities", &debug_.outputEntityProto);
 	if (ImGui::Button("Save")) {
 		triggerSave_ = true;
+	}
+
+	if (ImGui::Button("Screenshot")) {
+		std::filesystem::create_directories("screenshots");
+		auto now = std::chrono::floor<std::chrono::seconds>(
+			std::chrono::system_clock::now());
+		auto nowZoned = date::make_zoned(date::current_zone(), now);
+		auto path = date::format({}, "screenshots/%F %T.png", nowZoned);
+		screenshot(path.c_str());
 	}
 
 	if (!FrameRecorder::isAvailable()) {
@@ -369,12 +382,13 @@ void Game::draw()
 		ImGui::End();
 	}
 
+	renderer_.clear();
+	renderer_.setBackgroundColor(world_->backgroundColor());
 	world_->draw(renderer_);
 }
 
 void Game::render()
 {
-	renderer_.setBackgroundColor(world_->backgroundColor());
 	renderer_.render(cam_);
 	renderer_.renderUI(uiCam_);
 
@@ -391,8 +405,70 @@ void Game::render()
 		renderer_.renderUI(uiCam_.withSize(size), {.vflip = true});
 		frameRecorder_->endFrame();
 	}
+}
 
-	renderer_.clear();
+void Game::screenshot(const char *path, int w, int h)
+{
+	if (w < 0) {
+		w = 1920;
+	} else if (w < 8) {
+		w = 8;
+	}
+
+	if (h < 0) {
+		h = 1080;
+	} else if (h < 8) {
+		h = 8;
+	}
+
+	info << "Writing " << w << 'x' << h << " screenshot to '" << path << "'...";
+
+	GLuint fbo;
+	glGenFramebuffers(1, &fbo);
+	Cygnet::glCheck();
+	SWAN_DEFER(glDeleteFramebuffers(1, &fbo));
+
+	GLuint fboTex;
+	glGenTextures(1, &fboTex);
+	Cygnet::glCheck();
+	SWAN_DEFER(glDeleteTextures(1, &fboTex));
+
+	glBindTexture(GL_TEXTURE_2D, fboTex);
+	Cygnet::glCheck();
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
+		GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	Cygnet::glCheck();
+
+	GLint screenFBO;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &screenFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	Cygnet::glCheck();
+	SWAN_DEFER(glBindFramebuffer(GL_FRAMEBUFFER, screenFBO));
+
+	glFramebufferTexture2D(
+		GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+		fboTex, 0);
+	Cygnet::glCheck();
+
+	int viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	glViewport(0, 0, w, h);
+	Cygnet::glCheck();
+	SWAN_DEFER(glViewport(viewport[0], viewport[1], viewport[2], viewport[3]));
+
+	auto cam = cam_.withSize({w, h});
+	renderer_.render(cam, {.vflip = true});
+
+	auto pixels = std::make_unique<unsigned char[]>(w * h * 4);
+	glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
+	Cygnet::glCheck();
+
+	if (!stbi_write_png(path, w, h, 4, pixels.get(), w * 4)) {
+		warn << "Writing screenshot failed";
+	}
 }
 
 void Game::update(float dt)

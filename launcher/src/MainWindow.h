@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include <vector>
 #include <wx/wx.h>
 #include "worlds.h"

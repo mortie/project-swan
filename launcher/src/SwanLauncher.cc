@@ -23,6 +23,8 @@ void SwanLauncher::launch(std::string id)
 		appendArg(cmd, "core.mod");
 		appendArg(cmd, "--world");
 		appendArg(cmd, worldPath(id));
+		appendArg(cmd, "--thumbnail");
+		appendArg(cmd, thumbnailPath(id));
 		std::cerr << "Running command: " << cmd << '\n';
 		runCommand(cmd.c_str());
 
