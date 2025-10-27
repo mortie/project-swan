@@ -208,7 +208,11 @@ void MainWindow::reload()
 	newWorldName_->Clear();
 	*newWorldName_ << getNewWorldName(worlds_);
 
-	existingWorlds_->SetSelection(0);
+	if (worlds_.empty()) {
+		existingWorlds_->SetSelection(-1);
+	} else {
+		existingWorlds_->SetSelection(0);
+	}
 	updateSelection();
 }
 
