@@ -73,7 +73,9 @@ libthreads = dependency('threads')
 
 # The game engine doesn't use scisa,
 # but we want it available to mods
-subproject('scisa')
+scisa_sub = subproject('scisa')
+libscisasm = scisa_sub.get_variable('libscisasm')
+libscisavm = scisa_sub.get_variable('libscisavm')
 
 subdir('third-party')
 
@@ -97,8 +99,9 @@ executable(
   install_rpath: bin_rpath,
   dependencies: [
     libswan, libcygnet, common, libimgui, libgl, libglfw3, libbackwardcpp,
-    libcpptoml, libsha1,
+    libcpptoml, libsha1, libscisasm, libscisavm,
   ] + maybe_libtracy,
+  override_options: ['b_asneeded=false'],
 )
 
 executable(
