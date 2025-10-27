@@ -72,6 +72,7 @@ libstb_image = declare_dependency(
   link_with: shared_library('stb_image',
     'stb-support/stb_image.cc',
     include_directories: '.',
+    cpp_args: ['-Wno-missing-field-initializers', '-Wno-deprecated-declarations'],
     install: true,
     install_rpath: origin_rpath,
   ),
