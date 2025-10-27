@@ -67,10 +67,13 @@ MainWindow::MainWindow(SwanLauncher *launcher):
 
 	placeholderThumb_.SetRGB(wxRect(0, 0, 256, 256), 100, 100, 100);
 	selectedWorldThumb_ = new wxStaticBitmap(this, wxID_ANY, wxBitmap(placeholderThumb_));
-	selectedWorldThumb_->SetSize(90, 90);
+#ifdef __APPLE__
 	selectedWorldThumb_->SetMinSize({90, 90});
+#else
+	selectedWorldThumb_->SetMinSize({150, 90});
+#endif
 	selectedWorldThumb_->Enable(false);
-	editRow->Add(selectedWorldThumb_, 0, wxEXPAND | wxRIGHT, 5);
+	editRow->Add(selectedWorldThumb_, 0, wxEXPAND | wxRIGHT, 3);
 
 	selectedWorld_ = new wxStaticText(this, wxID_ANY, wxT(""));
 	selectedWorld_->Enable(false);
