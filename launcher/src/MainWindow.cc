@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "worlds.h"
 #include "SwanLauncher.h"
+#include "wx/gdicmn.h"
 #include <iostream>
 #include <span>
 #include <string>
@@ -64,24 +65,34 @@ MainWindow::MainWindow(SwanLauncher *launcher):
 	auto *editRow = new wxBoxSizer(wxHORIZONTAL);
 	box->Add(editRow, 0, wxEXPAND);
 
-	selectedWorld_ = new wxTextCtrl(this, wxID_ANY, wxT(""));
+	placeholderThumb_.SetRGB(wxRect(0, 0, 256, 256), 100, 100, 100);
+	selectedWorldThumb_ = new wxStaticBitmap(this, wxID_ANY, wxBitmap(placeholderThumb_));
+	selectedWorldThumb_->SetSize(150, 64);
+	selectedWorldThumb_->SetMinSize({150, 64});
+	selectedWorldThumb_->Enable(false);
+	editRow->Add(selectedWorldThumb_, 0, wxEXPAND | wxRIGHT, 5);
+
+	selectedWorld_ = new wxStaticText(this, wxID_ANY, wxT(""));
 	selectedWorld_->Enable(false);
 	editRow->Add(selectedWorld_, 1, wxEXPAND | wxRIGHT, 5);
+
+	auto *controlsColumn = new wxBoxSizer(wxVERTICAL);
+	editRow->Add(controlsColumn);
 
 	deleteBtn_ = new wxButton(this, wxID_ANY, wxT("Delete"));
 	deleteBtn_->Enable(false);
 	deleteBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnWorldDelete, this);
-	editRow->Add(deleteBtn_, 0);
+	controlsColumn->Add(deleteBtn_, 1, wxEXPAND | wxRIGHT);
 
 	renameBtn_ = new wxButton(this, wxID_ANY, wxT("Rename"));
 	renameBtn_->Enable(false);
 	renameBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnWorldRename, this);
-	editRow->Add(renameBtn_, 0);
+	controlsColumn->Add(renameBtn_, 1, wxEXPAND | wxRIGHT);
 
 	loadBtn_ = new wxButton(this, wxID_ANY, wxT("Launch"));
 	loadBtn_->Enable(false);
 	loadBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnWorldLaunch, this);
-	editRow->Add(loadBtn_, 0);
+	controlsColumn->Add(loadBtn_, 1, wxEXPAND | wxRIGHT);
 
 	auto *newWorldRow = new wxBoxSizer(wxHORIZONTAL);
 	box->Add(newWorldRow, 0, wxEXPAND);
@@ -189,12 +200,12 @@ void MainWindow::reload()
 		worldNames.Add(world.name);
 	}
 
-	selectedWorld_->SetValue(wxT(""));
+	selectedWorld_->SetLabel(wxT(""));
 	existingWorlds_->Set(worldNames);
 	newWorldName_->Clear();
 	*newWorldName_ << getNewWorldName(worlds_);
 
-	existingWorlds_->SetSelection(-1);
+	existingWorlds_->SetSelection(0);
 	updateSelection();
 }
 
@@ -221,11 +232,43 @@ void MainWindow::updateSelection()
 		deleteBtn_->Enable(false);
 		renameBtn_->Enable(false);
 		loadBtn_->Enable(false);
-		selectedWorld_->SetValue("");
+		selectedWorld_->SetLabel("");
+		selectedWorldThumb_->SetBitmap(wxBitmap(placeholderThumb_));
+		selectedWorldThumb_->Enable(false);
+		Layout();
 	} else {
 		deleteBtn_->Enable(true);
 		renameBtn_->Enable(true);
 		loadBtn_->Enable(true);
-		selectedWorld_->SetValue(worlds_[sel].name);
+		selectedWorld_->Enable(true);
+
+		auto &world = worlds_[sel];
+		std::string data;
+		data += world.name;
+		data += "\n\n";
+		data += "Created: ";
+		data += world.creationTime.substr(0, world.creationTime.find('+'));
+		data += '\n';
+		data += "Played: ";
+		data += world.lastPlayedTime.substr(0, world.lastPlayedTime.find('+'));
+		selectedWorld_->SetLabel(data);
+
+		wxImage image;
+		auto thumbnail = thumbnailPath(worlds_[sel].id);
+		if (!image.LoadFile(thumbnail)) {
+			std::cerr << "Failed to load '" << thumbnail << "'\n";
+			Layout();
+			return;
+		}
+
+		selectedWorldThumb_->SetBitmap(wxBitmap(image));
+		selectedWorldThumb_->Enable(true);
+		Layout();
 	}
+}
+
+void MainWindow::onSwanClosed()
+{
+	enable();
+	reload();
 }

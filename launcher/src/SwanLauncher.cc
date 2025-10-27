@@ -35,6 +35,7 @@ void SwanLauncher::launch(std::string id)
 void SwanLauncher::OnSwanClosed()
 {
 	isRunning_ = false;
+	mainWindow_->onSwanClosed();
 	mainWindow_->reload();
 	mainWindow_->enable();
 }
@@ -44,9 +45,14 @@ bool SwanLauncher::OnInit()
 	// We need rand() later
 	srand(time(nullptr));
 
+	// Same with image loading
+	wxInitAllImageHandlers();
+
 	Bind(EVT_SWAN_CLOSED, [&](auto &evt) { OnSwanClosed(); });
 
 	mainWindow_ = new MainWindow(this);
 	mainWindow_->Show(true);
+	mainWindow_->SetSize(550, 350);
+	mainWindow_->SetMinSize({520, 300});
 	return true;
 }

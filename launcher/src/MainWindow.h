@@ -22,12 +22,15 @@ public:
 	void disable();
 	void enable();
 	void updateSelection();
+	void onSwanClosed();
 
 private:
 	wxListBox *existingWorlds_;
 	std::vector<World> worlds_;
 
-	wxTextCtrl *selectedWorld_;
+	wxStaticText *selectedWorld_;
+	wxImage placeholderThumb_{256, 256};
+	wxStaticBitmap *selectedWorldThumb_;
 	wxButton *deleteBtn_;
 	wxButton *renameBtn_;
 	wxButton *loadBtn_;
