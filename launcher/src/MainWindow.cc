@@ -67,8 +67,8 @@ MainWindow::MainWindow(SwanLauncher *launcher):
 
 	placeholderThumb_.SetRGB(wxRect(0, 0, 256, 256), 100, 100, 100);
 	selectedWorldThumb_ = new wxStaticBitmap(this, wxID_ANY, wxBitmap(placeholderThumb_));
-	selectedWorldThumb_->SetSize(150, 64);
-	selectedWorldThumb_->SetMinSize({150, 64});
+	selectedWorldThumb_->SetSize(90, 90);
+	selectedWorldThumb_->SetMinSize({90, 90});
 	selectedWorldThumb_->Enable(false);
 	editRow->Add(selectedWorldThumb_, 0, wxEXPAND | wxRIGHT, 5);
 
@@ -82,17 +82,17 @@ MainWindow::MainWindow(SwanLauncher *launcher):
 	deleteBtn_ = new wxButton(this, wxID_ANY, wxT("Delete"));
 	deleteBtn_->Enable(false);
 	deleteBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnWorldDelete, this);
-	controlsColumn->Add(deleteBtn_, 1, wxEXPAND | wxRIGHT);
+	controlsColumn->Add(deleteBtn_, 1, wxEXPAND);
 
 	renameBtn_ = new wxButton(this, wxID_ANY, wxT("Rename"));
 	renameBtn_->Enable(false);
 	renameBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnWorldRename, this);
-	controlsColumn->Add(renameBtn_, 1, wxEXPAND | wxRIGHT);
+	controlsColumn->Add(renameBtn_, 1, wxEXPAND | wxBOTTOM | wxTOP, 2);
 
 	loadBtn_ = new wxButton(this, wxID_ANY, wxT("Launch"));
 	loadBtn_->Enable(false);
 	loadBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnWorldLaunch, this);
-	controlsColumn->Add(loadBtn_, 1, wxEXPAND | wxRIGHT);
+	controlsColumn->Add(loadBtn_, 1, wxEXPAND);
 
 	auto *newWorldRow = new wxBoxSizer(wxHORIZONTAL);
 	box->Add(newWorldRow, 0, wxEXPAND);
