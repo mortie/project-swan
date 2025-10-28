@@ -16,16 +16,18 @@ Install dependencies:
 
 ```shell
 sudo dnf install \
-    git make meson cmake gcc g++ glfw-devel capnp capnproto-devel zlib-devel wxGTK-devel \
-    libavcodec-free-devel libavutil-free-devel libswscale-free-devel libavformat-free-devel
+    git make meson cmake gcc g++ clang glfw-devel capnp capnproto-devel zlib-devel \
+    wxGTK-devel libavcodec-free-devel libavutil-free-devel libswscale-free-devel \
+    libavformat-free-devel portaudio-devel
 ```
 
 ### Ubuntu
 
 ```shell
 sudo apt install \
-    git make meson cmake build-essential pkg-config libglfw3-dev capnproto libcapnp-dev \
-    libz-dev libwxgtk3.2-dev libavcodec-dev libavutil-dev libswscale-dev libavformat-dev
+    git make meson cmake build-essential clang pkg-config libglfw3-dev capnproto \
+    libcapnp-dev libz-dev libwxgtk3.2-dev libavcodec-dev libavutil-dev \
+    libswscale-dev libavformat-dev portaudio19-dev
 ```
 
 ### macOS

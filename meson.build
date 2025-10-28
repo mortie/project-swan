@@ -49,18 +49,7 @@ foreach lib: libffmpeg
   endif
 endforeach
 
-libportaudio = dependency('portaudio-2.0', required: false)
-if not libportaudio.found()
-  portaudio_options = cmake.subproject_options()
-  portaudio_options.append_compile_args('c', '-w') # Disable warnings
-  portaudio_options.add_cmake_defines({
-    'PA_BUILD_SHARED': true,
-    'PA_BUILD_STATIC': false,
-  })
-  portaudio_sub = cmake.subproject('portaudio', options: portaudio_options)
-  libportaudio = portaudio_sub.dependency('portaudio')
-endif
-
+libportaudio = dependency('portaudio-2.0')
 libcapnp = dependency('capnp')
 libcpptoml = subproject('cpptoml-ng').get_variable('cpptoml_dep')
 libdl = meson.get_compiler('cpp').find_library('dl')

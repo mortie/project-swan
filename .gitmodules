@@ -25,9 +25,6 @@
 [submodule "third-party/backward-cpp"]
 	path = third-party/backward-cpp
 	url = https://github.com/bombela/backward-cpp.git
-[submodule "subprojects/portaudio"]
-	path = subprojects/portaudio
-	url = https://github.com/PortAudio/portaudio.git
 [submodule "third-party/sha1"]
 	path = third-party/sha1
 	url = https://github.com/vog/sha1.git
