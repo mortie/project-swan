@@ -1,6 +1,6 @@
 # Project: SWAN
 
-[![Check](https://github.com/mortie/project-swan/actions/workflows/check.yml/badge.svg)](https://github.com/mortie/project-swan/actions/workflows/check.yml)
+[![Check](https://github.com/mortie/project-swan/actions/workflows/build.yml/badge.svg)](https://github.com/mortie/project-swan/actions/workflows/build.yml)
 
 Project: SWAN is (or, will become) a game about exploring a procedurally generated
 tile-based world and building contraptions in it to automate stuff.
@@ -30,20 +30,25 @@ sudo apt install \
 
 ### macOS
 
-(First, install Homebrew from https://brew.sh/, as well as Xcode Command Line Tools)
+(First, install Homebrew from https://brew.sh/
 
 ```shell
-brew install git make meson cmake pkg-config glfw3 capnp wxwidgets ffmpeg
+brew install meson cmake pkg-config glfw3 capnp wxwidgets ffmpeg portaudio
 ```
 
 ---
 
-Then compile:
+Download the source with:
 
 ```
 git clone https://github.com/mortie/project-swan.git
 cd project-swan
 git submodule update --init
+```
+
+Then compile:
+
+```
 make
 ```
 
