@@ -3,6 +3,7 @@
 #include "src/system.h"
 #include "worlds.h"
 #include <cstdlib>
+#include <thread>
 #include <ctime>
 
 wxDEFINE_EVENT(EVT_SWAN_CLOSED, wxEvent);

@@ -1,8 +1,6 @@
 #pragma once
 
-#include <atomic>
 #include <wx/wx.h>
-#include <thread>
 
 class MainWindow;
 
