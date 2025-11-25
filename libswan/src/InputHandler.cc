@@ -1,5 +1,7 @@
+#include <bitset>
 #include <cassert>
 #include <cmath>
+#include <unordered_set>
 #include <vector>
 
 #include <swan/HashMap.h>
@@ -15,6 +17,13 @@
 #include <GLFW/glfw3.h>
 
 namespace Swan {
+
+struct InputHandler::Gamepad {
+	std::array<float, 6> prevAxes;
+	std::array<float, 6> axes;
+	std::bitset<32> prevButtons;
+	std::bitset<32> buttons;
+};
 
 struct InputHandler::Impl {
 	std::vector<Action> actions;
@@ -33,6 +42,8 @@ struct InputHandler::Impl {
 	std::unordered_map<int, std::vector<ActionWrapper>> mouseButtons;
 	std::unordered_map<int, std::vector<ActionWrapper>> gamepadButtons;
 	std::unordered_map<int, std::vector<ActionWrapper>> joystickAxes;
+
+	std::array<std::optional<Gamepad>, GLFW_JOYSTICK_LAST + 1> gamepads;
 };
 
 InputHandler::InputHandler(): impl_(std::make_unique<Impl>()) {}
@@ -92,6 +103,9 @@ void InputHandler::onMouseDown(int button)
 
 	for (auto &w: it->second) {
 		w.action->activation += w.multiplier;
+		if (w.kind == ActionKind::ONESHOT) {
+			impl_->oneshotActionsActivatedThisFrame.push_back(w.action);
+		}
 	}
 }
 
@@ -118,7 +132,7 @@ void InputHandler::setActions(std::vector<ActionSpec> actions)
 {
 	impl_ = std::make_unique<Impl>();
 
-	// Fill vectors
+	// Fill vector
 	impl_->actions.resize(actions.size());
 
 	// Fill actionsByName hash map
@@ -140,21 +154,126 @@ void InputHandler::setActions(std::vector<ActionSpec> actions)
 	}
 }
 
+void InputHandler::beginFrame()
+{
+	for (int jid = 0; jid <= GLFW_JOYSTICK_LAST; ++jid) {
+		bool present = glfwJoystickPresent(jid);
+		if (present) {
+			if (!impl_->gamepads[jid]) {
+				impl_->gamepads[jid].emplace();
+			}
+
+			Gamepad &gamepad = *impl_->gamepads[jid];
+
+			int count;
+			const float *axes = glfwGetJoystickAxes(jid, &count);
+			count = std::min(size_t(count), gamepad.axes.size());
+			for (int i = 0; i < count; ++i) {
+				gamepad.axes[i] = axes[i];
+			}
+
+			const auto *buttons = glfwGetJoystickButtons(jid, &count);
+			count = std::min(size_t(count), gamepad.buttons.size());
+			for (int i = 0; i < count; ++i) {
+				gamepad.buttons[i] = buttons[i];
+			}
+
+			updateGamepad(gamepad);
+		} else if (impl_->gamepads[jid]) {
+			Gamepad &gamepad = *impl_->gamepads[jid];
+			gamepad.axes = {};
+			gamepad.buttons = {};
+			updateGamepad(gamepad);
+
+			impl_->gamepads[jid] = std::nullopt;
+		}
+	}
+}
+
 void InputHandler::endFrame()
 {
 	for (auto action: impl_->oneshotActionsActivatedThisFrame) {
 		action->activation = 0;
 	}
+	impl_->oneshotActionsActivatedThisFrame.clear();
 }
 
-static int lookupFromName(const HashMap<int> &map, std::string_view name)
+void InputHandler::updateGamepad(Gamepad &gamepad)
 {
-	auto it = map.find(name);
-	if (it == map.end()) {
-		return -1;
+	for (int i = 0; i < int(gamepad.axes.size()); ++i) {
+		float val = gamepad.axes[i];
+		if (std::abs(val) < 0.1) {
+			val = 0;
+		}
+
+		float delta = val - gamepad.prevAxes[i];
+		if (delta == 0) {
+			continue;
+		}
+		gamepad.prevAxes[i] = val;
+
+		auto it = impl_->joystickAxes.find(i);
+		if (it == impl_->keys.end()) {
+			return;
+		}
+
+		for (auto &w: it->second) {
+			w.action->activation += delta * w.multiplier;
+			if (std::abs(w.action->activation) < 0.01) {
+				w.action->activation = 0;
+			}
+		}
 	}
-	return it->second;
-};
+
+	for (int i = 0; i < int(gamepad.buttons.size()); ++i) {
+		bool pressed = gamepad.buttons[i];
+		bool prevPressed = gamepad.prevButtons[i];
+		if (pressed == prevPressed) {
+			continue;
+		}
+		gamepad.prevButtons[i] = pressed;
+
+		if (pressed) {
+			onButtonDown(i);
+		} else {
+			onButtonUp(i);
+		}
+	}
+}
+
+void InputHandler::onButtonDown(int button)
+{
+	auto it = impl_->gamepadButtons.find(button);
+	if (it == impl_->gamepadButtons.end()) {
+		return;
+	}
+
+	for (auto &w: it->second) {
+		w.action->activation += w.multiplier;
+		if (w.kind == ActionKind::ONESHOT) {
+			impl_->oneshotActionsActivatedThisFrame.push_back(w.action);
+		}
+	}
+}
+
+void InputHandler::onButtonUp(int button)
+{
+	auto it = impl_->gamepadButtons.find(button);
+	if (it == impl_->gamepadButtons.end()) {
+		return;
+	}
+
+	for (auto &w: it->second) {
+		if (w.kind == ActionKind::ONESHOT) {
+			continue;
+		}
+
+		w.action->activation -= w.multiplier;
+		if (std::abs(w.action->activation) < 0.01) {
+			w.action->activation = 0;
+		}
+	}
+}
 
 void InputHandler::registerInput(
 	std::string_view input,
@@ -229,13 +348,13 @@ void InputHandler::registerAxisInput(std::string_view input, Action *action)
 			secondary = secondary.substr(1);
 		}
 
-		int id = lookupFromName(gamepadAxisFromName, secondary);
-		if (id < 0) {
+		auto it = gamepadAxisFromName.find(secondary);
+		if (it == gamepadAxisFromName.end()) {
 			warn << "Unknown axis: " << secondary;
 			return;
 		}
 
-		impl_->joystickAxes[id].push_back({
+		impl_->joystickAxes[it->second].push_back({
 			.action = action,
 			.multiplier = multiplier,
 		});
@@ -261,7 +380,7 @@ void InputHandler::registerAxisInput(std::string_view input, Action *action)
 		nameMap = &mouseButtonFromName;
 		map = &impl_->mouseButtons;
 	}
-	else if (category == "btn") {
+	else if (category == "button") {
 		nameMap = &gamepadButtonFromName;
 		map = &impl_->gamepadButtons;
 	}

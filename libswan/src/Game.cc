@@ -458,6 +458,8 @@ void Game::screenshot(const char *path, int w, int h)
 
 void Game::update(float dt)
 {
+	inputHandler_.beginFrame();
+
 	perf_.updateCount += 1;
 	if (perf_.updateCount >= 60) {
 		perf_.entityUpdateTime.capture(perf_.updateCount);
@@ -468,7 +470,7 @@ void Game::update(float dt)
 
 	float zoomLim = debug_.godMode ? 0.002 : 0.0175;
 	// Zoom the window using the scroll wheel
-	cam_.zoom += (float)wasWheelScrolled() * 0.05f * cam_.zoom;
+	cam_.zoom += (float)didScroll_ * 0.05f * cam_.zoom;
 	if (cam_.zoom > 1) {
 		cam_.zoom = 1;
 	}
@@ -543,9 +545,8 @@ void Game::update(float dt)
 	world_->update(dt);
 
 	soundPlayer_.setCenter(cam_.pos.x, cam_.pos.y);
-
-	inputHandler_.endFrame();
 	didScroll_ = 0;
+	inputHandler_.endFrame();
 
 	tickAcc_ += dt;
 	if (tickAcc_ > 2) {

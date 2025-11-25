@@ -423,12 +423,12 @@ public:
 		registerAction({
 			.name = "gui-show-inventory",
 			.kind = Swan::ActionKind::ONESHOT,
-			.defaultInputs = {"key:E"},
+			.defaultInputs = {"key:E", "button:X"},
 		});
 		registerAction({
 			.name = "gui-show-crafting",
 			.kind = Swan::ActionKind::ONESHOT,
-			.defaultInputs = {"key:F"},
+			.defaultInputs = {"key:F", "button:Y"},
 		});
 		registerAction({
 			.name = "gui-click",
@@ -443,28 +443,28 @@ public:
 		registerAction({
 			.name = "gui-left",
 			.kind = Swan::ActionKind::ONESHOT,
-			.defaultInputs = {"key:LEFT"},
+			.defaultInputs = {"key:LEFT", "button:DPAD_LEFT"},
 		});
 		registerAction({
 			.name = "gui-right",
 			.kind = Swan::ActionKind::ONESHOT,
-			.defaultInputs = {"key:RIGHT"},
+			.defaultInputs = {"key:RIGHT", "button:DPAD_RIGHT"},
 		});
 		registerAction({
 			.name = "gui-up",
 			.kind = Swan::ActionKind::ONESHOT,
-			.defaultInputs = {"key:UP"},
+			.defaultInputs = {"key:UP", "button:DPAD_UP"},
 		});
 		registerAction({
 			.name = "gui-down",
 			.kind = Swan::ActionKind::ONESHOT,
-			.defaultInputs = {"key:DOWN"},
+			.defaultInputs = {"key:DOWN", "button:DPAD_DOWN"},
 		});
 
 		registerAction({
 			.name = "return-home",
 			.kind = Swan::ActionKind::ONESHOT,
-			.defaultInputs = {"key:B"},
+			.defaultInputs = {"key:B", "button:LEFT_STICK"},
 		});
 		registerAction({
 			.name = "break-tile",
@@ -479,32 +479,32 @@ public:
 		registerAction({
 			.name = "drop-item",
 			.kind = Swan::ActionKind::ONESHOT,
-			.defaultInputs = {"key:Q"},
+			.defaultInputs = {"key:Q", "button:B"},
 		});
 		registerAction({
 			.name = "select-item",
 			.kind = Swan::ActionKind::ONESHOT,
-			.defaultInputs = {"key:X"},
+			.defaultInputs = {"key:X", "button:LEFT_BUMPER"},
 		});
 		registerAction({
 			.name = "sprint",
 			.kind = Swan::ActionKind::CONTINUOUS,
-			.defaultInputs = {"key:LEFT_SHIFT"},
+			.defaultInputs = {"key:LEFT_SHIFT", "button:RIGHT_BUMPER"},
 		});
 		registerAction({
 			.name = "jump",
 			.kind = Swan::ActionKind::CONTINUOUS,
-			.defaultInputs = {"key:SPACE"},
+			.defaultInputs = {"key:SPACE", "button:A"},
 		});
 		registerAction({
 			.name = "move-x",
 			.kind = Swan::ActionKind::AXIS,
-			.defaultInputs = {"key:A;D"},
+			.defaultInputs = {"key:A;D", "axis:LEFT_X"},
 		});
 		registerAction({
 			.name = "move-y",
 			.kind = Swan::ActionKind::AXIS,
-			.defaultInputs = {"key:W;S"},
+			.defaultInputs = {"key:W;S", "axis:LEFT_Y"},
 		});
 
 		registerAction({

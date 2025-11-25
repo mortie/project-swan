@@ -94,11 +94,6 @@ public:
 		return mouseUIPos_;
 	}
 
-	double wasWheelScrolled()
-	{
-		return didScroll_;
-	}
-
 	void playSound(SoundAsset *asset);
 	void playSound(SoundAsset *asset, float volume);
 	void playSound(SoundAsset *asset, Vec2 center);

@@ -101,7 +101,7 @@ private:
 			guiLeft(ctx.game.action("core::gui-left")),
 			guiRight(ctx.game.action("core::gui-right")),
 			guiUp(ctx.game.action("core::gui-up")),
-			guiDown(ctx.game.action("core::gui-up")),
+			guiDown(ctx.game.action("core::gui-down")),
 			returnHome(ctx.game.action("core::return-home")),
 			breakTile(ctx.game.action("core::break-tile")),
 			activate(ctx.game.action("core::activate")),
