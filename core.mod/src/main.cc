@@ -398,6 +398,165 @@ public:
 		registerEntity<SpiderEntity>("spider");
 		registerEntity<FallingTileEntity>("falling-tile");
 		registerEntity<DynamiteEntity>("dynamite");
+
+		registerAction({
+			.name = "cheat-heal",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:M"},
+		});
+		registerAction({
+			.name = "cheat-hurt",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:N"},
+		});
+		registerAction({
+			.name = "cheat-tick-world",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:P"},
+		});
+		registerAction({
+			.name = "cheat-grab-item",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:G"},
+		});
+
+		registerAction({
+			.name = "gui-show-inventory",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:E"},
+		});
+		registerAction({
+			.name = "gui-show-crafting",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:F"},
+		});
+		registerAction({
+			.name = "gui-click",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"mouse:LEFT"},
+		});
+		registerAction({
+			.name = "gui-modifier",
+			.kind = Swan::ActionKind::CONTINUOUS,
+			.defaultInputs = {"key:LEFT_SHIFT"},
+		});
+		registerAction({
+			.name = "gui-left",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:LEFT"},
+		});
+		registerAction({
+			.name = "gui-right",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:RIGHT"},
+		});
+		registerAction({
+			.name = "gui-up",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:UP"},
+		});
+		registerAction({
+			.name = "gui-down",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:DOWN"},
+		});
+
+		registerAction({
+			.name = "return-home",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:B"},
+		});
+		registerAction({
+			.name = "break-tile",
+			.kind = Swan::ActionKind::CONTINUOUS,
+			.defaultInputs = {"mouse:LEFT"},
+		});
+		registerAction({
+			.name = "activate",
+			.kind = Swan::ActionKind::CONTINUOUS,
+			.defaultInputs = {"mouse:RIGHT"},
+		});
+		registerAction({
+			.name = "drop-item",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:Q"},
+		});
+		registerAction({
+			.name = "select-item",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:X"},
+		});
+		registerAction({
+			.name = "sprint",
+			.kind = Swan::ActionKind::CONTINUOUS,
+			.defaultInputs = {"key:LEFT_SHIFT"},
+		});
+		registerAction({
+			.name = "jump",
+			.kind = Swan::ActionKind::CONTINUOUS,
+			.defaultInputs = {"key:SPACE"},
+		});
+		registerAction({
+			.name = "move-x",
+			.kind = Swan::ActionKind::AXIS,
+			.defaultInputs = {"key:A;D"},
+		});
+		registerAction({
+			.name = "move-y",
+			.kind = Swan::ActionKind::AXIS,
+			.defaultInputs = {"key:W;S"},
+		});
+
+		registerAction({
+			.name = "select-slot-0",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:1"},
+		});
+		registerAction({
+			.name = "select-slot-1",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:2"},
+		});
+		registerAction({
+			.name = "select-slot-2",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:3"},
+		});
+		registerAction({
+			.name = "select-slot-3",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:4"},
+		});
+		registerAction({
+			.name = "select-slot-4",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:5"},
+		});
+		registerAction({
+			.name = "select-slot-5",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:6"},
+		});
+		registerAction({
+			.name = "select-slot-6",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:7"},
+		});
+		registerAction({
+			.name = "select-slot-7",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:8"},
+		});
+		registerAction({
+			.name = "select-slot-8",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:9"},
+		});
+		registerAction({
+			.name = "select-slot-9",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:0"},
+		});
 	}
 };
 

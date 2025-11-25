@@ -15,6 +15,9 @@
 #include <capnp/serialize-packed.h>
 #include <kj/filesystem.h>
 
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 #include "Clock.h"
 #include "swan.capnp.h"
 
@@ -33,6 +36,8 @@ void Game::createWorld(
 	for (auto &mod: world_->mods_) {
 		mod.mod_->start(*world_);
 	}
+
+	initInputHandler();
 
 	world_->setWorldGen(worldgen);
 	world_->setCurrentPlane(world_->addPlane());
@@ -55,28 +60,12 @@ void Game::loadWorld(
 		mod.mod_->start(*world_);
 	}
 
+	initInputHandler();
+
 	auto world = reader.getRoot<proto::World>();
 	world_->deserialize(world);
 	hasSortedItems_ = false;
 	worldPath_ = std::move(worldPath);
-}
-
-void Game::onKeyDown(int scancode, int key)
-{
-	pressedKeys_[scancode] = true;
-	didPressKeys_[scancode] = true;
-	if (key >= 0) {
-		pressedLiteralKeys_[key] = true;
-		didPressLiteralKeys_[key] = true;
-	}
-}
-
-void Game::onKeyUp(int scancode, int key)
-{
-	pressedKeys_[scancode] = false;
-	if (key >= 0) {
-		pressedLiteralKeys_[key] = false;
-	}
 }
 
 void Game::onMouseMove(float x, float y)
@@ -85,18 +74,6 @@ void Game::onMouseMove(float x, float y)
 	mousePos_ = (pixPos / cam_.size.as<float>()) * renderer_.winScale();
 	pixPos -= uiCam_.size / 2;
 	mouseUIPos_ = (pixPos / uiCam_.size / uiCam_.zoom * 2) * renderer_.winScale();
-}
-
-void Game::onMouseDown(int button)
-{
-	pressedButtons_[button] = true;
-	didPressButtons_[button] = true;
-}
-
-void Game::onMouseUp(int button)
-{
-	pressedButtons_[button] = false;
-	didReleaseButtons_[button] = true;
 }
 
 void Game::onScrollWheel(double dy)
@@ -504,7 +481,7 @@ void Game::update(float dt)
 		.size = {1 / cam_.zoom, 1 / cam_.zoom},
 	});
 
-	if (wasLiteralKeyPressed(GLFW_KEY_F1)) {
+	if (*entityDebugMenuAction_) {
 		bool found = false;
 
 		auto tile = getMouseTile();
@@ -525,11 +502,11 @@ void Game::update(float dt)
 		}
 	}
 
-	if (wasLiteralKeyPressed(GLFW_KEY_F3)) {
+	if (*debugMenuAction_) {
 		debug_.show = !debug_.show;
 	}
 
-	if (wasLiteralKeyPressed(GLFW_KEY_F4)) {
+	if (*perfMenuAction_) {
 		perf_.show = !perf_.show;
 	}
 
@@ -548,7 +525,7 @@ void Game::update(float dt)
 			popupMessage_ = "Reload failed!";
 			popupMessageTimer_ = 2;
 		}
-	} else if (wasLiteralKeyPressed(GLFW_KEY_F5)) {
+	} else if (*reloadModsAction_) {
 		popupMessage_ = "Reloading...";
 		popupMessageTimer_ = 1;
 		triggerReload_ = 3;
@@ -556,7 +533,7 @@ void Game::update(float dt)
 		triggerReload_ -= 1;
 	}
 
-	if (wasLiteralKeyPressed(GLFW_KEY_F6)) {
+	if (*regenWorldAction_) {
 		popupMessage_ = "Regenerating...";
 		popupMessageTimer_ = 0.5;
 		world_->currentPlane().regenerate();
@@ -567,13 +544,8 @@ void Game::update(float dt)
 
 	soundPlayer_.setCenter(cam_.pos.x, cam_.pos.y);
 
+	inputHandler_.endFrame();
 	didScroll_ = 0;
-	didPressKeys_.reset();
-	didReleaseKeys_.reset();
-	didPressLiteralKeys_.reset();
-	didReleaseLiteralKeys_.reset();
-	didPressButtons_.reset();
-	didReleaseButtons_.reset();
 
 	tickAcc_ += dt;
 	if (tickAcc_ > 2) {
@@ -676,6 +648,48 @@ bool Game::reload()
 
 	info << "Reloaded in " << startTime.duration() << " seconds.";
 	return true;
+}
+
+void Game::initInputHandler()
+{
+	auto actions = std::move(world_->actions_);
+
+	actions.push_back({
+		.name = "@::entity-debug-menu",
+		.kind = ActionKind::ONESHOT,
+		.defaultInputs = {"key:F1"},
+	});
+
+	actions.push_back({
+		.name = "@::debug-menu",
+		.kind = ActionKind::ONESHOT,
+		.defaultInputs = {"key:F3"},
+	});
+
+	actions.push_back({
+		.name = "@::perf-menu",
+		.kind = ActionKind::ONESHOT,
+		.defaultInputs = {"key:F4"},
+	});
+
+	actions.push_back({
+		.name = "@::reload-mods",
+		.kind = ActionKind::ONESHOT,
+		.defaultInputs = {"key:F5"},
+	});
+
+	actions.push_back({
+		.name = "@::regen-world",
+		.kind = ActionKind::ONESHOT,
+		.defaultInputs = {"key:F6"},
+	});
+
+	inputHandler_.setActions(std::move(actions));
+	entityDebugMenuAction_ = inputHandler_.action("@::entity-debug-menu");
+	debugMenuAction_ = inputHandler_.action("@::debug-menu");
+	perfMenuAction_ = inputHandler_.action("@::perf-menu");
+	reloadModsAction_ = inputHandler_.action("@::reload-mods");
+	regenWorldAction_ = inputHandler_.action("@::regen-world");
 }
 
 }

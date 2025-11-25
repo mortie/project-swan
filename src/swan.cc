@@ -45,10 +45,10 @@ static void keyCallback(GLFWwindow *, int key, int scancode, int action, int)
 	}
 
 	if (action == GLFW_PRESS) {
-		gameptr->onKeyDown(scancode, key);
+		gameptr->inputs().onKeyDown(key);
 	}
 	else if (action == GLFW_RELEASE) {
-		gameptr->onKeyUp(scancode, key);
+		gameptr->inputs().onKeyUp(key);
 	}
 }
 
@@ -59,10 +59,10 @@ static void mouseButtonCallback(GLFWwindow *, int button, int action, int)
 	}
 
 	if (action == GLFW_PRESS) {
-		gameptr->onMouseDown(button);
+		gameptr->inputs().onMouseDown(button);
 	}
 	else if (action == GLFW_RELEASE) {
-		gameptr->onMouseUp(button);
+		gameptr->inputs().onMouseUp(button);
 	}
 }
 

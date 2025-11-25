@@ -31,6 +31,7 @@ static constexpr float MAX_OXYGEN = 12;
 
 PlayerEntity::PlayerEntity(Swan::Ctx &ctx):
 	sprites_(ctx),
+	actions_(ctx),
 	sounds_(ctx),
 	inventorySprite_(ctx.world.getSprite("core::ui/inventory")),
 	selectedSlotSprite_(ctx.world.getSprite("core::ui/selected-slot")),
@@ -336,7 +337,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 			teleState_ = 0;
 		}
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_B)) {
+	else if (*actions_.returnHome) {
 		ctx.game.playSound(sounds_.teleport);
 		teleportTimer_ = 0.2;
 		teleState_ = 1;
@@ -346,23 +347,23 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 	handleInventoryHover(ctx);
 
 	// Cheats
-	if (ctx.game.wasKeyPressed(GLFW_KEY_M)) {
+	if (*actions_.cheatHeal) {
 		health_ += 1;
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_N)) {
+	else if (*actions_.cheatHurt) {
 		hurt(ctx, 1);
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_P)) {
+	else if (*actions_.cheatTickWorld) {
 		auto &tile = ctx.plane.tiles().get(breakPos_);
 		if (tile.more->onWorldTick) {
 			Swan::info << "World ticking " << tile.name << " at " << breakPos_;
 			tile.more->onWorldTick(ctx, breakPos_);
 		}
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_G)) {
+	else if (*actions_.cheatGrabItem) {
 		auto &tile = ctx.plane.tiles().get(breakPos_);
 		int count = 1;
-		if (ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+		if (*actions_.sprint) {
 			count = 16;
 		}
 		Swan::ItemStack stack(&ctx.world.getItem(tile.name), count);
@@ -370,26 +371,26 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 	}
 
 	// Break block, or click UI
-	if (ctx.game.wasMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+	if (*actions_.guiClick) {
 		if (ui_.hoveredInventorySlot >= 0 || ui_.hoveredAuxInventorySlot >= 0) {
 			handleInventoryClick(ctx);
 		} else {
 			onLeftClick(ctx);
 		}
 	}
-	else if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+	else if (*actions_.breakTile) {
 		if (ui_.hoveredInventorySlot < 0 && ui_.hoveredAuxInventorySlot < 0) {
 			onLeftClick(ctx);
 		}
 	}
 
 	// Place block, or activate tile or item
-	if (ctx.game.isMousePressed(GLFW_MOUSE_BUTTON_RIGHT)) {
+	if (*actions_.activate) {
 		onRightClick(ctx);
 	}
 
 	// Drop item
-	if (ctx.game.wasKeyPressed(GLFW_KEY_Q)) {
+	if (*actions_.dropItem) {
 		dropItem(ctx);
 	}
 
@@ -398,18 +399,10 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 		physicsBody_.onGround = false;
 		physicsBody_.friction();
 
-		if (ctx.game.isKeyPressed(GLFW_KEY_W)) {
-			physicsBody_.force += {0, -MOVE_FORCE_GROUND};
-		}
-		if (ctx.game.isKeyPressed(GLFW_KEY_A)) {
-			physicsBody_.force += {-MOVE_FORCE_GROUND, 0};
-		}
-		if (ctx.game.isKeyPressed(GLFW_KEY_S)) {
-			physicsBody_.force += {0, MOVE_FORCE_GROUND};
-		}
-		if (ctx.game.isKeyPressed(GLFW_KEY_D)) {
-			physicsBody_.force += {MOVE_FORCE_GROUND, 0};
-		}
+		physicsBody_.force += {
+			actions_.moveX->activation * MOVE_FORCE_GROUND,
+			actions_.moveY->activation * MOVE_FORCE_GROUND,
+		};
 
 		physicsBody_.updateNoclip(ctx, dt);
 	} else  {
@@ -772,7 +765,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	}
 
 	// Fall through platforms
-	if (ctx.game.isKeyPressed(GLFW_KEY_S)) {
+	if (actions_.moveY->activation > 0.4) {
 		platformCollisionTimer_ = 0.2;
 		physicsBody_.platformCollision = false;
 	} else if (platformCollisionTimer_ > 0) {
@@ -897,7 +890,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	}
 
 	// Handle sprint press
-	if (ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+	if (*actions_.sprint) {
 		sprinting_ = true;
 	}
 	if (vit_ == Vit::LETHARGIC) {
@@ -906,21 +899,19 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 
 	// Handle left/right key press
 	int runDirection = 0;
-	if (ctx.game.isKeyPressed(GLFW_KEY_A)) {
+	if (actions_.moveX->activation < 0) {
 		runDirection -= 1;
 	}
-	if (ctx.game.isKeyPressed(GLFW_KEY_D)) {
+	else if (actions_.moveX->activation > 0) {
 		runDirection += 1;
 	}
 
 	// Handle ladder climb
 	if (inLadder) {
-		if (ctx.game.isKeyPressed(GLFW_KEY_W)) {
-			physicsBody_.force += Swan::Vec2{0, -LADDER_CLIMB_FORCE};
-		}
-		else if (ctx.game.isKeyPressed(GLFW_KEY_S)) {
-			physicsBody_.force += Swan::Vec2{0, LADDER_CLIMB_FORCE};
-		}
+		physicsBody_.force += {
+			0,
+			actions_.moveY->activation * LADDER_CLIMB_FORCE,
+		};
 
 		if (physicsBody_.vel.y > LADDER_MAX_VEL) {
 			physicsBody_.vel.y = LADDER_MAX_VEL;
@@ -974,7 +965,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 		state_ = State::LANDING;
 	}
 
-	bool jumpPressed = ctx.game.isKeyPressed(GLFW_KEY_SPACE);
+	bool jumpPressed = *actions_.jump;
 
 	// Jump
 	if (physicsBody_.onGround && jumpPressed && jumpTimer_.periodic(0.5)) {
@@ -1051,7 +1042,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 		stepTimer_ = 0.15;
 	}
 
-	if (inLadder && ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+	if (inLadder && *actions_.sprint) {
 		physicsBody_.friction({1000, 1000});
 	}
 	else {
@@ -1063,15 +1054,16 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 
 		float gForce = Swan::BasicPhysicsBody::GRAVITY * physicsBody_.mass + DOWN_FORCE;
 
-		if (ctx.game.isKeyPressed(GLFW_KEY_SPACE)) {
+		if (jumpPressed) {
 			physicsBody_.force.y -= gForce * bottomDensity * 0.8;
 			physicsBody_.force -= Swan::Vec2{0, SWIM_FORCE_UP * bottomDensity};
 		}
-		else if (
-			ctx.game.isKeyPressed(GLFW_KEY_S) ||
-			ctx.game.isKeyPressed(GLFW_KEY_DOWN)) {
+		else if (actions_.moveY->activation > 0) {
 			physicsBody_.force.y -= gForce * centerDensity * 0.8;
-			physicsBody_.force += Swan::Vec2{0, SWIM_FORCE_DOWN * centerDensity};
+			physicsBody_.force += Swan::Vec2{
+				0,
+				SWIM_FORCE_DOWN * centerDensity * actions_.moveY->activation,
+			};
 		}
 		else {
 			physicsBody_.force.y -= gForce * centerDensity * 0.8;
@@ -1114,7 +1106,7 @@ void PlayerEntity::handleInventoryClick(Swan::Ctx &ctx)
 		return;
 	}
 
-	bool shift = ctx.game.isKeyPressed(GLFW_KEY_LEFT_SHIFT);
+	bool shift = *actions_.guiModifier;
 
 	// Non-shift click on the player inventory
 	if (!shift && ui_.hoveredInventorySlot >= 0) {
@@ -1174,56 +1166,53 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 		int delta = slot - (ui_.selectedInventorySlot % 10);
 		ui_.selectedInventorySlot += delta;
 	};
-	if (ctx.game.wasKeyPressed(GLFW_KEY_1)) {
+	if (*actions_.slot0) {
 		selectSlot(0);
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_2)) {
+	else if (*actions_.slot1) {
 		selectSlot(1);
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_3)) {
+	else if (*actions_.slot2) {
 		selectSlot(2);
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_4)) {
+	else if (*actions_.slot3) {
 		selectSlot(3);
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_5)) {
+	else if (*actions_.slot4) {
 		selectSlot(4);
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_6)) {
+	else if (*actions_.slot5) {
 		selectSlot(5);
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_7)) {
+	else if (*actions_.slot6) {
 		selectSlot(6);
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_8)) {
+	else if (*actions_.slot7) {
 		selectSlot(7);
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_9)) {
+	else if (*actions_.slot8) {
 		selectSlot(8);
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_0)) {
+	else if (*actions_.slot9) {
 		selectSlot(9);
 	}
 
 	// Navigate left/right/up/down
-	if (ctx.game.wasKeyPressed(GLFW_KEY_LEFT)) {
+	if (*actions_.guiLeft) {
 		if (ui_.selectedInventorySlot % 10 == 0) {
 			ui_.selectedInventorySlot += 9;
 		} else {
 			ui_.selectedInventorySlot -= 1;
 		}
 	}
-	else if (ctx.game.wasKeyPressed(GLFW_KEY_RIGHT)) {
+	else if (*actions_.guiRight) {
 		if (ui_.selectedInventorySlot % 10 == 9) {
 			ui_.selectedInventorySlot -= 9;
 		} else {
 			ui_.selectedInventorySlot += 1;
 		}
 	}
-	else if (
-		ui_.showInventory && (
-			ctx.game.wasKeyPressed(GLFW_KEY_UP) ||
-			ctx.game.wasKeyPressed(GLFW_KEY_V))) {
+	else if (ui_.showInventory && *actions_.guiUp) {
 		if (ui_.selectedInventorySlot < 10) {
 			ui_.selectedInventorySlot += INVENTORY_SIZE - 10;
 		} else {
@@ -1233,10 +1222,7 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 			ui_.selectedInventorySlot += 10;
 		}
 	}
-	else if (
-		ui_.showInventory && (
-			ctx.game.wasKeyPressed(GLFW_KEY_DOWN) ||
-			ctx.game.wasKeyPressed(GLFW_KEY_C))) {
+	else if (ui_.showInventory && *actions_.guiDown) {
 		if (ui_.selectedInventorySlot >= INVENTORY_SIZE - 10) {
 			ui_.selectedInventorySlot -= INVENTORY_SIZE - 10;
 		} else {
@@ -1248,7 +1234,7 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 	}
 
 	// Handle held items
-	if (ctx.game.wasKeyPressed(GLFW_KEY_X)) {
+	if (*actions_.selectItem) {
 		Swan::ItemStack &slot = inventory_.content_[ui_.selectedInventorySlot];
 		if (heldStack_.empty() && !slot.empty()) {
 			ctx.game.playSound(sounds_.snap);
@@ -1267,7 +1253,7 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 	}
 
 	// Toggle inventory
-	if (ctx.game.wasKeyPressed(GLFW_KEY_E)) {
+	if (*actions_.guiShowInventory) {
 		if (ui_.showInventory) {
 			ctx.game.playSound(sounds_.inventoryClose, 0.2);
 			ui_.showInventory = false;
@@ -1288,7 +1274,7 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 	}
 
 	// Toggle crafting menu
-	if (ctx.game.wasKeyPressed(GLFW_KEY_F)) {
+	if (*actions_.guiShowCrafting) {
 		if (auxInventory_ == &craftingInventory_) {
 			auxInventory_ = nullptr;
 		}

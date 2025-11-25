@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 
+#include "Action.h"
 #include "Fluid.h"
 #include "Tile.h"
 #include "Item.h"
@@ -18,6 +19,7 @@ class table;
 
 namespace Swan {
 
+class World;
 class ModWrapper;
 
 class Mod {
@@ -26,12 +28,35 @@ public:
 	{}
 	virtual ~Mod() = default;
 
-	void registerTile(Tile::Builder tile);
-	void registerItem(Item::Builder item);
-	void registerFluid(Fluid::Builder item);
-	void registerRecipe(Recipe::Builder recipe);
-	void registerSound(std::string sprite);
-	void registerRecipeKind(std::string kind);
+	void registerTile(Tile::Builder tile)
+	{
+		tiles_.push_back(std::move(tile));
+	}
+
+	void registerItem(Item::Builder item)
+	{
+		items_.push_back(std::move(item));
+	}
+
+	void registerFluid(Fluid::Builder item)
+	{
+		fluids_.push_back(std::move(item));
+	}
+
+	void registerRecipe(Recipe::Builder recipe)
+	{
+		recipes_.push_back(std::move(recipe));
+	}
+
+	void registerRecipeKind(std::string kind)
+	{
+		recipeKinds_.push_back(std::move(kind));
+	}
+
+	void registerAction(ActionSpec action)
+	{
+		actions_.push_back(std::move(action));
+	}
 
 	template<typename WG>
 	void registerWorldGen(std::string name);
@@ -51,8 +76,10 @@ private:
 	std::vector<WorldGen::Factory> worldGens_;
 	std::vector<EntityCollection::Factory> entities_;
 	std::vector<std::string> recipeKinds_;
+	std::vector<ActionSpec> actions_;
 
 	friend ModWrapper;
+	friend World;
 };
 
 class ModWrapper {
@@ -61,45 +88,7 @@ public:
 	ModWrapper(ModWrapper &&other) noexcept;
 	~ModWrapper();
 
-	const std::string &name()
-	{
-		return mod_->name_;
-	}
-
-	const std::vector<Tile::Builder> &tiles()
-	{
-		return mod_->tiles_;
-	}
-
-	const std::vector<Item::Builder> &items()
-	{
-		return mod_->items_;
-	}
-
-	const std::vector<Fluid::Builder> &fluids()
-	{
-		return mod_->fluids_;
-	}
-
-	const std::vector<Recipe::Builder> &recipes()
-	{
-		return mod_->recipes_;
-	}
-
-	const std::vector<std::string> &recipeKinds()
-	{
-		return mod_->recipeKinds_;
-	}
-
-	const std::vector<WorldGen::Factory> &worldGens()
-	{
-		return mod_->worldGens_;
-	}
-
-	const std::vector<EntityCollection::Factory> &entities()
-	{
-		return mod_->entities_;
-	}
+	std::string_view name() { return mod_->name_; }
 
 	// This uses string& due to cpptoml >_>
 	std::string lang(const std::string &cat, const std::string &name);

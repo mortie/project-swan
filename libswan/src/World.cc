@@ -150,7 +150,7 @@ void World::buildResources()
 	// while building tiles.
 	size_t tileCount = tiles_.size();
 	for (auto &mod: mods_) {
-		tileCount += mod.tiles().size();
+		tileCount += mod.mod_->tiles_.size();
 	}
 
 	// Need to fill in every tile before we do items,
@@ -159,7 +159,7 @@ void World::buildResources()
 	// and an item.
 	tiles_.reserve(tileCount);
 	for (auto &mod: mods_) {
-		for (auto &tileBuilder: mod.tiles()) {
+		for (auto &tileBuilder: mod.mod_->tiles_) {
 			std::string tileName = cat(mod.name(), "::", tileBuilder.name);
 			Tile::ID tileId = tiles_.size();
 
@@ -247,7 +247,7 @@ void World::buildResources()
 
 	// Load all items which aren't just tiles in disguise.
 	for (auto &mod: mods_) {
-		for (auto &itemBuilder: mod.items()) {
+		for (auto &itemBuilder: mod.mod_->items_) {
 			//auto image = loadTileImage(itemBuilder.image);
 
 			std::string itemName = cat(mod.name(), "::", itemBuilder.name);
@@ -295,7 +295,7 @@ void World::buildResources()
 
 	// Fluids from mods
 	for (auto &mod: mods_) {
-		for (auto &fluidBuilder: mod.fluids()) {
+		for (auto &fluidBuilder: mod.mod_->fluids_) {
 			std::string fluidName = cat(mod.name(), "::", fluidBuilder.name);
 
 			if (fluids_.size() >= INVALID_FLUID_ID) {
@@ -323,7 +323,7 @@ void World::buildResources()
 
 	// Load recipe kinds.
 	for (auto &mod: mods_) {
-		for (auto &recipeType: mod.recipeKinds()) {
+		for (auto &recipeType: mod.mod_->recipeKinds_) {
 			std::string name = cat(mod.name(), "::", recipeType);
 			recipes_[std::move(name)] = {};
 		}
@@ -332,7 +332,7 @@ void World::buildResources()
 	// Load recipes.
 	std::vector<ItemStack> recipeInputs;
 	for (auto &mod: mods_) {
-		for (auto &recipeBuilder: mod.recipes()) {
+		for (auto &recipeBuilder: mod.mod_->recipes_) {
 			auto vec = recipes_.find(recipeBuilder.kind);
 			if (vec == recipes_.end()) {
 				warn << "Unknown recipe kind: " << recipeBuilder.kind;
@@ -364,7 +364,7 @@ void World::buildResources()
 
 	// Fix up tiles.
 	for (auto &mod: mods_) {
-		for (auto &tileBuilder: mod.tiles()) {
+		for (auto &tileBuilder: mod.mod_->tiles_) {
 			std::string name = cat(mod.name(), "::", tileBuilder.name);
 			Tile &tile = tiles_[tilesMap_[name]];
 			if (tileBuilder.droppedItem) {
@@ -375,12 +375,20 @@ void World::buildResources()
 
 	// Load world gens and entities.
 	for (auto &mod: mods_) {
-		for (auto &worldGenFactory: mod.worldGens()) {
+		for (auto &worldGenFactory: mod.mod_->worldGens_) {
 			worldGenFactories_.emplace(worldGenFactory.name, worldGenFactory);
 		}
 
-		for (auto &entCollFactory: mod.entities()) {
+		for (auto &entCollFactory: mod.mod_->entities_) {
 			entCollFactories_.emplace(entCollFactory.name, entCollFactory);
+		}
+	}
+
+	// Load actions.
+	for (auto &mod: mods_) {
+		for (auto action: mod.mod_->actions_) {
+			action.name = cat(mod.name(), "::", action.name);
+			actions_.push_back(std::move(action));
 		}
 	}
 

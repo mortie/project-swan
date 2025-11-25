@@ -9,31 +9,6 @@
 
 namespace Swan {
 
-void Mod::registerTile(Tile::Builder tile)
-{
-	tiles_.push_back(std::move(tile));
-}
-
-void Mod::registerItem(Item::Builder item)
-{
-	items_.push_back(std::move(item));
-}
-
-void Mod::registerFluid(Fluid::Builder fluid)
-{
-	fluids_.push_back(std::move(fluid));
-}
-
-void Mod::registerRecipe(Recipe::Builder recipe)
-{
-	recipes_.push_back(std::move(recipe));
-}
-
-void Mod::registerRecipeKind(std::string kind)
-{
-	recipeKinds_.push_back(std::move(kind));
-}
-
 ModWrapper::ModWrapper(std::unique_ptr<Mod> mod, std::string path, OS::Dynlib lib):
 	mod_(std::move(mod)), path_(std::move(path)), dynlib_(std::move(lib))
 {

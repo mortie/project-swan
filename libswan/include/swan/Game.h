@@ -11,9 +11,7 @@
 
 #include <kj/io.h>
 
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
+#include "InputHandler.h"
 #include "common.h"
 #include "World.h"
 #include "SoundPlayer.h"
@@ -83,43 +81,8 @@ public:
 	void loadWorld(
 		std::string worldPath, std::span<const std::string> modPaths);
 
-	void onKeyDown(int scancode, int key);
-	void onKeyUp(int scancode, int key);
 	void onMouseMove(float x, float y);
-	void onMouseDown(int button);
-	void onMouseUp(int button);
 	void onScrollWheel(double dy);
-
-	bool isKeyPressed(int key)
-	{
-		int code = glfwGetKeyScancode(key);
-		return pressedKeys_[code] || didPressKeys_[code];
-	}
-
-	bool wasKeyPressed(int key)
-	{
-		return didPressKeys_[glfwGetKeyScancode(key)];
-	}
-
-	bool wasKeyReleased(int key)
-	{
-		return didReleaseKeys_[glfwGetKeyScancode(key)];
-	}
-
-	bool isLiteralKeyPressed(int key)
-	{
-		return pressedLiteralKeys_[key];
-	}
-
-	bool wasLiteralKeyPressed(int key)
-	{
-		return didPressLiteralKeys_[key];
-	}
-
-	bool wasLiteralKeyReleased(int key)
-	{
-		return didReleaseLiteralKeys_[key];
-	}
 
 	Vec2 getMouseScreenPos()
 	{
@@ -129,21 +92,6 @@ public:
 	Vec2 getMouseUIPos()
 	{
 		return mouseUIPos_;
-	}
-
-	bool isMousePressed(int button)
-	{
-		return pressedButtons_[button] || didPressButtons_[button];
-	}
-
-	bool wasMousePressed(int button)
-	{
-		return didPressButtons_[button];
-	}
-
-	bool wasMouseReleased(int button)
-	{
-		return didReleaseButtons_[button];
 	}
 
 	double wasWheelScrolled()
@@ -181,6 +129,9 @@ public:
 	void update(float dt);
 	void save();
 
+	InputHandler &inputs() { return inputHandler_; }
+	Action *action(std::string_view name) { return inputs().action(name); }
+
 	std::unique_ptr<World> world_ = NULL;
 	std::string worldPath_;
 	Cygnet::Renderer renderer_;
@@ -213,31 +164,28 @@ public:
 	Cygnet::TextCache smallFont_{notoSans_, 60};
 	Cygnet::TextCache bigFont_{notoSans_, 200};
 
+	Action *entityDebugMenuAction_;
+	Action *debugMenuAction_;
+	Action *perfMenuAction_;
+	Action *reloadModsAction_;
+	Action *regenWorldAction_;
+
 private:
 	bool reload();
 	void tick();
+	void initInputHandler();
 
 	float tickAcc_ = 0;
 
-	std::bitset<GLFW_KEY_LAST + 1> pressedKeys_;
-	std::bitset<GLFW_KEY_LAST + 1> didPressKeys_;
-	std::bitset<GLFW_KEY_LAST + 1> didReleaseKeys_;
-
-	std::bitset<GLFW_KEY_LAST + 1> pressedLiteralKeys_;
-	std::bitset<GLFW_KEY_LAST + 1> didPressLiteralKeys_;
-	std::bitset<GLFW_KEY_LAST + 1> didReleaseLiteralKeys_;
-
 	Vec2 mousePos_;
 	Vec2 mouseUIPos_;
-	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> pressedButtons_;
-	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> didPressButtons_;
-	std::bitset<GLFW_MOUSE_BUTTON_LAST + 1> didReleaseButtons_;
 
 	std::vector<Item *> sortedItems_;
 	bool hasSortedItems_ = false;
 
 	SoundPlayer soundPlayer_;
 	std::optional<FrameRecorder> frameRecorder_;
+	InputHandler inputHandler_;
 
 	double didScroll_ = 0;
 	std::function<bool()> recompileMods_;
