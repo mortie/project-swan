@@ -36,6 +36,7 @@ private:
 	wxButton *loadBtn_;
 
 	wxTextCtrl *newWorldName_;
+	wxTextCtrl *newWorldSeed_;
 	wxButton *newWorldBtn_;
 
 	SwanLauncher *launcher_;

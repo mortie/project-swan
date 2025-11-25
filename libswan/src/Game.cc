@@ -129,6 +129,8 @@ void Game::drawDebugMenu()
 		int(round(world_->player_->pos.x)),
 		int(round(world_->player_->pos.y)));
 
+	ImGui::Text("World seed: %u", world_->seed());
+
 	ImGui::Checkbox("Draw collision boxes", &debug_.drawCollisionBoxes);
 	ImGui::Checkbox("Draw chunk boundaries", &debug_.drawChunkBoundaries);
 	ImGui::Checkbox("Draw world ticks", &debug_.drawWorldTicks);

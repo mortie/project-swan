@@ -105,6 +105,13 @@ MainWindow::MainWindow(SwanLauncher *launcher):
 	newWorldName_->Bind(wxEVT_TEXT_ENTER, &MainWindow::OnNewWorldClick, this);
 	newWorldRow->Add(newWorldName_, 1, wxEXPAND | wxRIGHT, 5);
 
+	newWorldSeed_ = new wxTextCtrl(this, wxID_ANY);
+	newWorldSeed_->SetWindowStyleFlag(wxTE_PROCESS_ENTER);
+	newWorldSeed_->Bind(wxEVT_TEXT_ENTER, &MainWindow::OnNewWorldClick, this);
+	newWorldSeed_->SetHint("Seed");
+	newWorldSeed_->SetSizeHints(100, -1);
+	newWorldRow->Add(newWorldSeed_, 0, wxRIGHT, 5);
+
 	newWorldBtn_ = new wxButton(this, wxID_ANY, wxT("Create New World"));
 	newWorldBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnNewWorldClick, this);
 	newWorldRow->Add(newWorldBtn_, 0);
@@ -131,7 +138,25 @@ void MainWindow::OnNewWorldClick(wxCommandEvent &)
 	std::string name = newWorldName_->GetLineText(0).utf8_string();
 	std::cerr << "Creating world: " << name << '\n';
 	std::string id = makeWorld(name);
-	launcher_->launch(id);
+
+	std::string seedStr = newWorldSeed_->GetLineText(0).utf8_string();
+	std::optional<uint32_t> seed;
+
+	// This algorithm ensures that every string gets encoded
+	// into its own valid seed so that people can use word seeds,
+	// but still converts numeric strings into their corresponding number
+	uint32_t seedNum = 0;
+	for (char ch: seedStr) {
+		if (ch <= 32) {
+			continue;
+		}
+
+		seedNum *= 10;
+		seedNum += (unsigned char)ch - '0';
+		seed = seedNum;
+	}
+
+	launcher_->launch(id, seed);
 }
 
 void MainWindow::OnWorldLaunch(wxCommandEvent &)
@@ -149,7 +174,7 @@ void MainWindow::OnWorldLaunch(wxCommandEvent &)
 	}
 
 	std::cerr << "Loading world: " << world.name << '\n';
-	launcher_->launch(world.id);
+	launcher_->launch(world.id, {});
 }
 
 void MainWindow::OnWorldDelete(wxCommandEvent &)

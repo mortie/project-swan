@@ -135,6 +135,8 @@ public:
 		return it->second;
 	}
 
+	uint32_t seed() const { return seed_; }
+
 	void serialize(proto::World::Builder w);
 	void deserialize(proto::World::Reader r);
 
