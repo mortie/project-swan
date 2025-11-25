@@ -205,6 +205,9 @@ int main(int argc, char **argv)
 			seed = *seedArg;
 		} else {
 			std::random_device dev;
+			static_assert(
+				sizeof(dev()) >= sizeof(uint32_t),
+				"Maybe we need to generate the seed in a more fancy way?");
 			seed = dev();
 		}
 
