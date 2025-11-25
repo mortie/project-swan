@@ -227,26 +227,32 @@ void Game::drawDebugMenu()
 		ImGui::EndPopup();
 	}
 
-	ImGui::SliderFloat(
-		"FPS limit", &fpsLimit_, 10, 360.0, "%.03f", 0);
+	std::initializer_list<std::pair<const char *, int>> fpsPresets = {
+		{"30", 30},
+		{"60", 60},
+		{"75", 75},
+		{"90", 00},
+		{"100", 100},
+		{"120", 120},
+		{"144", 144},
+		{"240", 240},
+		{"360", 360},
+	};
+
+	bool fpsLimitChanged = ImGui::SliderFloat(
+		"FPS limit", &fpsLimit_, 10, 240, "%.00f", 0);
+	if (fpsLimitChanged) {
+		fpsLimit_ = int(fpsLimit_);
+	}
+
 	if (ImGui::BeginPopupContextItem("FPS limit menu")) {
 		if (ImGui::MenuItem("Disable")) {
 			fpsLimit_ = 0;
 		}
-		else if (ImGui::MenuItem("30")) {
-			fpsLimit_ = 30;
-		}
-		else if (ImGui::MenuItem("60")) {
-			fpsLimit_ = 60;
-		}
-		else if (ImGui::MenuItem("90")) {
-			fpsLimit_ = 90;
-		}
-		else if (ImGui::MenuItem("120")) {
-			fpsLimit_ = 120;
-		}
-		else if (ImGui::MenuItem("144")) {
-			fpsLimit_ = 144;
+		for (auto &[name, num]: fpsPresets) {
+			if (ImGui::MenuItem(name)) {
+				fpsLimit_ = num;
+			}
 		}
 		ImGui::EndPopup();
 	}
