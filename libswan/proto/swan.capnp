@@ -62,6 +62,7 @@ struct World {
 	planes @1 :List(WorldPlane);
 	player @2 :EntityRef;
 	currentPlane @3 :UInt32;
+	seed @4 :UInt32;
 }
 
 struct WorldPlane {

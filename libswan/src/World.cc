@@ -389,8 +389,12 @@ void World::buildResources()
 	resources_ = Cygnet::ResourceManager(std::move(builder));
 }
 
-World::World(Game *game, std::span<const std::string> modPaths):
-	game_(game)
+World::World(
+		Game *game,
+		uint32_t seed,
+		std::span<const std::string> modPaths):
+	game_(game),
+	seed_(seed)
 {
 	mods_ = loadMods(modPaths);
 	buildResources();
@@ -482,7 +486,7 @@ WorldPlane &World::addPlane(std::string gen)
 	}
 
 	WorldGen::Factory &factory = it->second;
-	std::unique_ptr<WorldGen> g = factory.create(*this);
+	std::unique_ptr<WorldGen> g = factory.create(*this, seed_);
 	planes_.push_back({
 		.worldGen = std::move(gen),
 		.plane = std::make_unique<WorldPlane>(
@@ -627,6 +631,7 @@ void World::serialize(proto::World::Builder w)
 
 	playerRef_.serialize(w.initPlayer());
 	w.setCurrentPlane(currentPlane_);
+	w.setSeed(seed_);
 }
 
 void World::deserialize(proto::World::Reader r)
@@ -637,6 +642,9 @@ void World::deserialize(proto::World::Reader r)
 	for (auto tile: tiles) {
 		tileMap.push_back(getTileID(tile.cStr()));
 	}
+
+	// Seed must exist before we deserialize planes
+	seed_ = r.getSeed();
 
 	auto planes = r.getPlanes();
 	planes_.clear();

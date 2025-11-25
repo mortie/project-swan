@@ -12,7 +12,8 @@ namespace CoreMod {
 
 class DefaultWorldGen: public Swan::WorldGen {
 public:
-	DefaultWorldGen(Swan::World &world):
+	DefaultWorldGen(Swan::World &world, uint32_t seed):
+		seed_(seed),
 		tGrass_(world.getTileID("core::grass")),
 		tDirt_(world.getTileID("core::dirt")),
 		tStone_(world.getTileID("core::stone")),
@@ -42,7 +43,7 @@ private:
 	Swan::Tile::ID genTile(Swan::TilePos pos, int grassLevel, int stoneLevel);
 	void initializeTile(Swan::Ctx &ctx, Swan::TilePos pos);
 
-	const uint32_t seed_ = 100;
+	const uint32_t seed_;
 	Swan::Tile::ID tGrass_, tDirt_, tStone_, tClay_, tWater_, tOil_, tAir_;
 	Cygnet::RenderSprite bgCave_;
 	siv::PerlinNoise perlin_{seed_};

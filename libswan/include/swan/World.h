@@ -52,7 +52,7 @@ public:
 		std::unordered_set<WorldPlane::ID> tickedPlanes;
 	};
 
-	World(Game *game, std::span<const std::string> modPaths);
+	World(Game *game, uint32_t seed, std::span<const std::string> modPaths);
 	~World();
 
 	void setWorldGen(std::string gen);
@@ -174,6 +174,7 @@ private:
 	std::vector<ModWrapper> loadMods(std::span<const std::string> paths);
 	void buildResources();
 
+	uint32_t seed_;
 	ChunkRenderer chunkRenderer_;
 	WorldPlane::ID currentPlane_ = 0;
 	std::vector<PlaneWrapper> planes_;

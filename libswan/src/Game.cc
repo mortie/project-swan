@@ -27,9 +27,9 @@ static constexpr float TICK_DELTA = 1.0 / 20.0;
 
 void Game::createWorld(
 	std::string worldPath, const std::string &worldgen,
-	std::span<std::string> modPaths)
+	uint32_t seed, std::span<std::string> modPaths)
 {
-	world_ = std::make_unique<World>(this, modPaths);
+	world_ = std::make_unique<World>(this, seed, modPaths);
 	for (auto &mod: world_->mods_) {
 		mod.mod_->start(*world_);
 	}
@@ -50,7 +50,7 @@ void Game::loadWorld(
 	auto data = kj::ArrayInputStream(bytes);
 	capnp::PackedMessageReader reader(data);
 
-	world_ = std::make_unique<World>(this, modPaths);
+	world_ = std::make_unique<World>(this, 0, modPaths);
 	for (auto &mod: world_->mods_) {
 		mod.mod_->start(*world_);
 	}

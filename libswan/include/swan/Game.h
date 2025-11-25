@@ -78,7 +78,7 @@ public:
 
 	void createWorld(
 		std::string worldPath, const std::string &worldgen,
-		std::span<std::string> modPaths);
+		uint32_t seed, std::span<std::string> modPaths);
 
 	void loadWorld(
 		std::string worldPath, std::span<const std::string> modPaths);

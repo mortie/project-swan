@@ -1,3 +1,5 @@
+#include <cstdlib>
+#include <random>
 #include <unistd.h>
 #include <stdlib.h>
 #include <vector>
@@ -108,6 +110,7 @@ static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
 
 int main(int argc, char **argv)
 {
+	std::optional<uint32_t> seedArg;
 	const char *worldPath = nullptr;
 	backward::SignalHandling sh;
 	std::vector<std::string> mods;
@@ -130,6 +133,9 @@ int main(int argc, char **argv)
 		} else if (arg == "--thumbnail") {
 			i += 1;
 			thumbnailPath = argv[i];
+		} else if (arg == "--seed") {
+			i += 1;
+			seedArg = uint32_t(std::stoul(argv[i]));
 		} else {
 			warn << "Unexpected option: " << arg;
 		}
@@ -194,7 +200,16 @@ int main(int argc, char **argv)
 	if (std::filesystem::exists(worldPath)) {
 		game.loadWorld(worldPath, mods);
 	} else {
-		game.createWorld(worldPath, "core::default", mods);
+		uint32_t seed;
+		if (seedArg) {
+			seed = *seedArg;
+		} else {
+			std::random_device dev;
+			seed = dev();
+		}
+
+		info << "Creating world with seed: " << seed;
+		game.createWorld(worldPath, "core::default", seed, mods);
 	}
 
 	gameptr = &game;
