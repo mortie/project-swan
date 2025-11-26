@@ -42,6 +42,13 @@ glfw_opts.add_cmake_defines({
 glfw_sub = cmake.subproject('glfw', options: glfw_opts)
 libglfw3 = glfw_sub.dependency('glfw')
 
+portaudio_opts = cmake.subproject_options()
+portaudio_opts.add_cmake_defines({
+  'CMAKE_POLICY_VERSION_MINIMUM': '3.5',
+})
+portaudio_sub = cmake.subproject('portaudio', options: portaudio_opts)
+libportaudio = portaudio_sub.dependency('portaudio')
+
 libffmpeg = [
   dependency('libavcodec', required: false),
   dependency('libavutil', required: false),
@@ -57,7 +64,6 @@ foreach lib: libffmpeg
   endif
 endforeach
 
-libportaudio = dependency('portaudio-2.0')
 libcapnp = dependency('capnp')
 libcpptoml = subproject('cpptoml-ng').get_variable('cpptoml_dep')
 libdl = meson.get_compiler('cpp').find_library('dl')
