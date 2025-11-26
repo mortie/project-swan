@@ -226,6 +226,7 @@ private:
 	Swan::Clock jumpTimer_;
 	float invincibleTimer_ = 0;
 	int lastDirection_ = 1;
+	Swan::Vec2 lookVector_;
 	bool sprinting_ = false;
 	bool inFluid_ = false;
 	Cygnet::Color fluidColor_;

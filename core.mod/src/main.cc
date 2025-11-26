@@ -464,32 +464,32 @@ public:
 		registerAction({
 			.name = "return-home",
 			.kind = Swan::ActionKind::ONESHOT,
-			.defaultInputs = {"key:B", "button:LEFT_STICK"},
+			.defaultInputs = {"key:B", "button:RIGHT_STICK"},
 		});
 		registerAction({
 			.name = "break-tile",
 			.kind = Swan::ActionKind::CONTINUOUS,
-			.defaultInputs = {"mouse:LEFT"},
+			.defaultInputs = {"mouse:LEFT", "button:RIGHT_BUMPER"},
 		});
 		registerAction({
 			.name = "activate",
 			.kind = Swan::ActionKind::CONTINUOUS,
-			.defaultInputs = {"mouse:RIGHT"},
+			.defaultInputs = {"mouse:RIGHT", "button:LEFT_BUMPER"},
 		});
 		registerAction({
 			.name = "drop-item",
 			.kind = Swan::ActionKind::ONESHOT,
-			.defaultInputs = {"key:Q", "button:B"},
+			.defaultInputs = {"key:Q"},
 		});
 		registerAction({
 			.name = "select-item",
 			.kind = Swan::ActionKind::ONESHOT,
-			.defaultInputs = {"key:X", "button:LEFT_BUMPER"},
+			.defaultInputs = {"key:X", "button:B"},
 		});
 		registerAction({
 			.name = "sprint",
 			.kind = Swan::ActionKind::CONTINUOUS,
-			.defaultInputs = {"key:LEFT_SHIFT", "button:RIGHT_BUMPER"},
+			.defaultInputs = {"key:LEFT_SHIFT", "button:LEFT_STICK"},
 		});
 		registerAction({
 			.name = "jump",

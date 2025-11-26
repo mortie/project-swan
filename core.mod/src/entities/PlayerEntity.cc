@@ -188,10 +188,17 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	}, Cygnet::Anchor::BOTTOM);
 
 	if (!heldStack_.empty()) {
+		Swan::Vec2 pos;
+		if (mouseMode_) {
+			pos = ctx.game.getMouseUIPos();
+		} else {
+			pos = (lookVector_ / ctx.game.uiCam_.zoom) * ctx.game.cam_.zoom;
+		}
+
 		rnd.drawUITile(Cygnet::RenderLayer::FOREGROUND, {
 			.transform = Cygnet::Mat3gf{}
 				.scale({1.5, 1.5})
-				.translate({ctx.game.getMouseUIPos()})
+				.translate(pos)
 				.translate({-0.25, -0.5}),
 			.id = heldStack_.item()->id,
 		});
@@ -200,7 +207,7 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 			.textCache = ctx.game.smallFont_,
 			.transform = Cygnet::Mat3gf{}
 				.scale({0.7, 0.7})
-				.translate({ctx.game.getMouseUIPos()})
+				.translate(pos)
 				.translate({0.1, 0.8}),
 			.text = Swan::strify(heldStack_.count()),
 		});
@@ -320,23 +327,27 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 	}
 
 	Swan::Vec2 facePos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.3};
-	Swan::Vec2 lookVector;
 	if (mouseMode_) {
 		Swan::Vec2 mousePos = ctx.game.getMousePos();
-		lookVector = mousePos - facePos;
+		lookVector_ = mousePos - facePos;
 	} else {
-		lookVector = {
+		lookVector_ = {
 			actions_.selectX->activation * 6,
 			actions_.selectY->activation * 6,
 		};
 
-		if (lookVector == Swan::Vec2::ZERO) {
-			lookVector.x = lastDirection_;
-			lookVector.y = 0.5;
+		if (lookVector_ == Swan::Vec2::ZERO) {
+			lookVector_ = {float(lastDirection_), 0.25};
 		}
 	}
+
+	// Look vector limit
+	if (lookVector_.squareLength() > 6 * 6) {
+		lookVector_ = lookVector_.norm() * 6;
+	}
+
 	auto raycast = ctx.plane.tiles().raycast(
-		facePos, lookVector, std::min(lookVector.length(), 5.9f));
+		facePos, lookVector_, std::min(lookVector_.length(), 5.9f));
 	breakPos_ = raycast.pos;
 	placePos_ = raycast.pos + raycast.face;
 
@@ -653,12 +664,10 @@ void PlayerEntity::onRightClick(Swan::Ctx &ctx)
 	Swan::Item &item = *stack.item();
 
 	if (item.onActivate) {
-		Swan::Vec2 origin = physicsBody_.body.topMid().add(0, 0.25);
-		Swan::Vec2 mouse = ctx.game.getMousePos();
 		Swan::Item::ActivateMeta meta = {
 			.activator = ctx.plane.entities().current(),
 			.stack = stack,
-			.direction = (mouse - origin).norm(),
+			.direction = lookVector_.norm(),
 			.cursor = breakPos_,
 		};
 		item.onActivate(ctx, meta);
@@ -704,9 +713,8 @@ void PlayerEntity::dropItem(Swan::Ctx &ctx)
 		return;
 	}
 
-	auto mousePos = ctx.game.getMousePos();
 	auto pos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.5};
-	auto direction = (mousePos - pos).norm();
+	auto direction = lookVector_.norm();
 	auto vel = direction * 10.0;
 
 	auto removed = stack.remove(1);
