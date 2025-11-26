@@ -32,7 +32,15 @@ if get_option('trace')
   add_project_arguments('-DTRACY_ENABLE', language: 'cpp')
 endif
 
-libglfw3 = dependency('glfw3')
+glfw_opts = cmake.subproject_options()
+glfw_opts.add_cmake_defines({
+  'GLFW_LIBRARY_TYPE': 'SHARED',
+  'GLFW_BUILD_EXAMPLES': false,
+  'GLFW_BUILD_TESTS': false,
+  'GLFW_BUILD_DOCS': false,
+})
+glfw_sub = cmake.subproject('glfw', options: glfw_opts)
+libglfw3 = glfw_sub.dependency('glfw')
 
 libffmpeg = [
   dependency('libavcodec', required: false),

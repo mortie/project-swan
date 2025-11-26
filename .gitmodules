@@ -37,3 +37,6 @@
 [submodule "subprojects/scisa"]
 	path = subprojects/scisa
 	url = https://github.com/mortie/scisa.git
+[submodule "subprojects/glfw"]
+	path = subprojects/glfw
+	url = https://github.com/glfw/glfw.git

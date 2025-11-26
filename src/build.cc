@@ -655,7 +655,6 @@ bool build(const char *modPath, const char *swanPath)
 	std::vector<const char *> pkgs = {
 		"kj",
 		"capnp",
-		"glfw3",
 	};
 
 	std::vector<std::string> includes = {
