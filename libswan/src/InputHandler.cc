@@ -128,6 +128,40 @@ void InputHandler::onMouseUp(int button)
 	}
 }
 
+void InputHandler::onButtonDown(int button)
+{
+	auto it = impl_->gamepadButtons.find(button);
+	if (it == impl_->gamepadButtons.end()) {
+		return;
+	}
+
+	for (auto &w: it->second) {
+		w.action->activation += w.multiplier;
+		if (w.kind == ActionKind::ONESHOT) {
+			impl_->oneshotActionsActivatedThisFrame.push_back(w.action);
+		}
+	}
+}
+
+void InputHandler::onButtonUp(int button)
+{
+	auto it = impl_->gamepadButtons.find(button);
+	if (it == impl_->gamepadButtons.end()) {
+		return;
+	}
+
+	for (auto &w: it->second) {
+		if (w.kind == ActionKind::ONESHOT) {
+			continue;
+		}
+
+		w.action->activation -= w.multiplier;
+		if (std::abs(w.action->activation) < 0.01) {
+			w.action->activation = 0;
+		}
+	}
+}
+
 void InputHandler::setActions(std::vector<ActionSpec> actions)
 {
 	impl_ = std::make_unique<Impl>();
@@ -237,40 +271,6 @@ void InputHandler::updateGamepad(Gamepad &gamepad)
 			onButtonDown(i);
 		} else {
 			onButtonUp(i);
-		}
-	}
-}
-
-void InputHandler::onButtonDown(int button)
-{
-	auto it = impl_->gamepadButtons.find(button);
-	if (it == impl_->gamepadButtons.end()) {
-		return;
-	}
-
-	for (auto &w: it->second) {
-		w.action->activation += w.multiplier;
-		if (w.kind == ActionKind::ONESHOT) {
-			impl_->oneshotActionsActivatedThisFrame.push_back(w.action);
-		}
-	}
-}
-
-void InputHandler::onButtonUp(int button)
-{
-	auto it = impl_->gamepadButtons.find(button);
-	if (it == impl_->gamepadButtons.end()) {
-		return;
-	}
-
-	for (auto &w: it->second) {
-		if (w.kind == ActionKind::ONESHOT) {
-			continue;
-		}
-
-		w.action->activation -= w.multiplier;
-		if (std::abs(w.action->activation) < 0.01) {
-			w.action->activation = 0;
 		}
 	}
 }

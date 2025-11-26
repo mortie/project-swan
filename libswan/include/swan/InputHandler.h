@@ -19,6 +19,8 @@ public:
 	void onKeyUp(int scancode);
 	void onMouseDown(int button);
 	void onMouseUp(int button);
+	void onButtonDown(int button);
+	void onButtonUp(int button);
 
 protected:
 	void setActions(std::vector<ActionSpec> actions);
@@ -30,8 +32,6 @@ private:
 	struct Impl;
 
 	void updateGamepad(Gamepad &gamepad);
-	void onButtonDown(int button);
-	void onButtonUp(int button);
 
 	void registerInput(std::string_view input, ActionKind kind, Action *action);
 	void registerAxisInput(std::string_view input, Action *action);
