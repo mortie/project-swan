@@ -111,6 +111,8 @@ private:
 			jump(ctx.game.action("core::jump")),
 			moveX(ctx.game.action("core::move-x")),
 			moveY(ctx.game.action("core::move-y")),
+			selectX(ctx.game.action("core::select-x")),
+			selectY(ctx.game.action("core::select-y")),
 			slot0(ctx.game.action("core::select-slot-0")),
 			slot1(ctx.game.action("core::select-slot-1")),
 			slot2(ctx.game.action("core::select-slot-2")),
@@ -146,6 +148,8 @@ private:
 		Swan::Action *jump;
 		Swan::Action *moveX;
 		Swan::Action *moveY;
+		Swan::Action *selectX;
+		Swan::Action *selectY;
 
 		Swan::Action *slot0;
 		Swan::Action *slot1;
@@ -243,6 +247,7 @@ private:
 
 	Swan::TilePos breakPos_;
 	Swan::TilePos placePos_;
+	bool mouseMode_ = false;
 
 	Swan::ItemStack heldStack_;
 	std::optional<HeldLight> heldLight_;

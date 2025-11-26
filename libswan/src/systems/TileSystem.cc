@@ -245,12 +245,21 @@ Raycast TileSystemImpl::raycast(
 	Vec2 start, Vec2 direction, float distance)
 {
 	float squareDist = distance * distance;
-	Vec2 step = direction.norm() * 0.25;
 	Vec2 pos = start;
 	Vec2 prevPos = start;
-
-	TilePos prevTP = {0, std::numeric_limits<int>::max()};
 	TilePos tp = {(int)floor(pos.x), (int)floor(pos.y)};
+
+	if (squareDist == 0) {
+		return {
+			.hit = false,
+			.tile = get(tp),
+			.pos = tp,
+			.face = Vec2i::ZERO,
+		};
+	}
+
+	Vec2 step = direction.norm() * 0.25;
+	TilePos prevTP = {0, std::numeric_limits<int>::max()};
 	Tile *tile = &get(tp);
 
 	auto isFaceValid = [&](TilePos tp, Vec2i face) {

@@ -506,6 +506,16 @@ public:
 			.kind = Swan::ActionKind::AXIS,
 			.defaultInputs = {"key:W;S", "axis:LEFT_Y"},
 		});
+		registerAction({
+			.name = "select-x",
+			.kind = Swan::ActionKind::AXIS,
+			.defaultInputs = {"axis:RIGHT_X"},
+		});
+		registerAction({
+			.name = "select-y",
+			.kind = Swan::ActionKind::AXIS,
+			.defaultInputs = {"axis:RIGHT_Y"},
+		});
 
 		registerAction({
 			.name = "select-slot-0",

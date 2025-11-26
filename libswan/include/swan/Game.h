@@ -84,15 +84,9 @@ public:
 	void onMouseMove(float x, float y);
 	void onScrollWheel(double dy);
 
-	Vec2 getMouseScreenPos()
-	{
-		return mousePos_;
-	}
-
-	Vec2 getMouseUIPos()
-	{
-		return mouseUIPos_;
-	}
+	Vec2 getMouseScreenPos() { return mousePos_; }
+	Vec2 getMouseUIPos() { return mouseUIPos_; }
+	bool hasMouseMoved() { return hasMouseMoved_; }
 
 	void playSound(SoundAsset *asset);
 	void playSound(SoundAsset *asset, float volume);
@@ -174,6 +168,7 @@ private:
 
 	Vec2 mousePos_;
 	Vec2 mouseUIPos_;
+	bool hasMouseMoved_ = false;
 
 	std::vector<Item *> sortedItems_;
 	bool hasSortedItems_ = false;

@@ -312,9 +312,29 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 		vit_ = Vit::OK;
 	}
 
+	// Select between mouse mode and controller mode
+	if (ctx.game.hasMouseMoved()) {
+		mouseMode_ = true;
+	} else if (*actions_.selectX || *actions_.selectY) {
+		mouseMode_ = false;
+	}
+
 	Swan::Vec2 facePos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.3};
-	Swan::Vec2 mousePos = ctx.game.getMousePos();
-	auto lookVector = mousePos - facePos;
+	Swan::Vec2 lookVector;
+	if (mouseMode_) {
+		Swan::Vec2 mousePos = ctx.game.getMousePos();
+		lookVector = mousePos - facePos;
+	} else {
+		lookVector = {
+			actions_.selectX->activation * 6,
+			actions_.selectY->activation * 6,
+		};
+
+		if (lookVector == Swan::Vec2::ZERO) {
+			lookVector.x = lastDirection_;
+			lookVector.y = 0.5;
+		}
+	}
 	auto raycast = ctx.plane.tiles().raycast(
 		facePos, lookVector, std::min(lookVector.length(), 5.9f));
 	breakPos_ = raycast.pos;

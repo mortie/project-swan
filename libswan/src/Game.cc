@@ -74,6 +74,7 @@ void Game::onMouseMove(float x, float y)
 	mousePos_ = (pixPos / cam_.size.as<float>()) * renderer_.winScale();
 	pixPos -= uiCam_.size / 2;
 	mouseUIPos_ = (pixPos / uiCam_.size / uiCam_.zoom * 2) * renderer_.winScale();
+	hasMouseMoved_ = true;
 }
 
 void Game::onScrollWheel(double dy)
@@ -546,6 +547,7 @@ void Game::update(float dt)
 
 	soundPlayer_.setCenter(cam_.pos.x, cam_.pos.y);
 	didScroll_ = 0;
+	hasMouseMoved_ = false;
 	inputHandler_.endFrame();
 
 	tickAcc_ += dt;
