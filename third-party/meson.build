@@ -89,7 +89,7 @@ libstb_vorbis = declare_dependency(
 
 libsha1 = declare_dependency(
   include_directories: '.',
-  link_with: shared_library('libsha1',
+  link_with: shared_library('sha1',
     'sha1/sha1.cpp',
     install: true,
     install_rpath: origin_rpath,

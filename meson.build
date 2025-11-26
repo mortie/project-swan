@@ -45,6 +45,7 @@ libglfw3 = glfw_sub.dependency('glfw')
 portaudio_opts = cmake.subproject_options()
 portaudio_opts.add_cmake_defines({
   'CMAKE_POLICY_VERSION_MINIMUM': '3.5',
+  'PA_BUILD_STATIC': false,
 })
 portaudio_sub = cmake.subproject('portaudio', options: portaudio_opts)
 libportaudio = portaudio_sub.dependency('portaudio')
