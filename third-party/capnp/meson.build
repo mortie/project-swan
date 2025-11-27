@@ -28,6 +28,10 @@ libkj = declare_dependency(
     'capnp/c++/src/kj/filesystem-disk-win32.c++',
     'capnp/c++/src/kj/parse/char.c++',
     include_directories: 'capnp/c++/src',
+    override_options: [
+      'cpp_std=gnu++20',
+      'warning_level=1',
+    ],
     install: true,
     install_rpath: origin_rpath,
   ),
@@ -86,6 +90,10 @@ libcapnp = declare_dependency(
     'capnp/c++/src/capnp/dynamic.c++',
     'capnp/c++/src/capnp/stringify.c++',
     include_directories: 'capnp/c++/src',
+    override_options: [
+      'cpp_std=gnu++20',
+      'warning_level=1',
+    ],
     dependencies: libkj,
     install: true,
     install_rpath: origin_rpath,
@@ -129,6 +137,10 @@ libcapnp_json = declare_dependency(
     'capnp/c++/src/capnp/compat/json.c++',
     'capnp/c++/src/capnp/compat/json.capnp.c++',
     dependencies: [libkj, libcapnp],
+    override_options: [
+      'cpp_std=gnu++20',
+      'warning_level=1',
+    ],
     install: true,
     install_rpath: origin_rpath,
   ),
@@ -149,6 +161,10 @@ libcapnpc = declare_dependency(
     'capnp/c++/src/capnp/schema-parser.c++',
     'capnp/c++/src/capnp/serialize-text.c++',
     include_directories: 'capnp/c++/src',
+    override_options: [
+      'cpp_std=gnu++20',
+      'warning_level=1',
+    ],
     dependencies: [libkj, libcapnp],
     install: true,
     install_rpath: origin_rpath,
@@ -160,6 +176,10 @@ capnp_prog = executable(
   'capnp/c++/src/capnp/compiler/module-loader.c++',
   'capnp/c++/src/capnp/compiler/capnp.c++',
   dependencies: [libcapnpc, libcapnp_json, libcapnp, libkj],
+  override_options: [
+    'cpp_std=gnu++20',
+    'warning_level=1',
+  ],
   install: true,
   install_rpath: origin_rpath,
 )
@@ -168,6 +188,10 @@ capnpc_cpp_prog = executable(
   'capnpc-c++',
   'capnp/c++/src/capnp/compiler/capnpc-c++.c++',
   dependencies: [libkj, libcapnpc, libcapnp],
+  override_options: [
+    'cpp_std=gnu++20',
+    'warning_level=1',
+  ],
   install: true,
   install_rpath: origin_rpath,
 )

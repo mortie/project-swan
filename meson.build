@@ -38,6 +38,7 @@ glfw_opts.add_cmake_defines({
   'GLFW_BUILD_TESTS': false,
   'GLFW_BUILD_DOCS': false,
 })
+glfw_opts.set_override_option('warning_level', '1')
 glfw_sub = cmake.subproject('glfw', options: glfw_opts)
 libglfw3 = glfw_sub.dependency('glfw')
 
@@ -46,6 +47,7 @@ portaudio_opts.add_cmake_defines({
   'CMAKE_POLICY_VERSION_MINIMUM': '3.5',
   'PA_BUILD_STATIC': false,
 })
+portaudio_opts.set_override_option('warning_level', '0')
 portaudio_sub = cmake.subproject('portaudio', options: portaudio_opts)
 libportaudio = portaudio_sub.dependency('portaudio')
 
@@ -97,6 +99,7 @@ executable(
   'swan',
   'src/build.cc',
   'src/swan.cc',
+  swan_proto,
   install: true,
   install_rpath: bin_rpath,
   dependencies: [
