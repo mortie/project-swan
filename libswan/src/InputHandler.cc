@@ -3,6 +3,7 @@
 #include <cmath>
 #include <unordered_set>
 #include <vector>
+#include <array>
 
 #include <swan/HashMap.h>
 
@@ -356,6 +357,7 @@ void InputHandler::registerAxisInput(std::string_view input, Action *action)
 
 		impl_->joystickAxes[it->second].push_back({
 			.action = action,
+			.kind = ActionKind::AXIS,
 			.multiplier = multiplier,
 		});
 		return;

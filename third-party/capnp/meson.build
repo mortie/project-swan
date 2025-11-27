@@ -30,7 +30,7 @@ libkj = declare_dependency(
     include_directories: 'capnp/c++/src',
     override_options: [
       'cpp_std=gnu++20',
-      'warning_level=1',
+      'warning_level=0',
     ],
     install: true,
     install_rpath: origin_rpath,
@@ -92,7 +92,7 @@ libcapnp = declare_dependency(
     include_directories: 'capnp/c++/src',
     override_options: [
       'cpp_std=gnu++20',
-      'warning_level=1',
+      'warning_level=0',
     ],
     dependencies: libkj,
     install: true,
@@ -139,7 +139,7 @@ libcapnp_json = declare_dependency(
     dependencies: [libkj, libcapnp],
     override_options: [
       'cpp_std=gnu++20',
-      'warning_level=1',
+      'warning_level=0',
     ],
     install: true,
     install_rpath: origin_rpath,
@@ -163,7 +163,7 @@ libcapnpc = declare_dependency(
     include_directories: 'capnp/c++/src',
     override_options: [
       'cpp_std=gnu++20',
-      'warning_level=1',
+      'warning_level=0',
     ],
     dependencies: [libkj, libcapnp],
     install: true,
@@ -178,10 +178,10 @@ capnp_prog = executable(
   dependencies: [libcapnpc, libcapnp_json, libcapnp, libkj],
   override_options: [
     'cpp_std=gnu++20',
-    'warning_level=1',
+    'warning_level=0',
   ],
   install: true,
-  install_rpath: origin_rpath,
+  install_rpath: bin_rpath,
 )
 
 capnpc_cpp_prog = executable(
@@ -190,10 +190,10 @@ capnpc_cpp_prog = executable(
   dependencies: [libkj, libcapnpc, libcapnp],
   override_options: [
     'cpp_std=gnu++20',
-    'warning_level=1',
+    'warning_level=0',
   ],
   install: true,
-  install_rpath: origin_rpath,
+  install_rpath: bin_rpath,
 )
 
 capnp_include_path = meson.current_source_dir() + '/capnp/c++/src'

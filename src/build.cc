@@ -685,6 +685,7 @@ bool build(const char *modPath, const char *swanPath)
 		.modPath = std::string(modPath),
 		.swanPath = std::string(swanPath),
 		.cflags = std::move(cflags),
+		.ldflags = "",
 		.includes = std::move(includes),
 		.libs = std::move(libs),
 		.buildID = hashFiles(cat(swanPath, "/include")),

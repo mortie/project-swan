@@ -24,8 +24,8 @@ jobs:
         submodules: true
     - uses: awalsh128/cache-apt-pkgs-action@v1
       with:
-        packages: build-essential meson cmake python3 capnproto libcapnp-dev libglfw3-dev clang ${{matrix.pkgs}}
-        version: ${{matrix.os}}-2
+        packages: build-essential pkg-config meson cmake clang ${{matrix.pkgs}} libwayland-dev libxkbcommon-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libz-dev mesa-common-dev libgles-dev
+        version: ${{matrix.os}}-3
     - name: setup
       run: CXX=${{matrix.compiler}} make setup && meson configure build -Dwerror=true
     - name: compile

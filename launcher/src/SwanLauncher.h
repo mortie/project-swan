@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <cstdint>
 #include <wx/wx.h>
 
 class MainWindow;
