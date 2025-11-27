@@ -1,11 +1,12 @@
 swan_proto = custom_target(
   'swan_proto',
-  input: 'proto/swan.capnp',
+  input: ['proto/swan.capnp', capnpc_cpp_prog],
   output: ['swan.capnp.h', 'swan.capnp.c++'],
   command: [
-    capnp_prog, 'compile', '-oc++:@OUTDIR@',
+    capnp_prog, 'compile', '-o@INPUT1@:@OUTDIR@',
     '--src-prefix=@CURRENT_SOURCE_DIR@/proto',
-    '@INPUT@',
+    '-I' + capnp_include_path,
+    '@INPUT0@',
   ],
   install: true,
   install_dir: ['include/proto', false],
@@ -57,7 +58,7 @@ libswan = declare_dependency(
     dependencies: [
       common, libcygnet, libthreads, libstb_image,
       libstb_vorbis, libcpptoml, libdl, libz, libgl, libglfw3,
-      libimgui, libportaudio, libcapnp, libffmpeg, libdate,
+      libimgui, libportaudio, libcapnp, libkj, libffmpeg, libdate,
     ] + maybe_libtracy,
     cpp_args: libswan_cflags,
     install: true,
@@ -74,6 +75,7 @@ executable(
   'libswan_test',
   'test/lib/test.cc',
   'test/ItemStack.t.cc',
+  swan_proto,
   dependencies: libswan,
   include_directories: 'include/swan',
 )

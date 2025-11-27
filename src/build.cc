@@ -145,7 +145,7 @@ void buildCommand(std::string &cmd, const SourceFile &f, const BuildInfo &info)
 		return;
 
 	case SourceType::PROTO:
-		quoteArg(cmd, "capnp");
+		quoteArg(cmd, "./bin/capnp");
 		appendArg(cmd, "compile");
 
 		for (const auto &include: info.includes) {
@@ -155,7 +155,7 @@ void buildCommand(std::string &cmd, const SourceFile &f, const BuildInfo &info)
 
 		appendArg(cmd, "--src-prefix=");
 		quoteArg(cmd, f.srcDir);
-		appendArg(cmd, "--output=c++:");
+		appendArg(cmd, "--output=./bin/capnpc-c++:");
 		quoteArg(cmd, f.outDir);
 		appendArg(cmd, f.srcPath);
 		break;
@@ -652,11 +652,6 @@ static bool buildMod(const BuildInfo &info)
 
 bool build(const char *modPath, const char *swanPath)
 {
-	std::vector<const char *> pkgs = {
-		"kj",
-		"capnp",
-	};
-
 	std::vector<std::string> includes = {
 		cat(modPath, "/proto"),
 		cat(modPath, "/src"),
@@ -671,17 +666,9 @@ bool build(const char *modPath, const char *swanPath)
 		cat(swanPath, "/lib/libimgui" DYNLIB_EXT),
 		cat(swanPath, "/lib/libscisasm" DYNLIB_EXT),
 		cat(swanPath, "/lib/libscisavm" DYNLIB_EXT),
+		cat(swanPath, "/lib/libkj" DYNLIB_EXT),
+		cat(swanPath, "/lib/libcapnp" DYNLIB_EXT),
 	};
-
-	auto pkgCFlags = pkgconfig("--cflags", pkgs);
-	if (!pkgCFlags) {
-		return false;
-	}
-
-	auto pkgLibs = pkgconfig("--libs", pkgs);
-	if (!pkgLibs) {
-		return false;
-	}
 
 	std::string cflags =
 		"-std=c++20 "
@@ -689,7 +676,6 @@ bool build(const char *modPath, const char *swanPath)
 		"-Werror "
 		"-fPIC "
 		"-O2";
-	cflags += *pkgCFlags;
 	for (auto &include: includes) {
 		cflags += " -I";
 		quoteArg(cflags, include);
@@ -699,7 +685,6 @@ bool build(const char *modPath, const char *swanPath)
 		.modPath = std::string(modPath),
 		.swanPath = std::string(swanPath),
 		.cflags = std::move(cflags),
-		.ldflags = *pkgLibs,
 		.includes = std::move(includes),
 		.libs = std::move(libs),
 		.buildID = hashFiles(cat(swanPath, "/include")),

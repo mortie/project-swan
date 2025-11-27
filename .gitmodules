@@ -43,3 +43,6 @@
 [submodule "subprojects/portaudio"]
 	path = subprojects/portaudio
 	url = https://github.com/PortAudio/portaudio.git
+[submodule "subprojects/capnproto"]
+	path = third-party/capnp/capnp
+	url = https://github.com/capnproto/capnproto.git

@@ -1,3 +1,5 @@
+subdir('capnp')
+
 libfmt = declare_dependency(
   include_directories: 'fmt/include',
   link_with: shared_library('fmt',

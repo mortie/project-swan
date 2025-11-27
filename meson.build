@@ -11,7 +11,6 @@ project(
 cmake = import('cmake')
 
 shaderpp_prog = find_program('./scripts/shaderpp.py')
-capnp_prog = find_program('capnp')
 
 if host_machine.system() == 'darwin'
   origin_rpath = '@loader_path'
@@ -65,7 +64,6 @@ foreach lib: libffmpeg
   endif
 endforeach
 
-libcapnp = dependency('capnp')
 libcpptoml = subproject('cpptoml-ng').get_variable('cpptoml_dep')
 libdl = meson.get_compiler('cpp').find_library('dl')
 libz = meson.get_compiler('cpp').find_library('z')
