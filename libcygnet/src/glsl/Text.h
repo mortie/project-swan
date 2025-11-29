@@ -28,9 +28,13 @@ struct TextProg: public GlProg<Shader::Text> {
 		TextAtlas *prevAtlas = nullptr;
 
 		for (const auto &segment: drawTexts) {
+			auto transform = Mat3gf{}
+				.scale({segment.drawText.scale, segment.drawText.scale})
+				.translate(segment.drawText.pos);
+
 			glUniformMatrix3fv(
 				shader.uniTransform, 1, GL_TRUE,
-				segment.drawText.transform.data());
+				transform.data());
 			glCheck();
 
 			glUniform4f(

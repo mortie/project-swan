@@ -24,6 +24,7 @@ Context WorldPlane::getContext()
 		.game = *world_->game_,
 		.world = *world_,
 		.plane = *this,
+		.gui = world_->game_->gui_,
 	};
 }
 

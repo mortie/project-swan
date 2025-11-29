@@ -84,6 +84,7 @@ void Game::onMouseMove(float x, float y)
 	mousePos_ = (pixPos / cam_.size.as<float>()) * renderer_.winScale();
 	pixPos -= uiCam_.size / 2;
 	mouseUIPos_ = (pixPos / uiCam_.size / uiCam_.zoom * 2) * renderer_.winScale();
+	gui_.onMouseMove(mouseUIPos_);
 	hasMouseMoved_ = true;
 }
 
@@ -403,6 +404,7 @@ void Game::draw()
 	renderer_.clear();
 	renderer_.setBackgroundColor(world_->backgroundColor());
 	world_->draw(renderer_);
+	gui_.endFrame();
 }
 
 void Game::render()
@@ -411,7 +413,7 @@ void Game::render()
 	renderer_.renderUI(uiCam_);
 
 	if (frameRecorder_) {
-		renderer_.drawUIRect(Cygnet::RenderLayer::FOREGROUND, {
+		renderer_.drawUIRect({
 			.pos = mouseUIPos_.add(-0.05, -0.05),
 			.size = {0.1, 0.1},
 			.outline = {1, 1, 1, 1},
@@ -492,6 +494,10 @@ void Game::screenshot(const char *path, int w, int h)
 void Game::update(float dt)
 {
 	inputHandler_.beginFrame();
+
+	if (*uiActivateAction_) {
+		gui_.triggerActivate();
+	}
 
 	perf_.updateCount += 1;
 	if (perf_.updateCount >= 60) {
@@ -719,12 +725,19 @@ void Game::initInputHandler()
 		.defaultInputs = {"key:F6"},
 	});
 
+	actions.push_back({
+		.name = "@::ui-activate",
+		.kind = ActionKind::ONESHOT,
+		.defaultInputs = {"mouse:LEFT", "button:A"},
+	});
+
 	inputHandler_.setActions(std::move(actions));
 	entityDebugMenuAction_ = inputHandler_.action("@::entity-debug-menu");
 	debugMenuAction_ = inputHandler_.action("@::debug-menu");
 	perfMenuAction_ = inputHandler_.action("@::perf-menu");
 	reloadModsAction_ = inputHandler_.action("@::reload-mods");
 	regenWorldAction_ = inputHandler_.action("@::regen-world");
+	uiActivateAction_ = inputHandler_.action("@::ui-activate");
 }
 
 }

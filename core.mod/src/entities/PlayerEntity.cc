@@ -51,6 +51,10 @@ PlayerEntity::PlayerEntity(Swan::Ctx &ctx, Swan::Vec2 pos):
 
 void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
+	if (ctx.gui.button(ctx.game.smallFont_, "Hello World, how areyou")) {
+		Swan::info << "Clicked";
+	}
+
 	if (invulnerable_ > 0) {
 		rnd.setGamma(gamma_ + invulnerable_ * 3);
 	} else if (vit_ == Vit::LETHARGIC) {
@@ -82,7 +86,7 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	}
 
 	if (blackoutAlpha > 0) {
-		rnd.drawUIRect(Cygnet::RenderLayer::FOREGROUND, {
+		rnd.drawUIRect({
 			.pos = {},
 			.size = {100, 100},
 			.fill = {0, 0, 0, blackoutAlpha},
@@ -187,32 +191,6 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 		}
 	}, Cygnet::Anchor::BOTTOM);
 
-	if (!heldStack_.empty()) {
-		Swan::Vec2 pos;
-		if (mouseMode_) {
-			pos = ctx.game.getMouseUIPos();
-		} else {
-			pos = (lookVector_ / ctx.game.uiCam_.zoom) * ctx.game.cam_.zoom;
-		}
-
-		rnd.drawUITile(Cygnet::RenderLayer::FOREGROUND, {
-			.transform = Cygnet::Mat3gf{}
-				.scale({1.5, 1.5})
-				.translate(pos)
-				.translate({-0.25, -0.5}),
-			.id = heldStack_.item()->id,
-		});
-
-		rnd.drawUIText(Cygnet::RenderLayer::FOREGROUND, {
-			.textCache = ctx.game.smallFont_,
-			.transform = Cygnet::Mat3gf{}
-				.scale({0.7, 0.7})
-				.translate(pos)
-				.translate({0.1, 0.8}),
-			.text = Swan::strify(heldStack_.count()),
-		});
-	}
-
 	// Do we have another inventory?
 	if (!auxInventoryEntity_.isNil()) {
 		auxInventory_ = auxInventoryEntity_->trait<Swan::InventoryTrait>();
@@ -237,6 +215,36 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 		}, Cygnet::Anchor::TOP);
 	}
 
+	// Draw main inventory
+	if (ui_.showInventory) {
+		drawInventory(ctx, rnd);
+	}
+
+	// Draw held stack
+	if (!heldStack_.empty()) {
+		Swan::Vec2 pos;
+		if (mouseMode_) {
+			pos = ctx.game.getMouseUIPos();
+		} else {
+			pos = (lookVector_ / ctx.game.uiCam_.zoom) * ctx.game.cam_.zoom;
+		}
+
+		rnd.drawUITile({
+			.transform = Cygnet::Mat3gf{}
+				.scale({1.5, 1.5})
+				.translate(pos)
+				.translate({-0.25, -0.5}),
+			.id = heldStack_.item()->id,
+		});
+
+		rnd.drawUIText({
+			.textCache = ctx.game.smallFont_,
+			.pos = pos.add(0.1, 0.8),
+			.text = Swan::strify(heldStack_.count()),
+			.scale = 0.7,
+		});
+	}
+
 	// Draw tooltips for player inventory
 	if (ui_.hoveredInventorySlot >= 0 && heldStack_.empty()) {
 		auto &stack = inventory_.content_[ui_.hoveredInventorySlot];
@@ -252,13 +260,10 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 			Swan::UI::tooltip(ctx, rnd, stack.item()->displayName);
 		}
 	}
+}
 
-	// Everything after this is inventory stuff
-	if (!ui_.showInventory) {
-		return;
-	}
-
-	// Draw the rest of the inventory
+void PlayerEntity::drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
+{
 	ui_.inventoryRect = rnd.uiView({
 		.pos = {0, -2},
 		.size = {12, 5},

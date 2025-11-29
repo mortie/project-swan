@@ -9,6 +9,7 @@ libcygnet = declare_dependency(
   link_with: shared_library('cygnet',
     'src/gl.cc',
     'src/GlWrappers.cc',
+    'src/Gui.cc',
     'src/Renderer.cc',
     'src/ResourceManager.cc',
     'src/TextCache.cc',

@@ -167,11 +167,11 @@ private:
 		int selectedInventorySlot = 0;
 		int hoveredInventorySlot = -1;
 		bool showInventory = false;
-		Cygnet::Renderer::Rect hotbarRect;
-		Cygnet::Renderer::Rect inventoryRect;
+		Cygnet::Rect hotbarRect;
+		Cygnet::Rect inventoryRect;
 
 		int hoveredAuxInventorySlot = -1;
-		Cygnet::Renderer::Rect auxInventoryRect;
+		Cygnet::Rect auxInventoryRect;
 	};
 
 	struct HeldLight {
@@ -206,6 +206,8 @@ private:
 	void handleInventoryClick(Swan::Ctx &ctx);
 	void handleInventorySelection(Swan::Ctx &ctx);
 	void handleInventoryHover(Swan::Ctx &ctx);
+
+	void drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd);
 
 	State state_ = State::IDLE;
 	Vit vit_ = Vit::OK;

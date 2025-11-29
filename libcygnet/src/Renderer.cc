@@ -108,12 +108,6 @@ void Renderer::clear()
 		drawParticles_[idx].clear();
 		drawRects_[idx].clear();
 		drawTexts_[idx].clear();
-
-		drawUIGrids_[idx].clear();
-		drawUISprites_[idx].clear();
-		drawUITiles_[idx].clear();
-		drawUIRects_[idx].clear();
-		drawUITexts_[idx].clear();
 	}
 
 	drawChunks_.clear();
@@ -125,6 +119,7 @@ void Renderer::clear()
 	drawFluidMasks_.clear();
 	textBuffer_.clear();
 	textUIBuffer_.clear();
+	drawUIElements_.clear();
 }
 
 void Renderer::render(const RenderCamera &cam, RenderProps props)
@@ -305,24 +300,34 @@ void Renderer::renderUI(const RenderCamera &cam, RenderProps props)
 		camMat.scale({1, -1});
 	}
 
-	for (int i = 0; i <= (int)RenderLayer::MAX; ++i) {
-		renderUILayer(RenderLayer(i), camMat);
-	}
+	renderUILayer(camMat);
 }
 
-void Renderer::renderUILayer(RenderLayer layer, Mat3gf camMat)
+void Renderer::renderUILayer(Mat3gf camMat)
 {
-	int idx = (int)layer;
+	// TODO(perf): We could do this much more efficiently.
+	// We could collect all subsequent elements of the same type
+	// and do them all in one go.
+	// Not sure how much we'd actually gain from that though.
 
-	state_->spriteProg.drawGrids(drawUIGrids_[idx], camMat);
-	state_->spriteProg.draw(drawUISprites_[idx], camMat);
-	state_->tileProg.draw(
-		drawUITiles_[idx], camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
-		state_->tileMapTex, state_->tileMapTexSize);
-	state_->rectProg.draw(drawUIRects_[idx], camMat);
-	state_->textProg.draw(
-		drawUITexts_[idx], textUIBuffer_, camMat, 1.0 / 64);
-	glCheck();
+	for (auto &v: drawUIElements_) {
+		if (auto el = std::get_if<DrawGrid>(&v)) {
+			state_->spriteProg.drawGrids({el, 1}, camMat);
+		} else if (auto el = std::get_if<DrawSprite>(&v)) {
+			state_->spriteProg.draw({el, 1}, camMat);
+		} else if (auto el = std::get_if<DrawTile>(&v)) {
+			state_->tileProg.draw(
+				{el, 1}, camMat,
+				state_->tileAtlasTex, state_->tileAtlasTexSize,
+				state_->tileMapTex, state_->tileMapTexSize);
+		} else if (auto el = std::get_if<DrawRect>(&v)) {
+			state_->rectProg.draw({el, 1}, camMat);
+		} else if (auto el = std::get_if<TextSegment>(&v)) {
+			state_->textProg.draw({el, 1}, textUIBuffer_, camMat, 1.0 / 64);
+		}
+
+		glCheck();
+	}
 }
 
 void Renderer::applyAnchor(Anchor anchor, Mat3gf &mat, Swan::Vec2 size)
@@ -413,7 +418,7 @@ void Renderer::applyAnchor(Anchor anchor, Swan::Vec2 &pos, Swan::Vec2 size)
 	}
 };
 
-Renderer::Rect Renderer::pushUIView(Rect rect, Anchor anchor)
+Rect Renderer::pushUIView(Rect rect, Anchor anchor)
 {
 	auto &view = uiViewStack_.back();
 	rect.size /= 2;
@@ -477,6 +482,25 @@ bool Renderer::assertUIViewStackEmpty()
 	}
 
 	return true;
+}
+
+Renderer::TextSegment Renderer::prepareUIText(DrawText drawText, Anchor anchor)
+{
+	size_t start = textUIBuffer_.size();
+
+	Swan::Vec2 size;
+	drawText.textCache.renderString(drawText.text, textUIBuffer_, size);
+	size /= 64;
+	size *= drawText.scale;
+
+	applyAnchor(anchor, drawText.pos, size);
+	return {
+		.drawText = drawText,
+		.atlas = drawText.textCache.atlas_,
+		.size = size,
+		.start = start,
+		.end = textUIBuffer_.size(),
+	};
 }
 
 void Renderer::uploadFluidAtlas(const void *data)

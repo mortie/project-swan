@@ -21,10 +21,10 @@ void inventory(
 
 Vec2i calcInventorySize(int size);
 
-Vec2 relativePos(Vec2 pos, Cygnet::Renderer::Rect rect);
+Vec2 relativePos(Vec2 pos, Cygnet::Rect rect);
 
-std::optional<Vec2i> inventoryCellPos(Vec2 pos, Cygnet::Renderer::Rect rect);
-int inventoryCellIndex(Vec2 pos, Cygnet::Renderer::Rect rect, int offset = 0);
+std::optional<Vec2i> inventoryCellPos(Vec2 pos, Cygnet::Rect rect);
+int inventoryCellIndex(Vec2 pos, Cygnet::Rect rect, int offset = 0);
 
 void tooltip(Ctx &ctx, Cygnet::Renderer &rnd, std::string_view text);
 

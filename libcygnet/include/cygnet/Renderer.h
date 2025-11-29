@@ -3,6 +3,7 @@
 #include <memory>
 #include <span>
 #include <string_view>
+#include <variant>
 #include <vector>
 #include <stdint.h>
 
@@ -26,6 +27,11 @@ enum class Anchor {
 	TOP_RIGHT,
 	BOTTOM_LEFT,
 	BOTTOM_RIGHT,
+};
+
+struct Rect {
+	Swan::Vec2 pos{0, 0};
+	Swan::Vec2 size{1, 1};
 };
 
 enum class TileClip: uint8_t {
@@ -105,11 +111,6 @@ public:
 	using TileID = uint16_t;
 	static constexpr int LAYER_COUNT = (int)RenderLayer::MAX + 1;
 
-	struct Rect {
-		Swan::Vec2 pos{0, 0};
-		Swan::Vec2 size{1, 1};
-	};
-
 	struct DrawChunk {
 		Swan::Vec2 pos;
 		RenderChunk chunk;
@@ -185,8 +186,9 @@ public:
 
 	struct DrawText {
 		TextCache &textCache;
-		Mat3gf transform;
+		Swan::Vec2 pos;
 		std::string_view text;
+		float scale = 1;
 		Color color = {1.0, 1.0, 1.0, 1.0};
 	};
 
@@ -323,71 +325,59 @@ public:
 	void popUIView();
 	bool assertUIViewStackEmpty();
 
+	Rect currentUiView()
+	{
+		if (uiViewStack_.empty()) {
+			return {};
+		}
+
+		return uiViewStack_.back();
+	}
+
 	void setBackgroundColor(Color color) { backgroundColor_ = color; }
 
-	void drawUIGrid(RenderLayer layer, DrawGrid drawGrid, Anchor anchor = Anchor::CENTER)
+	void drawUIGrid(DrawGrid drawGrid, Anchor anchor = Anchor::CENTER)
 	{
 		applyAnchor(
 			anchor, drawGrid.transform,
 			drawGrid.sprite.size.scale(drawGrid.w + 2, drawGrid.h + 2));
-		drawUIGrids_[(int)layer].push_back(drawGrid);
-	}
-	void drawUIGrid(DrawGrid drawGrid, Anchor anchor = Anchor::CENTER)
-	{
-		drawUIGrid(RenderLayer::NORMAL, drawGrid, anchor);
+		drawUIElements_.push_back(drawGrid);
 	}
 
-	void drawUISprite(RenderLayer layer, DrawSprite drawSprite, Anchor anchor = Anchor::CENTER)
-	{
-		applyAnchor(anchor, drawSprite.transform, drawSprite.sprite.size);
-		drawUISprites_[(int)layer].push_back(drawSprite);
-	}
 	void drawUISprite(DrawSprite drawSprite, Anchor anchor = Anchor::CENTER)
 	{
-		drawUISprite(RenderLayer::NORMAL, drawSprite, anchor);
+		applyAnchor(anchor, drawSprite.transform, drawSprite.sprite.size);
+		drawUIElements_.push_back(drawSprite);
 	}
 
-	void drawUITile(RenderLayer layer, DrawTile drawTile, Anchor anchor = Anchor::CENTER)
-	{
-		applyAnchor(anchor, drawTile.transform, {1, 1});
-		drawUITiles_[(int)layer].push_back(drawTile);
-	}
 	void drawUITile(DrawTile drawTile, Anchor anchor = Anchor::CENTER)
 	{
-		drawUITile(RenderLayer::NORMAL, drawTile, anchor);
+		applyAnchor(anchor, drawTile.transform, {1, 1});
+		drawUIElements_.push_back(drawTile);
 	}
 
-	void drawUIRect(RenderLayer layer, DrawRect drawRect, Anchor anchor = Anchor::CENTER)
+	void drawUIRect(DrawRect drawRect, Anchor anchor = Anchor::CENTER)
 	{
 		applyAnchor(anchor, drawRect.pos, drawRect.size);
-		drawUIRects_[(int)layer].push_back(drawRect);
-	}
-	void drawUIRect(DrawRect dr)
-	{
-		drawUIRect(RenderLayer::NORMAL, dr);
+		drawUIElements_.push_back(drawRect);
 	}
 
-	TextSegment &drawUIText(RenderLayer layer, DrawText drawText, Anchor anchor = Anchor::CENTER)
+	TextSegment prepareUIText(
+		DrawText drawText,
+		Anchor anchor = Anchor::CENTER);
+
+	void drawUIText(TextSegment segment)
 	{
-		size_t start = textUIBuffer_.size();
-
-		Swan::Vec2 size;
-		drawText.textCache.renderString(drawText.text, textUIBuffer_, size);
-		size /= 64;
-
-		applyAnchor(anchor, drawText.transform, size);
-		drawUITexts_[(int)layer].push_back({
-			.drawText = drawText,
-			.atlas = drawText.textCache.atlas_,
-			.size = size,
-			.start = start,
-			.end = textUIBuffer_.size(),
-		});
-		return drawUITexts_[(int)layer].back();
+		drawUIElements_.push_back(segment);
 	}
-	TextSegment &drawUIText(DrawText drawText, Anchor anchor = Anchor::CENTER)
+
+	TextSegment &drawUIText(
+		DrawText drawText,
+		Anchor anchor = Anchor::CENTER)
 	{
-		return drawUIText(RenderLayer::NORMAL, drawText, anchor);
+		auto segment = prepareUIText(drawText, anchor);
+		drawUIText(segment);
+		return std::get<TextSegment>(drawUIElements_.back());
 	}
 
 	void update(float dt);
@@ -466,7 +456,7 @@ public:
 
 private:
 	void renderLayer(RenderLayer layer, Mat3gf camMat);
-	void renderUILayer(RenderLayer layer, Mat3gf camMat);
+	void renderUILayer(Mat3gf camMat);
 	void applyAnchor(Anchor anchor, Mat3gf &mat, Swan::Vec2 size);
 	void applyAnchor(Anchor anchor, Swan::Vec2 &pos, Swan::Vec2 size);
 
@@ -493,11 +483,14 @@ private:
 	std::vector<TextSegment> drawTexts_[LAYER_COUNT];
 	std::vector<TextCache::RenderedCodepoint> textBuffer_;
 
-	std::vector<DrawGrid> drawUIGrids_[LAYER_COUNT];
-	std::vector<DrawSprite> drawUISprites_[LAYER_COUNT];
-	std::vector<DrawTile> drawUITiles_[LAYER_COUNT];
-	std::vector<DrawRect> drawUIRects_[LAYER_COUNT];
-	std::vector<TextSegment> drawUITexts_[LAYER_COUNT];
+	using UIElement = std::variant<
+		DrawGrid,
+		DrawSprite,
+		DrawTile,
+		DrawRect,
+		TextSegment>;
+
+	std::vector<UIElement> drawUIElements_;
 	std::vector<TextCache::RenderedCodepoint> textUIBuffer_;
 
 	std::vector<DrawParticle> spawnedParticles_[LAYER_COUNT];

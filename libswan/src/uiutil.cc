@@ -63,7 +63,7 @@ void inventory(
 	int index = 0;
 	for (auto &stack: content) {
 		if (hovered == index) {
-			rnd.drawUIRect(Cygnet::RenderLayer::BACKGROUND, {
+			rnd.drawUIRect({
 				.pos = {x + 1.0f, y + 1.0f},
 				.size = {1, 1},
 				.outline = {0, 0, 0, 0},
@@ -85,11 +85,9 @@ void inventory(
 
 		rnd.drawUIText({
 			.textCache = ctx.game.smallFont_,
-			.transform = Cygnet::Mat3gf{}
-				.scale({0.7, 0.7})
-				.translate({1.1, 1.5})
-				.translate({float(x), float(y)}),
+			.pos = {x + 1.1f, y + 1.5f},
 			.text = strify(stack.count()),
+			.scale = 0.6,
 		}, Cygnet::Anchor::TOP_LEFT);
 
 	next:
@@ -102,16 +100,13 @@ void inventory(
 				break;
 			}
 		}
-
 	}
 
 	for (; y < size.y; ++y) {
 		for (; x < size.x; ++x) {
 			rnd.drawUIText({
 				.textCache = ctx.game.smallFont_,
-				.transform = Cygnet::Mat3gf{}
-					.translate({1.25, 1.2})
-					.translate({float(x), float(y)}),
+				.pos = {x + 1.25f, y + 1.2f},
 				.text = "X",
 				.color = {1.0, 0.0, 0.0},
 			}, Cygnet::Anchor::TOP_LEFT);
@@ -133,14 +128,14 @@ Vec2i calcInventorySize(int size)
 	}
 }
 
-Vec2 relativePos(Vec2 pos, Cygnet::Renderer::Rect rect)
+Vec2 relativePos(Vec2 pos, Cygnet::Rect rect)
 {
 	pos -= rect.pos;
 	pos += rect.size;
 	return pos;
 }
 
-std::optional<Vec2i> inventoryCellPos(Vec2 pos, Cygnet::Renderer::Rect rect)
+std::optional<Vec2i> inventoryCellPos(Vec2 pos, Cygnet::Rect rect)
 {
 	pos = relativePos(pos, rect);
 
@@ -159,7 +154,7 @@ std::optional<Vec2i> inventoryCellPos(Vec2 pos, Cygnet::Renderer::Rect rect)
 	return pos.as<int>();
 }
 
-int inventoryCellIndex(Vec2 pos, Cygnet::Renderer::Rect rect, int offset)
+int inventoryCellIndex(Vec2 pos, Cygnet::Rect rect, int offset)
 {
 	auto cellPos = inventoryCellPos(pos, rect);
 	if (!cellPos) {
@@ -172,31 +167,28 @@ int inventoryCellIndex(Vec2 pos, Cygnet::Renderer::Rect rect, int offset)
 
 void tooltip(Ctx &ctx, Cygnet::Renderer &rnd, std::string_view text)
 {
-	float size = 0.7;
+	float scale = 0.7;
 
-	auto &segment = rnd.drawUIText(Cygnet::RenderLayer::FOREGROUND, {
+	auto segment = rnd.prepareUIText({
 		.textCache = ctx.game.smallFont_,
-		.transform = Cygnet::Mat3gf{}
-			.scale({size, size})
-			.translate(ctx.game.getMouseUIPos())
-			.translate({0.4, -0.7}),
+		.pos = ctx.game.getMouseUIPos(),
 		.text = text,
+		.scale = scale,
 	});
-	segment.drawText.transform.translate({
-		segment.size.x / 2,
-		segment.size.y / 2,
-	});
+	segment.drawText.pos += {
+		segment.size.x / 2 - 0.2f,
+		-segment.size.y - 0.2f,
+	};
 
-	auto rectSize = (segment.size * size).add(0.32, 0.3);
-	rnd.drawUIRect(Cygnet::RenderLayer::FOREGROUND, {
-		.pos = ctx.game.getMouseUIPos()
-			.add(0.4, -0.7)
-			.add(-0.1, -0.1)
-			.add(rectSize.x / 2, rectSize.y / 2),
-		.size = rectSize,
+	rnd.drawUIRect({
+		.pos = ctx.game.getMouseUIPos().add(
+			segment.size.x / 2 - 0.2f,
+			-segment.size.y - 0.2f),
+		.size = segment.size.add(0.2, 0.4),
 		.outline = {0.3, 0.1, 0.1},
 		.fill = {0, 0, 0, 0.7},
 	});
+	rnd.drawUIText(segment);
 }
 
 }

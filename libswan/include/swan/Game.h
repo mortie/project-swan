@@ -6,6 +6,7 @@
 #include <string>
 #include <span>
 #include <cygnet/Renderer.h>
+#include <cygnet/Gui.h>
 #include <cygnet/TextCache.h>
 #include <cygnet/util.h>
 
@@ -98,7 +99,9 @@ public:
 	void playSound(SoundAsset *asset, Vec2 center, SoundHandle handle);
 	void playSound(SoundAsset *asset, float volume, Vec2 center, SoundHandle handle);
 
-	void spawnParticle(Cygnet::RenderLayer layer, Cygnet::Renderer::SpawnParticle p)
+	void spawnParticle(
+		Cygnet::RenderLayer layer,
+		Cygnet::Renderer::SpawnParticle p)
 	{
 		renderer_.spawnParticle(layer, p);
 	}
@@ -125,6 +128,7 @@ public:
 	std::unique_ptr<World> world_ = NULL;
 	std::string worldPath_;
 	Cygnet::Renderer renderer_;
+	Cygnet::Gui gui_{&renderer_};
 	Cygnet::RenderCamera cam_{.zoom = 1.0 / 8};
 	Cygnet::RenderCamera uiCam_{.zoom = 1.0 / 16};
 
@@ -159,6 +163,7 @@ public:
 	Action *perfMenuAction_;
 	Action *reloadModsAction_;
 	Action *regenWorldAction_;
+	Action *uiActivateAction_;
 
 private:
 	bool reload();

@@ -18,6 +18,7 @@ namespace Cygnet {
 
 class Renderer;
 class TextCache;
+class Gui;
 
 }
 
@@ -60,6 +61,7 @@ struct Context {
 	Game &game;
 	World &world;
 	WorldPlane &plane;
+	Cygnet::Gui &gui;
 };
 using Ctx = const Context;
 

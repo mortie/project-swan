@@ -219,12 +219,7 @@ void TextCache::renderString(
 		kern(prev, rendered);
 		prev = rendered.codepoint;
 
-		size.x += rendered.width;
-	}
-
-	size.x -= 45 * scale_;
-	if (size.x < 0) {
-		size.x = 0;
+		size.x += rendered.width + rendered.x + 1;
 	}
 }
 
