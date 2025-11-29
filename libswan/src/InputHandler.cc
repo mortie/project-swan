@@ -5,6 +5,7 @@
 #include <vector>
 #include <array>
 #include <imgui/imgui.h>
+#include <deque>
 
 #include <swan/HashMap.h>
 
@@ -19,6 +20,22 @@
 #include <GLFW/glfw3.h>
 
 namespace Swan {
+
+static const char *findKeyName(int code)
+{
+	auto it = scanCodeToName.find(code);
+	if (it == scanCodeToName.end()) {
+		return "<unknown key>";
+	}
+
+	return it->second.data();
+}
+
+struct InputHandler::LogEntry {
+	const char *kind;
+	const char *name;
+	int value;
+};
 
 struct InputHandler::Gamepad {
 	std::array<float, 6> prevAxes;
@@ -46,6 +63,9 @@ struct InputHandler::Impl {
 	std::unordered_map<int, std::vector<ActionWrapper>> joystickAxes;
 
 	std::array<std::optional<Gamepad>, GLFW_JOYSTICK_LAST + 1> gamepads;
+
+	bool verbose = false;
+	std::deque<LogEntry> log;
 };
 
 InputHandler::InputHandler(): impl_(std::make_unique<Impl>()) {}
@@ -64,6 +84,18 @@ Action *InputHandler::action(std::string_view name)
 
 void InputHandler::onKeyDown(int scancode)
 {
+	if (impl_->verbose) {
+		if (impl_->log.size() >= 16) {
+			impl_->log.pop_back();
+		}
+
+		impl_->log.push_front(LogEntry{
+			.kind = "KEY DOWN",
+			.name = findKeyName(scancode),
+			.value = scancode,
+		});
+	}
+
 	auto it = impl_->keys.find(scancode);
 	if (it == impl_->keys.end()) {
 		return;
@@ -79,6 +111,18 @@ void InputHandler::onKeyDown(int scancode)
 
 void InputHandler::onKeyUp(int scancode)
 {
+	if (impl_->verbose) {
+		if (impl_->log.size() >= 16) {
+			impl_->log.pop_back();
+		}
+
+		impl_->log.push_front(LogEntry{
+			.kind = "KEY UP",
+			.name = findKeyName(scancode),
+			.value = scancode,
+		});
+	}
+
 	auto it = impl_->keys.find(scancode);
 	if (it == impl_->keys.end()) {
 		return;
@@ -166,6 +210,7 @@ void InputHandler::onButtonUp(int button)
 
 void InputHandler::drawDebug()
 {
+	impl_->verbose = true;
 	int gamepadCount = 0;
 	for (auto &pad: impl_->gamepads) {
 		if (pad) {
@@ -200,6 +245,13 @@ void InputHandler::drawDebug()
 			}
 
 			ImGui::Text("* Pressed %zu (%s)", btn, name);
+		}
+	}
+
+	if (!impl_->log.empty()) {
+		ImGui::Text("Log:");
+		for (auto &entry: impl_->log) {
+			ImGui::Text("* %s: %d (%s)", entry.kind, entry.value, entry.name);
 		}
 	}
 }
@@ -272,6 +324,14 @@ void InputHandler::endFrame()
 		action->activation = 0;
 	}
 	impl_->oneshotActionsActivatedThisFrame.clear();
+
+	if (impl_->verbose) {
+		impl_->verbose = false;
+	} else if (!impl_->log.empty()) {
+		info << "Clearing log";
+		std::deque<LogEntry> empty;
+		impl_->log.swap(empty);
+	}
 }
 
 void InputHandler::updateGamepad(Gamepad &gamepad)

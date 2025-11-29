@@ -31,6 +31,7 @@ protected:
 	void endFrame();
 
 private:
+	struct LogEntry;
 	struct Gamepad;
 	struct Impl;
 
