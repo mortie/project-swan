@@ -1,11 +1,10 @@
-#include <swan/HashMap.h>
-#include <unordered_map>
-#include <string>
+#pragma once
+
 #include <string_view>
 
 namespace Swan {
 
-extern const HashMap<int> scanCodeFromName;
-extern const std::unordered_map<int, std::string_view> scanCodeToName;
+int scanCodeFromName(std::string_view name);
+std::string_view scanCodeToName(int axis);
 
 }

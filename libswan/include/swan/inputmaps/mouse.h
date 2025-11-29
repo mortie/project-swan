@@ -1,11 +1,10 @@
-#include <swan/HashMap.h>
-#include <unordered_map>
-#include <string>
+#pragma once
+
 #include <string_view>
 
 namespace Swan {
 
-extern const HashMap<int> mouseButtonFromName;
-extern const std::unordered_map<int, std::string_view> mouseButtonToName;
+int mouseButtonFromName(std::string_view name);
+std::string_view mouseButtonToName(int axis);
 
 }

@@ -21,16 +21,6 @@
 
 namespace Swan {
 
-static const char *findKeyName(int code)
-{
-	auto it = scanCodeToName.find(code);
-	if (it == scanCodeToName.end()) {
-		return "<unknown key>";
-	}
-
-	return it->second.data();
-}
-
 struct InputHandler::LogEntry {
 	const char *kind;
 	const char *name;
@@ -91,7 +81,7 @@ void InputHandler::onKeyDown(int scancode)
 
 		impl_->log.push_front(LogEntry{
 			.kind = "KEY DOWN",
-			.name = findKeyName(scancode),
+			.name = scanCodeToName(scancode).data(),
 			.value = scancode,
 		});
 	}
@@ -118,7 +108,7 @@ void InputHandler::onKeyUp(int scancode)
 
 		impl_->log.push_front(LogEntry{
 			.kind = "KEY UP",
-			.name = findKeyName(scancode),
+			.name = scanCodeToName(scancode).data(),
 			.value = scancode,
 		});
 	}
@@ -228,22 +218,12 @@ void InputHandler::drawDebug()
 		ImGui::Text("Gamepad %zu (%s):", jid, glfwGetJoystickName(jid));
 
 		for (size_t ax = 0; ax < pad.axes.size(); ++ax) {
-			auto it = gamepadAxisToName.find(ax);
-			const char *name = "<unknown>";
-			if (it != gamepadAxisToName.end()) {
-				name = it->second.data();
-			}
-
+			const char *name = gamepadAxisToName(ax).data();
 			ImGui::Text("* Axis %zu (%s): %f", ax, name, pad.axes[ax]);
 		}
 
 		for (size_t btn = 0; btn < pad.buttons.size(); ++btn) {
-			auto it = gamepadButtonToName.find(btn);
-			const char *name = "<unknown>";
-			if (it != gamepadButtonToName.end()) {
-				name = it->second.data();
-			}
-
+			const char *name = gamepadButtonToName(btn).data();
 			ImGui::Text("* Pressed %zu (%s)", btn, name);
 		}
 	}
@@ -397,21 +377,21 @@ void InputHandler::registerInput(
 	auto name = input.substr(colon + 1);
 
 	std::unordered_map<int, std::vector<Impl::ActionWrapper>> *map;
-	const HashMap<int> *nameMap;
+	int code = -1;
 	if (category == "key") {
-		nameMap = &scanCodeFromName;
+		code = scanCodeFromName(name);
 		map = &impl_->keys;
 	}
 	else if (category == "mouse") {
-		nameMap = &mouseButtonFromName;
+		code = mouseButtonFromName(name);
 		map = &impl_->mouseButtons;
 	}
 	else if (category == "button") {
-		nameMap = &gamepadButtonFromName;
+		code = gamepadButtonFromName(name);
 		map = &impl_->gamepadButtons;
 	}
 	else if (category == "axis") {
-		nameMap = &gamepadAxisFromName;
+		code = gamepadAxisFromName(name);
 		map = &impl_->joystickAxes;
 	}
 	else {
@@ -419,14 +399,12 @@ void InputHandler::registerInput(
 		return;
 	}
 
-	auto it = nameMap->find(name);
-	if (it == nameMap->end()) {
+	if (code < 0) {
 		warn << "Unknown " << category << ": " << name;
 		return;
 	}
-	int id = it->second;
 
-	(*map)[id].push_back({
+	(*map)[code].push_back({
 		.action = action,
 		.kind = kind,
 	});
@@ -450,13 +428,13 @@ void InputHandler::registerAxisInput(std::string_view input, Action *action)
 			secondary = secondary.substr(1);
 		}
 
-		auto it = gamepadAxisFromName.find(secondary);
-		if (it == gamepadAxisFromName.end()) {
+		auto code = gamepadAxisFromName(secondary);
+		if (code < 0) {
 			warn << "Unknown axis: " << secondary;
 			return;
 		}
 
-		impl_->joystickAxes[it->second].push_back({
+		impl_->joystickAxes[code].push_back({
 			.action = action,
 			.kind = ActionKind::AXIS,
 			.multiplier = multiplier,
@@ -474,17 +452,17 @@ void InputHandler::registerAxisInput(std::string_view input, Action *action)
 	auto positive = secondary.substr(semicolon + 1);
 
 	std::unordered_map<int, std::vector<Impl::ActionWrapper>> *map;
-	const HashMap<int> *nameMap;
+	int (*codeFunc)(std::string_view) = nullptr;
 	if (category == "key") {
-		nameMap = &scanCodeFromName;
+		codeFunc = scanCodeFromName;
 		map = &impl_->keys;
 	}
 	else if (category == "mouse") {
-		nameMap = &mouseButtonFromName;
+		codeFunc = mouseButtonFromName;
 		map = &impl_->mouseButtons;
 	}
 	else if (category == "button") {
-		nameMap = &gamepadButtonFromName;
+		codeFunc = gamepadButtonFromName;
 		map = &impl_->gamepadButtons;
 	}
 	else {
@@ -492,19 +470,17 @@ void InputHandler::registerAxisInput(std::string_view input, Action *action)
 		return;
 	}
 
-	auto negIt = nameMap->find(negative);
-	if (negIt == nameMap->end()) {
+	int neg = codeFunc(negative);
+	if (neg < 0) {
 		warn << "Unknown " << category << ": " << negative;
 		return;
 	}
-	int neg = negIt->second;
 
-	auto posIt = nameMap->find(positive);
-	if (posIt == nameMap->end()) {
+	int pos = codeFunc(positive);
+	if (pos < 0) {
 		warn << "Unknown " << category << ": " << positive;
 		return;
 	}
-	int pos = posIt->second;
 
 	(*map)[neg].push_back({
 		.action = action,

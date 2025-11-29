@@ -1,11 +1,10 @@
-#include <swan/HashMap.h>
-#include <unordered_map>
-#include <string>
+#pragma once
+
 #include <string_view>
 
 namespace Swan {
 
-extern const HashMap<int> gamepadAxisFromName;
-extern const std::unordered_map<int, std::string_view> gamepadAxisToName;
+int gamepadAxisFromName(std::string_view name);
+std::string_view gamepadAxisToName(int axis);
 
 }
