@@ -23,6 +23,8 @@ public:
 	void onButtonDown(int button);
 	void onButtonUp(int button);
 
+	void drawDebug();
+
 protected:
 	void setActions(std::vector<ActionSpec> actions);
 	void beginFrame();

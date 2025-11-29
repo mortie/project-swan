@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include <vector>
 #include <array>
+#include <imgui/imgui.h>
 
 #include <swan/HashMap.h>
 
@@ -159,6 +160,46 @@ void InputHandler::onButtonUp(int button)
 		w.action->activation -= w.multiplier;
 		if (std::abs(w.action->activation) < 0.01) {
 			w.action->activation = 0;
+		}
+	}
+}
+
+void InputHandler::drawDebug()
+{
+	int gamepadCount = 0;
+	for (auto &pad: impl_->gamepads) {
+		if (pad) {
+			gamepadCount += 1;
+		}
+	}
+
+	ImGui::Text("Connected gamepads: %d", gamepadCount);
+	for (size_t jid = 0; jid < impl_->gamepads.size(); ++jid) {
+		if (!impl_->gamepads[jid]) {
+			continue;
+		}
+
+		auto &pad = *impl_->gamepads[jid];
+		ImGui::Text("Gamepad %zu (%s):", jid, glfwGetJoystickName(jid));
+
+		for (size_t ax = 0; ax < pad.axes.size(); ++ax) {
+			auto it = gamepadAxisToName.find(ax);
+			const char *name = "<unknown>";
+			if (it != gamepadAxisToName.end()) {
+				name = it->second.data();
+			}
+
+			ImGui::Text("* Axis %zu (%s): %f", ax, name, pad.axes[ax]);
+		}
+
+		for (size_t btn = 0; btn < pad.buttons.size(); ++btn) {
+			auto it = gamepadButtonToName.find(btn);
+			const char *name = "<unknown>";
+			if (it != gamepadButtonToName.end()) {
+				name = it->second.data();
+			}
+
+			ImGui::Text("* Pressed %zu (%s)", btn, name);
 		}
 	}
 }

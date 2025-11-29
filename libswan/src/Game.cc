@@ -96,12 +96,6 @@ TilePos Game::getMouseTile()
 
 void Game::drawDebugMenu()
 {
-	ImGui::Begin(
-		"Debug Menu", &debug_.show,
-		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing);
-	ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-
 	ImGui::Text(
 		"Position: x=%d y=%d",
 		int(round(world_->player_->pos.x)),
@@ -130,7 +124,10 @@ void Game::drawDebugMenu()
 	ImGui::Checkbox("Infinite items", &debug_.infiniteItems);
 
 	ImGui::Checkbox("Individually serialize entities", &debug_.outputEntityProto);
-	if (ImGui::Button("Save")) {
+
+	ImGui::Checkbox("Show input debug menu", &debug_.showInputDebug);
+
+	if (ImGui::Button("Save World")) {
 		triggerSave_ = true;
 	}
 
@@ -272,20 +269,10 @@ void Game::drawDebugMenu()
 		}
 	}
 	ImGui::EndChild();
-
-	ImGui::End();
 }
 
 void Game::drawPerfMenu()
 {
-	ImGui::Begin(
-		"Perf Menu", &perf_.show,
-		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing);
-	ImGui::SetWindowPos(
-		ImVec2(ImGui::GetIO().DisplaySize.x - ImGui::GetWindowWidth(), 0),
-		ImGuiCond_Always);
-
 	auto &fluids = world_->currentPlane().fluids();
 	ImGui::Text("FPS: %d", perf_.fps);
 	ImGui::Text("TPS: %d", perf_.tps);
@@ -312,8 +299,6 @@ void Game::drawPerfMenu()
 		world_->currentPlane().getActiveChunkCount());
 	ImGui::Text("Chunk memory:  %.02f MiB",
 		world_->currentPlane().getChunkDataMemUsage() / double(1024 * 1024));
-
-	ImGui::End();
 }
 
 void Game::draw()
@@ -331,7 +316,13 @@ void Game::draw()
 	}
 
 	if (debug_.show) {
+		ImGui::Begin(
+			"Debug Menu", &debug_.show,
+			ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing);
+		ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 		drawDebugMenu();
+		ImGui::End();
 	}
 
 	for (size_t i = 0; i < debugEntities_.size(); ++i) {
@@ -344,13 +335,41 @@ void Game::draw()
 		ImGui::Begin(
 			cat("Entity debug window [", i, "]").c_str(), nullptr,
 			ImGuiWindowFlags_AlwaysAutoResize);
-		ImGui::Text("Debug for %s %" PRIu64, ref.collection()->name().c_str(), ref.id());
+		ImGui::Text(
+			"Debug for %s %" PRIu64,
+			ref.collection()->name().c_str(), ref.id());
 		ent->drawDebug(world_->currentPlane().getContext());
 		ImGui::End();
 	}
 
+	int rightPanelY = 0;
+
 	if (perf_.show) {
+		ImGui::Begin(
+			"Perf Menu", &perf_.show,
+			ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing);
+		ImVec2 pos(
+			ImGui::GetIO().DisplaySize.x - ImGui::GetWindowWidth(),
+			rightPanelY);
+		ImGui::SetWindowPos(pos, ImGuiCond_Always);
+		rightPanelY += ImGui::GetWindowHeight();
 		drawPerfMenu();
+		ImGui::End();
+	}
+
+	if (debug_.showInputDebug) {
+		ImGui::Begin(
+			"Input Debug Menu", &debug_.showInputDebug,
+			ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing);
+		ImVec2 pos(
+			ImGui::GetIO().DisplaySize.x - ImGui::GetWindowWidth(),
+			rightPanelY);
+		ImGui::SetWindowPos(pos, ImGuiCond_Always);
+		rightPanelY += ImGui::GetWindowHeight();
+		inputHandler_.drawDebug();
+		ImGui::End();
 	}
 
 	if (popupMessage_ != "") {

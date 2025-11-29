@@ -34,6 +34,7 @@ public:
 		bool outputEntityProto = false;
 		bool godMode = false;
 		bool infiniteItems = false;
+		bool showInputDebug = false;
 	};
 
 	struct PerfRecord {
