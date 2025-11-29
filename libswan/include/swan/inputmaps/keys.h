@@ -4,7 +4,7 @@
 
 namespace Swan {
 
-int scanCodeFromName(std::string_view name);
-std::string_view scanCodeToName(int axis);
+int keyboardKeyFromName(std::string_view name);
+std::string_view keyboardKeyToName(int axis);
 
 }

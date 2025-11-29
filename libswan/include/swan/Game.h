@@ -21,7 +21,7 @@ namespace Swan {
 
 class Game {
 public:
-	Game(std::function<bool()> recompileMods): recompileMods_(recompileMods) {}
+	Game(std::function<bool()> recompileMods);
 
 	struct Debug {
 		bool show = false;

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <math.h>
 #include <time.h>
 #include <memory>
@@ -27,6 +28,15 @@
 namespace Swan {
 
 static constexpr float TICK_DELTA = 1.0 / 20.0;
+
+Game::Game(std::function<bool()> recompileMods):
+	recompileMods_(std::move(recompileMods))
+{
+	const char *val = getenv("SWAN_DEBUG_KEYS");
+	if (val && std::string_view(val) == "1") {
+		debug_.showInputDebug = true;
+	}
+}
 
 void Game::createWorld(
 	std::string worldPath, const std::string &worldgen,

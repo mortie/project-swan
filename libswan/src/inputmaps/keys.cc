@@ -17,7 +17,7 @@ static const std::unordered_map<int, std::string_view> toName = {
 #undef X
 };
 
-int scanCodeFromName(std::string_view name)
+int keyboardKeyFromName(std::string_view name)
 {
 	auto it = fromName.find(name);
 	if (it == fromName.end()) {
@@ -27,7 +27,7 @@ int scanCodeFromName(std::string_view name)
 	return it->second;
 }
 
-std::string_view scanCodeToName(int axis)
+std::string_view keyboardKeyToName(int axis)
 {
 	auto it = toName.find(axis);
 	if (it == toName.end()) {

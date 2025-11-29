@@ -77,7 +77,7 @@ void InputHandler::onKeyDown(int scancode)
 	if (impl_->verbose) {
 		impl_->log.push_front(LogEntry{
 			.kind = "KEY DOWN",
-			.name = scanCodeToName(scancode).data(),
+			.name = keyboardKeyToName(scancode).data(),
 			.value = scancode,
 		});
 	}
@@ -100,7 +100,7 @@ void InputHandler::onKeyUp(int scancode)
 	if (impl_->verbose) {
 		impl_->log.push_front(LogEntry{
 			.kind = "KEY UP",
-			.name = scanCodeToName(scancode).data(),
+			.name = keyboardKeyToName(scancode).data(),
 			.value = scancode,
 		});
 	}
@@ -390,7 +390,7 @@ void InputHandler::registerInput(
 	std::unordered_map<int, std::vector<Impl::ActionWrapper>> *map;
 	int code = -1;
 	if (category == "key") {
-		code = scanCodeFromName(name);
+		code = keyboardKeyFromName(name);
 		map = &impl_->keys;
 	}
 	else if (category == "mouse") {
@@ -465,7 +465,7 @@ void InputHandler::registerAxisInput(std::string_view input, Action *action)
 	std::unordered_map<int, std::vector<Impl::ActionWrapper>> *map;
 	int (*codeFunc)(std::string_view) = nullptr;
 	if (category == "key") {
-		codeFunc = scanCodeFromName;
+		codeFunc = keyboardKeyFromName;
 		map = &impl_->keys;
 	}
 	else if (category == "mouse") {
