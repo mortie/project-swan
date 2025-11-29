@@ -359,6 +359,9 @@ void Game::draw()
 	}
 
 	if (debug_.showInputDebug) {
+		ImGui::SetNextWindowSizeConstraints(
+			ImVec2(250, 0),
+			ImVec2(FLT_MAX, FLT_MAX));
 		ImGui::Begin(
 			"Input Debug Menu", &debug_.showInputDebug,
 			ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |

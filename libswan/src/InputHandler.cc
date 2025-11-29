@@ -75,10 +75,6 @@ Action *InputHandler::action(std::string_view name)
 void InputHandler::onKeyDown(int scancode)
 {
 	if (impl_->verbose) {
-		if (impl_->log.size() >= 16) {
-			impl_->log.pop_back();
-		}
-
 		impl_->log.push_front(LogEntry{
 			.kind = "KEY DOWN",
 			.name = scanCodeToName(scancode).data(),
@@ -102,10 +98,6 @@ void InputHandler::onKeyDown(int scancode)
 void InputHandler::onKeyUp(int scancode)
 {
 	if (impl_->verbose) {
-		if (impl_->log.size() >= 16) {
-			impl_->log.pop_back();
-		}
-
 		impl_->log.push_front(LogEntry{
 			.kind = "KEY UP",
 			.name = scanCodeToName(scancode).data(),
@@ -132,6 +124,14 @@ void InputHandler::onKeyUp(int scancode)
 
 void InputHandler::onMouseDown(int button)
 {
+	if (impl_->verbose) {
+		impl_->log.push_front(LogEntry{
+			.kind = "MOUSE DOWN",
+			.name = mouseButtonToName(button).data(),
+			.value = button,
+		});
+	}
+
 	auto it = impl_->mouseButtons.find(button);
 	if (it == impl_->mouseButtons.end()) {
 		return;
@@ -147,6 +147,14 @@ void InputHandler::onMouseDown(int button)
 
 void InputHandler::onMouseUp(int button)
 {
+	if (impl_->verbose) {
+		impl_->log.push_front(LogEntry{
+			.kind = "MOUSE UP",
+			.name = mouseButtonToName(button).data(),
+			.value = button,
+		});
+	}
+
 	auto it = impl_->mouseButtons.find(button);
 	if (it == impl_->mouseButtons.end()) {
 		return;
@@ -307,6 +315,9 @@ void InputHandler::endFrame()
 
 	if (impl_->verbose) {
 		impl_->verbose = false;
+		if (impl_->log.size() > 16) {
+			impl_->log.pop_back();
+		}
 	} else if (!impl_->log.empty()) {
 		info << "Clearing log";
 		std::deque<LogEntry> empty;
