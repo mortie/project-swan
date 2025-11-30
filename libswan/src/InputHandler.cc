@@ -52,7 +52,9 @@ struct InputHandler::Impl {
 	std::unordered_map<int, std::vector<ActionWrapper>> gamepadButtons;
 	std::unordered_map<int, std::vector<ActionWrapper>> joystickAxes;
 
-	std::array<std::optional<Gamepad>, GLFW_JOYSTICK_LAST + 1> gamepads;
+	std::array<std::optional<Gamepad>, GLFW_JOYSTICK_LAST + 1>
+		gamepads;
+	std::bitset<GLFW_JOYSTICK_LAST + 1> disabledGamepads;
 
 	bool verbose = false;
 	std::deque<LogEntry> log;
@@ -270,12 +272,38 @@ void InputHandler::setActions(std::vector<ActionSpec> actions)
 	}
 }
 
+static bool isGamepadOK(int jid)
+{
+	if (glfwJoystickIsGamepad(jid)) {
+		return true;
+	}
+
+	std::string_view name = glfwGetJoystickName(jid);
+	if (name.find("Xbox") != name.npos) {
+		info << "Allowing non-gamepad joystick '" << name << '\'';
+		return true;
+	}
+
+	info << "Denying non-gamepad joystick '" << name << '\'';
+	return false;
+}
+
 void InputHandler::beginFrame()
 {
 	for (int jid = 0; jid <= GLFW_JOYSTICK_LAST; ++jid) {
-		bool present = glfwJoystickPresent(jid) && glfwJoystickIsGamepad(jid);
+		bool present = glfwJoystickPresent(jid);
+
 		if (present) {
 			if (!impl_->gamepads[jid]) {
+				if (impl_->disabledGamepads[jid]) {
+					continue;
+				}
+
+				if (!isGamepadOK(jid)) {
+					impl_->disabledGamepads[jid] = true;
+					continue;
+				}
+
 				impl_->gamepads[jid].emplace();
 			}
 
@@ -302,6 +330,7 @@ void InputHandler::beginFrame()
 			updateGamepad(gamepad);
 
 			impl_->gamepads[jid] = std::nullopt;
+			impl_->disabledGamepads[jid] = false;
 		}
 	}
 }
