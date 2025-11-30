@@ -164,6 +164,8 @@ public:
 	Action *reloadModsAction_;
 	Action *regenWorldAction_;
 	Action *uiActivateAction_;
+	Action *uiModAction_;
+	Action *uiCameraZoomAction_;
 
 private:
 	bool reload();

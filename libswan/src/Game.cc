@@ -507,9 +507,15 @@ void Game::update(float dt)
 		perf_.updateCount = 0;
 	}
 
-	float zoomLim = debug_.godMode ? 0.002 : 0.0175;
 	// Zoom the window using the scroll wheel
 	cam_.zoom += (float)didScroll_ * 0.05f * cam_.zoom;
+
+	// Zoom using the controller
+	if (uiModAction_->direction() > 0) {
+		cam_.zoom += -uiCameraZoomAction_->activation * cam_.zoom * dt * 2;
+	}
+
+	float zoomLim = debug_.godMode ? 0.002 : 0.0175;
 	if (cam_.zoom > 1) {
 		cam_.zoom = 1;
 	}
@@ -731,6 +737,18 @@ void Game::initInputHandler()
 		.defaultInputs = {"mouse:LEFT", "button:A"},
 	});
 
+	actions.push_back({
+		.name = "@::ui-mod",
+		.kind = ActionKind::AXIS,
+		.defaultInputs = {"axis:LEFT_TRIGGER"},
+	});
+
+	actions.push_back({
+		.name = "@::ui-camera-zoom",
+		.kind = ActionKind::AXIS,
+		.defaultInputs = {"axis:RIGHT_Y"},
+	});
+
 	inputHandler_.setActions(std::move(actions));
 	entityDebugMenuAction_ = inputHandler_.action("@::entity-debug-menu");
 	debugMenuAction_ = inputHandler_.action("@::debug-menu");
@@ -738,6 +756,8 @@ void Game::initInputHandler()
 	reloadModsAction_ = inputHandler_.action("@::reload-mods");
 	regenWorldAction_ = inputHandler_.action("@::regen-world");
 	uiActivateAction_ = inputHandler_.action("@::ui-activate");
+	uiModAction_ = inputHandler_.action("@::ui-mod");
+	uiCameraZoomAction_ = inputHandler_.action("@::ui-camera-zoom");
 }
 
 }

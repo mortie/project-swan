@@ -21,7 +21,18 @@ struct ActionSpec {
 struct Action {
 	float activation = 0;
 
-	operator bool() const { return std::abs(activation) > 0.4; }
+	operator bool() const { return direction() != 0; }
+
+	int direction() const
+	{
+		if (activation < -0.4) {
+			return -1;
+		} else if (activation > 0.4) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
 };
 
 }

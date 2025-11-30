@@ -30,8 +30,8 @@ struct InputHandler::LogEntry {
 struct InputHandler::Gamepad {
 	std::array<float, 6> prevAxes;
 	std::array<float, 6> axes;
-	std::bitset<32> prevButtons;
-	std::bitset<32> buttons;
+	std::bitset<20> prevButtons;
+	std::bitset<20> buttons;
 };
 
 struct InputHandler::Impl {
@@ -234,14 +234,17 @@ void InputHandler::drawDebug()
 
 		for (size_t btn = 0; btn < pad.buttons.size(); ++btn) {
 			const char *name = gamepadButtonToName(btn).data();
-			ImGui::Text("* Pressed %zu (%s)", btn, name);
+			int val = pad.buttons[btn];
+			ImGui::Text("* %zu (%s): %d", btn, name, val);
 		}
 	}
 
 	if (!impl_->log.empty()) {
 		ImGui::Text("Log:");
 		for (auto &entry: impl_->log) {
-			ImGui::Text("* %s: %d (%s)", entry.kind, entry.value, entry.name);
+			ImGui::Text(
+				"* Button %s: %d (%s)",
+				entry.kind, entry.value, entry.name);
 		}
 	}
 }

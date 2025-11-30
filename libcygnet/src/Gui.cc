@@ -63,7 +63,6 @@ bool Gui::button(TextCache &cache, std::string_view text)
 
 void Gui::triggerActivate()
 {
-	std::cerr << "Activate\n";
 	impl_->activated = true;
 }
 
