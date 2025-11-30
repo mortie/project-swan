@@ -51,10 +51,6 @@ PlayerEntity::PlayerEntity(Swan::Ctx &ctx, Swan::Vec2 pos):
 
 void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
-	if (ctx.gui.button(ctx.game.smallFont_, "Hello World, how areyou")) {
-		Swan::info << "Clicked";
-	}
-
 	if (invulnerable_ > 0) {
 		rnd.setGamma(gamma_ + invulnerable_ * 3);
 	} else if (vit_ == Vit::LETHARGIC) {
