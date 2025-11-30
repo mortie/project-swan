@@ -273,7 +273,7 @@ void InputHandler::setActions(std::vector<ActionSpec> actions)
 void InputHandler::beginFrame()
 {
 	for (int jid = 0; jid <= GLFW_JOYSTICK_LAST; ++jid) {
-		bool present = glfwJoystickPresent(jid);
+		bool present = glfwJoystickPresent(jid) && glfwJoystickIsGamepad(jid);
 		if (present) {
 			if (!impl_->gamepads[jid]) {
 				impl_->gamepads[jid].emplace();
