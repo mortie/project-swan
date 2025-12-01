@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <random>
+#include <sstream>
 #include <unistd.h>
 #include <stdlib.h>
 #include <vector>
@@ -175,6 +176,18 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	SWAN_DEFER(glfwTerminate());
+
+	{ // Load custom input mappings from file
+		std::fstream f("assets/gamecontrollerdb.txt");
+		if (f.good()) {
+			std::stringstream ss;
+			ss << f.rdbuf();
+			auto str = std::move(ss).str();
+			glfwUpdateGamepadMappings(str.c_str());
+		} else {
+			Swan::warn << "Failed to open assets/gamecontrollerdb.txt";
+		}
+	}
 
 	Cygnet::GLSL_PRELUDE = "#version 150\n";
 
