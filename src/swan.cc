@@ -179,7 +179,7 @@ int main(int argc, char **argv)
 
 	{ // Load custom input mappings from file
 		std::fstream f("assets/gamecontrollerdb.txt");
-		if (f.good()) {
+		if (f) {
 			std::stringstream ss;
 			ss << f.rdbuf();
 			auto str = std::move(ss).str();
