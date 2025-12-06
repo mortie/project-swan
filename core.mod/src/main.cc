@@ -12,6 +12,7 @@
 #include "world/clay.h"
 #include "world/computer.h"
 #include "world/crucible.h"
+#include "world/door.h"
 #include "world/drain.h"
 #include "world/item-fan.h"
 #include "world/ladder.h"
@@ -167,6 +168,7 @@ public:
 		registerClay(*this);
 		registerComputer(*this);
 		registerCrucible(*this);
+		registerDoor(*this);
 		registerDrain(*this);
 		registerItemFan(*this);
 		registerRopeLadder(*this);

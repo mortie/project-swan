@@ -43,6 +43,15 @@ public:
 		scheduledUpdatesA_.push_back(pos);
 	}
 
+	void scheduleUpdateAround(TilePos pos)
+	{
+		scheduledUpdatesA_.push_back(pos);
+		scheduledUpdatesA_.push_back(pos.add(-1, 0));
+		scheduledUpdatesA_.push_back(pos.add(1, 0));
+		scheduledUpdatesA_.push_back(pos.add(0, -1));
+		scheduledUpdatesA_.push_back(pos.add(0, 1));
+	}
+
 	void spawnTileParticles(TilePos pos, const Tile &tile);
 
 	/*
