@@ -59,6 +59,86 @@ Swan::ItemStack CraftingInventory::take(int slot)
 	return recipes_[slot]->output;
 }
 
+void CraftingInventory::renderTooltip(
+	Swan::Ctx &ctx, Cygnet::Renderer &rnd,
+	Swan::Vec2 pos, int slot)
+{
+	auto recipe = recipes_[slot];
+
+	// Compute maximum dynamic width,
+	// and prepare texts at the same time
+	float maxWidth = 0;
+	segments_.clear();
+	segments_.reserve(recipe->inputs.size());
+	for (auto &input: recipe->inputs) {
+		segments_.push_back(rnd.prepareUIText({
+			.textCache = ctx.game.smallFont_,
+			.pos{},
+			.text = input.item()->displayName,
+			.scale = 0.7,
+		}));
+		auto width = segments_.back().size.x;
+		if (width > maxWidth) {
+			maxWidth = width;
+		}
+	}
+
+	// Prepare title
+	auto title = rnd.prepareUIText({
+		.textCache = ctx.game.smallFont_,
+		.pos = pos.add(-0.25, 1),
+		.text = Swan::cat(
+			recipe->output.count(), "x ",
+			recipe->output.item()->displayName),
+		.scale = 0.7,
+	});
+
+	float backgroundWidth = maxWidth + 2.2;
+	float backgroundHeight = recipe->inputs.size() * 0.8 + 1.25;
+	if (backgroundWidth < title.size.x + 0.5) {
+		backgroundWidth = title.size.x + 0.5;
+	}
+
+	// Render background
+	rnd.drawUIRect({
+		.pos = pos.add(
+			backgroundWidth / 2 - 0.5,
+			backgroundHeight / 2.0 + 0.55),
+		.size = Swan::Vec2(backgroundWidth, backgroundHeight),
+		.outline = {0.3, 0.1, 0.1},
+		.fill = {0, 0, 0, 0.7},
+	});
+
+	// Render title text
+	title.drawText.pos.x += title.size.x / 2;
+	rnd.drawUIText(title);
+
+	float y = 2;
+	int i = 0;
+	char buf[8];
+	for (auto &input: recipe->inputs) {
+		snprintf(buf, sizeof(buf), "%dx", input.count());
+		rnd.drawUIText({
+			.textCache = ctx.game.smallFont_,
+			.pos = pos.add(0, y),
+			.text = buf,
+			.scale = 0.7,
+		});
+
+		rnd.drawUITile({
+			.transform = Cygnet::Mat3gf{}
+				.scale({0.7, 0.7})
+				.translate(pos.add(1, y + 0.2)),
+			.id = input.item()->id,
+		});
+
+		auto &segment = segments_[i++];
+		segment.drawText.pos = pos.add(1.4, y - 0.15);
+		rnd.drawUIText(segment);
+		y += 0.8;
+	}
+}
+
 void CraftingInventory::recompute(
 	Swan::Ctx &ctx,
 	std::span<const Swan::ItemStack> items,

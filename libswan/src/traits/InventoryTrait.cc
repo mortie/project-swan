@@ -1,6 +1,18 @@
 #include "traits/InventoryTrait.h"
+#include "uiutil.h"
+#include "Item.h"
 
 namespace Swan {
+
+void InventoryTrait::Inventory::renderTooltip(
+	Ctx &ctx, Cygnet::Renderer &rnd,
+	Vec2 pos, int slot)
+{
+	auto stack = get(slot);
+	if (!stack.empty()) {
+		UI::tooltip(ctx, rnd, pos, stack.item()->displayName);
+	}
+}
 
 ItemStack BasicInventory::take(int slot)
 {

@@ -31,6 +31,10 @@ public:
 		return stack;
 	}
 
+	void renderTooltip(
+		Swan::Ctx &ctx, Cygnet::Renderer &rnd,
+		Swan::Vec2 pos, int slot) override;
+
 	void recompute(
 		Swan::Ctx &ctx,
 		std::span<const Swan::ItemStack> items,
@@ -46,6 +50,7 @@ public:
 private:
 	std::vector<Swan::ItemStack> content_;
 	std::vector<Swan::Recipe *> recipes_;
+	std::vector<Cygnet::Renderer::TextSegment> segments_;
 	std::unordered_set<Swan::Tile::ID> availableRecipes_;
 	Swan::EntityRef ref_;
 	std::unordered_map<Swan::Item *, int> itemCounts_;

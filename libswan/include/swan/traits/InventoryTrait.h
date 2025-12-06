@@ -60,6 +60,10 @@ struct InventoryTrait {
 			return insertSided(dir, stack);
 		}
 
+		virtual void renderTooltip(
+			Ctx &ctx, Cygnet::Renderer &rnd,
+			Vec2 pos, int slot);
+
 	protected:
 		~Inventory() = default;
 	};

@@ -244,18 +244,16 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 
 	// Draw tooltips for player inventory
 	if (ui_.hoveredInventorySlot >= 0 && heldStack_.empty()) {
-		auto &stack = inventory_.content_[ui_.hoveredInventorySlot];
-		if (!stack.empty()) {
-			Swan::UI::tooltip(ctx, rnd, stack.item()->displayName);
-		}
+		inventory_.renderTooltip(
+			ctx, rnd, ctx.game.getMouseUIPos(),
+			ui_.hoveredInventorySlot);
 	}
 
 	// Draw tooltips for auxiliary inventory
 	if (ui_.hoveredAuxInventorySlot >= 0 && heldStack_.empty()) {
-		auto stack = auxInventory_->get(ui_.hoveredAuxInventorySlot);
-		if (!stack.empty()) {
-			Swan::UI::tooltip(ctx, rnd, stack.item()->displayName);
-		}
+		auxInventory_->renderTooltip(
+			ctx, rnd, ctx.game.getMouseUIPos(),
+			ui_.hoveredAuxInventorySlot);
 	}
 }
 
