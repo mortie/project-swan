@@ -11,6 +11,10 @@ using import "/swan.capnp".Direction;
 using import "/swan.capnp".EntityRef;
 using import "/swan.capnp".Vec2i;
 
+struct CraftingInventory {
+	discoveredRecipes @0 :List(Text);
+}
+
 struct DynamiteEntity {
 	body @0 :BasicPhysicsBody;
 	fuse @1 :Float32;
@@ -34,6 +38,7 @@ struct PlayerEntity {
 	spawnPoint @3 :Vec2i;
 	inventorySlot @4 :UInt8;
 	health @5 :UInt8;
+	craftingInventory @6 :CraftingInventory;
 }
 
 struct SpiderEntity {

@@ -256,7 +256,7 @@ void Game::drawDebugMenu()
 	if (!hasSortedItems_) {
 		sortedItems_.clear();
 		sortedItems_.reserve(world_->items_.size());
-		for (auto &[name, item]: world_->items_) {
+		for (auto &item: world_->items_) {
 			sortedItems_.push_back(&item);
 		}
 		std::sort(sortedItems_.begin(), sortedItems_.end(), [](Item *a, Item *b) {

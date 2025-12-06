@@ -3,6 +3,8 @@
 #include <swan/swan.h>
 #include <vector>
 
+#include "core_mod.capnp.h"
+
 namespace CoreMod {
 
 class CraftingInventory final: public Swan::InventoryTrait::Inventory {
@@ -40,18 +42,22 @@ public:
 		std::span<const Swan::ItemStack> items,
 		Options options);
 
-	void clear()
-	{
-		content_.clear();
-		recipes_.clear();
-		availableRecipes_.clear();
-	}
+	void serialize(
+		const Swan::Context &ctx,
+		proto::CraftingInventory::Builder w);
+	void deserialize(
+		const Swan::Context &ctx,
+		proto::CraftingInventory::Reader r);
 
 private:
+	bool isInputAvailable(
+		std::span<const Swan::ItemStack> invContent,
+		Swan::ItemStack input);
+
 	std::vector<Swan::ItemStack> content_;
 	std::vector<Swan::Recipe *> recipes_;
 	std::vector<Cygnet::Renderer::TextSegment> segments_;
-	std::unordered_set<Swan::Tile::ID> availableRecipes_;
+	std::unordered_set<Swan::Tile::ID> discoveredRecipes_;
 	Swan::EntityRef ref_;
 	std::unordered_map<Swan::Item *, int> itemCounts_;
 };

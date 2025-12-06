@@ -519,6 +519,7 @@ void PlayerEntity::serialize(
 	sp.setY(spawnPoint_.y);
 	w.setInventorySlot(ui_.selectedInventorySlot);
 	w.setHealth(health_);
+	craftingInventory_.serialize(ctx, w.initCraftingInventory());
 }
 
 void PlayerEntity::deserialize(
@@ -535,6 +536,7 @@ void PlayerEntity::deserialize(
 
 	ui_.selectedInventorySlot = r.getInventorySlot();
 	health_ = r.getHealth();
+	craftingInventory_.deserialize(ctx, r.getCraftingInventory());
 }
 
 bool PlayerEntity::askToOpenInventory(
@@ -1319,7 +1321,6 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 			auxInventoryEntity_ = {};
 			closeInventoryCallback_ = nullptr;
 			auxInventory_ = &craftingInventory_;
-			craftingInventory_.clear();
 			craftingInventory_.recompute(ctx, inventory_.content(), {
 				.workbench = inWorkbench_,
 			});

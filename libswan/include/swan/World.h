@@ -89,6 +89,15 @@ public:
 	}
 
 	Item &getItem(std::string_view name);
+	Item &getItemByID(Tile::ID id)
+	{
+		if (id >= items_.size()) {
+			warn << "Invalid ID: " << id;
+			return items_[INVALID_TILE_ID];
+		}
+
+		return items_[id];
+	}
 
 	Fluid &getFluidByID(Fluid::ID id)
 	{
@@ -143,7 +152,8 @@ public:
 	// These things get filled in when the ctor loads mods.
 	std::vector<Tile> tiles_;
 	HashMap<Tile::ID> tilesMap_;
-	HashMap<Item> items_;
+	std::vector<Item> items_;
+	HashMap<Tile::ID> itemsMap_;
 	std::vector<Fluid> fluids_;
 	HashMap<Fluid::ID> fluidsMap_;
 	HashMap<std::vector<Recipe>> recipes_;

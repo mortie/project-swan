@@ -120,9 +120,10 @@ void World::buildResources()
 		.isSolid = false,
 		.isReplacable = true,
 	}));
-	items_[INVALID_TILE_NAME] = Item(INVALID_TILE_ID, INVALID_TILE_NAME, {
+	items_.push_back(Item(INVALID_TILE_ID, INVALID_TILE_NAME, {
 		.name = "", .image = "", // Not used in this case
-	});
+	}));
+	itemsMap_[INVALID_TILE_NAME] = INVALID_TILE_ID;
 
 	// ...And tile ID 1 be the air tile
 	builder.addTile(AIR_TILE_ID, AIR_TILE_NAME);
@@ -132,9 +133,10 @@ void World::buildResources()
 		.isSolid = false,
 		.isReplacable = true,
 	}));
-	items_[AIR_TILE_NAME] = Item(AIR_TILE_ID, AIR_TILE_NAME, {
+	items_.push_back(Item(AIR_TILE_ID, AIR_TILE_NAME, {
 		.name = "", .image = "", // Not used in this case
-	});
+	}));
+	itemsMap_[AIR_TILE_NAME] = AIR_TILE_ID;
 
 	// Set attributes for all built-in tiles
 	for (auto &tile: tiles_) {
@@ -158,6 +160,7 @@ void World::buildResources()
 	// In the rendering system, there's no real difference between a tile
 	// and an item.
 	tiles_.reserve(tileCount);
+	items_.reserve(tileCount);
 	for (auto &mod: mods_) {
 		for (auto &tileBuilder: mod.mod_->tiles_) {
 			std::string tileName = cat(mod.name(), "::", tileBuilder.name);
@@ -226,10 +229,12 @@ void World::buildResources()
 			 */
 
 			auto name = tile.name.string();
-			auto &item = items_[name] = Item(tile.id, name, {
+			items_.push_back(Item(tile.id, name, {
 				.name = "",
 				.lightLevel = tile.more->lightLevel,
-			});
+			}));
+			auto &item = items_.back();
+			itemsMap_[name] = tile.id;
 			item.displayName = mod.lang("items", tileBuilder.name);
 			item.tile = &tile;
 			item.yOffset = yOffset;
@@ -261,7 +266,9 @@ void World::buildResources()
 			}
 			builder.addTile(itemId, itemBuilder.image);
 
-			auto &item = items_[itemName] = Item(itemId, itemName, itemBuilder);
+			items_.push_back(Item(itemId, itemName, itemBuilder));
+			itemsMap_[itemName] = itemId;
+			auto &item = items_.back();
 			item.displayName = mod.lang("items", itemBuilder.name);
 			item.yOffset = yOffset;
 			item.hidden = false;
@@ -392,8 +399,7 @@ void World::buildResources()
 		}
 	}
 
-	invalidItem_ = &items_.at(INVALID_TILE_NAME);
-
+	invalidItem_ = &items_[INVALID_TILE_ID];
 	resources_ = Cygnet::ResourceManager(std::move(builder));
 }
 
@@ -517,14 +523,14 @@ Tile::ID World::getTileID(std::string_view name)
 
 Item &World::getItem(std::string_view name)
 {
-	auto iter = items_.find(name);
+	auto iter = itemsMap_.find(name);
 
-	if (iter == items_.end()) {
+	if (iter == itemsMap_.end()) {
 		warn << "Tried to get non-existent item " << name << "!";
 		return invalidItem();
 	}
 
-	return iter->second;
+	return items_[iter->second];
 }
 
 Fluid::ID World::getFluidID(std::string_view name)

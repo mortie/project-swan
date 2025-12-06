@@ -17,19 +17,7 @@ Swan::ItemStack CraftingInventory::take(int slot)
 
 	// Verify item availability
 	for (auto &input: recipes_[slot]->inputs) {
-		int needed = input.count();
-		for (auto &stack: invContent) {
-			if (input.item() != stack.item()) {
-				continue;
-			}
-
-			needed -= stack.count();
-			if (needed <= 0) {
-				break;
-			}
-		}
-
-		if (needed > 0) {
+		if (isInputAvailable(invContent, input)) {
 			return {};
 		}
 	}
@@ -63,6 +51,16 @@ void CraftingInventory::renderTooltip(
 	Swan::Ctx &ctx, Cygnet::Renderer &rnd,
 	Swan::Vec2 pos, int slot)
 {
+	auto inv = ref_.trait<Swan::InventoryTrait>();
+	if (!inv) {
+		return;
+	}
+
+	auto invContent = inv->content();
+	if (slot < 0 || slot >= size()) {
+		return;
+	}
+
 	auto recipe = recipes_[slot];
 
 	// Compute maximum dynamic width,
@@ -117,12 +115,20 @@ void CraftingInventory::renderTooltip(
 	int i = 0;
 	char buf[8];
 	for (auto &input: recipe->inputs) {
+		bool isAvailable = isInputAvailable(invContent, input);
+
+		Cygnet::Color color = {1, 1, 1};
+		if (!isAvailable) {
+			color = {0.9, 0.2, 0.1};
+		}
+
 		snprintf(buf, sizeof(buf), "%dx", input.count());
 		rnd.drawUIText({
 			.textCache = ctx.game.smallFont_,
 			.pos = pos.add(0, y),
 			.text = buf,
 			.scale = 0.7,
+			.color = color,
 		});
 
 		rnd.drawUITile({
@@ -134,6 +140,7 @@ void CraftingInventory::renderTooltip(
 
 		auto &segment = segments_[i++];
 		segment.drawText.pos = pos.add(1.4, y - 0.15);
+		segment.drawText.color = color;
 		rnd.drawUIText(segment);
 		y += 0.8;
 	}
@@ -171,7 +178,7 @@ void CraftingInventory::recompute(
 			}
 
 			if (!craftable) {
-				if (availableRecipes_.contains(recipe.output.item()->id)) {
+				if (discoveredRecipes_.contains(recipe.output.item()->id)) {
 					content_.push_back({recipe.output.item(), -1});
 					recipes_.push_back(&recipe);
 				}
@@ -179,7 +186,7 @@ void CraftingInventory::recompute(
 				continue;
 			}
 
-			availableRecipes_.insert(recipe.output.item()->id);
+			discoveredRecipes_.insert(recipe.output.item()->id);
 			content_.push_back({recipe.output.item(), recipe.output.count()});
 			recipes_.push_back(&recipe);
 		}
@@ -194,6 +201,50 @@ void CraftingInventory::recompute(
 		content_.push_back({});
 		recipes_.push_back({});
 	}
+}
+
+void CraftingInventory::serialize(
+	const Swan::Context &ctx,
+	proto::CraftingInventory::Builder w)
+{
+	auto recipes = w.initDiscoveredRecipes(discoveredRecipes_.size());
+	int index = 0;
+	for (auto id: discoveredRecipes_) {
+		recipes.set(index++, ctx.world.getItemByID(id).name);
+	}
+}
+
+void CraftingInventory::deserialize(
+	const Swan::Context &ctx,
+	proto::CraftingInventory::Reader r)
+{
+	for (auto x: r.getDiscoveredRecipes()) {
+		auto &tile = ctx.world.getItem(x.cStr());
+		if (tile.id == Swan::World::INVALID_TILE_ID) {
+			continue;
+		}
+
+		discoveredRecipes_.insert(tile.id);
+	}
+}
+
+bool CraftingInventory::isInputAvailable(
+	std::span<const Swan::ItemStack> invContent,
+	Swan::ItemStack input)
+{
+	int needed = input.count();
+	for (auto &stack: invContent) {
+		if (input.item() != stack.item()) {
+			continue;
+		}
+
+		needed -= stack.count();
+		if (needed <= 0) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 }
