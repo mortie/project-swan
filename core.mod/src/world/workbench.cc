@@ -78,6 +78,7 @@ void registerWorkbench(Swan::Mod &mod)
 		.onSpawn = spawnWorkbench,
 	});
 
+	auto traits = std::make_shared<WorkbenchTileTrait>();
 	mod.registerTile({
 		.name = "workbench::left",
 		.image = "core::tiles/workbench@0",
@@ -85,6 +86,7 @@ void registerWorkbench(Swan::Mod &mod)
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::workbench",
 		.onTileUpdate = updateLeft,
+		.traits = traits,
 	});
 	mod.registerTile({
 		.name = "workbench::right",
@@ -93,6 +95,7 @@ void registerWorkbench(Swan::Mod &mod)
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::workbench",
 		.onTileUpdate = updateRight,
+		.traits = traits,
 	});
 }
 

@@ -309,11 +309,6 @@ public:
 			.kind = "core::crafting",
 		});
 		registerRecipe({
-			.inputs = {{2, "core::rope"}, {2, "core::stick"}},
-			.output = {1, "core::rope-ladder"},
-			.kind = "core::crafting",
-		});
-		registerRecipe({
 			.inputs = {
 				{1, "core::rope"},
 				{2, "core::stick"},
@@ -325,15 +320,6 @@ public:
 		registerRecipe({
 			.inputs = {{1, "core::sulphur"}},
 			.output = {1, "core::dynamite"},
-			.kind = "core::crafting",
-		});
-		registerRecipe({
-			.inputs = {
-				{4, "core::wood"},
-				{2, "core::rock"},
-				{1, "core::rope"},
-			},
-			.output = {1, "core::chest"},
 			.kind = "core::crafting",
 		});
 		registerRecipe({
@@ -351,9 +337,35 @@ public:
 			.kind = "core::crafting",
 		});
 		registerRecipe({
+			.inputs = {{4, "core::wood"}},
+			.output = {1, "core::workbench"},
+			.kind = "core::crafting",
+		});
+
+		registerRecipeKind("workbench");
+		registerRecipe({
 			.inputs = {{1, "core::wood"}},
 			.output = {2, "core::platform"},
-			.kind = "core::crafting",
+			.kind = "core::workbench",
+		});
+		registerRecipe({
+			.inputs = {{2, "core::wood"}},
+			.output = {1, "core::door"},
+			.kind = "core::workbench",
+		});
+		registerRecipe({
+			.inputs = {{2, "core::rope"}, {2, "core::stick"}},
+			.output = {1, "core::rope-ladder"},
+			.kind = "core::workbench",
+		});
+		registerRecipe({
+			.inputs = {
+				{4, "core::wood"},
+				{2, "core::rock"},
+				{1, "core::rope"},
+			},
+			.output = {1, "core::chest"},
+			.kind = "core::workbench",
 		});
 
 		registerRecipeKind("burning");

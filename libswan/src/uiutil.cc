@@ -83,12 +83,26 @@ void inventory(
 			.id = stack.item()->id,
 		}, Cygnet::Anchor::TOP_LEFT);
 
-		rnd.drawUIText({
-			.textCache = ctx.game.smallFont_,
-			.pos = {x + 1.1f, y + 1.5f},
-			.text = strify(stack.count()),
-			.scale = 0.6,
-		}, Cygnet::Anchor::TOP_LEFT);
+		if (stack.count() >= 0) {
+			// Draw item count for normal stacks
+			rnd.drawUIText({
+				.textCache = ctx.game.smallFont_,
+				.pos = {x + 1.1f, y + 1.5f},
+				.text = strify(stack.count()),
+				.scale = 0.6,
+			}, Cygnet::Anchor::TOP_LEFT);
+		} else {
+			// For stacks with a special negative count
+			// (indicating that it's somehow unavailable),
+			// overlay an "X"
+			rnd.drawUIText({
+				.textCache = ctx.game.smallFont_,
+				.pos = {x + 1.1f, y + 1.5f},
+				.text = "X",
+				.scale = 0.8,
+				.color = {0.7, 0.1, 0.2},
+			}, Cygnet::Anchor::TOP_LEFT);
+		}
 
 	next:
 		index += 1;

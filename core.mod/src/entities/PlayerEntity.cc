@@ -6,6 +6,7 @@
 #include "ItemStackEntity.h"
 #include "world/util.h"
 #include "world/ladder.h"
+#include "world/workbench.h"
 
 namespace CoreMod {
 
@@ -503,7 +504,9 @@ void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 	};
 
 	if (auxInventory_ == &craftingInventory_) {
-		craftingInventory_.recompute(ctx, inventory_.content());
+		craftingInventory_.recompute(ctx, inventory_.content(), {
+			.workbench = inWorkbench_,
+		});
 	}
 }
 
@@ -833,9 +836,13 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 		break;
 	}
 
-	bool inLadder =
+	inLadder_ =
 		dynamic_cast<LadderTileTrait *>(midTile.more->traits.get()) ||
 		dynamic_cast<LadderTileTrait *>(topTile.more->traits.get());
+
+	inWorkbench_ =
+		dynamic_cast<WorkbenchTileTrait *>(midTile.more->traits.get()) ||
+		dynamic_cast<WorkbenchTileTrait *>(topTile.more->traits.get());
 
 	auto fluidCenterPos = Swan::Vec2{
 		physicsBody_.body.midX(),
@@ -936,7 +943,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	}
 
 	// Handle ladder climb
-	if (inLadder) {
+	if (inLadder_) {
 		physicsBody_.force += {
 			0,
 			actions_.moveY->activation * LADDER_CLIMB_FORCE,
@@ -1003,7 +1010,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 
 	// Fall down faster than we went up
 	if (
-		!inLadder &&
+		!inLadder_ &&
 		!physicsBody_.onGround &&
 		(!jumpPressed || physicsBody_.vel.y > 0)) {
 		physicsBody_.force += Swan::Vec2(0, DOWN_FORCE);
@@ -1071,7 +1078,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 		stepTimer_ = 0.15;
 	}
 
-	if (inLadder && *actions_.sprint) {
+	if (inLadder_ && *actions_.sprint) {
 		physicsBody_.friction({1000, 1000});
 	}
 	else {
@@ -1314,7 +1321,10 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 			auxInventoryEntity_ = {};
 			closeInventoryCallback_ = nullptr;
 			auxInventory_ = &craftingInventory_;
-			craftingInventory_.recompute(ctx, inventory_.content());
+			craftingInventory_.clear();
+			craftingInventory_.recompute(ctx, inventory_.content(), {
+				.workbench = inWorkbench_,
+			});
 		}
 	}
 }

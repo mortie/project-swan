@@ -244,6 +244,9 @@ private:
 	int teleState_ = 0;
 	float teleportTimer_ = 0;
 
+	bool inLadder_ = false;
+	bool inWorkbench_ = false;
+
 	float platformCollisionTimer_ = 0;
 
 	float gamma_ = 1;

@@ -10,6 +10,10 @@ public:
 	CraftingInventory(Swan::EntityRef ref): ref_(ref)
 	{}
 
+	struct Options {
+		bool workbench = false;
+	};
+
 	Swan::ItemStack take(int slot) override;
 
 	std::span<const Swan::ItemStack> content() const override
@@ -27,11 +31,22 @@ public:
 		return stack;
 	}
 
-	void recompute(Swan::Ctx &ctx, std::span<const Swan::ItemStack> items);
+	void recompute(
+		Swan::Ctx &ctx,
+		std::span<const Swan::ItemStack> items,
+		Options options);
+
+	void clear()
+	{
+		content_.clear();
+		recipes_.clear();
+		availableRecipes_.clear();
+	}
 
 private:
 	std::vector<Swan::ItemStack> content_;
 	std::vector<Swan::Recipe *> recipes_;
+	std::unordered_set<Swan::Tile::ID> availableRecipes_;
 	Swan::EntityRef ref_;
 	std::unordered_map<Swan::Item *, int> itemCounts_;
 };

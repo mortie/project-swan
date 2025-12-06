@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace Swan {
 
@@ -19,5 +20,6 @@ struct StringHash {
 
 template <typename T>
 using HashMap = std::unordered_map<std::string, T, StringHash, std::equal_to<>>;
+using HashSet = std::unordered_set<std::string, StringHash, std::equal_to<>>;
 
 }

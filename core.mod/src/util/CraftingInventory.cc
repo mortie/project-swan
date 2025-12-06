@@ -60,7 +60,9 @@ Swan::ItemStack CraftingInventory::take(int slot)
 }
 
 void CraftingInventory::recompute(
-	Swan::Ctx &ctx, std::span<const Swan::ItemStack> items)
+	Swan::Ctx &ctx,
+	std::span<const Swan::ItemStack> items,
+	Options options)
 {
 	for (auto &[k, v]: itemCounts_) {
 		v = 0;
@@ -76,22 +78,36 @@ void CraftingInventory::recompute(
 
 	content_.clear();
 	recipes_.clear();
-	for (auto &recipe: ctx.world.getRecipes("core::crafting")) {
-		bool craftable = true;
-		for (const auto &input: recipe.inputs) {
-			auto it = itemCounts_.find(input.item());
-			if (it == itemCounts_.end() || it->second < input.count()) {
-				craftable = false;
-				break;
+
+	auto iterateRecipes = [this, ctx](std::string_view kind) {
+		for (auto &recipe: ctx.world.getRecipes(kind)) {
+			bool craftable = true;
+			for (const auto &input: recipe.inputs) {
+				auto it = itemCounts_.find(input.item());
+				if (it == itemCounts_.end() || it->second < input.count()) {
+					craftable = false;
+					break;
+				}
 			}
-		}
 
-		if (!craftable) {
-			continue;
-		}
+			if (!craftable) {
+				if (availableRecipes_.contains(recipe.output.item()->id)) {
+					content_.push_back({recipe.output.item(), -1});
+					recipes_.push_back(&recipe);
+				}
 
-		content_.push_back({recipe.output.item(), recipe.output.count()});
-		recipes_.push_back(&recipe);
+				continue;
+			}
+
+			availableRecipes_.insert(recipe.output.item()->id);
+			content_.push_back({recipe.output.item(), recipe.output.count()});
+			recipes_.push_back(&recipe);
+		}
+	};
+
+	iterateRecipes("core::crafting");
+	if (options.workbench) {
+		iterateRecipes("core::workbench");
 	}
 
 	if (content_.size() == 0) {
