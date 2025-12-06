@@ -17,7 +17,7 @@ Swan::ItemStack CraftingInventory::take(int slot)
 
 	// Verify item availability
 	for (auto &input: recipes_[slot]->inputs) {
-		if (isInputAvailable(invContent, input)) {
+		if (!isInputAvailable(invContent, input)) {
 			return {};
 		}
 	}
@@ -57,11 +57,14 @@ void CraftingInventory::renderTooltip(
 	}
 
 	auto invContent = inv->content();
-	if (slot < 0 || slot >= size()) {
+	if (slot < 0 || slot >= size() || slot >= recipes_.size()) {
 		return;
 	}
 
 	auto recipe = recipes_[slot];
+	if (!recipe) {
+		return;
+	}
 
 	// Compute maximum dynamic width,
 	// and prepare texts at the same time
