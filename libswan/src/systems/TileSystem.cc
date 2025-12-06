@@ -126,7 +126,6 @@ bool TileSystemImpl::breakTile(TilePos pos)
 {
 	// If the block is already air, do nothing
 	Tile::ID id = getID(pos);
-
 	if (id == World::AIR_TILE_ID) {
 		return false;
 	}
@@ -141,6 +140,22 @@ bool TileSystemImpl::breakTile(TilePos pos)
 		plane_.world_->game_->playSound(
 			plane_.world_->getSound(World::THUD_SOUND_NAME), pos);
 	}
+
+	// Change tile to air
+	setID(pos, World::AIR_TILE_ID);
+	return true;
+}
+
+bool TileSystemImpl::breakTileSilently(TilePos pos)
+{
+	// If the block is already air, do nothing
+	Tile::ID id = getID(pos);
+	if (id == World::AIR_TILE_ID) {
+		return false;
+	}
+
+	Tile &tile = plane_.world_->getTileByID(id);
+	spawnTileParticles(pos, tile);
 
 	// Change tile to air
 	setID(pos, World::AIR_TILE_ID);

@@ -23,6 +23,7 @@
 #include "world/torch.h"
 #include "world/tree.h"
 #include "world/util.h"
+#include "world/workbench.h"
 
 namespace CoreMod {
 
@@ -181,6 +182,7 @@ public:
 		registerPotato(*this);
 		registerTorch(*this);
 		registerTree(*this);
+		registerWorkbench(*this);
 
 		registerItem({
 			.name = "axe",

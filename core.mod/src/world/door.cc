@@ -33,7 +33,7 @@ static bool spawnDoor(Swan::Ctx &ctx, Swan::TilePos pos)
 
 	bool placeBottom =
 		ctx.plane.tiles().get(pos.add(0, 1)).isSolid() &&
-		!ctx.plane.tiles().get(pos.add(0, -1)).isSolid();
+		ctx.plane.tiles().get(pos.add(0, -1)).isReplacable();
 	if (placeBottom) {
 		breakTileAndDropItem(ctx, pos.add(0, -1));
 		setDoor(ctx, pos.add(0, -1), Swan::cat("core::door::", dir), "open");
@@ -42,8 +42,8 @@ static bool spawnDoor(Swan::Ctx &ctx, Swan::TilePos pos)
 
 	bool placeTop =
 		ctx.plane.tiles().get(pos.add(0, 2)).isSolid() &&
-		!ctx.plane.tiles().get(pos.add(0, 1)).isSolid() &&
-		!ctx.plane.tiles().get(pos.add(0, 0)).isSolid();
+		ctx.plane.tiles().get(pos.add(0, 1)).isReplacable() &&
+		ctx.plane.tiles().get(pos.add(0, 0)).isReplacable();
 	if (placeTop) {
 		breakTileAndDropItem(ctx, pos.add(0, 1));
 		setDoor(ctx, pos, Swan::cat("core::door::", dir), "open");
@@ -59,27 +59,25 @@ static void updateTop(Swan::Ctx &ctx, Swan::TilePos pos)
 	auto prefix = self.name.str();
 	prefix.remove_suffix("::top"sv.size());
 
-	auto &above = ctx.plane.tiles().get(pos.add(0, 1));
-	if (above.name != Swan::cat(prefix, "::bottom")) {
-		ctx.plane.tiles().setID(pos, Swan::World::AIR_TILE_ID);
+	auto &below = ctx.plane.tiles().get(pos.add(0, 1));
+	if (below.name != Swan::cat(prefix, "::bottom")) {
+		ctx.plane.tiles().breakTileSilently(pos);
 	}
 }
 
 static void updateBottom(Swan::Ctx &ctx, Swan::TilePos pos)
 {
-	if (!ctx.plane.tiles().get(pos.add(0, 1)).isSolid()) {
-		breakTileAndDropItem(ctx, pos);
-		return;
-	}
-
 	auto &self = ctx.plane.tiles().get(pos);
 	auto prefix = self.name.str();
 	prefix.remove_suffix("::bottom"sv.size());
 
 	auto &above = ctx.plane.tiles().get(pos.add(0, -1));
 	if (above.name != Swan::cat(prefix, "::top")) {
-		ctx.plane.tiles().setID(pos, Swan::World::AIR_TILE_ID);
+		ctx.plane.tiles().breakTileSilently(pos);
+		return;
 	}
+
+	breakIfFloating(ctx, pos);
 }
 
 static void activateOpenTop(
@@ -130,6 +128,7 @@ void registerDoor(Swan::Mod &mod)
 		.onSpawn = spawnDoor,
 		.breakableBy = Swan::Tool::HAND,
 		.isSolid = false,
+		.isReplacable = true,
 	});
 
 	auto leftFluid = std::make_shared<Swan::FluidCollision>(

@@ -34,6 +34,7 @@ public:
 	uint8_t getLightLevel(TilePos pos);
 
 	bool breakTile(TilePos pos);
+	bool breakTileSilently(TilePos pos);
 	bool placeTile(TilePos pos, Tile::ID id);
 
 	Raycast raycast(Vec2 pos, Vec2 direction, float distance);
@@ -81,6 +82,7 @@ public:
 	using TileSystemImpl::getID;
 	using TileSystemImpl::getLightLevel;
 	using TileSystemImpl::breakTile;
+	using TileSystemImpl::breakTileSilently;
 	using TileSystemImpl::placeTile;
 	using TileSystemImpl::raycast;
 	using TileSystemImpl::scheduleUpdate;
