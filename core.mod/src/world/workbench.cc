@@ -25,13 +25,6 @@ static bool spawnWorkbench(Swan::Ctx &ctx, Swan::TilePos pos)
 		ctx.plane.tiles().get(pos.add(0, 1)).isSolid() &&
 		ctx.plane.tiles().get(pos.add(1, 1)).isSolid();
 	if (!place) {
-		Swan::info << "Faied to place" << pos << ":"
-			<< ' ' << ctx.plane.tiles().get(pos).name.str()
-			<< ' ' << ctx.plane.tiles().get(pos).isReplacable()
-			<< ' ' << ctx.plane.tiles().get(pos.add(1, 0)).name.str()
-			<< ' ' << ctx.plane.tiles().get(pos.add(1, 0)).isReplacable()
-			<< ' ' << ctx.plane.tiles().get(pos.add(0, 1)).isSolid()
-			<< ' ' << ctx.plane.tiles().get(pos.add(1, 1)).isSolid();
 		return false;
 	}
 
@@ -79,27 +72,27 @@ void registerWorkbench(Swan::Mod &mod)
 	mod.registerTile({
 		.name = "workbench",
 		.image = "core::items/workbench",
-		.onSpawn = spawnWorkbench,
-		.breakableBy = Swan::Tool::HAND,
 		.isSolid = false,
 		.isReplacable = true,
+		.breakableBy = Swan::Tool::HAND,
+		.onSpawn = spawnWorkbench,
 	});
 
 	mod.registerTile({
 		.name = "workbench::left",
 		.image = "core::tiles/workbench@0",
+		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::workbench",
 		.onTileUpdate = updateLeft,
-		.isSolid = false,
 	});
 	mod.registerTile({
 		.name = "workbench::right",
 		.image = "core::tiles/workbench@1",
+		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::workbench",
 		.onTileUpdate = updateRight,
-		.isSolid = false,
 	});
 }
 

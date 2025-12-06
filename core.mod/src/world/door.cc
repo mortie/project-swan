@@ -125,10 +125,10 @@ void registerDoor(Swan::Mod &mod)
 	mod.registerTile({
 		.name = "door",
 		.image = "core::items/door",
-		.onSpawn = spawnDoor,
-		.breakableBy = Swan::Tool::HAND,
 		.isSolid = false,
 		.isReplacable = true,
+		.breakableBy = Swan::Tool::HAND,
+		.onSpawn = spawnDoor,
 	});
 
 	auto leftFluid = std::make_shared<Swan::FluidCollision>(
@@ -145,41 +145,41 @@ void registerDoor(Swan::Mod &mod)
 		mod.registerTile({
 			.name = Swan::cat("door::", dir, "::open::top"),
 			.image = Swan::cat("core::tiles/door/open::", dir, "@0"),
+			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.droppedItem = "core::door",
 			.onTileUpdate = updateTop,
 			.onActivate = activateOpenTop,
-			.isSolid = false,
 		});
 		mod.registerTile({
 			.name = Swan::cat("door::", dir, "::open::bottom"),
 			.image = Swan::cat("core::tiles/door/open::", dir, "@1"),
+			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.droppedItem = "core::door",
 			.onTileUpdate = updateBottom,
 			.onActivate = activateOpenBottom,
-			.isSolid = false,
 		});
 
 		mod.registerTile({
 			.name = Swan::cat("door::", dir, "::closed::top"),
 			.image = Swan::cat("core::tiles/door/closed::", dir, "@0"),
+			.isOpaque = false,
 			.breakableBy = Swan::Tool::HAND,
 			.droppedItem = "core::door",
 			.onTileUpdate = updateTop,
 			.onActivate = activateClosedTop,
 			.fluidCollision = fluid,
-			.isOpaque = false,
 		});
 		mod.registerTile({
 			.name = Swan::cat("door::", dir, "::closed::bottom"),
 			.image = Swan::cat("core::tiles/door/closed::", dir, "@1"),
+			.isOpaque = false,
 			.breakableBy = Swan::Tool::HAND,
 			.droppedItem = "core::door",
 			.onTileUpdate = updateBottom,
 			.onActivate = activateClosedBottom,
 			.fluidCollision = fluid,
-			.isOpaque = false,
 		});
 	}
 }

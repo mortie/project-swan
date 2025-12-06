@@ -34,6 +34,7 @@ bool Gui::button(TextCache &cache, std::string_view text)
 
 	auto segment = impl_->rnd->prepareUIText({
 		.textCache = cache,
+		.pos{},
 		.text = text,
 	});
 
