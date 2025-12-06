@@ -170,6 +170,7 @@ void registerDoor(Swan::Mod &mod)
 			.onTileUpdate = updateTop,
 			.onActivate = activateClosedTop,
 			.fluidCollision = fluid,
+			.isOpaque = false,
 		});
 		mod.registerTile({
 			.name = Swan::cat("door::", dir, "::closed::bottom"),
@@ -179,6 +180,7 @@ void registerDoor(Swan::Mod &mod)
 			.onTileUpdate = updateBottom,
 			.onActivate = activateClosedBottom,
 			.fluidCollision = fluid,
+			.isOpaque = false,
 		});
 	}
 }
