@@ -38,7 +38,7 @@ extern char **environ;
 namespace SwanBuild {
 
 struct BuildInfo {
-	std::string compiler = "clang++";
+	std::string compiler = CLANGXX_PATH;
 	std::string modPath;
 	std::string swanPath;
 	std::string cflags;
@@ -136,6 +136,12 @@ void buildCommand(std::string &cmd, const SourceFile &f, const BuildInfo &info)
 #endif
 		cmd += " -g -include-pch";
 		appendArg(cmd, cat(info.modPath, "/.swanbuild/swan.h.pch"));
+
+		for (const auto &include: info.includes) {
+			cmd += " -I";
+			quoteArg(cmd, include);
+		}
+
 		cmd += " -c -o";
 		quoteArg(cmd, f.outPath);
 		appendArg(cmd, f.srcPath);
@@ -358,7 +364,7 @@ static bool link(
 #ifdef ASAN_ENABLED
 	cmd += " -fsanitize=address";
 #endif
-	cmd += " -shared -o";
+	cmd += " -shared -Llib -o";
 	quoteArg(cmd, out);
 	cmd += ' ';
 	cmd += info.cflags;
@@ -510,6 +516,12 @@ static bool buildMod(const BuildInfo &info)
 	auto modName = getToml<std::string>(*modToml, "name");
 	auto modNamespace = getToml<std::string>(*modToml, "namespace");
 	auto modVersion = getToml<std::string>(*modToml, "version");
+	auto modLocked = modToml->get_as<bool>("locked");
+
+	if (modLocked && *modLocked) {
+		std::cerr << "Mod " << modName << " is locked. Not recompiling.\n";
+		return true;
+	}
 
 	auto pchPath = cat(info.modPath, "/.swanbuild/swan.h.pch");
 	auto manifestPath = cat(info.modPath, "/.swanbuild/manifest.toml");
@@ -597,7 +609,11 @@ static bool buildMod(const BuildInfo &info)
 			continue;
 		}
 
-		if (f.type == SourceType::HEADER) {
+		// Check headers and proto without paralellization.
+		// We do this with headers because they're a no-op.
+		// We do this with protos because protos are a pre-requisite
+		// for compiling source files.
+		if (f.type == SourceType::HEADER || f.type == SourceType::PROTO) {
 			if (!compile(f, info)) {
 				break;
 			}

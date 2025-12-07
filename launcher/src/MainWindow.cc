@@ -5,6 +5,7 @@
 #include <string_view>
 #include <thread>
 #include <swan/log.h>
+#include <span>
 
 #include "worlds.h"
 #include "system.h"

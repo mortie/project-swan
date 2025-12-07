@@ -110,6 +110,9 @@ executable(
     libcpptoml, libsha1, libscisasm, libscisavm,
   ] + maybe_libtracy,
   override_options: ['b_asneeded=false'],
+  cpp_args: [
+    '-DCLANGXX_PATH="' + get_option('clangxx_path') + '"',
+  ],
 )
 
 executable(
@@ -121,6 +124,9 @@ executable(
   dependencies: [
     libcpptoml,
     libsha1,
+  ],
+  cpp_args: [
+    '-DCLANGXX_PATH="' + get_option('clangxx_path') + '"',
   ],
 )
 
