@@ -422,5 +422,17 @@ int main(int argc, char **argv)
 
 	game.save();
 
+	// Sometimes, destructing stuff hangs forever.
+	// Especially AudioOutputUnitStop on macOS sometimes hangs
+	// when destructing the SoundPlayer.
+	// Since we've already saved the game, this doesn't really matter,
+	// so let's just abort the process if we detect
+	// teardown taking too long.
+	std::thread([] {
+		sleep(5);
+		warn << "Haven't successfully exited in 5 seconds, exiting.";
+		exit(0);
+	}).detach();
+
 	return 0;
 }
