@@ -71,9 +71,17 @@ Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos)
 
 bool DefaultWorldGen::isCave(Swan::TilePos pos, int grassLevel)
 {
-	return
-		pos.y > grassLevel + 4 &&
-		perlin_.noise2D(pos.x / 43.37, pos.y / 16.37) > 0.2;
+	if (pos.y < grassLevel) {
+		return false;
+	}
+
+	float threshold = 0.2;
+	if (pos.y <= grassLevel + 5) {
+		int diff = pos.y - (grassLevel + 4);
+		threshold += (6 - diff) * 0.03;
+	}
+
+	return perlin_.noise2D(pos.x / 43.37, pos.y / 16.37) > threshold;
 }
 
 bool DefaultWorldGen::isLake(Swan::TilePos pos, int grassLevel,  int stoneLevel)
