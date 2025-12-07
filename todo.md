@@ -12,3 +12,4 @@
 * [ ] "Creeping darkness", dangerous ooze in the depths
 * [X] Grass seeds to repopulate broken grass
 * [ ] Physics collide against fluid data
+* [ ] Dimensional rift/loop
