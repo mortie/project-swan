@@ -115,18 +115,6 @@ void inventory(
 			}
 		}
 	}
-
-	for (; y < size.y; ++y) {
-		for (; x < size.x; ++x) {
-			rnd.drawUIText({
-				.textCache = ctx.game.smallFont_,
-				.pos = {x + 1.25f, y + 1.2f},
-				.text = "X",
-				.color = {1.0, 0.0, 0.0},
-			}, Cygnet::Anchor::TOP_LEFT);
-		}
-		x = 0;
-	}
 }
 
 Vec2i calcInventorySize(int size)
