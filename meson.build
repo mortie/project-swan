@@ -53,9 +53,12 @@ libportaudio = portaudio_sub.dependency('portaudio')
 
 libffmpeg = [
   dependency('libavcodec', required: false),
-  dependency('libavutil', required: false),
-  dependency('libswscale', required: false),
+  dependency('libavdevice', required: false),
+  dependency('libavfilter', required: false),
   dependency('libavformat', required: false),
+  dependency('libavutil', required: false),
+  dependency('libswresample', required: false),
+  dependency('libswscale', required: false),
 ]
 
 has_ffmpeg = true

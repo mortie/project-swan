@@ -6,7 +6,7 @@
 #include <bit>
 #include <string.h>
 
-#include "log.h"
+#include <swan/log.h>
 #include "World.h"
 #include "Game.h"
 

@@ -3,8 +3,8 @@
 #include <portaudio.h>
 #include <thread>
 #include <utility>
+#include <swan/log.h>
 
-#include "log.h"
 #include "RingBuffer.h"
 
 namespace Swan {

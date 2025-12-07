@@ -1,15 +1,11 @@
 #pragma once
 
 #include <string>
-#include <stdio.h>
-
 #include <swan/util.h>
 
 namespace Swan {
 
 namespace OS {
-
-bool isTTY(FILE *f);
 
 class Dynlib: NonCopyable {
 public:

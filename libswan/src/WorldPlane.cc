@@ -3,8 +3,8 @@
 #include <math.h>
 #include <utility>
 
+#include <swan/log.h>
 #include "Clock.h"
-#include "log.h"
 #include "World.h"
 #include "Game.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep

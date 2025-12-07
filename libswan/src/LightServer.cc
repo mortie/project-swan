@@ -1,8 +1,7 @@
 #include "LightServer.h"
 
 #include <algorithm>
-
-#include "log.h"
+#include <swan/log.h>
 
 namespace Swan {
 

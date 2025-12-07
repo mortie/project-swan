@@ -1,20 +1,20 @@
 #include <bitset>
 #include <cassert>
 #include <cmath>
-#include <unordered_set>
 #include <vector>
 #include <array>
 #include <imgui/imgui.h>
 #include <deque>
+#include <optional>
 
 #include <swan/HashMap.h>
+#include <swan/log.h>
 
 #include "inputmaps/axes.h"
 #include "inputmaps/buttons.h"
 #include "inputmaps/keys.h"
 #include "inputmaps/mouse.h"
 #include "InputHandler.h"
-#include "log.h"
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>

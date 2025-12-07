@@ -1,11 +1,9 @@
 #include <cpptoml.h>
 #include <fstream>
-#include <optional>
 
 #include <swan/util.h>
+#include <swan/log.h>
 #include "Mod.h"
-#include "EntityCollectionImpl.h"
-#include "log.h"
 
 namespace Swan {
 

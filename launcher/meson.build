@@ -1,19 +1,18 @@
-libwxwidgets = dependency('wxwidgets', required: false)
-
-if libwxwidgets.found()
-  executable(
-    'swan-launcher',
-    'src/main.cc',
-    'src/MainWindow.cc',
-    'src/SwanLauncher.cc',
-    'src/system.cc',
-    'src/worlds.cc',
-    install: true,
-    install_rpath: bin_rpath,
-    dependencies: [
-      libwxwidgets,
-      libcpptoml,
-      libdate,
-    ],
-  )
-endif
+executable(
+  'swan-launcher',
+  'src/main.cc',
+  'src/MainWindow.cc',
+  'src/system.cc',
+  'src/worlds.cc',
+  install: true,
+  install_rpath: bin_rpath,
+  dependencies: [
+    libcpptoml,
+    libdate,
+    libimgui,
+    libcygnet,
+    libgl,
+    libglfw3,
+    common,
+  ],
+)

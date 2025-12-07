@@ -8,13 +8,6 @@ namespace Swan {
 
 namespace OS {
 
-bool isTTY(FILE *f)
-{
-	int fd = fileno(f);
-
-	return isatty(fd);
-}
-
 Dynlib::Dynlib(const std::string &path)
 {
 	handle_ = dlopen(cat(path, ".so").c_str(), RTLD_LAZY);

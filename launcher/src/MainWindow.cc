@@ -1,10 +1,15 @@
 #include "MainWindow.h"
+
+#include <imgui/imgui.h>
+#include <imgui/misc/cpp/imgui_stdlib.h>
+#include <string_view>
+#include <thread>
+#include <swan/log.h>
+
 #include "worlds.h"
-#include "SwanLauncher.h"
-#include "wx/gdicmn.h"
-#include <iostream>
-#include <span>
-#include <string>
+#include "system.h"
+
+using namespace std::chrono_literals;
 
 static std::string getNewWorldName(std::span<World> worlds)
 {
@@ -44,107 +49,9 @@ static std::string getNewWorldName(std::span<World> worlds)
 	}
 }
 
-MainWindow::MainWindow(SwanLauncher *launcher):
-	wxFrame(NULL, wxID_ANY, "SWAN Launcher"),
-	launcher_(launcher)
+static std::optional<uint32_t> calcSeed(std::string_view seedStr)
 {
-	auto *menuBar = new wxMenuBar;
-	SetMenuBar(menuBar);
-
-	Bind(wxEVT_MENU, &MainWindow::OnExit, this, wxID_EXIT);
-
-	auto *box = new wxBoxSizer(wxVERTICAL);
-	SetSizer(box);
-
-	existingWorlds_ = new wxListBox(this, wxID_ANY);
-	existingWorlds_->Bind(wxEVT_LISTBOX, &MainWindow::OnWorldSelect, this);
-	existingWorlds_->Bind(wxEVT_LISTBOX_DCLICK, &MainWindow::OnWorldLaunch, this);
-	existingWorlds_->Bind(wxEVT_LEFT_DOWN, &MainWindow::OnWorldListClick, this);
-	box->Add(existingWorlds_, 1, wxEXPAND);
-
-	auto *editRow = new wxBoxSizer(wxHORIZONTAL);
-	box->Add(editRow, 0, wxEXPAND);
-
-	placeholderThumb_.SetRGB(wxRect(0, 0, 256, 256), 100, 100, 100);
-	selectedWorldThumb_ = new wxStaticBitmap(this, wxID_ANY, wxBitmap(placeholderThumb_));
-#ifdef __APPLE__
-	selectedWorldThumb_->SetMinSize({90, 90});
-#else
-	selectedWorldThumb_->SetMinSize({150, 90});
-#endif
-	selectedWorldThumb_->Enable(false);
-	editRow->Add(selectedWorldThumb_, 0, wxEXPAND | wxRIGHT, 3);
-
-	selectedWorld_ = new wxStaticText(this, wxID_ANY, wxT(""));
-	selectedWorld_->Enable(false);
-	editRow->Add(selectedWorld_, 1, wxEXPAND | wxRIGHT, 5);
-
-	auto *controlsColumn = new wxBoxSizer(wxVERTICAL);
-	editRow->Add(controlsColumn);
-
-	deleteBtn_ = new wxButton(this, wxID_ANY, wxT("Delete"));
-	deleteBtn_->Enable(false);
-	deleteBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnWorldDelete, this);
-	controlsColumn->Add(deleteBtn_, 1, wxEXPAND);
-
-	renameBtn_ = new wxButton(this, wxID_ANY, wxT("Rename"));
-	renameBtn_->Enable(false);
-	renameBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnWorldRename, this);
-	controlsColumn->Add(renameBtn_, 1, wxEXPAND | wxBOTTOM | wxTOP, 2);
-
-	loadBtn_ = new wxButton(this, wxID_ANY, wxT("Launch"));
-	loadBtn_->Enable(false);
-	loadBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnWorldLaunch, this);
-	controlsColumn->Add(loadBtn_, 1, wxEXPAND);
-
-	auto *newWorldRow = new wxBoxSizer(wxHORIZONTAL);
-	box->Add(newWorldRow, 0, wxEXPAND);
-
-	newWorldName_ = new wxTextCtrl(this, wxID_ANY);
-	newWorldName_->SetWindowStyleFlag(wxTE_PROCESS_ENTER);
-	newWorldName_->Bind(wxEVT_TEXT_ENTER, &MainWindow::OnNewWorldClick, this);
-	newWorldRow->Add(newWorldName_, 1, wxEXPAND | wxRIGHT, 5);
-
-	newWorldSeed_ = new wxTextCtrl(this, wxID_ANY);
-	newWorldSeed_->SetWindowStyleFlag(wxTE_PROCESS_ENTER);
-	newWorldSeed_->Bind(wxEVT_TEXT_ENTER, &MainWindow::OnNewWorldClick, this);
-	newWorldSeed_->SetHint("Seed");
-	newWorldSeed_->SetSizeHints(100, -1);
-	newWorldRow->Add(newWorldSeed_, 0, wxRIGHT, 5);
-
-	newWorldBtn_ = new wxButton(this, wxID_ANY, wxT("Create New World"));
-	newWorldBtn_->Bind(wxEVT_BUTTON, &MainWindow::OnNewWorldClick, this);
-	newWorldRow->Add(newWorldBtn_, 0);
-
-	reload();
-}
-
-void MainWindow::OnExit(wxCommandEvent &)
-{
-	Close(true);
-}
-
-void MainWindow::OnWorldListClick(wxMouseEvent &evt)
-{
-	wxPoint pos = evt.GetPosition();
-	int index = existingWorlds_->HitTest(pos);
-	existingWorlds_->SetSelection(index);
-	updateSelection();
-	evt.Skip();
-}
-
-void MainWindow::OnNewWorldClick(wxCommandEvent &)
-{
-	std::string name = newWorldName_->GetLineText(0).utf8_string();
-	std::cerr << "Creating world: " << name << '\n';
-	std::string id = makeWorld(name);
-
-	std::string seedStr = newWorldSeed_->GetLineText(0).utf8_string();
 	std::optional<uint32_t> seed;
-
-	// This algorithm ensures that every string gets encoded
-	// into its own valid seed so that people can use word seeds,
-	// but still converts numeric strings into their corresponding number
 	uint32_t seedNum = 0;
 	for (char ch: seedStr) {
 		if (ch <= 32) {
@@ -156,151 +63,150 @@ void MainWindow::OnNewWorldClick(wxCommandEvent &)
 		seed = seedNum;
 	}
 
-	launcher_->launch(id, seed);
+	return seed;
 }
 
-void MainWindow::OnWorldLaunch(wxCommandEvent &)
+void MainWindow::update()
 {
-	int sel = existingWorlds_->GetSelection();
-	if (sel == wxNOT_FOUND) {
-		return;
+	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(width_, height_), ImGuiCond_Always);
+	ImGui::Begin(
+		"Main Window", nullptr,
+		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing |
+		ImGuiWindowFlags_NoTitleBar);
+
+	bool running = running_->load();
+	if (running) {
+		ImGui::BeginDisabled();
 	}
 
-	World &world = worlds_[sel];
-	if (!worldExists(world.id)) {
-		std::cerr << "Tried to open '" << world.id << "', which doesn't exist\n";
-		new wxDialog(this, wxID_ANY, "World doesn't exist");
-		return;
+	if (!running && wasRunning_) {
+		loadWorlds();
 	}
 
-	std::cerr << "Loading world: " << world.name << '\n';
-	launcher_->launch(world.id, {});
-}
+	wasRunning_ = running;
+	bool reloadWorlds = false;
 
-void MainWindow::OnWorldDelete(wxCommandEvent &)
-{
-	int sel = existingWorlds_->GetSelection();
-	if (sel == wxNOT_FOUND) {
-		return;
-	}
-
-	World &world = worlds_[sel];
-	auto message = "Are you sure you want to delete '" + world.name + "'?";
-	auto *dialog = new wxMessageDialog(this, message);
-	dialog->SetMessageDialogStyle(wxYES_NO);
-	int ret = dialog->ShowModal();
-	if (ret != wxID_YES) {
-		return;
-	}
-
-	deleteWorld(world.id);
-	reload();
-}
-
-void MainWindow::OnWorldRename(wxCommandEvent &)
-{
-	int sel = existingWorlds_->GetSelection();
-	if (sel == wxNOT_FOUND) {
-		return;
-	}
-
-	World &world = worlds_[sel];
-	auto message = "New name for '" + world.name +"':";
-	auto newName = wxGetTextFromUser(message).utf8_string();
-	if (newName == world.name || newName == "") {
-		return;
-	}
-
-	renameWorld(world.id, newName);
-	reload();
-}
-
-void MainWindow::OnWorldSelect(wxCommandEvent &)
-{
-	updateSelection();
-}
-
-void MainWindow::reload()
-{
-	worlds_ = listWorlds();
-	wxArrayString worldNames;
 	for (auto &world: worlds_) {
-		worldNames.Add(world.name);
-	}
+		ImGui::PushID(world.id.c_str());
 
-	selectedWorld_->SetLabel(wxT(""));
-	existingWorlds_->Set(worldNames);
-	newWorldName_->Clear();
-	*newWorldName_ << getNewWorldName(worlds_);
+		ImGui::Text("%s", world.name.c_str());
+		ImGui::Text("Created:     %s", world.creationTime.c_str());
+		ImGui::Text("Last played: %s", world.lastPlayedTime.c_str());
 
-	if (worlds_.empty()) {
-		existingWorlds_->SetSelection(-1);
-	} else {
-		existingWorlds_->SetSelection(0);
-	}
-	updateSelection();
-}
-
-void MainWindow::disable()
-{
-	existingWorlds_->SetSelection(-1);
-	updateSelection();
-	existingWorlds_->Enable(false);
-	newWorldName_->Enable(false);
-	newWorldBtn_->Enable(false);
-}
-
-void MainWindow::enable()
-{
-	existingWorlds_->Enable(true);
-	newWorldName_->Enable(true);
-	newWorldBtn_->Enable(true);
-}
-
-void MainWindow::updateSelection()
-{
-	int sel = existingWorlds_->GetSelection();
-	if (sel == wxNOT_FOUND) {
-		deleteBtn_->Enable(false);
-		renameBtn_->Enable(false);
-		loadBtn_->Enable(false);
-		selectedWorld_->SetLabel("");
-		selectedWorldThumb_->SetBitmap(wxBitmap(placeholderThumb_));
-		selectedWorldThumb_->Enable(false);
-		Layout();
-	} else {
-		deleteBtn_->Enable(true);
-		renameBtn_->Enable(true);
-		loadBtn_->Enable(true);
-		selectedWorld_->Enable(true);
-
-		auto &world = worlds_[sel];
-		std::string data;
-		data += world.name;
-		data += "\n\n";
-		data += "Created: ";
-		data += world.creationTime.substr(0, world.creationTime.find('+'));
-		data += '\n';
-		data += "Played: ";
-		data += world.lastPlayedTime.substr(0, world.lastPlayedTime.find('+'));
-		selectedWorld_->SetLabel(data);
-
-		wxImage image;
-		auto thumbnail = thumbnailPath(worlds_[sel].id);
-		if (!image.LoadFile(thumbnail)) {
-			std::cerr << "Failed to load '" << thumbnail << "'\n";
-			Layout();
-			return;
+		if (ImGui::Button("Delete")) {
+			ImGui::OpenPopup("Delete");
 		}
 
-		selectedWorldThumb_->SetBitmap(wxBitmap(image));
-		selectedWorldThumb_->Enable(true);
-		Layout();
+		ImGui::SameLine();
+
+		if (ImGui::Button("Rename")) {
+			worldRenameBuffer_ = world.name;
+			ImGui::OpenPopup("Rename");
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Play")) {
+			launch(world.id, std::nullopt);
+		}
+
+		if (ImGui::BeginPopupModal("Delete", nullptr, ImGuiWindowFlags_NoResize)) {
+			ImGui::Text("Delete %s?", world.name.c_str());
+
+			if (ImGui::Button("No")) {
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Yes")) {
+				deleteWorld(world.id);
+				reloadWorlds = true;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+
+		if (ImGui::BeginPopupModal("Rename", nullptr, ImGuiWindowFlags_NoResize)) {
+			ImGui::PushItemWidth(200);
+			ImGui::InputText("##New Name", &worldRenameBuffer_);
+			ImGui::PopItemWidth();
+
+			if (ImGui::Button("Cancel")) {
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Rename")) {
+				renameWorld(world.id, worldRenameBuffer_);
+				reloadWorlds = true;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+
+		ImGui::Separator();
+		ImGui::PopID();
+	}
+
+	ImGui::InputText("Name", &newWorldName_);
+	ImGui::InputText("Seed", &newWorldSeed_);
+	if (ImGui::Button("Create World")) {
+		std::string id = makeWorld(newWorldName_);
+		launch(id, calcSeed(newWorldSeed_));
+	}
+
+	if (running) {
+		ImGui::EndDisabled();
+	}
+
+	if (reloadWorlds) {
+		loadWorlds();
+	}
+
+	ImGui::End();
+
+	// Throttle rendering when running
+	if (running) {
+		std::this_thread::sleep_for(100ms);
 	}
 }
 
-void MainWindow::onSwanClosed()
+void MainWindow::launch(
+	std::string worldID,
+	std::optional<uint32_t> seed)
 {
-	enable();
-	reload();
+	running_->store(true);
+	updateWorldLastPlayedTime(worldID);
+	std::thread([running = running_, worldID = std::move(worldID), seed] {
+		std::string cmd = "./bin/swan";
+		appendArg(cmd, "--mod");
+		appendArg(cmd, "core.mod");
+		appendArg(cmd, "--world");
+		appendArg(cmd, worldPath(worldID));
+		appendArg(cmd, "--thumbnail");
+		appendArg(cmd, thumbnailPath(worldID));
+
+		if (seed) {
+			appendArg(cmd, "--seed");
+			appendArg(cmd, std::to_string(*seed));
+		}
+
+		Swan::info << "Running command: " << cmd;
+		runCommand(cmd.c_str());
+
+		running->store(false);
+	}).detach();
+}
+
+void MainWindow::loadWorlds()
+{
+	worlds_ = listWorlds();
+	newWorldName_ = getNewWorldName(worlds_);
+	newWorldSeed_ = "";
 }

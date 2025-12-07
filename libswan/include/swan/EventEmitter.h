@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 #include <swan/util.h>
-#include "log.h"
+#include <swan/log.h>
 
 namespace Swan {
 

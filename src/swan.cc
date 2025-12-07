@@ -272,7 +272,6 @@ int main(int argc, char **argv)
 		return glfwGetPrimaryMonitor();
 	}();
 
-
 	const GLFWvidmode *mode = glfwGetVideoMode(currentMonitor);
 	game.fpsLimit_ = mode->refreshRate;
 

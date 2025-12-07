@@ -3,7 +3,7 @@
 #include <limits>
 #include <string_view>
 
-#include "log.h"
+#include <swan/log.h>
 #include "Game.h"
 #include "Clock.h"
 #include "assets.h"

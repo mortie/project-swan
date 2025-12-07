@@ -1,11 +1,9 @@
 #include "assets.h"
 
-#include "log.h"
 #include <swan/util.h>
 
 #include <cstdio>
 #include <memory>
-#include <optional>
 #include <string>
 #include <filesystem>
 #include <stb/stb_image.h>
@@ -13,6 +11,7 @@
 #include <cpptoml.h>
 #include <string.h>
 #include <cygnet/ResourceManager.h>
+#include <swan/log.h>
 
 namespace Swan {
 

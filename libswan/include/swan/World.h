@@ -8,6 +8,7 @@
 #include <cygnet/Renderer.h>
 #include <cygnet/ResourceManager.h>
 #include <cygnet/util.h>
+#include <swan/log.h>
 
 #include "Clock.h"
 #include "Fluid.h"
@@ -21,7 +22,6 @@
 #include "Mod.h"
 #include "Recipe.h"
 #include "assets.h"
-#include "log.h"
 #include "swan.capnp.h"
 
 namespace Swan {

@@ -4,8 +4,8 @@
 #include "../Entity.h"
 #include "../EntityCollection.h"
 #include "../traits/BodyTrait.h"
-#include "../log.h"
 #include "swan.capnp.h"
+#include <swan/log.h>
 
 #include <memory>
 #include <span>
