@@ -2,6 +2,7 @@
 
 #include "DefaultWorldGen.h"
 #include "entities/DynamiteEntity.h"
+#include "entities/GrassSeedEntity.h"
 #include "entities/PlayerEntity.h"
 #include "entities/ItemStackEntity.h"
 #include "entities/SpiderEntity.h"
@@ -121,7 +122,10 @@ public:
 			.isReplacable = true,
 			.breakableBy = Swan::Tool::HAND,
 			.placeSound = "core::place/leaves",
-			.onBreak = dropRandomItemCount<"core::fiber">,
+			.onBreak = [](Swan::Ctx &ctx, Swan::TilePos pos) {
+				dropRandomItemCount<"core::fiber">(ctx, pos);
+				ctx.plane.entities().spawn<GrassSeedEntity>(pos);
+			},
 			.onTileUpdate = breakIfFloating,
 		});
 		registerTile({
@@ -409,11 +413,12 @@ public:
 
 		registerWorldGen<DefaultWorldGen>("default");
 
-		registerEntity<PlayerEntity>("player");
-		registerEntity<ItemStackEntity>("item-stack");
-		registerEntity<SpiderEntity>("spider");
-		registerEntity<FallingTileEntity>("falling-tile");
 		registerEntity<DynamiteEntity>("dynamite");
+		registerEntity<FallingTileEntity>("falling-tile");
+		registerEntity<GrassSeedEntity>("grass-seed");
+		registerEntity<ItemStackEntity>("item-stack");
+		registerEntity<PlayerEntity>("player");
+		registerEntity<SpiderEntity>("spider");
 
 		registerAction({
 			.name = "cheat-heal",
