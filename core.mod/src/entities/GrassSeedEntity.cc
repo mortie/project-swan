@@ -3,8 +3,8 @@
 
 namespace CoreMod {
 
-static constexpr float TIMER = 3 * 60;
-static constexpr float TIMER_VARIANCE = 1.5 * 60;
+static constexpr float TIMER = 4 * 60;
+static constexpr float TIMER_VARIANCE = 4 * 60;
 static constexpr float DEATH_TIME = 15;
 
 GrassSeedEntity::GrassSeedEntity(
