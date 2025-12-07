@@ -144,10 +144,6 @@ const TextCache::RenderedCodepoint &TextCache::render(Codepoint codepoint)
 		rendered.width += 68 * scale_;
 	}
 
-	std::cerr
-		<< "Cygnet: TextCache: Render code point "
-		<< codepoint << "...\n";
-
 	memset(scratchPixelBuffer_.get(), 0, atlas_.charWidth * atlas_.charHeight);
 	stbtt_MakeCodepointBitmap(
 		&face_->info, scratchPixelBuffer_.get() + atlas_.charWidth + 1,
