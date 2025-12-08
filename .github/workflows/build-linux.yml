@@ -20,7 +20,7 @@ jobs:
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
         packages: >
-          build-essential git make meson ninja-build nasm pkg-config patchelf
+          build-essential git make ninja-build nasm pkg-config patchelf python3
           libz-dev libwayland-dev libx11-dev libxrandr-dev libxinerama-dev
           libxcursor-dev libxi-dev libxkbcommon-dev mesa-common-dev libgles-dev
           libasound-dev

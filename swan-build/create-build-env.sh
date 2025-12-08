@@ -15,22 +15,34 @@ rm -rf "$PFX"
 mkdir -p "$PFX"
 
 get_source() {
-	if [ -e "sources/$1/.checkout.stamp" ]; then
+	if [ -e "$1/.checkout.stamp" ]; then
 		return
 	fi
 
-	rm -rf "sources/$1"
-	git clone "$2" "sources/$1"
-	(cd "sources/$1" && git checkout "$3" && git submodule update --init --recursive)
-	touch "sources/$1/.checkout.stamp"
+	rm -rf "$1"
+	git clone "$2" "$1"
+	(cd "$1" && git checkout "$3" && git submodule update --init --recursive)
+	touch "$1/.checkout.stamp"
 }
 
 echo
 echo "Setting up sources..."
 mkdir -p sources
-get_source cmake https://github.com/Kitware/CMake.git a0c7f1d29c77fd5c862b087f9d2442c84798a4b6
-get_source ffmpeg https://git.ffmpeg.org/ffmpeg.git 140fd653aed8cad774f991ba083e2d01e86420c7
-get_source llvm https://github.com/llvm/llvm-project.git 222fc11f2b8f25f6a0f4976272ef1bb7bf49521d
+get_source sources/cmake https://github.com/Kitware/CMake.git \
+	a0c7f1d29c77fd5c862b087f9d2442c84798a4b6
+get_source sources/ffmpeg https://git.ffmpeg.org/ffmpeg.git \
+	140fd653aed8cad774f991ba083e2d01e86420c7
+get_source sources/llvm https://github.com/llvm/llvm-project.git \
+	222fc11f2b8f25f6a0f4976272ef1bb7bf49521d
+
+# We use our own recent Clang version,
+# and Meson on Ubuntu 22.04 and older doesn't work with that
+echo
+echo "Getting meson..."
+get_source pfx/meson https://github.com/mesonbuild/meson.git \
+	415917b7c0d4759f73d0fe6564cbdda7fbf1eb9a
+# We don't need to keep around git history
+rm -rf pfx/meson/.git
 
 # LLVM needs a fairly modern CMake,
 # we need to compile on fairly old Linux distros
@@ -104,7 +116,8 @@ mkdir -p build/ffmpeg && cd build/ffmpeg
 	--libdir="$PFX/lib" \
 	--enable-pic \
 	--disable-static \
-	--enable-shared
+	--enable-shared \
+	--disable-doc
 nice make -j$(nproc)
 make install
 cd "$TOP"
