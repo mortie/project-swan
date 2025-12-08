@@ -195,7 +195,9 @@ int main(int argc, char **argv)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	GLFWwindow *window = glfwCreateWindow(640, 480, "Project: SWAN", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(
+		640, 480, "Project: SWAN  -  " SWAN_VERSION,
+		nullptr, nullptr);
 	if (!window) {
 		panic << "Failed to create window";
 		return 1;

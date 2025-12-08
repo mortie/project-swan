@@ -16,4 +16,7 @@ executable(
     libstb_image,
     common,
   ],
+  cpp_args: [
+    '-DSWAN_VERSION="' + swan_version + '"',
+  ],
 )

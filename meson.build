@@ -8,6 +8,16 @@ project(
   ],
 )
 
+swan_version = get_option('swan_version')
+if swan_version == ''
+  swan_version_cmd = run_command(
+    ['git', 'describe', '--tags', '--always'],
+    capture: true,
+    check: true,
+  )
+  swan_version = swan_version_cmd.stdout().strip()
+endif
+
 cmake = import('cmake')
 
 shaderpp_prog = find_program('./scripts/shaderpp.py')
@@ -112,6 +122,7 @@ executable(
   override_options: ['b_asneeded=false'],
   cpp_args: [
     '-DCLANGXX_PATH="' + get_option('clangxx_path') + '"',
+    '-DSWAN_VERSION="' + swan_version + '"',
   ],
 )
 

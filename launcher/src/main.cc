@@ -68,7 +68,9 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	GLFWwindow *window = glfwCreateWindow(450, 380, "SWAN Launcher", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(
+		450, 380, "SWAN Launcher  -  " SWAN_VERSION,
+		nullptr, nullptr);
 	if (!window) {
 		Swan::panic << "Failed to create window";
 		return 1;

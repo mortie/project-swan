@@ -16,6 +16,10 @@ jobs:
       with:
         submodules: true
 
+    - name: Git describe
+      id: ghd
+      uses: proudust/gh-describe@v2
+
     - name: Get packages
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
@@ -38,14 +42,14 @@ jobs:
       run: ./swan-build/create-build-env.sh
 
     - name: 'Compile Project: SWAN'
-      run: ./swan-build/build-swan-linux.sh
+      run: ./swan-build/build-swan-linux.sh "${{steps.ghd.outputs.describe}}"
 
     - name: Package
       run: |
-        mv swan-build/out swan_${{runner.os}}-${{runner.arch}}
+        mv swan-build/out "swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: swan_${{runner.os}}-${{runner.arch}}
-        path: swan_${{runner.os}}-${{runner.arch}}
+        name: swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}
+        path: swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}

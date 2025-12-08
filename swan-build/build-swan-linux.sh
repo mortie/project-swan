@@ -10,6 +10,9 @@ OUT="$TOP/out"
 rm -rf "$OUT"
 mkdir -p "$OUT"
 
+# It's okay if $1 is empty, meson will use 'git describe'
+SWAN_VERSION="$1"
+
 export CC="$PFX/bin/clang"
 export CXX="$PFX/bin/clang++"
 export PKG_CONFIG_PATH="$PFX/lib/pkgconfig"
@@ -27,6 +30,7 @@ rm -rf build/swan
 	-Dclangxx_path="./bin/clang++" \
 	-Dbuildtype=release \
 	-Ddebug=true \
+	-Dswan_version="$SWAN_VERSION" \
 	build/swan \
 	".."
 cd build/swan
