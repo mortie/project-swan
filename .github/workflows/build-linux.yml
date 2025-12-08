@@ -1,0 +1,47 @@
+name: Build for Linux
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Check out repo
+      uses: actions/checkout@v4
+
+    - name: Get packages
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: >
+          build-essential git make ninja-build nasm pkg-config patchelf
+          libz-dev libwayland-dev libx11-dev libxrandr-dev libxinerama-dev
+          libxcursor-dev libxi-dev libxkbcommon-dev mesa-common-dev libgles-dev
+          libasound-dev
+        version: 1.0
+
+    - name: Cache build env
+      id: cache-build-env
+      uses: actions/cache@v4
+      with:
+        path: build-env/pfx
+        key: ${{ runner.os }}-build-env-v1
+
+    - name: Create build env
+      if: steps.cache-build-env.outputs.cache-hit != 'true'
+      run: ./swan-build/create-build-env.sh
+
+    - name: 'Compile Project: SWAN'
+      run: ./swan-build/build-swan-linux.sh
+
+    - name: Package
+      run: |
+        mv swan-build/out swan-linux-bundle
+        tar czf swan-linux-bundle.tgz swan-linux-bundle
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: swan-linux-bundle.tgz
+        path: swan-linux-bundle.tgz
