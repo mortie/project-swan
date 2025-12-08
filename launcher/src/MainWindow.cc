@@ -12,44 +12,6 @@
 
 using namespace std::chrono_literals;
 
-static std::string getNewWorldName(std::span<World> worlds)
-{
-	constexpr const char *NAME = "New World";
-	std::string name = NAME;
-	bool collision = false;
-	for (auto &world: worlds) {
-		if (world.name == name) {
-			collision = true;
-			break;
-		}
-	}
-
-	if (!collision) {
-		return name;
-	}
-
-	int num = 2;
-	while (true) {
-		name = NAME;
-		name += " ";
-		name += std::to_string(num);
-
-		bool collision = false;
-		for (auto &world: worlds) {
-			if (world.name == name) {
-				collision = true;
-				break;
-			}
-		}
-
-		if (!collision) {
-			return name;
-		}
-
-		num += 1;
-	}
-}
-
 static std::optional<uint32_t> calcSeed(std::string_view seedStr)
 {
 	std::optional<uint32_t> seed;
@@ -89,7 +51,8 @@ void MainWindow::update()
 	wasRunning_ = running;
 	bool reloadWorlds = false;
 
-	for (auto &world: worlds_) {
+	for (auto &wrapper: worlds_) {
+		auto &world = wrapper.world;
 		ImGui::PushID(world.id.c_str());
 
 		ImGui::Text("%s", world.name.c_str());
@@ -97,14 +60,14 @@ void MainWindow::update()
 		ImGui::Text("Created:");
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(90);
-		ImGui::Text("%s", world.creationTime.c_str());
+		ImGui::Text("%s", wrapper.prettyCreationTime.c_str());
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5);
 
 		ImGui::Text("Last played:");
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(90);
-		ImGui::Text("%s", world.lastPlayedTime.c_str());
+		ImGui::Text("%s", wrapper.prettyLastPlayedTime.c_str());
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
 
@@ -200,6 +163,27 @@ void MainWindow::update()
 	}
 }
 
+void MainWindow::loadWorlds()
+{
+	auto worlds = listWorlds();
+	worlds_.clear();
+	worlds_.reserve(worlds.size());
+	for (auto &world: worlds) {
+		std::string prettyCreationTime =
+			world.creationTime.substr(0, world.creationTime.find('+'));
+		std::string prettyLastPlayedTime =
+			world.lastPlayedTime.substr(0, world.lastPlayedTime.find('+'));
+		worlds_.push_back({
+			.world = std::move(world),
+			.prettyCreationTime = std::move(prettyCreationTime),
+			.prettyLastPlayedTime = std::move(prettyLastPlayedTime),
+		});
+	}
+
+	newWorldName_ = getNewWorldName();
+	newWorldSeed_ = "";
+}
+
 void MainWindow::launch(
 	std::string worldID,
 	std::optional<uint32_t> seed)
@@ -227,9 +211,40 @@ void MainWindow::launch(
 	}).detach();
 }
 
-void MainWindow::loadWorlds()
+std::string MainWindow::getNewWorldName()
 {
-	worlds_ = listWorlds();
-	newWorldName_ = getNewWorldName(worlds_);
-	newWorldSeed_ = "";
+	constexpr const char *NAME = "New World";
+	std::string name = NAME;
+	bool collision = false;
+	for (auto &wrapper: worlds_) {
+		if (wrapper.world.name == name) {
+			collision = true;
+			break;
+		}
+	}
+
+	if (!collision) {
+		return name;
+	}
+
+	int num = 2;
+	while (true) {
+		name = NAME;
+		name += " ";
+		name += std::to_string(num);
+
+		bool collision = false;
+		for (auto &wrapper: worlds_) {
+			if (wrapper.world.name == name) {
+				collision = true;
+				break;
+			}
+		}
+
+		if (!collision) {
+			return name;
+		}
+
+		num += 1;
+	}
 }

@@ -24,12 +24,19 @@ public:
 	}
 
 private:
+	struct WorldWrapper {
+		World world;
+		std::string prettyCreationTime;
+		std::string prettyLastPlayedTime;
+	};
+
 	void loadWorlds();
 	void launch(std::string worldID, std::optional<uint32_t> seed);
+	std::string getNewWorldName();
 
 	int width_ = 0;
 	int height_ = 0;
-	std::vector<World> worlds_;
+	std::vector<WorldWrapper> worlds_;
 	std::string newWorldName_;
 	std::string newWorldSeed_;
 	std::string worldRenameBuffer_;
