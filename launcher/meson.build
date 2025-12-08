@@ -13,10 +13,6 @@ executable(
     libcygnet,
     libgl,
     libglfw3,
-    libstb_image,
     common,
-  ],
-  cpp_args: [
-    '-fPIC',
   ],
 )
