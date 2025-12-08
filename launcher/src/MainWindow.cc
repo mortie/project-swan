@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 static std::string getNewWorldName(std::span<World> worlds)
 {
-	constexpr const char *NAME = "Default";
+	constexpr const char *NAME = "New World";
 	std::string name = NAME;
 	bool collision = false;
 	for (auto &world: worlds) {
@@ -93,36 +93,50 @@ void MainWindow::update()
 		ImGui::PushID(world.id.c_str());
 
 		ImGui::Text("%s", world.name.c_str());
-		ImGui::Text("Created:     %s", world.creationTime.c_str());
-		ImGui::Text("Last played: %s", world.lastPlayedTime.c_str());
 
-		if (ImGui::Button("Delete")) {
+		ImGui::Text("Created:");
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(90);
+		ImGui::Text("%s", world.creationTime.c_str());
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5);
+
+		ImGui::Text("Last played:");
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(90);
+		ImGui::Text("%s", world.lastPlayedTime.c_str());
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
+
+		if (ImGui::Button("Delete", ImVec2(100, 0))) {
 			ImGui::OpenPopup("Delete");
 		}
 
-		ImGui::SameLine();
+		ImGui::SameLine(0, 4);
 
-		if (ImGui::Button("Rename")) {
+		if (ImGui::Button("Rename", ImVec2(100, 0))) {
 			worldRenameBuffer_ = world.name;
 			ImGui::OpenPopup("Rename");
 		}
 
-		ImGui::SameLine();
+		ImGui::SameLine(0, 4);
 
-		if (ImGui::Button("Play")) {
+		if (ImGui::Button("Play", ImVec2(100, 0))) {
 			launch(world.id, std::nullopt);
 		}
 
 		if (ImGui::BeginPopupModal("Delete", nullptr, ImGuiWindowFlags_NoResize)) {
-			ImGui::Text("Delete %s?", world.name.c_str());
+			ImGui::Text("Delete \"%s\"?", world.name.c_str());
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5);
+			ImGui::Text("This cannot be undone.");
 
-			if (ImGui::Button("No")) {
+			if (ImGui::Button("No", ImVec2(70, 0))) {
 				ImGui::CloseCurrentPopup();
 			}
 
 			ImGui::SameLine();
 
-			if (ImGui::Button("Yes")) {
+			if (ImGui::Button("Yes", ImVec2(70, 0))) {
 				deleteWorld(world.id);
 				reloadWorlds = true;
 				ImGui::CloseCurrentPopup();
@@ -136,13 +150,13 @@ void MainWindow::update()
 			ImGui::InputText("##New Name", &worldRenameBuffer_);
 			ImGui::PopItemWidth();
 
-			if (ImGui::Button("Cancel")) {
+			if (ImGui::Button("Cancel", ImVec2(94, 0))) {
 				ImGui::CloseCurrentPopup();
 			}
 
 			ImGui::SameLine();
 
-			if (ImGui::Button("Rename")) {
+			if (ImGui::Button("Rename", ImVec2(94, 0))) {
 				renameWorld(world.id, worldRenameBuffer_);
 				reloadWorlds = true;
 				ImGui::CloseCurrentPopup();
@@ -151,12 +165,20 @@ void MainWindow::update()
 			ImGui::EndPopup();
 		}
 
+		ImGui::Dummy(ImVec2(0, 0));
 		ImGui::Separator();
+		ImGui::Dummy(ImVec2(0, 0));
+
 		ImGui::PopID();
 	}
 
-	ImGui::InputText("Name", &newWorldName_);
-	ImGui::InputText("Seed", &newWorldSeed_);
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 180);
+	ImGui::InputText("##Name", &newWorldName_);
+	ImGui::SameLine(0, 5);
+	ImGui::PushItemWidth(80);
+	ImGui::InputTextWithHint("##Seed", "Seed", &newWorldSeed_);
+	ImGui::PopItemWidth();
+	ImGui::SameLine(0, 5);
 	if (ImGui::Button("Create World")) {
 		std::string id = makeWorld(newWorldName_);
 		launch(id, calcSeed(newWorldSeed_));

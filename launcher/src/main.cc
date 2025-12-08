@@ -11,6 +11,7 @@
 #include <fstream>
 
 #include "MainWindow.h"
+#include "stylesheet.h"
 
 static ImGuiIO *imguiIo;
 static double pixelRatio = 1;
@@ -30,9 +31,8 @@ static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
 		imguiIo->FontGlobalScale = 1.0 / pixelRatio;
 		imguiIo->Fonts->Clear();
 
-		struct ImFontConfig config;
-		config.SizePixels = 13 * pixelRatio;
-		imguiIo->Fonts->AddFontDefault(&config);
+		imguiIo->Fonts->AddFontFromFileTTF(
+			"assets/NotoSans-Regular.ttf", 17 * pixelRatio);
 		imguiIo->Fonts->Build();
 		ImGui_ImplOpenGL3_CreateFontsTexture();
 	}
@@ -68,7 +68,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	GLFWwindow *window = glfwCreateWindow(640, 480, "SWAN Launcher", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(500, 380, "SWAN Launcher", nullptr, nullptr);
 	if (!window) {
 		Swan::panic << "Failed to create window";
 		return 1;
@@ -87,7 +87,8 @@ int main()
 	imguiIo = &ImGui::GetIO();
 	imguiIo->IniFilename = nullptr;
 
-	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsDark();
+	StyleColors();
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	SWAN_DEFER(ImGui_ImplGlfw_Shutdown());
