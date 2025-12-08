@@ -78,4 +78,7 @@ executable(
   swan_proto,
   dependencies: libswan,
   include_directories: 'include/swan',
+  cpp_args: [
+    '-fPIC',
+  ],
 )

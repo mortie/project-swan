@@ -111,6 +111,7 @@ executable(
   ] + maybe_libtracy,
   override_options: ['b_asneeded=false'],
   cpp_args: [
+    '-fPIC',
     '-DCLANGXX_PATH="' + get_option('clangxx_path') + '"',
   ],
 )
@@ -126,6 +127,7 @@ executable(
     libsha1,
   ],
   cpp_args: [
+    '-fPIC',
     '-DCLANGXX_PATH="' + get_option('clangxx_path') + '"',
   ],
 )
