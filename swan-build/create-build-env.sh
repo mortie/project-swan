@@ -105,6 +105,6 @@ mkdir -p build/ffmpeg && cd build/ffmpeg
 	--enable-pic \
 	--disable-static \
 	--enable-shared
-nice make -j16
+nice make -j$(nproc)
 make install
 cd "$TOP"

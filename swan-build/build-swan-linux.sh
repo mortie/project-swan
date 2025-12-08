@@ -25,6 +25,8 @@ rm -rf build/swan
 meson setup \
 	-Dprefix="$OUT" \
 	-Dclangxx_path="./bin/clang++" \
+	-Dbuildtype=release \
+	-Ddebug=true \
 	build/swan \
 	".."
 cd build/swan
