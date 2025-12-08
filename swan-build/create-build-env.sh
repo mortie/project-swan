@@ -6,18 +6,27 @@ cd "$(dirname "$0")"
 TOP="$PWD"
 PFX="$TOP/pfx"
 
+os="$(uname -s)"
+cpu="$(uname -m)"
+
 echo
 echo "Preparing prefix..."
 rm -rf "$PFX"
 mkdir -p "$PFX"
 
 get_source() {
+	if [ -e "sources/$1/.checkout.stamp" ]; then
+		return
+	fi
+
+	rm -rf "sources/$1"
 	git clone "$2" "sources/$1"
 	(cd "sources/$1" && git checkout "$3" && git submodule update --init --recursive)
+	touch "sources/$1/.checkout.stamp"
 }
 
+echo
 echo "Setting up sources..."
-rm -rf sources
 mkdir -p sources
 get_source cmake https://github.com/Kitware/CMake.git a0c7f1d29c77fd5c862b087f9d2442c84798a4b6
 get_source ffmpeg https://git.ffmpeg.org/ffmpeg.git 140fd653aed8cad774f991ba083e2d01e86420c7
@@ -39,6 +48,14 @@ cd "$TOP"
 
 export PATH="$PFX/bin:$PATH"
 
+if [ "$os" = Darwin ]; then
+	llvm_runtimes="libunwind;compiler-rt"
+	llvm_build_sanitizers="OFF"
+else
+	llvm_runtimes="libunwind;libcxxabi;libcxx;compiler-rt"
+	llvm_build_sanitizers="ON"
+fi
+
 echo
 echo "Building LLVM..."
 mkdir -p build/llvm && cd build/llvm
@@ -50,9 +67,10 @@ cmake -G Ninja \
 	-DLIBUNWIND_INSTALL_LIBRARY_DIR="$PFX/lib" \
 	-DCLANG_CONFIG_FILE_SYSTEM_DIR="../lib/clang" \
 	-DCLANG_CONFIG_FILE_USER_DIR="../lib/clang" \
+	-DLLVM_TARGETS_TO_BUILD="X86;AArch64" \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DLLVM_ENABLE_PROJECTS="clang;lld" \
-	-DLLVM_ENABLE_RUNTIMES="libunwind;libcxxabi;libcxx;compiler-rt" \
+	-DLLVM_ENABLE_RUNTIMES="$llvm_runtimes" \
 	-DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
 	-DLLVM_INCLUDE_TESTS=OFF \
 	-DLLVM_INCLUDE_BENCHMARKS=OFF \
@@ -68,6 +86,7 @@ cmake -G Ninja \
 	-DCLANG_DEFAULT_RTLIB=compiler-rt \
 	-DCLANG_DEFAULT_LINKER=lld \
 	-DCLANG_DEFAULT_UNWINDLIB=libunwind \
+	-DCOMPILER_RT_BUILD_SANITIZERS="$llvm_build_sanitizers" \
 	"$TOP/sources/llvm/llvm"
 nice ninja clang lld
 ninja install

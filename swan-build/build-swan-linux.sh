@@ -22,7 +22,7 @@ export PATH="$PFX/bin:$PATH"
 echo "Building SWAN..."
 mkdir -p build
 rm -rf build/swan
-./common/meson/meson.py setup \
+meson setup \
 	-Dprefix="$OUT" \
 	-Dclangxx_path="./bin/clang++" \
 	build/swan \
