@@ -5,12 +5,57 @@
 #include <string_view>
 #include <thread>
 #include <swan/log.h>
+#include <cygnet/gl.h>
 #include <span>
+#include <stb/stb_image.h>
 
 #include "worlds.h"
 #include "system.h"
 
 using namespace std::chrono_literals;
+
+GLTexture::GLTexture(GLTexture &&other)
+{
+	texture_ = other.texture_;
+	width_ = other.width_;
+	height_ = other.height_;
+	other.texture_ = -1;
+}
+
+GLTexture::~GLTexture()
+{
+	if (texture_ >= 0) {
+		GLuint tex = texture_;
+		glDeleteTextures(1, &tex);
+	}
+}
+
+std::optional<GLTexture> GLTexture::fromFile(const char *path)
+{
+	GLTexture tex;
+
+	unsigned char *data = stbi_load(
+		path, &tex.width_, &tex.height_, nullptr, 4);
+	if (!data) {
+		Swan::warn << "Failed to load image: " << path;
+		return std::nullopt;
+	}
+
+	GLuint texID;
+	glGenTextures(1, &texID);
+	tex.texture_ = texID;
+	glBindTexture(GL_TEXTURE_2D, texID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RGBA, tex.width_, tex.height_,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	stbi_image_free(data);
+
+	return tex;
+}
 
 static std::optional<uint32_t> calcSeed(std::string_view seedStr)
 {
@@ -29,6 +74,22 @@ static std::optional<uint32_t> calcSeed(std::string_view seedStr)
 	return seed;
 }
 
+static GLTexture loadWorldTexture(std::string id)
+{
+	auto tex = GLTexture::fromFile(thumbnailPath(std::move(id)).c_str());
+	if (tex) {
+		return std::move(*tex);
+	}
+
+	tex = GLTexture::fromFile("assets/unknown-world.png");
+	if (tex) {
+		return std::move(*tex);
+	}
+
+	Swan::panic << "Failed to load unknown-world asset!";
+	abort();
+}
+
 void MainWindow::update()
 {
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
@@ -37,7 +98,9 @@ void MainWindow::update()
 		"Main Window", nullptr,
 		ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing |
-		ImGuiWindowFlags_NoTitleBar);
+		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollWithMouse |
+		ImGuiWindowFlags_NoScrollbar);
+	ImGui::SetScrollY(0);
 
 	bool running = running_->load();
 	if (running) {
@@ -51,9 +114,24 @@ void MainWindow::update()
 	wasRunning_ = running;
 	bool reloadWorlds = false;
 
+	auto avail = ImGui::GetContentRegionAvail();
+	ImGui::BeginChild(
+		"Worlds",
+		ImVec2(avail.x,avail.y - 35),
+		0, ImGuiWindowFlags_NoScrollbar);
+
 	for (auto &wrapper: worlds_) {
 		auto &world = wrapper.world;
+		auto &tex = wrapper.texture;
 		ImGui::PushID(world.id.c_str());
+
+		int thumbSize = 105;
+		auto cursor = ImGui::GetCursorPos();
+		ImGui::SetCursorPos(ImVec2(
+			cursor.x + ImGui::GetContentRegionAvail().x - thumbSize,
+			cursor.y));
+		ImGui::Image(tex.id(), ImVec2(thumbSize, thumbSize));
+		ImGui::SetCursorPos(cursor);
 
 		ImGui::Text("%s", world.name.c_str());
 
@@ -135,6 +213,8 @@ void MainWindow::update()
 		ImGui::PopID();
 	}
 
+	ImGui::EndChild();
+
 	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 180);
 	ImGui::InputText("##Name", &newWorldName_);
 	ImGui::SameLine(0, 5);
@@ -169,6 +249,7 @@ void MainWindow::loadWorlds()
 	worlds_.clear();
 	worlds_.reserve(worlds.size());
 	for (auto &world: worlds) {
+		std::string worldID = world.id;
 		std::string prettyCreationTime =
 			world.creationTime.substr(0, world.creationTime.find('+'));
 		std::string prettyLastPlayedTime =
@@ -177,6 +258,7 @@ void MainWindow::loadWorlds()
 			.world = std::move(world),
 			.prettyCreationTime = std::move(prettyCreationTime),
 			.prettyLastPlayedTime = std::move(prettyLastPlayedTime),
+			.texture = loadWorldTexture(worldID),
 		});
 	}
 

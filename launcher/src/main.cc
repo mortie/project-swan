@@ -68,12 +68,13 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	GLFWwindow *window = glfwCreateWindow(500, 380, "SWAN Launcher", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(450, 380, "SWAN Launcher", nullptr, nullptr);
 	if (!window) {
 		Swan::panic << "Failed to create window";
 		return 1;
 	}
 
+	glfwSetWindowSizeLimits(window, 450, 300, GLFW_DONT_CARE, GLFW_DONT_CARE);
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 	glfwSwapInterval(1);
@@ -87,7 +88,6 @@ int main()
 	imguiIo = &ImGui::GetIO();
 	imguiIo->IniFilename = nullptr;
 
-	//ImGui::StyleColorsDark();
 	StyleColors();
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -102,6 +102,7 @@ int main()
 		framebufferSizeCallback(window, dw, dh);
 	}
 
+	mainWindow.init();
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		ImGui_ImplOpenGL3_NewFrame();
