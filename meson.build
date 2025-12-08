@@ -1,5 +1,6 @@
 project(
   'swan', 'cpp',
+  version: 'alpha-2025-12-09.0',
   default_options: [
     'cpp_std=c++20',
     'libdir=lib',
