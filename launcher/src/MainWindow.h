@@ -70,4 +70,5 @@ private:
 
 	std::shared_ptr<std::atomic<bool>> running_;
 	bool wasRunning_ = false;
+	bool reloadWorlds_ = false;
 };

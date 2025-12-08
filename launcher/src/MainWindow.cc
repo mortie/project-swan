@@ -9,6 +9,7 @@
 #include <span>
 #include <stb/stb_image.h>
 
+#include "cygnet/util.h"
 #include "worlds.h"
 #include "system.h"
 
@@ -27,6 +28,7 @@ GLTexture::~GLTexture()
 	if (texture_ >= 0) {
 		GLuint tex = texture_;
 		glDeleteTextures(1, &tex);
+		Cygnet::glCheck();
 	}
 }
 
@@ -47,11 +49,13 @@ std::optional<GLTexture> GLTexture::fromFile(const char *path)
 	glBindTexture(GL_TEXTURE_2D, texID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	Cygnet::glCheck();
 
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 	glTexImage2D(
 		GL_TEXTURE_2D, 0, GL_RGBA, tex.width_, tex.height_,
 		0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	Cygnet::glCheck();
 	stbi_image_free(data);
 
 	return tex;
@@ -74,7 +78,7 @@ static std::optional<uint32_t> calcSeed(std::string_view seedStr)
 	return seed;
 }
 
-static GLTexture loadWorldTexture(std::string id)
+static GLTexture loadWorldThumbnail(std::string id)
 {
 	auto tex = GLTexture::fromFile(thumbnailPath(std::move(id)).c_str());
 	if (tex) {
@@ -92,6 +96,18 @@ static GLTexture loadWorldTexture(std::string id)
 
 void MainWindow::update()
 {
+	bool running = running_->load();
+
+	if (!running && wasRunning_) {
+		reloadWorlds_ = true;
+	}
+	wasRunning_ = running;
+
+	if (reloadWorlds_) {
+		loadWorlds();
+		reloadWorlds_ = false;
+	}
+
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(width_, height_), ImGuiCond_Always);
 	ImGui::Begin(
@@ -102,17 +118,9 @@ void MainWindow::update()
 		ImGuiWindowFlags_NoScrollbar);
 	ImGui::SetScrollY(0);
 
-	bool running = running_->load();
 	if (running) {
 		ImGui::BeginDisabled();
 	}
-
-	if (!running && wasRunning_) {
-		loadWorlds();
-	}
-
-	wasRunning_ = running;
-	bool reloadWorlds = false;
 
 	auto avail = ImGui::GetContentRegionAvail();
 	ImGui::BeginChild(
@@ -179,7 +187,7 @@ void MainWindow::update()
 
 			if (ImGui::Button("Yes", ImVec2(70, 0))) {
 				deleteWorld(world.id);
-				reloadWorlds = true;
+				reloadWorlds_ = true;
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -199,7 +207,7 @@ void MainWindow::update()
 
 			if (ImGui::Button("Rename", ImVec2(94, 0))) {
 				renameWorld(world.id, worldRenameBuffer_);
-				reloadWorlds = true;
+				reloadWorlds_ = true;
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -231,10 +239,6 @@ void MainWindow::update()
 		ImGui::EndDisabled();
 	}
 
-	if (reloadWorlds) {
-		loadWorlds();
-	}
-
 	ImGui::End();
 
 	// Throttle rendering when running
@@ -258,7 +262,7 @@ void MainWindow::loadWorlds()
 			.world = std::move(world),
 			.prettyCreationTime = std::move(prettyCreationTime),
 			.prettyLastPlayedTime = std::move(prettyLastPlayedTime),
-			.texture = loadWorldTexture(worldID),
+			.texture = loadWorldThumbnail(worldID),
 		});
 	}
 
