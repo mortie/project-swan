@@ -6,7 +6,10 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-22.04
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-22.04-arm]
     steps:
     - name: Check out repo
       uses: actions/checkout@v4
@@ -26,7 +29,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: build-env/pfx
-        key: ${{ runner.os }}-build-env-v1
+        key: ${{matrix.os}}-build-env-v1
 
     - name: Create build env
       if: steps.cache-build-env.outputs.cache-hit != 'true'
@@ -37,11 +40,12 @@ jobs:
 
     - name: Package
       run: |
-        mv swan-build/out swan-linux-bundle
-        tar czf swan-linux-bundle.tgz swan-linux-bundle
+        bundle_name="swan_${{runner.os}}-${{runner.arch}}"
+        mv swan-build/out "$bundle_name"
+        tar czf "$bundle_name.tgz" "$bundle_name"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: swan-linux-bundle.tgz
-        path: swan-linux-bundle.tgz
+        name: swan_${{runner.os}}-${{runner.arch}}.tgz
+        path: swan_${{runner.os}}-${{runner.arch}}.tgz
