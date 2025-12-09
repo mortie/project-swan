@@ -60,13 +60,6 @@ cp -r "$PFX/lib/clang" "$OUT/lib/"
 echo
 echo "Copying over headers..."
 cp -r "$PFX/include"/* "$OUT/include/"
-rm -rf "$OUT/include/libavcodec"
-rm -rf "$OUT/include/libavdevice"
-rm -rf "$OUT/include/libavfilter"
-rm -rf "$OUT/include/libavformat"
-rm -rf "$OUT/include/libavutil"
-rm -rf "$OUT/include/libswresample"
-rm -rf "$OUT/include/libswscale"
 
 echo
 echo "Copying over binaries..."
@@ -93,58 +86,5 @@ chmod +x "$OUT/launch.sh"
 
 echo
 echo "Creating install script..."
-cat >"$OUT/install.sh" <<'EOF'
-#!/bin/sh
-set -e
-
-SRCDIR="$(dirname "$0")"
-DESTDIR="$HOME/.local/opt/swan"
-
-echo "Installing to $DESTDIR. Is this OK? [y/N]"
-read -r line
-if [ "$line" != y ] && [ "$line" != Y ]; then
-	echo "Aborting install."
-	exit 1
-fi
-
-if [ -e "$DESTDIR" ]; then
-	echo "There's an existing install. Overwrite? (Save games will be preserved)"
-	read -r line
-	if [ "$line" != y ] && [ "$line" != Y ]; then
-		echo "Aborting install."
-		exit 1
-	fi
-
-	rm -rf "$DESTDIR.oldsaves~"
-	if [ -e "$DESTDIR/worlds" ]; then
-		cp -r "$DESTDIR/worlds" "$DESTDIR.oldworlds~"
-	fi
-	rm -rf "$DESTDIR"
-fi
-
-echo "Copying source folder..."
-mkdir -p "$(dirname "$DESTDIR")"
-cp -r "$SRCDIR" "$DESTDIR"
-
-for x in "$DESTDIR.oldworlds~"/*; do
-	if [ -e "$x" ]; then
-		rm -rf "$DESTDIR/worlds/$(basename "$x")"
-		mv "$x" "$DESTDIR/worlds/"
-	fi
-done
-rm -rf "$DESTDIR.oldworlds~"
-
-echo "Creating .desktop file..."
-mkdir -p "$HOME/.local/share/applications"
-cat >"$HOME/.local/share/applications/coffee.mort.Swan.desktop" <<END
-[Desktop Entry]
-Type=Application
-Name=Project: SWAN
-Exec=$DESTDIR/launch.sh
-Icon=$DESTDIR/assets/icon.png
-Categories=Game
-END
-
-echo "Done!"
-EOF
+cp "$TOP/install.sh" "$OUT/install.sh"
 chmod +x "$OUT/install.sh"
