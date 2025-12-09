@@ -18,9 +18,9 @@ struct World {
 
 std::vector<World> listWorlds();
 std::string makeWorld(std::string name);
-std::string worldPath(std::string id);
-std::string thumbnailPath(std::string id);
-bool worldExists(std::string id);
-void deleteWorld(std::string id);
-void renameWorld(std::string id, std::string newName);
-void updateWorldLastPlayedTime(std::string id);
+std::string worldPath(std::string_view id);
+std::string thumbnailPath(std::string_view id);
+bool worldExists(std::string_view id);
+void deleteWorld(std::string_view id);
+void renameWorld(std::string_view id, std::string newName);
+void updateWorldLastPlayedTime(std::string_view id);

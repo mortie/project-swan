@@ -1,4 +1,6 @@
 #include "worlds.h"
+#include "swan/log.h"
+#include "swan/util.h"
 
 #include <cstdlib>
 #include <filesystem>
@@ -9,6 +11,30 @@
 #include <date/date.h>
 #include <date/tz.h>
 #include <sstream>
+#include <stdexcept>
+
+static std::filesystem::path dataDir()
+{
+	const char *home = getenv("HOME");
+	if (!home) {
+		throw std::runtime_error("Home dir not set");
+	}
+
+	std::string path;
+#if defined(__APPLE__)
+	path = Swan::cat(
+		home, "/Library/Application Support/coffee.mort.Swan");
+#elif defined(__linux__)
+	path = Swan::cat(home, "/.local/share/coffee.mort.Swan");
+#else
+#error "Unsupported platform"
+#endif
+
+	Swan::info << "Using data directory: " << path;
+	return path;
+}
+
+static std::filesystem::path worldsDir = dataDir() / "worlds";
 
 void randomID(std::string &str)
 {
@@ -19,15 +45,15 @@ void randomID(std::string &str)
 
 std::vector<World> listWorlds()
 {
-	if (!std::filesystem::exists("worlds")) {
+	if (!std::filesystem::exists(worldsDir)) {
 		return {};
 	}
 
 	std::vector<World> worlds;
 
-	for (auto &ent: std::filesystem::directory_iterator("worlds")) {
+	for (auto &ent: std::filesystem::directory_iterator(worldsDir)) {
 		std::string id = ent.path().filename();
-		std::string tomlPath = "worlds/" + id + "/world.toml";
+		auto tomlPath = worldsDir / id / "world.toml";
 
 		auto table = cpptoml::parse_file(tomlPath);
 		auto name = table->get_as<std::string>("name");
@@ -66,17 +92,17 @@ std::vector<World> listWorlds()
 
 std::string makeWorld(std::string name)
 {
-	std::string path;
+	std::filesystem::path path;
 	std::string id;
 	while (true) {
 		randomID(id);
-		path = "worlds/";
-		path += id;
+		path = worldsDir / id;
 		if (!std::filesystem::exists(path)) {
 			break;
 		}
 	}
 	std::filesystem::create_directories(path);
+	auto tomlPath = path / "world.toml";
 
 	auto now = std::chrono::floor<std::chrono::seconds>(
 		std::chrono::system_clock::now());
@@ -87,7 +113,7 @@ std::string makeWorld(std::string name)
 	table->insert("name", name);
 	table->insert("creation-time", nowStr);
 	table->insert("last-played-time", nowStr);
-	std::fstream f("worlds/" + id + "/world.toml", std::ios_base::out);
+	std::fstream f(tomlPath, std::ios_base::out);
 	f << *table;
 	f.close();
 	if (f.fail()) {
@@ -97,31 +123,32 @@ std::string makeWorld(std::string name)
 	return id;
 }
 
-std::string worldPath(std::string id)
+std::string worldPath(std::string_view id)
 {
-	return "worlds/" + id + "/world.swan";
+	return worldsDir / id / "world.swan";
 }
 
-std::string thumbnailPath(std::string id)
+std::string thumbnailPath(std::string_view id)
 {
-	return "worlds/" + id + "/thumb.png";
+	return worldsDir / id / "thumb.png";
 }
 
-bool worldExists(std::string id)
+bool worldExists(std::string_view id)
 {
-	return std::filesystem::exists("worlds/" + id);
+	return std::filesystem::exists(worldsDir / id);
 }
 
-void deleteWorld(std::string id)
+void deleteWorld(std::string_view id)
 {
-	std::filesystem::remove_all("worlds/" + id);
+	std::filesystem::remove_all(worldsDir / id);
 }
 
-void renameWorld(std::string id, std::string newName)
+void renameWorld(std::string_view id, std::string newName)
 {
-	auto table = cpptoml::parse_file("worlds/" + id + "/world.toml");
-	table->insert("name", newName);
-	std::fstream f("worlds/" + id + "/world.toml", std::ios_base::out);
+	auto tomlPath = worldsDir / id / "world.toml";
+	auto table = cpptoml::parse_file(tomlPath);
+	table->insert("name", std::move(newName));
+	std::fstream f(tomlPath, std::ios_base::out);
 	f << *table;
 	f.close();
 	if (f.fail()) {
@@ -129,16 +156,17 @@ void renameWorld(std::string id, std::string newName)
 	}
 }
 
-void updateWorldLastPlayedTime(std::string id)
+void updateWorldLastPlayedTime(std::string_view id)
 {
 	auto now = std::chrono::floor<std::chrono::seconds>(
 		std::chrono::system_clock::now());
 	auto nowZoned = date::make_zoned(date::current_zone(), now);
 	auto nowStr = date::format({}, "%F %T%z", nowZoned);
 
-	auto table = cpptoml::parse_file("worlds/" + id + "/world.toml");
+	auto tomlPath = worldsDir / id / "world.toml";
+	auto table = cpptoml::parse_file(tomlPath);
 	table->insert("last-played-time", nowStr);
-	std::fstream f("worlds/" + id + "/world.toml", std::ios_base::out);
+	std::fstream f(tomlPath, std::ios_base::out);
 	f << *table;
 	f.close();
 	if (f.fail()) {
