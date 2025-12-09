@@ -2,7 +2,7 @@
 set -e
 
 SRCDIR="$(dirname "$0")"
-DESTDIR="$HOME/.local/share/coffee.mort.Swan"
+DESTDIR="$HOME/.local/opt/coffee.mort.Swan"
 
 echo "Installing to '$DESTDIR'. Is this OK? [y/N]"
 read -r line
