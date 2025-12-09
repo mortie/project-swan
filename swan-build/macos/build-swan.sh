@@ -6,18 +6,21 @@ cd "$(dirname "$0")"
 TOP="$PWD"
 PFX="$TOP/pfx"
 OUT="$TOP/out"
+APP="$OUT/Swan.app"
 
 rm -rf "$OUT"
 mkdir -p "$OUT"
 
-# It's okay if $1 is empty, meson will use 'git describe'
 SWAN_VERSION="$1"
+if [ -z "$SWAN_VERSION" ]; then
+	SWAN_VERSION="$(git describe --tags --always --dirty)+git"
+fi
 
 echo "Building SWAN..."
 mkdir -p build
 rm -rf build/swan
 "$PFX/meson/meson.py" setup \
-	-Dprefix="$OUT" \
+	-Dprefix="$APP/Contents" \
 	-Dbuildtype=release \
 	-Ddebug=true \
 	-Dswan_version="$SWAN_VERSION" \
@@ -31,6 +34,7 @@ cd "$TOP"
 
 echo
 echo "Fixing up dylib paths..."
+set +x
 for lib in \
 	libcapnp-json.dylib \
 	libcapnp.dylib \
@@ -51,28 +55,60 @@ for lib in \
 	libstb_vorbis.dylib \
 	libswan.dylib
 do
-	install_name_tool -id "@rpath/$lib" "$OUT/lib/$lib"
-	for f in "$OUT"/lib/* "$OUT"/bin/*; do
-		install_name_tool -change "$OUT/lib/$lib" "@rpath/$lib" "$f"
+	install_name_tool -id "@rpath/$lib" "$APP/Contents/lib/$lib"
+	for f in "$APP/Contents/lib"/* "$APP/Contents/bin/"*; do
+		install_name_tool -change "$APP/Contents/lib/$lib" "@rpath/$lib" "$f"
 	done
 done
+set -x
 
 echo
 echo "Compiling core mod..."
-(cd "$OUT" && ./bin/swan-build core.mod .)
-echo >>"$OUT/core.mod/mod.toml" "locked = true"
-rm -rf "$OUT/core.mod/.swanbuild/obj"
-rm -rf "$OUT/core.mod/.swanbuild/proto"
-rm -rf "$OUT/core.mod/.swanbuild/swan.h.pch"
+(cd "$APP/Contents" && ./bin/swan-build core.mod .)
+echo >>"$APP/Contents/core.mod/mod.toml" "locked = true"
+rm -rf "$APP/Contents/core.mod/.swanbuild/obj"
+rm -rf "$APP/Contents/core.mod/.swanbuild/proto"
+rm -rf "$APP/Contents/core.mod/.swanbuild/swan.h.pch"
 
 echo
 echo "Creating launch script..."
-cat >"$OUT/launch.command" <<'EOF'
+mkdir -p "$APP/Contents/MacOS"
+cat >"$APP/Contents/MacOS/launch.sh" <<'EOF'
 #!/bin/sh
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.." || return 1
 exec ./bin/swan-launcher
 EOF
-chmod +x "$OUT/launch.command"
+chmod +x "$APP/Contents/MacOS/launch.sh"
+
+echo
+echo "Creating plist..."
+cat >"$APP/Contents/Info.plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>Project: SWAN</string>
+	<key>CFBundleExecutable</key>
+	<string>launch.sh</string>
+	<key>CFBundleIdentifier</key>
+	<string>coffee.mort.Swan</string>
+	<key>CFBundleName</key>
+	<string>Project: SWAN</string>
+	<key>CFBundleVersion</key>
+	<string>$SWAN_VERSION</string>
+	<key>CFBundleIconFile</key>
+	<string>Swan</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+</dict>
+</plist>
+EOF
+
+echo
+echo "Create app icon..."
+mkdir -p "$APP/Contents/Resources"
+cp "$TOP/AppIcon.icns" "$APP/Contents/Resources/Swan.icns"
 
 echo
 echo "Creating README..."
@@ -84,18 +120,14 @@ who don't pay Apple a yearly developer fee.
 
 To run Project: SWAN, do the following:
 
-1. Move this directory out of Downloads, for example to Desktop
-   (this is necessary, otherwise you get a permission error)
+1. Move this directory out of Downloads, for example to Applications (recommended)
 2. Open Terminal.app
 3. Run the following command:
 
-xattr -d -r com.apple.quarantine <path to launch.command>
+xattr -d -r com.apple.quarantine <path to Swan.app>
 
-4. Double-click launch.command
+4. Double-click Swan.app
 
-You can drag and drop launch.command into the Terminal window
+You can drag and drop Swan.app into the Terminal window
 instead of manually typing out its file path.
-
-I will improve this at some point,
-but improving packaging for macos is not a priority right now.
 EOF
