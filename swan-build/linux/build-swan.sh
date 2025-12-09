@@ -136,7 +136,7 @@ rm -rf "$DESTDIR.oldworlds~"
 
 echo "Creating .desktop file..."
 mkdir -p "$HOME/.local/share/applications"
-cat >"$HOME/.local/share/applications/swan.desktop" <<END
+cat >"$HOME/.local/share/applications/coffee.mort.Swan.desktop" <<END
 [Desktop Entry]
 Type=Application
 Name=Project: SWAN

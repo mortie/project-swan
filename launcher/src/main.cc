@@ -68,6 +68,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHintString(GLFW_WAYLAND_APP_ID, "coffee.mort.Swan");
 	GLFWwindow *window = glfwCreateWindow(
 		450, 380, "SWAN Launcher  -  " SWAN_VERSION,
 		nullptr, nullptr);
