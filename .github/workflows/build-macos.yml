@@ -1,4 +1,4 @@
-name: Build for Linux
+name: Build for macOS
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-22.04-arm]
+        os: [macos-15, macos-15-intel]
     steps:
     - name: Check out repo
       uses: actions/checkout@v4
@@ -20,29 +20,19 @@ jobs:
       id: ghd
       uses: proudust/gh-describe@v2
 
-    - name: Get packages
-      uses: awalsh128/cache-apt-pkgs-action@latest
-      with:
-        packages: >
-          build-essential git make ninja-build nasm pkg-config patchelf python3
-          libz-dev libwayland-dev libx11-dev libxrandr-dev libxinerama-dev
-          libxcursor-dev libxi-dev libxkbcommon-dev mesa-common-dev libgles-dev
-          libasound-dev
-        version: 1.0
-
     - name: Cache build env
       id: cache-build-env
       uses: actions/cache@v4
       with:
-        path: swan-build/linux/pfx
-        key: ${{matrix.os}}-build-env-v4
+        path: swan-build/macos/pfx
+        key: ${{matrix.os}}-build-env-v1
 
     - name: Create build env
       if: steps.cache-build-env.outputs.cache-hit != 'true'
-      run: ./swan-build/linux/create-build-env.sh
+      run: ./swan-build/macos/create-build-env.sh
 
     - name: 'Compile Project: SWAN'
-      run: ./swan-build/linux/build-swan.sh "${{steps.ghd.outputs.describe}}"
+      run: ./swan-build/macos/build-swan.sh "${{steps.ghd.outputs.describe}}"
 
     - name: Package
       run: |

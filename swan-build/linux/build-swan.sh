@@ -33,7 +33,7 @@ rm -rf build/swan
 	-Dswan_version="$SWAN_VERSION" \
 	-Dffmpeg=disabled \
 	build/swan \
-	".."
+	"../.."
 cd build/swan
 nice ninja
 ninja install

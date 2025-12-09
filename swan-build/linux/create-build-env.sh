@@ -6,9 +6,6 @@ cd "$(dirname "$0")"
 TOP="$PWD"
 PFX="$TOP/pfx"
 
-os="$(uname -s)"
-cpu="$(uname -m)"
-
 echo
 echo "Preparing prefix..."
 rm -rf "$PFX"
@@ -37,10 +34,10 @@ get_source sources/llvm https://github.com/llvm/llvm-project.git \
 # and Meson on Ubuntu 22.04 and older doesn't work with that
 echo
 echo "Getting meson..."
-get_source pfx/meson https://github.com/mesonbuild/meson.git \
+get_source "$PFX/meson" https://github.com/mesonbuild/meson.git \
 	415917b7c0d4759f73d0fe6564cbdda7fbf1eb9a
 # We don't need to keep around git history
-rm -rf pfx/meson/.git
+rm -rf "$PFX/meson/.git"
 
 # LLVM needs a fairly modern CMake,
 # we need to compile on fairly old Linux distros
@@ -58,14 +55,6 @@ cd "$TOP"
 
 export PATH="$PFX/bin:$PATH"
 
-if [ "$os" = Darwin ]; then
-	llvm_runtimes="libunwind;compiler-rt"
-	llvm_build_sanitizers="OFF"
-else
-	llvm_runtimes="libunwind;libcxxabi;libcxx;compiler-rt"
-	llvm_build_sanitizers="ON"
-fi
-
 echo
 echo "Building LLVM..."
 mkdir -p build/llvm && cd build/llvm
@@ -80,7 +69,7 @@ cmake -G Ninja \
 	-DLLVM_TARGETS_TO_BUILD="X86;AArch64" \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DLLVM_ENABLE_PROJECTS="clang;lld" \
-	-DLLVM_ENABLE_RUNTIMES="$llvm_runtimes" \
+	-DLLVM_ENABLE_RUNTIMES="libunwind;libcxxabi;libcxx;compiler-rt" \
 	-DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
 	-DLLVM_INCLUDE_TESTS=OFF \
 	-DLLVM_INCLUDE_BENCHMARKS=OFF \
@@ -98,12 +87,8 @@ cmake -G Ninja \
 	-DCLANG_DEFAULT_LINKER=lld \
 	-DCLANG_DEFAULT_UNWINDLIB=libunwind \
 	-DCLANG_ENABLE_LIBXML2=OFF \
-	-DCOMPILER_RT_BUILD_SANITIZERS="$llvm_build_sanitizers" \
+	-DCOMPILER_RT_BUILD_SANITIZERS=ON \
 	"$TOP/sources/llvm/llvm"
 nice ninja clang lld
 ninja install
 cd "$TOP"
-
-export CC="$PFX/bin/clang"
-export CXX="$PFX/bin/clang++"
-export LDFLAGS="-L$PFX/lib"
