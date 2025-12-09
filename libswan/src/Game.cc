@@ -60,7 +60,17 @@ void Game::loadWorld(
 	std::string worldPath, std::span<const std::string> modPaths)
 {
 	auto fs = kj::newDiskFilesystem();
-	auto worldFile = fs->getCurrent().openFile(kj::Path::parse(worldPath));
+	std::string path = worldPath;
+	const auto *dir = [&] {
+		if (path[0] == '/') {
+			path = path.substr(1);
+			return &fs->getRoot();
+		} else {
+			return &fs->getCurrent();
+		}
+	}();
+
+	auto worldFile = dir->openFile(kj::Path::parse(path));
 	auto bytes = worldFile->readAllBytes();
 	auto data = kj::ArrayInputStream(bytes);
 	capnp::PackedMessageReader reader(data);
@@ -661,11 +671,21 @@ void Game::save()
 	world_->serialize(world);
 
 	auto fs = kj::newDiskFilesystem();
-	auto &dir = fs->getCurrent();
+
+	std::string path = worldPath_;
+	const auto *dir = [&] {
+		if (path[0] == '/') {
+			path = path.substr(1);
+			return &fs->getRoot();
+		} else {
+			return &fs->getCurrent();
+		}
+	}();
 
 	info << "Writing to " << worldPath_ << "...";
-	auto replacer = dir.replaceFile(
-		kj::Path::parse(worldPath_), kj::WriteMode::CREATE | kj::WriteMode::MODIFY);
+	auto replacer = dir->replaceFile(
+		kj::Path::parse(path),
+		kj::WriteMode::CREATE | kj::WriteMode::MODIFY);
 	auto appender = kj::newFileAppender(replacer->get().clone());
 	capnp::writePackedMessage(*appender, mb);
 
