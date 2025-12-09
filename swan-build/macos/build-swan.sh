@@ -84,12 +84,13 @@ who don't pay Apple a yearly developer fee.
 
 To run Project: SWAN, do the following:
 
-1. Open Terminal.app
-2. Run the following command:
+1. Move this directory out of Downloads, for example to Desktop
+   (this is necessary, otherwise you get a permission error)
+2. Open Terminal.app
+3. Run the following command:
 
 xattr -d -r com.apple.quarantine <path to launch.command>
 
-3. Move this directory out of Downloads, to Desktop or Applications
 4. Double-click launch.command
 
 You can drag and drop launch.command into the Terminal window

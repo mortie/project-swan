@@ -46,7 +46,7 @@ jobs:
 
     - name: Package
       run: |
-        mv swan-build/macos/out "swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}"
+        mv swan-build/linux/out "swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
