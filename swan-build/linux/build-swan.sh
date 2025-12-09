@@ -22,6 +22,7 @@ export PATH="$PFX/bin:$PATH"
 export CAPNP_SYSROOT="$PFX/include"
 export PATH="$PFX/bin:$PATH"
 
+echo
 echo "Building SWAN..."
 mkdir -p build
 rm -rf build/swan
@@ -44,6 +45,7 @@ install_lib() {
 	patchelf --set-rpath '$ORIGIN' "$OUT/lib/$1"
 }
 
+echo
 echo "Copying over libraries..."
 cp "$PFX/lib/libc++.so" "$OUT/lib/"
 install_lib libc++.so.1
@@ -55,6 +57,7 @@ ln -s libc++abi.so.1 "$OUT/lib/libc++abi.so"
 ln -s libunwind.so.1 "$OUT/lib/libunwind.so"
 cp -r "$PFX/lib/clang" "$OUT/lib/"
 
+echo
 echo "Copying over headers..."
 cp -r "$PFX/include"/* "$OUT/include/"
 rm -rf "$OUT/include/libavcodec"
@@ -65,11 +68,13 @@ rm -rf "$OUT/include/libavutil"
 rm -rf "$OUT/include/libswresample"
 rm -rf "$OUT/include/libswscale"
 
+echo
 echo "Copying over binaries..."
 cp "$PFX/bin"/clang "$OUT/bin/"
 ln -s clang "$OUT/bin/clang++"
 cp "$PFX/bin/ld.lld" "$OUT/bin/"
 
+echo
 echo "Compiling core mod..."
 (cd "$OUT" && ./bin/swan-build core.mod .)
 echo >>"$OUT/core.mod/mod.toml" "locked = true"
@@ -77,6 +82,7 @@ rm -rf "$OUT/core.mod/.swanbuild/obj"
 rm -rf "$OUT/core.mod/.swanbuild/proto"
 rm -rf "$OUT/core.mod/.swanbuild/swan.h.pch"
 
+echo
 echo "Creating launch script..."
 cat >"$OUT/launch.sh" <<'EOF'
 #!/bin/sh
@@ -85,6 +91,7 @@ exec ./bin/swan-launcher
 EOF
 chmod +x "$OUT/launch.sh"
 
+echo
 echo "Creating install script..."
 cat >"$OUT/install.sh" <<'EOF'
 #!/bin/sh
