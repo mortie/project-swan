@@ -79,6 +79,9 @@ cp "$PFX/bin/ld.lld" "$OUT/bin/"
 echo "Compiling core mod..."
 (cd "$OUT" && ./bin/swan-build core.mod .)
 echo >>"$OUT/core.mod/mod.toml" "locked = true"
+rm -rf "$OUT/core.mod/.swanbuild/obj"
+rm -rf "$OUT/core.mod/.swanbuild/proto"
+rm -rf "$OUT/core.mod/.swanbuild/swan.h.pch"
 
 echo "Creating launch script..."
 cat >"$OUT/launch.sh" <<'EOF'
