@@ -35,7 +35,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: swan-build/pfx
-        key: ${{matrix.os}}-build-env-v2
+        key: ${{matrix.os}}-build-env-v3
 
     - name: Create build env
       if: steps.cache-build-env.outputs.cache-hit != 'true'
@@ -53,3 +53,4 @@ jobs:
       with:
         name: swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}
         path: swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}
+        include-hidden-files: true
