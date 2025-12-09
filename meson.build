@@ -63,13 +63,13 @@ portaudio_sub = cmake.subproject('portaudio', options: portaudio_opts)
 libportaudio = portaudio_sub.dependency('portaudio')
 
 libffmpeg = [
-  dependency('libavcodec', required: false),
-  dependency('libavdevice', required: false),
-  dependency('libavfilter', required: false),
-  dependency('libavformat', required: false),
-  dependency('libavutil', required: false),
-  dependency('libswresample', required: false),
-  dependency('libswscale', required: false),
+  dependency('libavcodec', required: get_option('ffmpeg')),
+  dependency('libavdevice', required: get_option('ffmpeg')),
+  dependency('libavfilter', required: get_option('ffmpeg')),
+  dependency('libavformat', required: get_option('ffmpeg')),
+  dependency('libavutil', required: get_option('ffmpeg')),
+  dependency('libswresample', required: get_option('ffmpeg')),
+  dependency('libswscale', required: get_option('ffmpeg')),
 ]
 
 has_ffmpeg = true

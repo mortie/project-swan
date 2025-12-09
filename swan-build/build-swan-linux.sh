@@ -31,6 +31,7 @@ rm -rf build/swan
 	-Dbuildtype=release \
 	-Ddebug=true \
 	-Dswan_version="$SWAN_VERSION" \
+	-Dffmpeg=disabled \
 	build/swan \
 	".."
 cd build/swan
@@ -48,13 +49,6 @@ cp "$PFX/lib/libc++.so" "$OUT/lib/"
 install_lib libc++.so.1
 install_lib libc++abi.so.1
 install_lib libunwind.so.1
-install_lib libavcodec.so.62
-install_lib libavdevice.so.62
-install_lib libavfilter.so.11
-install_lib libavformat.so.62
-install_lib libavutil.so.60
-install_lib libswresample.so.6
-install_lib libswscale.so.9
 install_lib libclang-cpp.so.21.1
 install_lib libLLVM.so.21.1
 ln -s libc++abi.so.1 "$OUT/lib/libc++abi.so"

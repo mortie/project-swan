@@ -1,3 +1,4 @@
 option('trace', type: 'boolean', value: false, description: 'Enable profiling with tracy')
 option('clangxx_path', type: 'string', value: 'clang++')
 option('swan_version', type: 'string', value: '')
+option('ffmpeg', type: 'feature', value: 'auto')

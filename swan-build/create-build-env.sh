@@ -30,8 +30,6 @@ echo "Setting up sources..."
 mkdir -p sources
 get_source sources/cmake https://github.com/Kitware/CMake.git \
 	a0c7f1d29c77fd5c862b087f9d2442c84798a4b6
-get_source sources/ffmpeg https://git.ffmpeg.org/ffmpeg.git \
-	140fd653aed8cad774f991ba083e2d01e86420c7
 get_source sources/llvm https://github.com/llvm/llvm-project.git \
 	222fc11f2b8f25f6a0f4976272ef1bb7bf49521d
 
@@ -109,17 +107,3 @@ cd "$TOP"
 export CC="$PFX/bin/clang"
 export CXX="$PFX/bin/clang++"
 export LDFLAGS="-L$PFX/lib"
-
-echo
-echo "Building ffmpeg..."
-mkdir -p build/ffmpeg && cd build/ffmpeg
-"$TOP/sources/ffmpeg/configure" \
-	--prefix="$PFX" \
-	--libdir="$PFX/lib" \
-	--enable-pic \
-	--disable-static \
-	--enable-shared \
-	--disable-doc
-nice make -j$(nproc)
-make install
-cd "$TOP"
