@@ -1,9 +1,9 @@
 swan_proto = custom_target(
   'swan_proto',
-  input: ['proto/swan.capnp', capnpc_cpp_prog],
+  input: ['proto/swan.capnp', capnpc_cpp_prog_native],
   output: ['swan.capnp.h', 'swan.capnp.c++'],
   command: [
-    capnp_prog, 'compile', '-o@INPUT1@:@OUTDIR@',
+    capnp_prog_native, 'compile', '-o@INPUT1@:@OUTDIR@',
     '--src-prefix=@CURRENT_SOURCE_DIR@/proto',
     '-I' + capnp_include_path,
     '@INPUT0@',

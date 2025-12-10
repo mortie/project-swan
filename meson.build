@@ -84,11 +84,23 @@ foreach lib: libffmpeg
 endforeach
 
 libcpptoml = subproject('cpptoml-ng').get_variable('cpptoml_dep')
-libdl = meson.get_compiler('cpp').find_library('dl')
-libz = meson.get_compiler('cpp').find_library('z')
-
-libgl = dependency('OpenGL')
 libdw = dependency('libdw', required: false)
+
+message('Compiling for host system ' + host_machine.system())
+if host_machine.system() == 'windows'
+  libgl = declare_dependency(
+    include_directories: 'third-party/OpenGL-Registry',
+    dependencies: meson.get_compiler('cpp').find_library('opengl32'),
+    compile_args: '-DGL_GLEXT_PROTOTYPES',
+  )
+  libmingw = meson.get_compiler('cpp').find_library('mingw32')
+  libdl = libmingw
+  libz = libmingw
+else
+  libgl = dependency('OpenGL')
+  libdl = meson.get_compiler('cpp').find_library('dl')
+  libz = meson.get_compiler('cpp').find_library('z')
+endif
 
 libthreads = dependency('threads')
 

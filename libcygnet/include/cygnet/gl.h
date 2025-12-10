@@ -1,12 +1,16 @@
 #pragma once
 
 // IWYU pragma: begin_exports
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/gl3.h>
-#else
+#elif defined(__MINGW32__)
+#include <glcorearb.h>
+#elif defined(__linux__)
 #include <GLES3/gl3.h>
+#else
+#error "Unknown architecture"
 #endif
 // IWYU pragma: end_exports
 

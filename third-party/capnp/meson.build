@@ -1,41 +1,182 @@
-libkj = declare_dependency(
-  include_directories: 'capnp/c++/src',
-  link_with: shared_library('kj',
-    'capnp/c++/src/kj/array.c++',
-    'capnp/c++/src/kj/cidr.c++',
-    'capnp/c++/src/kj/list.c++',
-    'capnp/c++/src/kj/common.c++',
-    'capnp/c++/src/kj/debug.c++',
-    'capnp/c++/src/kj/exception.c++',
-    'capnp/c++/src/kj/io.c++',
-    'capnp/c++/src/kj/memory.c++',
-    'capnp/c++/src/kj/mutex.c++',
-    'capnp/c++/src/kj/string.c++',
-    'capnp/c++/src/kj/source-location.c++',
-    'capnp/c++/src/kj/hash.c++',
-    'capnp/c++/src/kj/table.c++',
-    'capnp/c++/src/kj/thread.c++',
-    'capnp/c++/src/kj/main.c++',
-    'capnp/c++/src/kj/arena.c++',
-    'capnp/c++/src/kj/test-helpers.c++',
-    'capnp/c++/src/kj/units.c++',
-    'capnp/c++/src/kj/encoding.c++',
-    'capnp/c++/src/kj/refcount.c++',
-    'capnp/c++/src/kj/string-tree.c++',
-    'capnp/c++/src/kj/time.c++',
-    'capnp/c++/src/kj/filesystem.c++',
-    'capnp/c++/src/kj/filesystem-disk-unix.c++',
-    'capnp/c++/src/kj/filesystem-disk-win32.c++',
-    'capnp/c++/src/kj/parse/char.c++',
+capnp_cross = host_machine.system() != build_machine.system()
+if capnp_cross
+  capnp_native = [true, false]
+else
+  capnp_native = [false]
+endif
+
+capnp_cross_deps = []
+if host_machine.system() == 'windows'
+  capnp_cross_deps = [
+    meson.get_compiler('cpp').find_library('mingw32'),
+    meson.get_compiler('cpp').find_library('ws2_32'),
+  ]
+endif
+
+foreach native: capnp_native
+  suffix = ''
+  if native
+    suffix = '_native'
+  endif
+
+  capnp_deps = []
+  if not native
+    capnp_deps = capnp_cross_deps
+  endif
+
+  libkj = declare_dependency(
     include_directories: 'capnp/c++/src',
+    link_with: shared_library(
+      'kj' + suffix,
+      'capnp/c++/src/kj/array.c++',
+      'capnp/c++/src/kj/cidr.c++',
+      'capnp/c++/src/kj/list.c++',
+      'capnp/c++/src/kj/common.c++',
+      'capnp/c++/src/kj/debug.c++',
+      'capnp/c++/src/kj/exception.c++',
+      'capnp/c++/src/kj/io.c++',
+      'capnp/c++/src/kj/memory.c++',
+      'capnp/c++/src/kj/mutex.c++',
+      'capnp/c++/src/kj/string.c++',
+      'capnp/c++/src/kj/source-location.c++',
+      'capnp/c++/src/kj/hash.c++',
+      'capnp/c++/src/kj/table.c++',
+      'capnp/c++/src/kj/thread.c++',
+      'capnp/c++/src/kj/main.c++',
+      'capnp/c++/src/kj/arena.c++',
+      'capnp/c++/src/kj/test-helpers.c++',
+      'capnp/c++/src/kj/units.c++',
+      'capnp/c++/src/kj/encoding.c++',
+      'capnp/c++/src/kj/refcount.c++',
+      'capnp/c++/src/kj/string-tree.c++',
+      'capnp/c++/src/kj/time.c++',
+      'capnp/c++/src/kj/filesystem.c++',
+      'capnp/c++/src/kj/filesystem-disk-unix.c++',
+      'capnp/c++/src/kj/filesystem-disk-win32.c++',
+      'capnp/c++/src/kj/parse/char.c++',
+      include_directories: 'capnp/c++/src',
+      override_options: [
+        'cpp_std=gnu++20',
+        'warning_level=0',
+      ],
+      dependencies: capnp_deps,
+      install: not native,
+      native: native,
+      install_rpath: origin_rpath,
+    ),
+  )
+
+  libcapnp = declare_dependency(
+    include_directories: 'capnp/c++/src',
+    link_with: shared_library(
+      'capnp' + suffix,
+      'capnp/c++/src/capnp/c++.capnp.c++',
+      'capnp/c++/src/capnp/blob.c++',
+      'capnp/c++/src/capnp/arena.c++',
+      'capnp/c++/src/capnp/layout.c++',
+      'capnp/c++/src/capnp/list.c++',
+      'capnp/c++/src/capnp/any.c++',
+      'capnp/c++/src/capnp/message.c++',
+      'capnp/c++/src/capnp/schema.capnp.c++',
+      'capnp/c++/src/capnp/stream.capnp.c++',
+      'capnp/c++/src/capnp/serialize.c++',
+      'capnp/c++/src/capnp/serialize-packed.c++',
+      'capnp/c++/src/capnp/schema.c++',
+      'capnp/c++/src/capnp/schema-loader.c++',
+      'capnp/c++/src/capnp/dynamic.c++',
+      'capnp/c++/src/capnp/stringify.c++',
+      include_directories: 'capnp/c++/src',
+      override_options: [
+        'cpp_std=gnu++20',
+        'warning_level=0',
+      ],
+      dependencies: libkj,
+      install: not native,
+      native: native,
+      install_rpath: origin_rpath,
+    ),
+  )
+
+  libcapnp_json = declare_dependency(
+    include_directories: 'capnp/c++/src',
+    link_with: shared_library(
+      'capnp-json' + suffix,
+      'capnp/c++/src/capnp/compat/json.c++',
+      'capnp/c++/src/capnp/compat/json.capnp.c++',
+      dependencies: [libkj, libcapnp],
+      override_options: [
+        'cpp_std=gnu++20',
+        'warning_level=0',
+      ],
+      install: not native,
+      native: native,
+      install_rpath: origin_rpath,
+    ),
+  )
+
+  libcapnpc = declare_dependency(
+    include_directories: 'capnp/c++/src',
+    link_with: shared_library(
+      'capnpc' + suffix,
+      'capnp/c++/src/capnp/compiler/type-id.c++',
+      'capnp/c++/src/capnp/compiler/error-reporter.c++',
+      'capnp/c++/src/capnp/compiler/lexer.capnp.c++',
+      'capnp/c++/src/capnp/compiler/lexer.c++',
+      'capnp/c++/src/capnp/compiler/grammar.capnp.c++',
+      'capnp/c++/src/capnp/compiler/parser.c++',
+      'capnp/c++/src/capnp/compiler/generics.c++',
+      'capnp/c++/src/capnp/compiler/node-translator.c++',
+      'capnp/c++/src/capnp/compiler/compiler.c++',
+      'capnp/c++/src/capnp/schema-parser.c++',
+      'capnp/c++/src/capnp/serialize-text.c++',
+      include_directories: 'capnp/c++/src',
+      override_options: [
+        'cpp_std=gnu++20',
+        'warning_level=0',
+      ],
+      dependencies: [libkj, libcapnp],
+      install: not native,
+      native: native,
+      install_rpath: origin_rpath,
+    ),
+  )
+
+  capnp_prog = executable(
+    'capnp' + suffix,
+    'capnp/c++/src/capnp/compiler/module-loader.c++',
+    'capnp/c++/src/capnp/compiler/capnp.c++',
+    dependencies: [libcapnpc, libcapnp_json, libcapnp, libkj],
     override_options: [
       'cpp_std=gnu++20',
       'warning_level=0',
     ],
-    install: true,
-    install_rpath: origin_rpath,
-  ),
-)
+    install: not native,
+    native: native,
+    install_rpath: bin_rpath,
+  )
+
+  capnpc_cpp_prog = executable(
+    'capnpc-c++' + suffix,
+    'capnp/c++/src/capnp/compiler/capnpc-c++.c++',
+    dependencies: [libkj, libcapnpc, libcapnp],
+    override_options: [
+      'cpp_std=gnu++20',
+      'warning_level=0',
+    ],
+    install: not native,
+    native: native,
+    install_rpath: bin_rpath,
+  )
+
+  if native or not capnp_cross
+    libkj_native = libkj
+    libcapnp_native = libcapnp
+    libcapnp_json_native = libcapnp_json
+    libcapnpc_native = libcapnpc
+    capnp_prog_native = capnp_prog
+    capnpc_cpp_prog_native = capnpc_cpp_prog
+  endif
+endforeach
 
 install_headers(
   'capnp/c++/src/kj/cidr.h',
@@ -71,35 +212,6 @@ install_headers(
   subdir: 'kj',
 )
 
-libcapnp = declare_dependency(
-  include_directories: 'capnp/c++/src',
-  link_with: shared_library('capnp',
-    'capnp/c++/src/capnp/c++.capnp.c++',
-    'capnp/c++/src/capnp/blob.c++',
-    'capnp/c++/src/capnp/arena.c++',
-    'capnp/c++/src/capnp/layout.c++',
-    'capnp/c++/src/capnp/list.c++',
-    'capnp/c++/src/capnp/any.c++',
-    'capnp/c++/src/capnp/message.c++',
-    'capnp/c++/src/capnp/schema.capnp.c++',
-    'capnp/c++/src/capnp/stream.capnp.c++',
-    'capnp/c++/src/capnp/serialize.c++',
-    'capnp/c++/src/capnp/serialize-packed.c++',
-    'capnp/c++/src/capnp/schema.c++',
-    'capnp/c++/src/capnp/schema-loader.c++',
-    'capnp/c++/src/capnp/dynamic.c++',
-    'capnp/c++/src/capnp/stringify.c++',
-    include_directories: 'capnp/c++/src',
-    override_options: [
-      'cpp_std=gnu++20',
-      'warning_level=0',
-    ],
-    dependencies: libkj,
-    install: true,
-    install_rpath: origin_rpath,
-  ),
-)
-
 install_headers(
   'capnp/c++/src/capnp/c++.capnp',
   'capnp/c++/src/capnp/c++.capnp.h',
@@ -129,71 +241,6 @@ install_headers(
   'capnp/c++/src/capnp/generated-header-support.h',
   'capnp/c++/src/capnp/raw-schema.h',
   subdir: 'capnp',
-)
-
-libcapnp_json = declare_dependency(
-  include_directories: 'capnp/c++/src',
-  link_with: shared_library('capnp-json',
-    'capnp/c++/src/capnp/compat/json.c++',
-    'capnp/c++/src/capnp/compat/json.capnp.c++',
-    dependencies: [libkj, libcapnp],
-    override_options: [
-      'cpp_std=gnu++20',
-      'warning_level=0',
-    ],
-    install: true,
-    install_rpath: origin_rpath,
-  ),
-)
-
-libcapnpc = declare_dependency(
-  include_directories: 'capnp/c++/src',
-  link_with: shared_library('capnpc',
-    'capnp/c++/src/capnp/compiler/type-id.c++',
-    'capnp/c++/src/capnp/compiler/error-reporter.c++',
-    'capnp/c++/src/capnp/compiler/lexer.capnp.c++',
-    'capnp/c++/src/capnp/compiler/lexer.c++',
-    'capnp/c++/src/capnp/compiler/grammar.capnp.c++',
-    'capnp/c++/src/capnp/compiler/parser.c++',
-    'capnp/c++/src/capnp/compiler/generics.c++',
-    'capnp/c++/src/capnp/compiler/node-translator.c++',
-    'capnp/c++/src/capnp/compiler/compiler.c++',
-    'capnp/c++/src/capnp/schema-parser.c++',
-    'capnp/c++/src/capnp/serialize-text.c++',
-    include_directories: 'capnp/c++/src',
-    override_options: [
-      'cpp_std=gnu++20',
-      'warning_level=0',
-    ],
-    dependencies: [libkj, libcapnp],
-    install: true,
-    install_rpath: origin_rpath,
-  ),
-)
-
-capnp_prog = executable(
-  'capnp',
-  'capnp/c++/src/capnp/compiler/module-loader.c++',
-  'capnp/c++/src/capnp/compiler/capnp.c++',
-  dependencies: [libcapnpc, libcapnp_json, libcapnp, libkj],
-  override_options: [
-    'cpp_std=gnu++20',
-    'warning_level=0',
-  ],
-  install: true,
-  install_rpath: bin_rpath,
-)
-
-capnpc_cpp_prog = executable(
-  'capnpc-c++',
-  'capnp/c++/src/capnp/compiler/capnpc-c++.c++',
-  dependencies: [libkj, libcapnpc, libcapnp],
-  override_options: [
-    'cpp_std=gnu++20',
-    'warning_level=0',
-  ],
-  install: true,
-  install_rpath: bin_rpath,
 )
 
 capnp_include_path = meson.current_source_dir() + '/capnp/c++/src'

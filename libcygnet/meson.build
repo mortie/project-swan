@@ -32,7 +32,7 @@ libcygnet = declare_dependency(
     ] + maybe_libtracy,
     install: true,
     install_rpath: origin_rpath,
-    include_directories: ['include/cygnet', 'src'],
+    include_directories: ['include', 'include/cygnet', 'src'],
   ),
 )
 install_subdir(

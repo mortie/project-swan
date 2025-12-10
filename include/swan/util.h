@@ -352,7 +352,11 @@ template<typename T>
 CowStr strify(const T &v)
 	requires(std::is_same_v<std::remove_cvref_t<T>, std::filesystem::path>)
 {
+#ifdef __MINGW32__
+	return v.string();
+#else
 	return std::string_view(v.c_str());
+#endif
 }
 
 template<typename T>

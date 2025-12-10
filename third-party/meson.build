@@ -98,12 +98,16 @@ libsha1 = declare_dependency(
   ),
 )
 
+libdate_args = []
+if host_machine.system() != 'windows'
+  libdate_args += '-DUSE_OS_TZDB=1'
+endif
 libdate = declare_dependency(
   include_directories: 'date/include',
   link_with: static_library('date',
     'date/src/tz.cpp',
     include_directories: 'date/include',
-    cpp_args: ['-DUSE_OS_TZDB=1'],
+    cpp_args: libdate_args,
   ),
 )
 
