@@ -62,6 +62,9 @@ portaudio_opts.set_override_option('warning_level', '0')
 portaudio_sub = cmake.subproject('portaudio', options: portaudio_opts)
 libportaudio = portaudio_sub.dependency('portaudio')
 
+libtpl_sub = cmake.subproject('tiny-process-library')
+libtpl = libtpl_sub.dependency('tiny-process-library')
+
 libffmpeg = [
   dependency('libavcodec', required: get_option('ffmpeg')),
   dependency('libavdevice', required: get_option('ffmpeg')),
@@ -118,7 +121,7 @@ executable(
   install_rpath: bin_rpath,
   dependencies: [
     libswan, libcygnet, common, libimgui, libgl, libglfw3, libbackwardcpp,
-    libcpptoml, libsha1, libscisasm, libscisavm,
+    libcpptoml, libsha1, libscisasm, libscisavm, libtpl,
   ] + maybe_libtracy,
   override_options: ['b_asneeded=false'],
   cpp_args: [
@@ -136,6 +139,8 @@ executable(
   dependencies: [
     libcpptoml,
     libsha1,
+    libtpl,
+    common,
   ],
   cpp_args: [
     '-DCLANGXX_PATH="' + get_option('clangxx_path') + '"',

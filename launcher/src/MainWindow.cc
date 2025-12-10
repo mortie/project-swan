@@ -2,18 +2,20 @@
 
 #include <imgui/imgui.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
+#include <iostream>
 #include <string_view>
 #include <thread>
 #include <swan/log.h>
 #include <cygnet/gl.h>
 #include <span>
 #include <stb/stb_image.h>
+#include <process.hpp>
 
 #include "cygnet/util.h"
 #include "worlds.h"
-#include "system.h"
 
 using namespace std::chrono_literals;
+namespace TPL = TinyProcessLib;
 
 GLTexture::GLTexture(GLTexture &&other)
 {
@@ -277,21 +279,31 @@ void MainWindow::launch(
 	running_->store(true);
 	updateWorldLastPlayedTime(worldID);
 	std::thread([running = running_, worldID = std::move(worldID), seed] {
-		std::string cmd = "./bin/swan";
-		appendArg(cmd, "--mod");
-		appendArg(cmd, "core.mod");
-		appendArg(cmd, "--world");
-		appendArg(cmd, worldPath(worldID));
-		appendArg(cmd, "--thumbnail");
-		appendArg(cmd, thumbnailPath(worldID));
+		std::vector<std::string> cmd = {
+			"./bin/swan",
+			"--mod", "core.mod",
+			"--world", worldPath(worldID),
+			"--thumbnail", thumbnailPath(worldID),
+		};
 
 		if (seed) {
-			appendArg(cmd, "--seed");
-			appendArg(cmd, std::to_string(*seed));
+			cmd.push_back("--seed");
+			cmd.push_back(std::to_string(*seed));
 		}
 
-		Swan::info << "Running command: " << cmd;
-		runCommand(cmd.c_str());
+		// TODO: This should show output in a console window
+		auto receiveOutput = [](const char *data, size_t len) {
+			std::cerr << std::string_view(data, len);
+		};
+
+		TPL::Process proc(
+			cmd, "",
+			receiveOutput, // stdout
+			receiveOutput // stderr
+		);
+
+		int status = proc.get_exit_status();
+		Swan::info << "Swan exited with exit code " << status << '.';
 
 		running->store(false);
 	}).detach();

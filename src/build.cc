@@ -1,3 +1,5 @@
+#include <swan/log.h>
+#include <swan/util.h>
 #include <algorithm>
 #include <condition_variable>
 #include <cpptoml.h>
@@ -12,12 +14,10 @@
 #include <filesystem>
 #include <stdexcept>
 #include <optional>
-#include <sys/wait.h>
-#include <spawn.h>
 #include <thread>
-#include <unistd.h>
-#include <string.h>
+#include <cstring>
 #include <sha1/sha1.hpp>
+#include <process.hpp>
 
 #ifdef __APPLE__
 #define DYNLIB_EXT ".dylib"
@@ -33,7 +33,7 @@
 #define ASAN_ENABLED
 #endif
 
-extern char **environ;
+namespace TPL = TinyProcessLib;
 
 namespace SwanBuild {
 
@@ -41,8 +41,8 @@ struct BuildInfo {
 	std::string compiler = CLANGXX_PATH;
 	std::string modPath;
 	std::string swanPath;
-	std::string cflags;
-	std::string ldflags;
+	std::vector<std::string> cflags;
+	std::vector<std::string> ldflags;
 	std::vector<std::string> includes;
 	std::vector<std::string> libs;
 	std::string buildID;
@@ -65,41 +65,18 @@ struct SourceFile {
 	bool isOutdated;
 };
 
-// Concatinate strings
-template<typename ...Args>
-static inline std::string cat(Args &&... args)
+static std::string cmdToString(const std::span<const std::string> &cmd)
 {
-	std::string_view strs[] = {std::forward<Args>(args)...};
-
-	size_t size = 0;
-
-	for (auto &s: strs) {
-		size += s.size();
-	}
-
-	std::string buf;
-	buf.resize(size);
-	size_t idx = 0;
-	for (auto &s: strs) {
-		memcpy(&buf[idx], s.data(), s.size());
-		idx += s.size();
-	}
-
-	return buf;
-}
-
-static void quoteArg(std::string &cmd, std::string_view arg)
-{
-	cmd.reserve(cmd.size() + arg.size() + 8);
-	cmd += '\'';
-	for (char ch: arg) {
-		if (ch == '\'') {
-			cmd += "'\"'\"'";
-		} else {
-			cmd += ch;
+	std::string cmdStr = "";
+	for (const auto &part: cmd) {
+		if (cmdStr != "") {
+			cmdStr += ' ';
 		}
+		cmdStr += '\'';
+		cmdStr += part;
+		cmdStr += '\'';
 	}
-	cmd += '\'';
+	return cmdStr;
 }
 
 static void quoteJSON(std::string &json, std::string_view str)
@@ -118,61 +95,58 @@ static void quoteJSON(std::string &json, std::string_view str)
 	json += '\"';
 }
 
-static void appendArg(std::string &cmd, std::string_view arg)
+std::vector<std::string> buildCommand(
+	const SourceFile &f, const BuildInfo &info)
 {
-	cmd += ' ';
-	quoteArg(cmd, arg);
-}
-
-void buildCommand(std::string &cmd, const SourceFile &f, const BuildInfo &info)
-{
+	std::vector<std::string> cmd;
 	switch (f.type) {
 	case SourceType::SOURCE:
-		quoteArg(cmd, info.compiler);
-		cmd += ' ';
-		cmd += info.cflags;
+		cmd.push_back(info.compiler);
+		for (auto &flag: info.cflags) {
+			cmd.push_back(flag);
+		}
 #ifdef ASAN_ENABLED
-		cmd += " -fsanitize=address";
+		cmd.push_back("-fsanitize=address");
 #endif
-		cmd += " -g -include-pch";
-		appendArg(cmd, cat(info.modPath, "/.swanbuild/swan.h.pch"));
+		cmd.push_back("-g");
+		cmd.push_back("-include-pch");
+		cmd.push_back(Swan::cat(info.modPath, "/.swanbuild/swan.h.pch"));
 
 		for (const auto &include: info.includes) {
-			cmd += " -I";
-			quoteArg(cmd, include);
+			cmd.push_back("-I" + include);
 		}
 
-		cmd += " -c -o";
-		quoteArg(cmd, f.outPath);
-		appendArg(cmd, f.srcPath);
-		break;
+		cmd.push_back("-c");
+		cmd.push_back("-o");
+		cmd.push_back(f.outPath);
+		cmd.push_back(f.srcPath);
+		return cmd;
 
 	case SourceType::HEADER:
-		return;
+		return cmd;
 
 	case SourceType::PROTO:
-		quoteArg(cmd, "./bin/capnp");
-		appendArg(cmd, "compile");
+		cmd.push_back("./bin/capnp");
+		cmd.push_back("compile");
 
 		for (const auto &include: info.includes) {
-			cmd += " -I";
-			quoteArg(cmd, include);
+			cmd.push_back("-I" + include);
 		}
 
-		appendArg(cmd, "--src-prefix=");
-		quoteArg(cmd, f.srcDir);
-		appendArg(cmd, "--output=./bin/capnpc-c++:");
-		quoteArg(cmd, f.outDir);
-		appendArg(cmd, f.srcPath);
-		break;
+		cmd.push_back("--src-prefix=" + f.srcDir);
+		cmd.push_back("--output=./bin/capnpc-c++:" + f.outDir);
+		cmd.push_back(f.srcPath);
+		return cmd;
 	}
+
+	abort();
 }
 
 static std::shared_ptr<cpptoml::table> parseToml(const char *path)
 {
 	std::ifstream f(path);
 	if (f.fail()) {
-		throw std::runtime_error(cat("Could not find '", path, "'"));
+		throw std::runtime_error(Swan::cat("Could not find '", path, "'"));
 	}
 
 	cpptoml::parser parser(f);
@@ -183,7 +157,7 @@ template<typename T>
 static T getToml(cpptoml::table &table, const char *key) {
 	auto obj = table.get_as<T>(key);
 	if (!obj) {
-		throw std::runtime_error(cat("Missing key '", key, "'"));
+		throw std::runtime_error(Swan::cat("Missing key '", key, "'"));
 	}
 
 	return *obj;
@@ -205,7 +179,7 @@ static bool isOutdated(const std::string &manifestPath, const BuildInfo &info)
 
 		return false;
 	} catch (std::exception &ex) {
-		std::cerr << "Failed to read build manifest: " << ex.what() << '\n';
+		Swan::warn << "Failed to read build manifest: " << ex.what() << '\n';
 		return true;
 	}
 }
@@ -216,10 +190,11 @@ static void iterateSources(
 	std::string path,
 	std::vector<SourceFile> &sources)
 {
-	for (auto const &entry: std::filesystem::directory_iterator(cat(srcRoot, path))) {
+	auto fullPath = Swan::cat(srcRoot, path);
+	for (auto const &entry: std::filesystem::directory_iterator(fullPath)) {
 		auto name = entry.path().filename().string();
 		if (entry.is_directory()) {
-			iterateSources(srcRoot, objRoot, cat(path, name, "/"), sources);
+			iterateSources(srcRoot, objRoot, Swan::cat(path, name, "/"), sources);
 			continue;
 		}
 
@@ -258,11 +233,11 @@ static void iterateSources(
 			break;
 		case SourceType::PROTO:
 			objExt = ".o";
-			outDir = cat(objRoot, sanitizedPath);
+			outDir = Swan::cat(objRoot, sanitizedPath);
 			break;
 		}
 
-		auto objPath = cat(objRoot, sanitizedPath, name, objExt);
+		auto objPath = Swan::cat(objRoot, sanitizedPath, name, objExt);
 		std::optional<std::filesystem::file_time_type> objLastWrite;
 		if (std::filesystem::exists(objPath)) {
 			objLastWrite = std::filesystem::last_write_time(objPath);
@@ -270,9 +245,9 @@ static void iterateSources(
 
 		sources.push_back({
 			.srcName = name,
-			.srcPath = cat(srcRoot, path, name),
+			.srcPath = Swan::cat(srcRoot, path, name),
 			.srcLastWrite = std::filesystem::last_write_time(entry.path()),
-			.srcDir = cat(srcRoot, path),
+			.srcDir = Swan::cat(srcRoot, path),
 			.outPath = std::move(objPath),
 			.outLastWrite = objLastWrite,
 			.outDir = std::move(outDir),
@@ -282,28 +257,36 @@ static void iterateSources(
 	}
 }
 
-static bool runCommand(const char *cmd)
+static bool runCommand(const std::vector<std::string> &cmd)
 {
-	pid_t pid = 0;
-	const char *argv[] = {"/bin/sh", "-c", cmd, nullptr};
-	if (posix_spawn(&pid, argv[0], nullptr, nullptr, (char *const *)argv, environ) < 0) {
-		std::cerr << "Failed to run command: " << cmd << '\n';
+	std::string output;
+
+	auto receiveOutput = [&](const char *data, size_t len) {
+		output += std::string_view(data, len);
+	};
+
+	TPL::Process proc(
+		cmd, "",
+		receiveOutput, // stdout
+		receiveOutput // stderr
+	);
+
+	int status = proc.get_exit_status();
+	if (status != 0) {
+		Swan::warn << "Command failed with code " << status << "!";
+		std::cerr << "$ " << cmdToString(cmd) << '\n';
+		std::cerr << output << '\n';
+
 		return false;
 	}
 
-	int stat = 0;
-	waitpid(pid, &stat, 0);
-	if (WIFEXITED(stat)) {
-		int code = WEXITSTATUS(stat);
-		if (code != 0) {
-			std::cerr << "Command exited with non-zero code " << code << ": " << cmd << '\n';
-			return false;
-		}
-
-		return true;
+	if (output != "") {
+		Swan::info << "Command exited with output:";
+		std::cerr << "$ " << cmdToString(cmd) << '\n';
+		std::cerr << output << '\n';
 	}
 
-	return false;
+	return true;
 }
 
 static bool compile(const SourceFile &f, const BuildInfo &info)
@@ -315,17 +298,15 @@ static bool compile(const SourceFile &f, const BuildInfo &info)
 		return true;
 	}
 
-	std::string cmd;
-	buildCommand(cmd, f, info);
-
-	if (!runCommand(cmd.c_str())) {
+	auto cmd = buildCommand(f, info);
+	if (!runCommand(cmd)) {
 		return false;
 	}
 
 	if (f.type == SourceType::PROTO) {
 		return compile({
-			.srcName = cat(f.srcName, ".c++"),
-			.srcPath = cat(f.outDir, "/", f.srcName, ".c++"),
+			.srcName = Swan::cat(f.srcName, ".c++"),
+			.srcPath = Swan::cat(f.outDir, "/", f.srcName, ".c++"),
 			.srcLastWrite = {},
 			.srcDir = f.outDir,
 			.outPath = f.outPath,
@@ -341,17 +322,23 @@ static bool compile(const SourceFile &f, const BuildInfo &info)
 
 static bool compilePCH(const BuildInfo &info, std::string_view pchPath)
 {
-	std::string cmd;
-	quoteArg(cmd, info.compiler);
-	cmd += ' ';
-	cmd += info.cflags;
+	std::vector<std::string> cmd;
+	cmd.push_back(info.compiler);
+	for (const auto &flag: info.cflags) {
+		cmd.push_back(flag);
+	}
+	for (const auto &flag: info.includes) {
+		cmd.push_back(Swan::cat("-I", flag));
+	}
 #ifdef ASAN_ENABLED
-	cmd += " -fsanitize=address";
+	cmd.push_back("-fsanitize=address");
 #endif
-	cmd += " -xc++-header -c -o";
-	quoteArg(cmd, pchPath);
-	appendArg(cmd, cat(info.swanPath, "/include/swan/swan.h"));
-	return runCommand(cmd.c_str());
+	cmd.push_back("-xc++-header");
+	cmd.push_back("-c");
+	cmd.push_back("-o");
+	cmd.push_back(std::string(pchPath));
+	cmd.push_back(Swan::cat(info.swanPath, "/include/swan/swan.h"));
+	return runCommand(cmd);
 }
 
 static bool link(
@@ -359,69 +346,36 @@ static bool link(
 	std::span<const SourceFile> sources,
 	const BuildInfo &info)
 {
-	std::string cmd;
-	quoteArg(cmd, info.compiler);
+	std::vector<std::string> cmd;
+	cmd.push_back(info.compiler);
 #ifdef ASAN_ENABLED
-	cmd += " -fsanitize=address";
+	cmd.push_back("-fsanitize=address");
 #endif
-	cmd += " -shared -Llib -o";
-	quoteArg(cmd, out);
-	cmd += ' ';
-	cmd += info.cflags;
+	cmd.push_back("-shared");
+	cmd.push_back("-Llib");
+	cmd.push_back("-o");
+	cmd.push_back(std::string(out));
+	for (const auto &flag: info.cflags) {
+		cmd.push_back(flag);
+	}
+
 	for (const auto &source: sources) {
 		if (source.type != SourceType::SOURCE) {
 			continue;
 		}
 
-		appendArg(cmd, source.outPath);
+		cmd.push_back(source.outPath);
 	}
-	cmd += info.ldflags;
+
+	for (const auto &flag: info.ldflags) {
+		cmd.push_back(flag);
+	}
 
 	for (const auto &lib: info.libs) {
-		appendArg(cmd, lib);
+		cmd.push_back(lib);
 	}
 
-	return runCommand(cmd.c_str());
-}
-
-std::optional<std::string> pkgconfig(const char *arg, std::vector<const char *> pkgs)
-{
-	if (pkgs.empty()) {
-		return "";
-	}
-
-	std::string cmd = "pkg-config";
-	appendArg(cmd, arg);
-	for (auto &pkg: pkgs) {
-		appendArg(cmd, pkg);
-	}
-
-	FILE *f = popen(cmd.c_str(), "r");
-	if (!f) {
-		std::cerr << "Failed to run pkg-config\n";
-		return std::nullopt;
-	}
-
-	char buf[32];
-	std::string cflags = " ";
-	while (!feof(f)) {
-		size_t n = fread(buf, 1, sizeof(buf), f);
-		cflags.append(buf, n);
-	}
-
-	if (pclose(f) != 0) {
-		std::cerr << "pkg-config failed! Command: " << cmd << '\n';
-		return std::nullopt;
-	}
-
-	for (size_t i = 0; i < cflags.size(); ++i) {
-		if (cflags[i] == '\n') {
-			cflags.resize(i);
-			break;
-		}
-	}
-
-	return cflags;
+	return runCommand(cmd);
 }
 
 static void hashFiles(std::string path, SHA1 &sha)
@@ -470,7 +424,6 @@ static void buildCompileDB(
 	os << "[\n";
 
 	std::string scratch;
-	std::string cmd;
 
 	std::string cwd;
 	quoteJSON(cwd, std::filesystem::current_path().string());
@@ -487,11 +440,10 @@ static void buildCompileDB(
 		first = false;
 
 		os << "{\n  \"directory\":" << cwd;
-		cmd.clear();
-		buildCommand(cmd, source, info);
+		auto cmd = buildCommand(source, info);
 
 		scratch.clear();
-		quoteJSON(scratch, cmd);
+		quoteJSON(scratch, cmdToString(cmd));
 		os << ",\n  \"command\":" << scratch;
 
 		scratch.clear();
@@ -512,7 +464,7 @@ static bool buildMod(const BuildInfo &info)
 {
 	auto startTime = std::chrono::steady_clock::now();
 
-	auto modToml = parseToml(cat(info.modPath, "/mod.toml").c_str());
+	auto modToml = parseToml(Swan::cat(info.modPath, "/mod.toml").c_str());
 	auto modName = getToml<std::string>(*modToml, "name");
 	auto modNamespace = getToml<std::string>(*modToml, "namespace");
 	auto modVersion = getToml<std::string>(*modToml, "version");
@@ -523,11 +475,11 @@ static bool buildMod(const BuildInfo &info)
 		return true;
 	}
 
-	auto pchPath = cat(info.modPath, "/.swanbuild/swan.h.pch");
-	auto manifestPath = cat(info.modPath, "/.swanbuild/manifest.toml");
+	auto pchPath = Swan::cat(info.modPath, "/.swanbuild/swan.h.pch");
+	auto manifestPath = Swan::cat(info.modPath, "/.swanbuild/manifest.toml");
 	bool allOutdated = isOutdated(manifestPath, info);
 
-	if (!std::filesystem::exists(cat(info.modPath, "/.swanbuild/mod.so"))) {
+	if (!std::filesystem::exists(Swan::cat(info.modPath, "/.swanbuild/mod.so"))) {
 		allOutdated = true;
 	}
 
@@ -536,16 +488,16 @@ static bool buildMod(const BuildInfo &info)
 		std::cerr << modName << " v" << modVersion << " needs to be recompiled.\n";
 	}
 
-	auto compileDBPath = cat(info.modPath, "/compile_commands.json");
+	auto compileDBPath = Swan::cat(info.modPath, "/compile_commands.json");
 
 	std::vector<SourceFile> sources;
 	iterateSources(
-		cat(info.modPath, "/proto/"),
-		cat(info.modPath, "/.swanbuild/proto/"),
+		Swan::cat(info.modPath, "/proto/"),
+		Swan::cat(info.modPath, "/.swanbuild/proto/"),
 		"", sources);
 	iterateSources(
-		cat(info.modPath, "/src/"),
-		cat(info.modPath, "/.swanbuild/obj/"),
+		Swan::cat(info.modPath, "/src/"),
+		Swan::cat(info.modPath, "/.swanbuild/obj/"),
 		"", sources);
 
 	if (!allOutdated) {
@@ -573,7 +525,7 @@ static bool buildMod(const BuildInfo &info)
 	}
 
 	std::cerr << "Compiling " << modName << " v" << modVersion << "...\n";
-	std::filesystem::create_directory(cat(info.modPath, "/.swanbuild"));
+	std::filesystem::create_directory(Swan::cat(info.modPath, "/.swanbuild"));
 
 	std::mutex mut;
 	std::unique_lock lock(mut);
@@ -648,7 +600,7 @@ static bool buildMod(const BuildInfo &info)
 	}
 
 	std::cerr << "* Linking...\n";
-	link(cat(info.modPath, "/.swanbuild/mod.so"), sources, info);
+	link(Swan::cat(info.modPath, "/.swanbuild/mod.so"), sources, info);
 
 	std::shared_ptr<cpptoml::table> newManifestRoot = cpptoml::make_table();
 	newManifestRoot->insert("swan", info.buildID);
@@ -662,49 +614,46 @@ static bool buildMod(const BuildInfo &info)
 
 	auto delta = std::chrono::duration<double>(
 		std::chrono::steady_clock::now() - startTime).count();
-	std::cout << "Compiled " << modName << " in " << delta << "s.\n";
+	Swan::info << "Compiled " << modName << " in " << delta << "s.\n";
 	return true;
 }
 
 bool build(const char *modPath, const char *swanPath)
 {
 	std::vector<std::string> includes = {
-		cat(modPath, "/proto"),
-		cat(modPath, "/src"),
-		cat(modPath, "/.swanbuild/proto"),
-		cat(swanPath, "/include"),
-		cat(swanPath, "/include/proto"),
+		Swan::cat(modPath, "/proto"),
+		Swan::cat(modPath, "/src"),
+		Swan::cat(modPath, "/.swanbuild/proto"),
+		Swan::cat(swanPath, "/include"),
+		Swan::cat(swanPath, "/include/proto"),
 	};
 
 	std::vector<std::string> libs = {
-		cat(swanPath, "/lib/libswan" DYNLIB_EXT),
-		cat(swanPath, "/lib/libcygnet" DYNLIB_EXT),
-		cat(swanPath, "/lib/libimgui" DYNLIB_EXT),
-		cat(swanPath, "/lib/libscisasm" DYNLIB_EXT),
-		cat(swanPath, "/lib/libscisavm" DYNLIB_EXT),
-		cat(swanPath, "/lib/libkj" DYNLIB_EXT),
-		cat(swanPath, "/lib/libcapnp" DYNLIB_EXT),
+		Swan::cat(swanPath, "/lib/libswan" DYNLIB_EXT),
+		Swan::cat(swanPath, "/lib/libcygnet" DYNLIB_EXT),
+		Swan::cat(swanPath, "/lib/libimgui" DYNLIB_EXT),
+		Swan::cat(swanPath, "/lib/libscisasm" DYNLIB_EXT),
+		Swan::cat(swanPath, "/lib/libscisavm" DYNLIB_EXT),
+		Swan::cat(swanPath, "/lib/libkj" DYNLIB_EXT),
+		Swan::cat(swanPath, "/lib/libcapnp" DYNLIB_EXT),
 	};
 
-	std::string cflags =
-		"-std=c++20 "
-		"-Wall "
-		"-Werror "
-		"-fPIC "
-		"-O2";
-	for (auto &include: includes) {
-		cflags += " -I";
-		quoteArg(cflags, include);
-	}
+	std::vector<std::string> cflags = {
+		"-std=c++20",
+		"-Wall",
+		"-Werror",
+		"-fPIC",
+		"-O2",
+	};
 
 	return buildMod({
 		.modPath = std::string(modPath),
 		.swanPath = std::string(swanPath),
 		.cflags = std::move(cflags),
-		.ldflags = "",
+		.ldflags = {},
 		.includes = std::move(includes),
 		.libs = std::move(libs),
-		.buildID = hashFiles(cat(swanPath, "/include")),
+		.buildID = hashFiles(Swan::cat(swanPath, "/include")),
 	});
 }
 
