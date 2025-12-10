@@ -46,11 +46,12 @@ jobs:
 
     - name: Package
       run: |
-        mv swan-build/linux/out "swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}"
+        mkdir artifacts
+        mv swan-build/linux/out "artifacts/swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}
-        path: swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}
+        path: artifacts
         include-hidden-files: true
