@@ -1,6 +1,6 @@
 #include "Chunk.h"
 
-#include <zlib.h>
+#include <zlib-ng.h>
 #include <stdint.h>
 #include <assert.h>
 #include <bit>
@@ -22,10 +22,10 @@ void Chunk::compress()
 	// if the compressed data gets too big, there's no point in compressing
 	uint8_t dest[TILE_DATA_SIZE + FLUID_DATA_SIZE];
 
-	uLongf destlen = sizeof(dest);
-	int ret = compress2(
-		(Bytef *)dest, &destlen,
-		(Bytef *)data_.get(), TILE_DATA_SIZE + FLUID_DATA_SIZE,
+	size_t destlen = sizeof(dest);
+	int ret = zng_compress2(
+		dest, &destlen,
+		data_.get(), TILE_DATA_SIZE + FLUID_DATA_SIZE,
 		Z_BEST_COMPRESSION);
 
 	if (ret == Z_OK) {
@@ -65,10 +65,10 @@ void Chunk::decompress()
 	}
 
 	auto dest = std::make_unique<uint8_t[]>(DATA_SIZE);
-	uLongf destlen = TILE_DATA_SIZE + FLUID_DATA_SIZE;
-	int ret = uncompress(
+	size_t destlen = TILE_DATA_SIZE + FLUID_DATA_SIZE;
+	int ret = zng_uncompress(
 		dest.get(), &destlen,
-		(Bytef *)data_.get(), compressedSize_);
+		data_.get(), compressedSize_);
 
 	if (ret != Z_OK) {
 		panic << "Decompressing chunk failed: " << ret;

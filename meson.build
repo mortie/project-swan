@@ -65,6 +65,13 @@ libportaudio = portaudio_sub.dependency('portaudio')
 libtpl_sub = cmake.subproject('tiny-process-library')
 libtpl = libtpl_sub.dependency('tiny-process-library')
 
+zlibng_opts = cmake.subproject_options()
+zlibng_opts.add_cmake_defines({
+  'CMAKE_INSTALL_LIBDIR': 'lib',
+})
+zlibng_sub = cmake.subproject('zlib-ng')
+libz = zlibng_sub.dependency('zlib-ng')
+
 libffmpeg = [
   dependency('libavcodec', required: get_option('ffmpeg')),
   dependency('libavdevice', required: get_option('ffmpeg')),
@@ -95,11 +102,9 @@ if host_machine.system() == 'windows'
   )
   libmingw = meson.get_compiler('cpp').find_library('mingw32')
   libdl = libmingw
-  libz = libmingw
 else
   libgl = dependency('OpenGL')
   libdl = meson.get_compiler('cpp').find_library('dl')
-  libz = meson.get_compiler('cpp').find_library('z')
 endif
 
 libthreads = dependency('threads')

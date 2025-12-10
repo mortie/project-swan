@@ -49,3 +49,6 @@
 [submodule "subprojects/tiny-process-library"]
 	path = subprojects/tiny-process-library
 	url = https://gitlab.com/eidheim/tiny-process-library.git
+[submodule "subprojects/zlib-ng"]
+	path = subprojects/zlib-ng
+	url = https://github.com/zlib-ng/zlib-ng.git
