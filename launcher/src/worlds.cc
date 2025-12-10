@@ -38,6 +38,9 @@ static std::filesystem::path dataDir()
 
 		path = fs::path(home) / ".local" / "share" / identifier;
 	}
+#elif defined(__MINGW32__)
+	// TODO
+	path = ".";
 #else
 #error "Unsupported platform"
 #endif
@@ -64,10 +67,10 @@ std::vector<World> listWorlds()
 	std::vector<World> worlds;
 
 	for (auto &ent: std::filesystem::directory_iterator(worldsDir)) {
-		std::string id = ent.path().filename();
+		std::string id = ent.path().filename().string();
 		auto tomlPath = worldsDir / id / "world.toml";
 
-		auto table = cpptoml::parse_file(tomlPath);
+		auto table = cpptoml::parse_file(tomlPath.string());
 		auto name = table->get_as<std::string>("name");
 		auto creationTime = table->get_as<std::string>("creation-time");
 		auto lastPlayedTime = table->get_as<std::string>("last-played-time");
@@ -137,12 +140,12 @@ std::string makeWorld(std::string name)
 
 std::string worldPath(std::string_view id)
 {
-	return worldsDir / id / "world.swan";
+	return (worldsDir / id / "world.swan").string();
 }
 
 std::string thumbnailPath(std::string_view id)
 {
-	return worldsDir / id / "thumb.png";
+	return (worldsDir / id / "thumb.png").string();
 }
 
 bool worldExists(std::string_view id)
@@ -158,7 +161,7 @@ void deleteWorld(std::string_view id)
 void renameWorld(std::string_view id, std::string newName)
 {
 	auto tomlPath = worldsDir / id / "world.toml";
-	auto table = cpptoml::parse_file(tomlPath);
+	auto table = cpptoml::parse_file(tomlPath.string());
 	table->insert("name", std::move(newName));
 	std::fstream f(tomlPath, std::ios_base::out);
 	f << *table;
@@ -176,7 +179,7 @@ void updateWorldLastPlayedTime(std::string_view id)
 	auto nowStr = date::format({}, "%F %T%z", nowZoned);
 
 	auto tomlPath = worldsDir / id / "world.toml";
-	auto table = cpptoml::parse_file(tomlPath);
+	auto table = cpptoml::parse_file(tomlPath.string());
 	table->insert("last-played-time", nowStr);
 	std::fstream f(tomlPath, std::ios_base::out);
 	f << *table;
