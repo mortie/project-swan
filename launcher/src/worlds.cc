@@ -1,6 +1,5 @@
 #include "worlds.h"
 #include "swan/log.h"
-#include "swan/util.h"
 
 #include <cstdlib>
 #include <filesystem>
@@ -13,19 +12,32 @@
 #include <sstream>
 #include <stdexcept>
 
+static constexpr const char *identifier = "coffee.mort.Swan";
+
 static std::filesystem::path dataDir()
 {
+	namespace fs = std::filesystem;
+
+	fs::path path;
+#if defined(__APPLE__)
 	const char *home = getenv("HOME");
-	if (!home) {
+	if (!home || home[0] == '\0') {
 		throw std::runtime_error("Home dir not set");
 	}
 
-	std::string path;
-#if defined(__APPLE__)
-	path = Swan::cat(
-		home, "/Library/Application Support/coffee.mort.Swan");
+	path = fs::path(home) / "Library" / "Application Support" / identifier;
 #elif defined(__linux__)
-	path = Swan::cat(home, "/.local/share/coffee.mort.Swan");
+	const char *data = getenv("XDG_DATA_DIR");
+	if (data && data[0]) {
+		path = fs::path(data) / identifier;
+	} else {
+		const char *home = getenv("HOME");
+		if (!home) {
+			throw std::runtime_error("Home dir not set");
+		}
+
+		path = fs::path(home) / ".local" / "share" / identifier;
+	}
 #else
 #error "Unsupported platform"
 #endif

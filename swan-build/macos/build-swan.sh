@@ -131,3 +131,7 @@ xattr -d -r com.apple.quarantine <path to Swan.app>
 You can drag and drop Swan.app into the Terminal window
 instead of manually typing out its file path.
 EOF
+
+echo
+echo "Creating swan-version.txt..."
+echo "$SWAN_VERSION" >"$APP/Contents/swan-version.txt"

@@ -1,22 +1,63 @@
 #!/bin/sh
 set -e
 
-SRCDIR="$(dirname "$0")"
-DESTDIR="$HOME/.local/opt/coffee.mort.Swan"
+SRCDIR="$(realpath "$(dirname "$0")")"
 
-echo "Installing to '$DESTDIR'. Is this OK? [y/N]"
+DATA_HOME="${XDG_DATA_HOME:-"$HOME/.local/share"}"
+DESTDIR="$DATA_HOME/coffee.mort.Swan/swan"
+SWAN_VERSION="$(cat "$SRCDIR/swan-version.txt")"
+
+echo
+echo "#"
+echo "# SWAN Installer $SWAN_VERSION"
+echo "#"
+
+echo
+echo "Enter install path [$DESTDIR]:"
+printf '> '
 read -r line
-if [ "$line" != y ] && [ "$line" != Y ]; then
-	echo "Aborting install."
+if [ -n "$line" ]; then
+	echo 
+	DESTDIR="$line"
+fi
+
+if [ "$SRCDIR" = "$DESTDIR" ]; then
+	echo
+	echo "Source and destination folders are the same."
+	echo "Refusing to install."
+	printf '> '
+	read -r line
+	exit 1
+fi
+
+if [ -e "$DESTDIR/worlds" ]; then
+	echo
+	echo "$DESTDIR contains a 'worlds' folder."
+	echo "Refusing to overwrite."
+	printf '> '
 	read -r line
 	exit 1
 fi
 
 if [ -e "$DESTDIR" ]; then
-	echo "There's an existing install. Overwrite? (Save games will be preserved)"
-	read -r line
-	if [ "$line" != y ] && [ "$line" != Y ]; then
-		echo "Aborting install."
+	if [ -e "$DESTDIR/swan-version.txt" ]; then
+		echo
+		echo "Existing SWAN install detected."
+		echo "Old version: $(cat "$DESTDIR/swan-version.txt")"
+		echo "New version: $SWAN_VERSION"
+		echo "Overwrite? [y/N]"
+		read -r line
+		if [ "$line" != y ] && [ "$line" != Y ]; then
+			echo "Aborting install."
+			printf '> '
+			read -r line
+			exit 1
+		fi
+	else
+		echo
+		echo "$DESTDIR already exists and doesn't have a Swan install."
+		echo "Refusing to overwrite."
+		printf '> '
 		read -r line
 		exit 1
 	fi
@@ -40,5 +81,6 @@ Icon=$DESTDIR/assets/icon.png
 Categories=Game
 END
 
-echo "Done! Press any key to continue."
+echo "Done! Press enter to continue."
+printf '> '
 read -r line

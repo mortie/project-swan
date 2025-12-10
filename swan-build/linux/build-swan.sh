@@ -10,8 +10,10 @@ OUT="$TOP/out"
 rm -rf "$OUT"
 mkdir -p "$OUT"
 
-# It's okay if $1 is empty, meson will use 'git describe'
 SWAN_VERSION="$1"
+if [ -z "$SWAN_VERSION" ]; then
+	SWAN_VERSION="$(git describe --tags --always --dirty)+git"
+fi
 
 export CC="$PFX/bin/clang"
 export CXX="$PFX/bin/clang++"
@@ -88,3 +90,7 @@ echo
 echo "Creating install script..."
 cp "$TOP/install.sh" "$OUT/install.sh"
 chmod +x "$OUT/install.sh"
+
+echo
+echo "Creating swan-version.txt..."
+echo "$SWAN_VERSION" >"$OUT/swan-version.txt"
