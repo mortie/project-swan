@@ -11,6 +11,15 @@ libfmt = declare_dependency(
   ),
 )
 
+libglad = declare_dependency(
+  include_directories: 'glad/include',
+  link_with: shared_library(
+    'glad',
+    'glad/src/glad.cc',
+    include_directories: 'glad/include',
+  ),
+)
+
 libimgui = declare_dependency(
   include_directories: ['.', 'imgui'],
   link_with: shared_library('imgui',

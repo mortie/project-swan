@@ -93,17 +93,9 @@ endforeach
 libcpptoml = subproject('cpptoml-ng').get_variable('cpptoml_dep')
 libdw = dependency('libdw', required: false)
 
-message('Compiling for host system ' + host_machine.system())
 if host_machine.system() == 'windows'
-  libgl = declare_dependency(
-    include_directories: 'third-party/OpenGL-Registry',
-    dependencies: meson.get_compiler('cpp').find_library('opengl32'),
-    compile_args: '-DGL_GLEXT_PROTOTYPES',
-  )
-  libmingw = meson.get_compiler('cpp').find_library('mingw32')
-  libdl = libmingw
+  libdl = meson.get_compiler('cpp').find_library('mingw32')
 else
-  libgl = dependency('OpenGL')
   libdl = meson.get_compiler('cpp').find_library('dl')
 endif
 
@@ -116,6 +108,12 @@ libscisasm = scisa_sub.get_variable('libscisasm')
 libscisavm = scisa_sub.get_variable('libscisavm')
 
 subdir('third-party')
+
+if host_machine.system() == 'windows'
+  libgl = libglad
+else
+  libgl = dependency('OpenGL')
+endif
 
 common = declare_dependency(
   include_directories: 'include',

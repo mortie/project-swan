@@ -20,6 +20,11 @@
 #include "glsl/Text.h"
 #include "glsl/Tile.h"
 
+// Windows :(
+#ifdef DrawText
+#undef DrawText
+#endif
+
 namespace Cygnet {
 
 struct RendererState {
@@ -484,7 +489,6 @@ bool Renderer::assertUIViewStackEmpty()
 	return true;
 }
 
-/*
 Renderer::TextSegment Renderer::prepareUIText(DrawText drawText, Anchor anchor)
 {
 	size_t start = textUIBuffer_.size();
@@ -503,7 +507,6 @@ Renderer::TextSegment Renderer::prepareUIText(DrawText drawText, Anchor anchor)
 		.end = textUIBuffer_.size(),
 	};
 }
-*/
 
 void Renderer::uploadFluidAtlas(const void *data)
 {

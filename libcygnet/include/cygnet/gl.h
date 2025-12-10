@@ -6,7 +6,7 @@
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/gl3.h>
 #elif defined(__MINGW32__)
-#include <glcorearb.h>
+#include <glad/glad.h>
 #elif defined(__linux__)
 #include <GLES3/gl3.h>
 #else
