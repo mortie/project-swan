@@ -212,6 +212,13 @@ int main(int argc, char **argv)
 	}
 
 	glfwMakeContextCurrent(window);
+#ifdef __MINGW32__
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		panic << "GLAD failed to load GL!";
+		return 1;
+	}
+#endif
+
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 	Cygnet::glCheck();
