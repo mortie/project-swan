@@ -30,7 +30,7 @@ mkdir -p build
 rm -rf build/swan
 "$PFX/meson/meson.py" setup \
 	-Dprefix="$OUT" \
-	-Dclangxx_path="./bin/clang++" \
+	-Dswan_cxx_path="./bin/clang++" \
 	-Dbuildtype=release \
 	-Ddebug=true \
 	-Dswan_version="$SWAN_VERSION" \

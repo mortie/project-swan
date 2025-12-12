@@ -17,6 +17,8 @@ libglad = declare_dependency(
     'glad',
     'glad/src/glad.cc',
     include_directories: 'glad/include',
+    install: true,
+    install_rpath: origin_rpath,
   ),
 )
 

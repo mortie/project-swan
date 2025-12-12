@@ -3,6 +3,9 @@
 #include <stdexcept>
 
 #if defined(__MINGW32__)
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+#include <windows.h>
 #else
 #include <unistd.h>
 #include <dlfcn.h>
@@ -15,19 +18,26 @@ namespace OS {
 #if defined(__MINGW32__)
 Dynlib::Dynlib(const std::string &path)
 {
-	// TODO
-	handle_ = nullptr;
+	HINSTANCE inst = LoadLibrary(cat(path, ".dll").c_str());
+	if (!inst) {
+		auto err = cat("Loading '", path, "' failed: ", GetLastError());
+		throw std::runtime_error(err);
+	}
+
+	handle_ = (void *)inst;
 }
 
 Dynlib::~Dynlib()
 {
-	// TODO
+	if (handle_) {
+		FreeLibrary((HINSTANCE)handle_);
+	}
 }
 
 void *Dynlib::getVoid(const std::string &name)
 {
-	// TODO
-	return nullptr;
+	FARPROC fp = GetProcAddress((HINSTANCE)handle_, name.c_str());
+	return (void *)fp;
 }
 #else
 Dynlib::Dynlib(const std::string &path)

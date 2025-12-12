@@ -19,7 +19,9 @@
 #include <sha1/sha1.hpp>
 #include <process.hpp>
 
-#ifdef __APPLE__
+#ifdef SWAN_DYNLIB_EXT
+#define DYNLIB_EXT SWAN_DYNLIB_EXT
+#elif defined(__APPLE__)
 #define DYNLIB_EXT ".dylib"
 #else
 #define DYNLIB_EXT ".so"
@@ -38,7 +40,7 @@ namespace TPL = TinyProcessLib;
 namespace SwanBuild {
 
 struct BuildInfo {
-	std::string compiler = CLANGXX_PATH;
+	std::string compiler = SWAN_CXX_PATH;
 	std::string modPath;
 	std::string swanPath;
 	std::vector<std::string> cflags;
@@ -108,9 +110,11 @@ std::vector<std::string> buildCommand(
 #ifdef ASAN_ENABLED
 		cmd.push_back("-fsanitize=address");
 #endif
+#if SWAN_CXX_IS_CLANG
 		cmd.push_back("-g");
 		cmd.push_back("-include-pch");
 		cmd.push_back(Swan::cat(info.modPath, "/.swanbuild/swan.h.pch"));
+#endif
 
 		for (const auto &include: info.includes) {
 			cmd.push_back("-I" + include);
@@ -322,6 +326,7 @@ static bool compile(const SourceFile &f, const BuildInfo &info)
 
 static bool compilePCH(const BuildInfo &info, std::string_view pchPath)
 {
+#if SWAN_CXX_IS_CLANG
 	std::vector<std::string> cmd;
 	cmd.push_back(info.compiler);
 	for (const auto &flag: info.cflags) {
@@ -339,6 +344,10 @@ static bool compilePCH(const BuildInfo &info, std::string_view pchPath)
 	cmd.push_back(std::string(pchPath));
 	cmd.push_back(Swan::cat(info.swanPath, "/include/swan/swan.h"));
 	return runCommand(cmd);
+#else
+	std::fstream(std::string(pchPath), std::fstream::out).close();
+	return true;
+#endif
 }
 
 static bool link(
@@ -567,6 +576,7 @@ static bool buildMod(const BuildInfo &info)
 		// for compiling source files.
 		if (f.type == SourceType::HEADER || f.type == SourceType::PROTO) {
 			if (!compile(f, info)) {
+				failed = true;
 				break;
 			}
 			continue;

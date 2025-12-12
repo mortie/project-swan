@@ -65,10 +65,6 @@ libportaudio = portaudio_sub.dependency('portaudio')
 libtpl_sub = cmake.subproject('tiny-process-library')
 libtpl = libtpl_sub.dependency('tiny-process-library')
 
-zlibng_opts = cmake.subproject_options()
-zlibng_opts.add_cmake_defines({
-  'CMAKE_INSTALL_LIBDIR': 'lib',
-})
 zlibng_sub = cmake.subproject('zlib-ng')
 libz = zlibng_sub.dependency('zlib-ng')
 
@@ -127,6 +123,18 @@ install_subdir(
   install_dir: 'include',
 )
 
+swanbuild_args = [
+  '-DSWAN_CXX_PATH="' + get_option('swan_cxx_path') + '"'
+]
+if get_option('swan_cxx_is_clang')
+  swanbuild_args += '-DSWAN_CXX_IS_CLANG=1'
+else
+  swanbuild_args += '-DSWAN_CXX_IS_CLANG=0'
+endif
+if get_option('swan_dynlib_ext') != ''
+  swanbuild_args += '-DSWAN_DYNLIB_EXT="' + get_option('swan_dynlib_ext') + '"'
+endif
+
 executable(
   'swan',
   'src/build.cc',
@@ -139,8 +147,7 @@ executable(
     libcpptoml, libsha1, libscisasm, libscisavm, libtpl,
   ] + maybe_libtracy,
   override_options: ['b_asneeded=false'],
-  cpp_args: [
-    '-DCLANGXX_PATH="' + get_option('clangxx_path') + '"',
+  cpp_args: swanbuild_args + [
     '-DSWAN_VERSION="' + swan_version + '"',
   ],
 )
@@ -157,9 +164,7 @@ executable(
     libtpl,
     common,
   ],
-  cpp_args: [
-    '-DCLANGXX_PATH="' + get_option('clangxx_path') + '"',
-  ],
+  cpp_args: swanbuild_args,
 )
 
 install_subdir('assets', install_dir: '')

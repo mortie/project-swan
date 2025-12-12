@@ -14,9 +14,9 @@ Prefab::Prefab(Swan::World &world, Map map, Data data)
 	width = 0;
 	height = data.size();
 	for (const char *row: data) {
-		size_t len = strlen(row);
+		int len = int(strlen(row));
 		if (len > width) {
-			width = int(len);
+			width = len;
 		}
 	}
 
