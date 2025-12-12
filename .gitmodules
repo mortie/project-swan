@@ -52,3 +52,6 @@
 [submodule "subprojects/zlib-ng"]
 	path = subprojects/zlib-ng
 	url = https://github.com/zlib-ng/zlib-ng.git
+[submodule "meson"]
+	path = meson
+	url = https://github.com/mesonbuild/meson.git

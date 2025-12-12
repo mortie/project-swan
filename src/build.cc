@@ -19,7 +19,7 @@
 #include <sha1/sha1.hpp>
 #include <process.hpp>
 
-#ifdef SWAN_CXX_IS_MINGW
+#if SWAN_CXX_IS_MINGW
 #define DYNLIB_EXT ".dll"
 #elif defined(__APPLE__)
 #define DYNLIB_EXT ".dylib"
@@ -35,7 +35,7 @@
 #define ASAN_ENABLED
 #endif
 
-#ifdef SWAN_CXX_IS_MINGW
+#if SWAN_CXX_IS_MINGW
 #define LINKLIB_EXT ".dll.a"
 #else
 #define LINKLIB_EXT DYNLIB_EXT
@@ -390,7 +390,7 @@ static bool link(
 		cmd.push_back(lib);
 	}
 
-#ifdef SWAN_CXX_IS_MINGW
+#if SWAN_CXX_IS_MINGW
 	cmd.push_back("-static-libstdc++");
 	cmd.push_back("-Wl,--allow-multiple-definition");
 #endif

@@ -27,10 +27,6 @@ jobs:
         path: swan-build/macos/pfx
         key: ${{matrix.os}}-build-env-v1
 
-    - name: Create build env
-      if: steps.cache-build-env.outputs.cache-hit != 'true'
-      run: ./swan-build/macos/create-build-env.sh
-
     - name: 'Compile Project: SWAN'
       run: ./swan-build/macos/build-swan.sh "${{steps.ghd.outputs.describe}}"
 

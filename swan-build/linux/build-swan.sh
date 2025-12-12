@@ -28,7 +28,7 @@ echo
 echo "Building SWAN..."
 mkdir -p build
 rm -rf build/swan
-"$PFX/meson/meson.py" setup \
+"$TOP/../../meson/meson.py" setup \
 	-Dprefix="$OUT" \
 	-Dswan_cxx_path="./bin/clang++" \
 	-Dbuildtype=release \

@@ -15,7 +15,7 @@ mkdir -p "$OUT"
 echo
 echo "Building native swan-build..."
 mkdir -p build
-meson setup \
+"$TOP/../../meson/meson.py" setup \
 	-Dswan_cxx_path="x86_64-w64-mingw32-g++" \
 	-Dswan_cxx_is_clang=false \
 	-Dswan_cxx_is_mingw=true \

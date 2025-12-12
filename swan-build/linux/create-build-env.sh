@@ -30,15 +30,6 @@ get_source sources/cmake https://github.com/Kitware/CMake.git \
 get_source sources/llvm https://github.com/llvm/llvm-project.git \
 	222fc11f2b8f25f6a0f4976272ef1bb7bf49521d
 
-# We use our own recent Clang version,
-# and Meson on Ubuntu 22.04 and older doesn't work with that
-echo
-echo "Getting meson..."
-get_source "$PFX/meson" https://github.com/mesonbuild/meson.git \
-	415917b7c0d4759f73d0fe6564cbdda7fbf1eb9a
-# We don't need to keep around git history
-rm -rf "$PFX/meson/.git"
-
 # LLVM needs a fairly modern CMake,
 # we need to compile on fairly old Linux distros
 # to link against an old enough glibc ABI :(

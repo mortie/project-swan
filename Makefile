@@ -1,5 +1,5 @@
 OUT ?= ./build
-MESON ?= meson
+MESON ?= ./meson/meson.py
 
 .PHONY: all
 all: build
