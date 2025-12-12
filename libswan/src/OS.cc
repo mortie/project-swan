@@ -18,9 +18,11 @@ namespace OS {
 #if defined(__MINGW32__)
 Dynlib::Dynlib(const std::string &path)
 {
-	HINSTANCE inst = LoadLibrary(cat(path, ".dll").c_str());
+	auto dllPath = cat(path, ".dll");
+	HINSTANCE inst = LoadLibrary(dllPath.c_str());
 	if (!inst) {
-		auto err = cat("Loading '", path, "' failed: ", GetLastError());
+		auto err = cat(
+			"Loading '", dllPath, "' failed: ", GetLastError());
 		throw std::runtime_error(err);
 	}
 
@@ -40,6 +42,11 @@ void *Dynlib::getVoid(const std::string &name)
 	return (void *)fp;
 }
 #else
+#ifdef __APPLE__
+#define DYNLIB_EXT ".dylib"
+#else
+#define DYNLIB_EXT ".so"
+#endif
 Dynlib::Dynlib(const std::string &path)
 {
 	handle_ = dlopen(cat(path, ".so").c_str(), RTLD_LAZY);

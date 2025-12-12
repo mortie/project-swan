@@ -1,6 +1,6 @@
 option('trace', type: 'boolean', value: false, description: 'Enable profiling with tracy')
 option('swan_cxx_path', type: 'string', value: 'clang++')
 option('swan_cxx_is_clang', type: 'boolean', value: true)
-option('swan_dynlib_ext', type: 'string', value: '')
+option('swan_cxx_is_mingw', type: 'boolean', value: false)
 option('swan_version', type: 'string', value: '')
 option('ffmpeg', type: 'feature', value: 'auto')

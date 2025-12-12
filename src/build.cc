@@ -19,8 +19,8 @@
 #include <sha1/sha1.hpp>
 #include <process.hpp>
 
-#ifdef SWAN_DYNLIB_EXT
-#define DYNLIB_EXT SWAN_DYNLIB_EXT
+#ifdef SWAN_CXX_IS_MINGW
+#define DYNLIB_EXT ".dll"
 #elif defined(__APPLE__)
 #define DYNLIB_EXT ".dylib"
 #else
@@ -33,6 +33,12 @@
 #endif
 #elif defined(__SANITIZE_ADDRESS__)
 #define ASAN_ENABLED
+#endif
+
+#ifdef SWAN_CXX_IS_MINGW
+#define LINKLIB_EXT ".dll.a"
+#else
+#define LINKLIB_EXT DYNLIB_EXT
 #endif
 
 namespace TPL = TinyProcessLib;
@@ -384,6 +390,11 @@ static bool link(
 		cmd.push_back(lib);
 	}
 
+#ifdef SWAN_CXX_IS_MINGW
+	cmd.push_back("-static-libstdc++");
+	cmd.push_back("-Wl,--allow-multiple-definition");
+#endif
+
 	return runCommand(cmd);
 }
 
@@ -610,7 +621,12 @@ static bool buildMod(const BuildInfo &info)
 	}
 
 	std::cerr << "* Linking...\n";
-	link(Swan::cat(info.modPath, "/.swanbuild/mod.so"), sources, info);
+
+	auto dynlibPath = Swan::cat(
+		info.modPath, "/.swanbuild/mod" DYNLIB_EXT);
+	if (!link(dynlibPath, sources, info)) {
+		return false;
+	}
 
 	std::shared_ptr<cpptoml::table> newManifestRoot = cpptoml::make_table();
 	newManifestRoot->insert("swan", info.buildID);
@@ -639,13 +655,13 @@ bool build(const char *modPath, const char *swanPath)
 	};
 
 	std::vector<std::string> libs = {
-		Swan::cat(swanPath, "/lib/libswan" DYNLIB_EXT),
-		Swan::cat(swanPath, "/lib/libcygnet" DYNLIB_EXT),
-		Swan::cat(swanPath, "/lib/libimgui" DYNLIB_EXT),
-		Swan::cat(swanPath, "/lib/libscisasm" DYNLIB_EXT),
-		Swan::cat(swanPath, "/lib/libscisavm" DYNLIB_EXT),
-		Swan::cat(swanPath, "/lib/libkj" DYNLIB_EXT),
-		Swan::cat(swanPath, "/lib/libcapnp" DYNLIB_EXT),
+		Swan::cat(swanPath, "/lib/libswan" LINKLIB_EXT),
+		Swan::cat(swanPath, "/lib/libcygnet" LINKLIB_EXT),
+		Swan::cat(swanPath, "/lib/libimgui" LINKLIB_EXT),
+		Swan::cat(swanPath, "/lib/libscisasm" LINKLIB_EXT),
+		Swan::cat(swanPath, "/lib/libscisavm" LINKLIB_EXT),
+		Swan::cat(swanPath, "/lib/libkj" LINKLIB_EXT),
+		Swan::cat(swanPath, "/lib/libcapnp" LINKLIB_EXT),
 	};
 
 	std::vector<std::string> cflags = {
