@@ -19,7 +19,7 @@ fi
 echo "Building SWAN..."
 mkdir -p build
 rm -rf build/swan
-"$TOP/../../meson/meson.py" setup \
+../../meson/meson.py setup \
 	-Dprefix="$APP/Contents" \
 	-Dbuildtype=release \
 	-Ddebug=true \
