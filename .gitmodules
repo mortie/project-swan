@@ -39,7 +39,7 @@
 	url = https://github.com/glfw/glfw.git
 [submodule "subprojects/portaudio"]
 	path = subprojects/portaudio
-	url = https://github.com/PortAudio/portaudio.git
+	url = https://github.com/mortie/portaudio.git
 [submodule "subprojects/capnproto"]
 	path = third-party/capnp/capnp
 	url = https://github.com/capnproto/capnproto.git
