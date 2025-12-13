@@ -66,7 +66,9 @@ libportaudio = portaudio_sub.dependency('portaudio')
 libtpl_sub = cmake.subproject('tiny-process-library')
 libtpl = libtpl_sub.dependency('tiny-process-library')
 
-zlibng_sub = cmake.subproject('zlib-ng')
+zlibng_opts = cmake.subproject_options()
+zlibng_opts.set_override_option('warning_level', '1')
+zlibng_sub = cmake.subproject('zlib-ng', options: zlibng_opts)
 libz = zlibng_sub.dependency('zlib-ng')
 
 libffmpeg = [
