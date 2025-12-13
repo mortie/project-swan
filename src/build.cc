@@ -499,7 +499,9 @@ static bool buildMod(const BuildInfo &info)
 	auto manifestPath = Swan::cat(info.modPath, "/.swanbuild/manifest.toml");
 	bool allOutdated = isOutdated(manifestPath, info);
 
-	if (!std::filesystem::exists(Swan::cat(info.modPath, "/.swanbuild/mod.so"))) {
+	bool hasModLib = std::filesystem::exists(
+		Swan::cat(info.modPath, "/.swanbuild/mod" DYNLIB_EXT));
+	if (!hasModLib) {
 		allOutdated = true;
 	}
 
