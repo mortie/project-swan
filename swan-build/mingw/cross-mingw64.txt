@@ -22,6 +22,4 @@ CMAKE_INSTALL_LIBDIR = 'lib'
 CMAKE_INSTALL_BINDIR = 'bin'
 
 [built-in options]
-cpp_link_args = [
-	'-static-libstdc++',
-	'-Wl,--allow-multiple-definition']
+cpp_link_args = ['-static', '-Wl,--allow-multiple-definition']

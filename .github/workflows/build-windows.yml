@@ -27,17 +27,22 @@ jobs:
           libwayland-dev cmake mingw-w64
         version: 1.0
 
+    - name: Select MinGW flavor
+      run: |
+        sudo ln -s x86_64-w64-mingw32-gcc-posix /usr/bin/x86_64-w64-mingw32-gcc
+        sudo ln -s x86_64-w64-mingw32-g++-posix /usr/bin/x86_64-w64-mingw32-g++
+
     - name: 'Compile Project: SWAN'
       run: ./swan-build/mingw/build-swan.sh "${{steps.ghd.outputs.describe}}"
 
     - name: Package
       run: |
         mkdir artifacts
-        mv swan-build/mingw/out "artifacts/swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}"
+        mv swan-build/mingw/out "artifacts/swan_Windows-${{runner.arch}}_${{steps.ghd.outputs.describe}}"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}
+        name: swan_Windows-${{runner.arch}}_${{steps.ghd.outputs.describe}}
         path: artifacts
         include-hidden-files: true

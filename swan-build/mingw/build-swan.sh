@@ -70,15 +70,6 @@ for lib in libglfw.dll libzlib_ng.dll; do
 done
 
 echo
-echo "Grabbing mingw libraries..."
-for lib in \
-	libgcc_s_seh-1.dll \
-	libwinpthread-1.dll
-do
-	cp "$MINGW_SYSROOT/mingw/bin/$lib" "$OUT/bin"
-done
-
-echo
 echo "Compiling core mod..."
 cd "$OUT"
 "$TOP/build/native/swan-build" core.mod .
