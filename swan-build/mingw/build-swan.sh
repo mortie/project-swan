@@ -62,12 +62,8 @@ chmod +x "$OUT/bin/capnpc-c++"
 
 echo
 echo "Fixing up libraries..."
-for lib in libglfw.dll libzlib_ng.dll; do
-	# This seems to be literally nondeterministic??????
-	if [ -e "$OUT/lib/$lib" ]; then
-		mv "$OUT/lib/$lib" "$OUT/bin"
-	fi
-done
+# Some DLLs end up in lib/ for some reason?
+mv "$OUT/lib"/*.dll "$OUT"/bin 2>/dev/null || true
 
 echo
 echo "Compiling core mod..."
@@ -76,6 +72,12 @@ cd "$OUT"
 echo >>"core.mod/mod.toml" "locked = true"
 rm -f bin/capnp bin/capnpc-c++
 cd "$TOP"
+
+echo
+echo "Creating launch script..."
+cat >"$OUT/launch.bat" <<'EOF'
+bin\swan-launcher
+EOF
 
 echo
 echo "Done!"
