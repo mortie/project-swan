@@ -1,0 +1,27 @@
+[host_machine]
+system = 'windows'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
+
+[binaries]
+c = 'x86_64-w64-mingw32-gcc'
+cpp = 'x86_64-w64-mingw32-g++'
+ar = 'x86_64-w64-mingw32-ar'
+ld = 'x86_64-w64-mingw32-ld'
+objcopy = 'x86_64-w64-mingw32-objcopy'
+strip = 'x86_64-w64-mingw32-strip'
+pkg-config = 'x86_64-w64-mingw32-pkg-config'
+windres = 'x86_64-w64-mingw32-windres'
+
+[cmake]
+CMAKE_C_COMPILER = 'x86_64-w64-mingw32-gcc'
+CMAKE_CXX_COMPILER = 'x86_64-w64-mingw32-g++'
+CMAKE_SYSTEM_NAME = 'Windows'
+CMAKE_INSTALL_LIBDIR = 'lib'
+CMAKE_INSTALL_BINDIR = 'bin'
+
+[built-in options]
+cpp_link_args = [
+	'-static-libstdc++',
+	'-Wl,--allow-multiple-definition']

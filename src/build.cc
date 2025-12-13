@@ -19,7 +19,9 @@
 #include <sha1/sha1.hpp>
 #include <process.hpp>
 
-#ifdef __APPLE__
+#if SWAN_CXX_IS_MINGW
+#define DYNLIB_EXT ".dll"
+#elif defined(__APPLE__)
 #define DYNLIB_EXT ".dylib"
 #else
 #define DYNLIB_EXT ".so"
@@ -33,12 +35,18 @@
 #define ASAN_ENABLED
 #endif
 
+#if SWAN_CXX_IS_MINGW
+#define LINKLIB_EXT ".dll.a"
+#else
+#define LINKLIB_EXT DYNLIB_EXT
+#endif
+
 namespace TPL = TinyProcessLib;
 
 namespace SwanBuild {
 
 struct BuildInfo {
-	std::string compiler = CLANGXX_PATH;
+	std::string compiler = SWAN_CXX_PATH;
 	std::string modPath;
 	std::string swanPath;
 	std::vector<std::string> cflags;
@@ -108,9 +116,11 @@ std::vector<std::string> buildCommand(
 #ifdef ASAN_ENABLED
 		cmd.push_back("-fsanitize=address");
 #endif
+#if SWAN_CXX_IS_CLANG
 		cmd.push_back("-g");
 		cmd.push_back("-include-pch");
 		cmd.push_back(Swan::cat(info.modPath, "/.swanbuild/swan.h.pch"));
+#endif
 
 		for (const auto &include: info.includes) {
 			cmd.push_back("-I" + include);
@@ -322,6 +332,7 @@ static bool compile(const SourceFile &f, const BuildInfo &info)
 
 static bool compilePCH(const BuildInfo &info, std::string_view pchPath)
 {
+#if SWAN_CXX_IS_CLANG
 	std::vector<std::string> cmd;
 	cmd.push_back(info.compiler);
 	for (const auto &flag: info.cflags) {
@@ -339,6 +350,10 @@ static bool compilePCH(const BuildInfo &info, std::string_view pchPath)
 	cmd.push_back(std::string(pchPath));
 	cmd.push_back(Swan::cat(info.swanPath, "/include/swan/swan.h"));
 	return runCommand(cmd);
+#else
+	std::fstream(std::string(pchPath), std::fstream::out).close();
+	return true;
+#endif
 }
 
 static bool link(
@@ -374,6 +389,11 @@ static bool link(
 	for (const auto &lib: info.libs) {
 		cmd.push_back(lib);
 	}
+
+#if SWAN_CXX_IS_MINGW
+	cmd.push_back("-static-libstdc++");
+	cmd.push_back("-Wl,--allow-multiple-definition");
+#endif
 
 	return runCommand(cmd);
 }
@@ -479,7 +499,9 @@ static bool buildMod(const BuildInfo &info)
 	auto manifestPath = Swan::cat(info.modPath, "/.swanbuild/manifest.toml");
 	bool allOutdated = isOutdated(manifestPath, info);
 
-	if (!std::filesystem::exists(Swan::cat(info.modPath, "/.swanbuild/mod.so"))) {
+	bool hasModLib = std::filesystem::exists(
+		Swan::cat(info.modPath, "/.swanbuild/mod" DYNLIB_EXT));
+	if (!hasModLib) {
 		allOutdated = true;
 	}
 
@@ -567,6 +589,7 @@ static bool buildMod(const BuildInfo &info)
 		// for compiling source files.
 		if (f.type == SourceType::HEADER || f.type == SourceType::PROTO) {
 			if (!compile(f, info)) {
+				failed = true;
 				break;
 			}
 			continue;
@@ -600,7 +623,12 @@ static bool buildMod(const BuildInfo &info)
 	}
 
 	std::cerr << "* Linking...\n";
-	link(Swan::cat(info.modPath, "/.swanbuild/mod.so"), sources, info);
+
+	auto dynlibPath = Swan::cat(
+		info.modPath, "/.swanbuild/mod" DYNLIB_EXT);
+	if (!link(dynlibPath, sources, info)) {
+		return false;
+	}
 
 	std::shared_ptr<cpptoml::table> newManifestRoot = cpptoml::make_table();
 	newManifestRoot->insert("swan", info.buildID);
@@ -629,13 +657,13 @@ bool build(const char *modPath, const char *swanPath)
 	};
 
 	std::vector<std::string> libs = {
-		Swan::cat(swanPath, "/lib/libswan" DYNLIB_EXT),
-		Swan::cat(swanPath, "/lib/libcygnet" DYNLIB_EXT),
-		Swan::cat(swanPath, "/lib/libimgui" DYNLIB_EXT),
-		Swan::cat(swanPath, "/lib/libscisasm" DYNLIB_EXT),
-		Swan::cat(swanPath, "/lib/libscisavm" DYNLIB_EXT),
-		Swan::cat(swanPath, "/lib/libkj" DYNLIB_EXT),
-		Swan::cat(swanPath, "/lib/libcapnp" DYNLIB_EXT),
+		Swan::cat(swanPath, "/lib/libswan" LINKLIB_EXT),
+		Swan::cat(swanPath, "/lib/libcygnet" LINKLIB_EXT),
+		Swan::cat(swanPath, "/lib/libimgui" LINKLIB_EXT),
+		Swan::cat(swanPath, "/lib/libscisasm" LINKLIB_EXT),
+		Swan::cat(swanPath, "/lib/libscisavm" LINKLIB_EXT),
+		Swan::cat(swanPath, "/lib/libkj" LINKLIB_EXT),
+		Swan::cat(swanPath, "/lib/libcapnp" LINKLIB_EXT),
 	};
 
 	std::vector<std::string> cflags = {

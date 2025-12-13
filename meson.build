@@ -55,15 +55,26 @@ libglfw3 = glfw_sub.dependency('glfw')
 
 portaudio_opts = cmake.subproject_options()
 portaudio_opts.add_cmake_defines({
-  'CMAKE_POLICY_VERSION_MINIMUM': '3.5',
-  'PA_BUILD_STATIC': false,
+  'BUILD_SHARED_LIBS': true,
 })
 portaudio_opts.set_override_option('warning_level', '0')
 portaudio_sub = cmake.subproject('portaudio', options: portaudio_opts)
 libportaudio = portaudio_sub.dependency('portaudio')
 
-libtpl_sub = cmake.subproject('tiny-process-library')
-libtpl = libtpl_sub.dependency('tiny-process-library')
+tpl_opts = cmake.subproject_options()
+tpl_opts.add_cmake_defines({
+  'BUILD_SHARED_LIBS': true,
+})
+tpl_sub = cmake.subproject('tiny-process-library', options: tpl_opts)
+libtpl = tpl_sub.dependency('tiny-process-library')
+
+zlibng_opts = cmake.subproject_options()
+zlibng_opts.add_cmake_defines({
+  'BUILD_SHARED_LIBS': true,
+})
+zlibng_opts.set_override_option('warning_level', '1')
+zlibng_sub = cmake.subproject('zlib-ng', options: zlibng_opts)
+libz = zlibng_sub.dependency('zlib-ng')
 
 libffmpeg = [
   dependency('libavcodec', required: get_option('ffmpeg')),
@@ -84,11 +95,13 @@ foreach lib: libffmpeg
 endforeach
 
 libcpptoml = subproject('cpptoml-ng').get_variable('cpptoml_dep')
-libdl = meson.get_compiler('cpp').find_library('dl')
-libz = meson.get_compiler('cpp').find_library('z')
-
-libgl = dependency('OpenGL')
 libdw = dependency('libdw', required: false)
+
+if host_machine.system() == 'windows'
+  libdl = meson.get_compiler('cpp').find_library('mingw32')
+else
+  libdl = meson.get_compiler('cpp').find_library('dl')
+endif
 
 libthreads = dependency('threads')
 
@@ -99,6 +112,12 @@ libscisasm = scisa_sub.get_variable('libscisasm')
 libscisavm = scisa_sub.get_variable('libscisavm')
 
 subdir('third-party')
+
+if host_machine.system() == 'windows'
+  libgl = libglad
+else
+  libgl = dependency('OpenGL')
+endif
 
 common = declare_dependency(
   include_directories: 'include',
@@ -112,6 +131,20 @@ install_subdir(
   install_dir: 'include',
 )
 
+swanbuild_args = [
+  '-DSWAN_CXX_PATH="' + get_option('swan_cxx_path') + '"'
+]
+if get_option('swan_cxx_is_clang')
+  swanbuild_args += '-DSWAN_CXX_IS_CLANG=1'
+else
+  swanbuild_args += '-DSWAN_CXX_IS_CLANG=0'
+endif
+if get_option('swan_cxx_is_mingw')
+  swanbuild_args += '-DSWAN_CXX_IS_MINGW=1'
+else
+  swanbuild_args += '-DSWAN_CXX_IS_MINGW=0'
+endif
+
 executable(
   'swan',
   'src/build.cc',
@@ -124,8 +157,7 @@ executable(
     libcpptoml, libsha1, libscisasm, libscisavm, libtpl,
   ] + maybe_libtracy,
   override_options: ['b_asneeded=false'],
-  cpp_args: [
-    '-DCLANGXX_PATH="' + get_option('clangxx_path') + '"',
+  cpp_args: swanbuild_args + [
     '-DSWAN_VERSION="' + swan_version + '"',
   ],
 )
@@ -142,9 +174,7 @@ executable(
     libtpl,
     common,
   ],
-  cpp_args: [
-    '-DCLANGXX_PATH="' + get_option('clangxx_path') + '"',
-  ],
+  cpp_args: swanbuild_args,
 )
 
 install_subdir('assets', install_dir: '')

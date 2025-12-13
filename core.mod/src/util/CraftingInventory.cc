@@ -57,7 +57,7 @@ void CraftingInventory::renderTooltip(
 	}
 
 	auto invContent = inv->content();
-	if (slot < 0 || slot >= size() || slot >= recipes_.size()) {
+	if (slot < 0 || slot >= size() || size_t(slot) >= recipes_.size()) {
 		return;
 	}
 

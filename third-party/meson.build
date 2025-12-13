@@ -11,6 +11,17 @@ libfmt = declare_dependency(
   ),
 )
 
+libglad = declare_dependency(
+  include_directories: 'glad/include',
+  link_with: shared_library(
+    'glad',
+    'glad/src/glad.cc',
+    include_directories: 'glad/include',
+    install: true,
+    install_rpath: origin_rpath,
+  ),
+)
+
 libimgui = declare_dependency(
   include_directories: ['.', 'imgui'],
   link_with: shared_library('imgui',
@@ -97,13 +108,3 @@ libsha1 = declare_dependency(
     install_rpath: origin_rpath,
   ),
 )
-
-libdate = declare_dependency(
-  include_directories: 'date/include',
-  link_with: static_library('date',
-    'date/src/tz.cpp',
-    include_directories: 'date/include',
-    cpp_args: ['-DUSE_OS_TZDB=1'],
-  ),
-)
-

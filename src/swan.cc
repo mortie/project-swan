@@ -9,7 +9,10 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#ifndef __MINGW32__
 #include <backward.hpp>
+#endif
+
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
@@ -113,7 +116,11 @@ int main(int argc, char **argv)
 {
 	std::optional<uint32_t> seedArg;
 	const char *worldPath = nullptr;
+
+#ifndef __MINGW32__
 	backward::SignalHandling sh;
+#endif
+
 	std::vector<std::string> mods;
 	const char *swanRoot = ".";
 	bool doCompileMods = true;
@@ -205,6 +212,13 @@ int main(int argc, char **argv)
 	}
 
 	glfwMakeContextCurrent(window);
+#ifdef __MINGW32__
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		panic << "GLAD failed to load GL!";
+		return 1;
+	}
+#endif
+
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 	Cygnet::glCheck();

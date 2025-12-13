@@ -20,6 +20,11 @@
 #include "glsl/Text.h"
 #include "glsl/Tile.h"
 
+// Windows :(
+#ifdef DrawText
+#undef DrawText
+#endif
+
 namespace Cygnet {
 
 struct RendererState {

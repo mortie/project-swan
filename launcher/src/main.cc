@@ -79,6 +79,13 @@ int main()
 
 	glfwSetWindowSizeLimits(window, 450, 300, GLFW_DONT_CARE, GLFW_DONT_CARE);
 	glfwMakeContextCurrent(window);
+#ifdef __MINGW32__
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		Swan::panic << "GLAD failed to load GL!";
+		return 1;
+	}
+#endif
+
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 	glfwSwapInterval(1);
 	Cygnet::glCheck();

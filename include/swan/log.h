@@ -12,7 +12,12 @@ inline bool isTTY(FILE *f)
 }
 }
 #else
-#error "Unknown platform"
+namespace Swan {
+inline bool isTTY(FILE *f)
+{
+	return false;
+}
+}
 #endif
 
 namespace Swan {

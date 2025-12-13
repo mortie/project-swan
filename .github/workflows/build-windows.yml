@@ -1,0 +1,43 @@
+name: Build for Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Check out repo
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Git describe
+      id: ghd
+      uses: proudust/gh-describe@v2
+
+    - name: Get packages
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: >
+          build-essential git make ninja-build pkg-config patchelf python3
+          libz-dev libwayland-dev libx11-dev libxrandr-dev libxinerama-dev
+          libxcursor-dev libxi-dev libxkbcommon-dev mesa-common-dev libgles-dev
+          libwayland-dev cmake mingw-w64
+        version: 1.0
+
+    - name: 'Compile Project: SWAN'
+      run: ./swan-build/mingw/build-swan.sh "${{steps.ghd.outputs.describe}}"
+
+    - name: Package
+      run: |
+        mkdir artifacts
+        mv swan-build/mingw/out "artifacts/swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}"
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: swan_${{runner.os}}-${{runner.arch}}_${{steps.ghd.outputs.describe}}
+        path: artifacts
+        include-hidden-files: true

@@ -28,9 +28,6 @@
 [submodule "third-party/sha1"]
 	path = third-party/sha1
 	url = https://github.com/vog/sha1.git
-[submodule "third-party/date"]
-	path = third-party/date
-	url = https://github.com/HowardHinnant/date.git
 [submodule "subprojects/cpptoml-ng"]
 	path = subprojects/cpptoml-ng
 	url = https://github.com/mortie/cpptoml-ng.git
@@ -49,3 +46,9 @@
 [submodule "subprojects/tiny-process-library"]
 	path = subprojects/tiny-process-library
 	url = https://gitlab.com/eidheim/tiny-process-library.git
+[submodule "subprojects/zlib-ng"]
+	path = subprojects/zlib-ng
+	url = https://github.com/zlib-ng/zlib-ng.git
+[submodule "meson"]
+	path = meson
+	url = https://github.com/mesonbuild/meson.git

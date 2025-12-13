@@ -9,8 +9,6 @@
 #include <imgui/imgui.h>
 #include <cygnet/gl.h>
 #include <stb/stb_image_write.h>
-#include <date/date.h>
-#include <date/tz.h>
 
 #include <capnp/message.h>
 #include <capnp/serialize-packed.h>
@@ -28,6 +26,18 @@
 namespace Swan {
 
 static constexpr float TICK_DELTA = 1.0 / 20.0;
+
+static std::string formatNow()
+{
+	time_t now = std::time(nullptr);
+	std::tm tm = *localtime(&now);
+
+	std::string s;
+	s.resize(256);
+	size_t n = strftime(s.data(), s.size(), "%Y:%m:%d %H:%M:%S", &tm);
+	s.resize(n);
+	return s;
+}
 
 Game::Game(std::function<bool()> recompileMods):
 	recompileMods_(std::move(recompileMods))
@@ -154,10 +164,7 @@ void Game::drawDebugMenu()
 
 	if (ImGui::Button("Screenshot")) {
 		std::filesystem::create_directories("screenshots");
-		auto now = std::chrono::floor<std::chrono::seconds>(
-			std::chrono::system_clock::now());
-		auto nowZoned = date::make_zoned(date::current_zone(), now);
-		auto path = date::format({}, "screenshots/%F %T.png", nowZoned);
+		auto path = cat("screenshots/", formatNow(), ".png");
 		screenshot(path.c_str());
 	}
 

@@ -19,7 +19,7 @@ fi
 echo "Building SWAN..."
 mkdir -p build
 rm -rf build/swan
-"$PFX/meson/meson.py" setup \
+../../meson/meson.py setup \
 	-Dprefix="$APP/Contents" \
 	-Dbuildtype=release \
 	-Ddebug=true \
@@ -42,7 +42,6 @@ for lib in \
 	libcpptoml.dylib \
 	libcygnet.dylib \
 	libfmt.dylib \
-	libglfw.3.dylib \
 	libglfw.dylib \
 	libimgui.dylib \
 	libkj.dylib \
