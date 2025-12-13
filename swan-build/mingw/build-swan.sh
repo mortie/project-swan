@@ -70,7 +70,9 @@ echo "Compiling core mod..."
 cd "$OUT"
 "$TOP/build/native/swan-build" core.mod .
 echo >>"core.mod/mod.toml" "locked = true"
-rm -f bin/capnp bin/capnpc-c++
+rm -rf "$OUT/core.mod/.swanbuild/obj"
+rm -rf "$OUT/core.mod/.swanbuild/proto"
+rm -rf "$OUT/core.mod/.swanbuild/swan.h.pch"
 cd "$TOP"
 
 echo
