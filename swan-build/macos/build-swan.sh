@@ -52,7 +52,9 @@ for lib in \
 	libstb_image.dylib \
 	libstb_truetype.dylib \
 	libstb_vorbis.dylib \
-	libswan.dylib
+	libswan.dylib \
+	libtiny_process_library.dylib \
+	libzlib_ng.dylib
 do
 	install_name_tool -id "@rpath/$lib" "$APP/Contents/lib/$lib"
 	for f in "$APP/Contents/lib"/* "$APP/Contents/bin/"*; do
