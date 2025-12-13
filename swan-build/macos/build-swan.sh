@@ -42,7 +42,6 @@ for lib in \
 	libcpptoml.dylib \
 	libcygnet.dylib \
 	libfmt.dylib \
-	libglfw.3.dylib \
 	libglfw.dylib \
 	libimgui.dylib \
 	libkj.dylib \
