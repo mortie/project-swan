@@ -13,7 +13,6 @@ struct World {
 	std::string name;
 	std::string creationTime;
 	std::string lastPlayedTime;
-	time_t lastPlayedTimestamp;
 };
 
 std::vector<World> listWorlds();

@@ -1,14 +1,15 @@
 #include "worlds.h"
 #include "swan/log.h"
 
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <filesystem>
 #include <algorithm>
 #include <fstream>
 #include <cpptoml.h>
 
-#include <sstream>
 #include <stdexcept>
 
 static constexpr const char *identifier = "coffee.mort.Swan";
@@ -50,17 +51,6 @@ static std::filesystem::path dataDir()
 
 static std::filesystem::path worldsDir = dataDir() / "worlds";
 
-static time_t parseTime(const char *time)
-{
-	std::tm tm;
-	const char *ret = strptime(time, "%Y:%m:%d %H:%M:S+", &tm);
-	if (ret == nullptr) {
-		return 0;
-	}
-
-	return mktime(&tm);
-}
-
 static std::string formatNow()
 {
 	time_t now = std::time(nullptr);
@@ -68,7 +58,7 @@ static std::string formatNow()
 
 	std::string s;
 	s.resize(256);
-	size_t n = strftime(s.data(), s.size(), "%Y:%m:%d %H:%M:%S", &tm);
+	size_t n = std::strftime(s.data(), s.size(), "%Y:%m:%d %H:%M:%S", &tm);
 	s.resize(n);
 	return s;
 }
@@ -97,19 +87,18 @@ std::vector<World> listWorlds()
 		auto creationTime = table->get_as<std::string>("creation-time");
 		auto lastPlayedTime = table->get_as<std::string>("last-played-time");
 
-		auto lastPlayedTimestamp = parseTime(lastPlayedTime->c_str());
-
-		worlds.push_back(World {
+		worlds.push_back({
 			.id = id,
 			.name = name.value_or("Untitled"),
 			.creationTime = creationTime.value_or("Unknown"),
 			.lastPlayedTime = lastPlayedTime.value_or("Unknown"),
-			.lastPlayedTimestamp = lastPlayedTimestamp,
 		});
 	}
 
 	std::sort(worlds.begin(), worlds.end(), [](World &a, World &b) {
-		return a.lastPlayedTimestamp > b.lastPlayedTimestamp;
+		return strcmp(
+			a.lastPlayedTime.c_str(),
+			b.lastPlayedTime.c_str()) > 0;
 	});
 
 	return worlds;
