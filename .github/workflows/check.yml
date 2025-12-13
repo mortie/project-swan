@@ -24,10 +24,12 @@ jobs:
         submodules: true
     - uses: awalsh128/cache-apt-pkgs-action@v1
       with:
-        packages: build-essential pkg-config meson cmake clang ${{matrix.pkgs}} libwayland-dev libxkbcommon-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libz-dev mesa-common-dev libgles-dev
+        packages: build-essential pkg-config cmake clang ${{matrix.pkgs}} libwayland-dev libxkbcommon-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libz-dev mesa-common-dev libgles-dev
         version: ${{matrix.os}}-3
     - name: setup
-      run: CXX=${{matrix.compiler}} make setup && meson configure build -Dwerror=true
+      run: |
+        CXX=${{matrix.compiler}} make setup
+        ./meson/meson.py configure build -Dwerror=true
     - name: compile
       run: make pfx && make core.mod
     - name: check
