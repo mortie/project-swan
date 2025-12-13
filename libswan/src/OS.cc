@@ -49,7 +49,7 @@ void *Dynlib::getVoid(const std::string &name)
 #endif
 Dynlib::Dynlib(const std::string &path)
 {
-	handle_ = dlopen(cat(path, ".so").c_str(), RTLD_LAZY);
+	handle_ = dlopen(cat(path, DYNLIB_EXT).c_str(), RTLD_LAZY);
 	if (!handle_) {
 		throw std::runtime_error(dlerror());
 	}

@@ -2,13 +2,12 @@
 #include "swan/log.h"
 
 #include <cstdlib>
+#include <ctime>
 #include <filesystem>
 #include <algorithm>
 #include <fstream>
 #include <cpptoml.h>
 
-#include <date/date.h>
-#include <date/tz.h>
 #include <sstream>
 #include <stdexcept>
 
@@ -51,7 +50,30 @@ static std::filesystem::path dataDir()
 
 static std::filesystem::path worldsDir = dataDir() / "worlds";
 
-void randomID(std::string &str)
+static time_t parseTime(const char *time)
+{
+	std::tm tm;
+	const char *ret = strptime(time, "%Y:%m:%d %H:%M:S+", &tm);
+	if (ret == nullptr) {
+		return 0;
+	}
+
+	return mktime(&tm);
+}
+
+static std::string formatNow()
+{
+	time_t now = std::time(nullptr);
+	std::tm tm = *localtime(&now);
+
+	std::string s;
+	s.resize(256);
+	size_t n = strftime(s.data(), s.size(), "%Y:%m:%d %H:%M:%S", &tm);
+	s.resize(n);
+	return s;
+}
+
+static void randomID(std::string &str)
 {
 	constexpr const char *alphabet = "0123456789abcdef";
 	str.resize(16);
@@ -75,31 +97,19 @@ std::vector<World> listWorlds()
 		auto creationTime = table->get_as<std::string>("creation-time");
 		auto lastPlayedTime = table->get_as<std::string>("last-played-time");
 
-		date::local_time<std::chrono::seconds> lastPlayedLocalTime;
-		Timestamp lastPlayedTimeStamp;
-		if (lastPlayedTime) {
-			// This is pretty much the worst API I have ever had to deal with T_T
-			// Parsing straight into a time_point works on macOS,
-			// but not on Linux (guessing it works on libc++ but not libstdc++).
-			// However, parsing into a local_time seems to work.
-			// If only the documentation suggested what type it expects...
-			std::istringstream str(*lastPlayedTime);
-			std::chrono::minutes offset;
-			str >> date::parse("%F %T%z", lastPlayedLocalTime, offset);
-			lastPlayedTimeStamp = Timestamp((lastPlayedLocalTime - offset).time_since_epoch());
-		}
+		auto lastPlayedTimestamp = parseTime(lastPlayedTime->c_str());
 
 		worlds.push_back(World {
 			.id = id,
 			.name = name.value_or("Untitled"),
 			.creationTime = creationTime.value_or("Unknown"),
 			.lastPlayedTime = lastPlayedTime.value_or("Unknown"),
-			.lastPlayedTimeStamp = lastPlayedTimeStamp,
+			.lastPlayedTimestamp = lastPlayedTimestamp,
 		});
 	}
 
 	std::sort(worlds.begin(), worlds.end(), [](World &a, World &b) {
-		return a.lastPlayedTimeStamp > b.lastPlayedTimeStamp;
+		return a.lastPlayedTimestamp > b.lastPlayedTimestamp;
 	});
 
 	return worlds;
@@ -119,11 +129,7 @@ std::string makeWorld(std::string name)
 	std::filesystem::create_directories(path);
 	auto tomlPath = path / "world.toml";
 
-	auto now = std::chrono::floor<std::chrono::seconds>(
-		std::chrono::system_clock::now());
-	auto nowZoned = date::make_zoned(date::current_zone(), now);
-	auto nowStr = date::format({}, "%F %T%z", nowZoned);
-
+	auto nowStr = formatNow();
 	auto table = cpptoml::make_table();
 	table->insert("name", name);
 	table->insert("creation-time", nowStr);
@@ -173,11 +179,7 @@ void renameWorld(std::string_view id, std::string newName)
 
 void updateWorldLastPlayedTime(std::string_view id)
 {
-	auto now = std::chrono::floor<std::chrono::seconds>(
-		std::chrono::system_clock::now());
-	auto nowZoned = date::make_zoned(date::current_zone(), now);
-	auto nowStr = date::format({}, "%F %T%z", nowZoned);
-
+	auto nowStr = formatNow();
 	auto tomlPath = worldsDir / id / "world.toml";
 	auto table = cpptoml::parse_file(tomlPath.string());
 	table->insert("last-played-time", nowStr);

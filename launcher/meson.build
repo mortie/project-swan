@@ -7,7 +7,6 @@ executable(
   install_rpath: bin_rpath,
   dependencies: [
     libcpptoml,
-    libdate,
     libimgui,
     libcygnet,
     libgl,

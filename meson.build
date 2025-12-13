@@ -63,14 +63,6 @@ portaudio_opts.set_override_option('warning_level', '0')
 portaudio_sub = cmake.subproject('portaudio', options: portaudio_opts)
 libportaudio = portaudio_sub.dependency('portaudio')
 
-date_opts = cmake.subproject_options()
-date_opts.add_cmake_defines({
-  'BUILD_TZ_LIB': true,
-  'USE_SYSTEM_TZ_DB': true,
-})
-date_sub = cmake.subproject('date', options: date_opts)
-libdate = date_sub.dependency('date-tz')
-
 libtpl_sub = cmake.subproject('tiny-process-library')
 libtpl = libtpl_sub.dependency('tiny-process-library')
 
