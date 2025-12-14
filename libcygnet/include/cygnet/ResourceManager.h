@@ -28,6 +28,7 @@ public:
 		int height;
 		int frameHeight;
 		int repeatFrom;
+		bool linearFiltering = false;
 	};
 
 	struct MaskMeta {

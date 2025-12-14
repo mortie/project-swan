@@ -223,6 +223,7 @@ static void loadSpriteAsset(
 		.height = h,
 		.frameHeight = h,
 		.repeatFrom = 0,
+		.linearFiltering = false,
 	};
 
 	if (toml) {
@@ -238,6 +239,16 @@ static void loadSpriteAsset(
 				&frameCount);
 			meta.width = *frameWidth;
 			meta.height = frameCount * meta.frameHeight;
+		}
+
+		auto filtering = toml->get_as<std::string>("filtering")
+			.value_or("nearest");
+		if (filtering == "linear") {
+			meta.linearFiltering = true;
+		} else if (filtering == "nearest") {
+			meta.linearFiltering = false;
+		} else {
+			warn << "Unknown filtering: " << filtering << " (" << path << ')';
 		}
 	}
 

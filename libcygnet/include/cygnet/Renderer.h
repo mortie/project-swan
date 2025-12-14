@@ -414,7 +414,9 @@ public:
 		uint8_t data[CHUNK_SIZE]);
 	void destroyChunkShadow(RenderChunkShadow shadow);
 
-	RenderSprite createSprite(void *data, int width, int height, int fh, int repeatFrom);
+	RenderSprite createSprite(
+		void *data, int width, int height,
+		int fh, int repeatFrom, bool linearFiltering);
 	void destroySprite(RenderSprite sprite);
 
 	RenderMask createMask(void *data, int width, int height);

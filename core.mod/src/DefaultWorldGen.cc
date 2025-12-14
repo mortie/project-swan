@@ -49,8 +49,9 @@ void DefaultWorldGen::drawBackground(
 void DefaultWorldGen::drawSurfaceBackground(
 	Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos, float factor)
 {
-	pos.x += std::fmod(time_, 8);
-	int shift = time_ / 8;
+	float motion = time_ * 0.5;
+	pos.x += std::fmod(motion, 8);
+	int shift = motion / 8;
 	pos -= {2.5, 2.5};
 	pos /= 8;
 	Swan::Vec2i whole = pos.as<int>();
@@ -63,18 +64,23 @@ void DefaultWorldGen::drawSurfaceBackground(
 		}
 
 		for (int x = -15; x <= 15; ++x) {
-			uint32_t res = Swan::random(
+			uint32_t res = Swan::random(Swan::random(
 				seed_ ^
 				((y + whole.y) << 16) ^
-				(x + whole.x - shift));
+				(x + whole.x - shift)));
 			int variant = res % 64;
 			if (variant >= 3) {
 				continue;
 			}
 
+			float scale = ((res >> 5) % 32) / 32.0;
+			float yscale = (((res >> 8) % 32) / 32.0) - 0.5;
+			float sx = 2 + (scale * 8);
+			float sy = sx + yscale;
+
 			rnd.drawSprite(Cygnet::RenderLayer::BACKGROUND, {
 				.transform = Cygnet::Mat3gf{}
-					.scale({3, 3})
+					.scale({sx, sy})
 					.translate(pos.add(x * 4, y * 4)),
 				.sprite = clouds_[variant],
 				.opacity = factor,

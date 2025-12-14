@@ -16,7 +16,8 @@ ResourceBuilder::ResourceBuilder(Renderer *rnd): rnd_(rnd)
 RenderSprite ResourceBuilder::addSprite(void *data, SpriteMeta meta)
 {
 	sprites_.push_back(rnd_->createSprite(
-		data, meta.width, meta.height, meta.frameHeight, meta.repeatFrom));
+		data, meta.width, meta.height,
+		meta.frameHeight, meta.repeatFrom, meta.linearFiltering));
 	return sprites_.back();
 }
 
