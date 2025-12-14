@@ -52,6 +52,9 @@ struct InputHandler::Impl {
 	std::unordered_map<int, std::vector<ActionWrapper>> gamepadButtons;
 	std::unordered_map<int, std::vector<ActionWrapper>> joystickAxes;
 
+	std::bitset<GLFW_KEY_LAST> pressedKeys;
+	std::bitset<GLFW_MOUSE_BUTTON_LAST> pressedMouseButtons;
+
 	std::array<std::optional<Gamepad>, GLFW_JOYSTICK_LAST + 1>
 		gamepads;
 	std::bitset<GLFW_JOYSTICK_LAST + 1> disabledGamepads;
@@ -76,6 +79,11 @@ Action *InputHandler::action(std::string_view name)
 
 void InputHandler::onKeyDown(int scancode)
 {
+	if (impl_->pressedKeys[scancode]) {
+		return;
+	}
+	impl_->pressedKeys[scancode] = true;
+
 	if (impl_->verbose) {
 		impl_->log.push_front(LogEntry{
 			.kind = "KEY DOWN",
@@ -99,6 +107,11 @@ void InputHandler::onKeyDown(int scancode)
 
 void InputHandler::onKeyUp(int scancode)
 {
+	if (!impl_->pressedKeys[scancode]) {
+		return;
+	}
+	impl_->pressedKeys[scancode] = false;
+
 	if (impl_->verbose) {
 		impl_->log.push_front(LogEntry{
 			.kind = "KEY UP",
@@ -126,6 +139,11 @@ void InputHandler::onKeyUp(int scancode)
 
 void InputHandler::onMouseDown(int button)
 {
+	if (impl_->pressedMouseButtons[button]) {
+		return;
+	}
+	impl_->pressedMouseButtons[button] = true;
+
 	if (impl_->verbose) {
 		impl_->log.push_front(LogEntry{
 			.kind = "MOUSE DOWN",
@@ -149,6 +167,11 @@ void InputHandler::onMouseDown(int button)
 
 void InputHandler::onMouseUp(int button)
 {
+	if (!impl_->pressedMouseButtons[button]) {
+		return;
+	}
+	impl_->pressedMouseButtons[button] = false;
+
 	if (impl_->verbose) {
 		impl_->log.push_front(LogEntry{
 			.kind = "MOUSE UP",
