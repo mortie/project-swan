@@ -27,6 +27,8 @@ public:
 
 	virtual void genChunk(WorldPlane &plane, Chunk &chunk) = 0;
 	virtual EntityRef spawnPlayer(Ctx &ctx) = 0;
+
+	virtual void update(float dt) {}
 };
 
 }

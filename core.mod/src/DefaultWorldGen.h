@@ -22,6 +22,11 @@ public:
 		tOil_(world.getTileID("core::oil")),
 		tAir_(world.getTileID("@::air")),
 		bgCave_(world.getSprite("core::misc/background-cave")),
+		clouds_{
+			world.getSprite("core::misc/cloud-1"),
+			world.getSprite("core::misc/cloud-2"),
+			world.getSprite("core::misc/cloud-3"),
+		},
 		oreDef_(world, seed_),
 		shrubberyDef_(world, seed_),
 		tallGrassDef_(world, seed_),
@@ -34,7 +39,17 @@ public:
 	void genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) override;
 	Swan::EntityRef spawnPlayer(Swan::Ctx &ctx) override;
 
+	void update(float dt) override
+	{
+		time_ += dt;
+	}
+
 private:
+	void drawSurfaceBackground(
+		Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos, float factor);
+	void drawCaveBackground(
+		Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos, float factor);
+
 	bool isCave(Swan::TilePos pos, int grassLevel);
 	bool isLake(Swan::TilePos pos, int grassLevel, int stoneLevel);
 	bool isOil(Swan::TilePos pos, int grassLevel);
@@ -46,12 +61,14 @@ private:
 	const uint32_t seed_;
 	Swan::Tile::ID tGrass_, tDirt_, tStone_, tClay_, tWater_, tOil_, tAir_;
 	Cygnet::RenderSprite bgCave_;
+	Cygnet::RenderSprite clouds_[3];
 	siv::PerlinNoise perlin_{seed_};
 
 	OreDef oreDef_;
 	ShrubberyDef shrubberyDef_;
 	TallGrassDef tallGrassDef_;
 	TreeDef treeDef_;
+	float time_ = 0;
 };
 
 }

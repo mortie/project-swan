@@ -39,5 +39,6 @@ in vec2 v_texCoord;
 out vec4 fragColor;
 
 void main() {
-	fragColor = texture(tex, v_texCoord) * opacity;
+	vec4 color = texture(tex, v_texCoord);
+	fragColor = vec4(color.rgb, color.a * opacity);
 }

@@ -3,6 +3,7 @@
 #include "entities/PlayerEntity.h"
 #include "swan/constants.h"
 #include "worldgen/StructureDef.h"
+#include <cmath>
 
 namespace CoreMod {
 
@@ -26,17 +27,65 @@ static int getPlayerX(const siv::PerlinNoise &perlin)
 void DefaultWorldGen::drawBackground(
 	Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos)
 {
-	float opacity = 1;
 	float y = pos.y;
-	if (y < 15) {
-		return;
+
+	if (y < 10) {
+		float factor = 1;
+		if (y > 0) {
+			factor = 1 - y / 10;
+		}
+		drawSurfaceBackground(ctx, rnd, pos, factor);
 	}
 
-	if (y < 35) {
-		opacity = (y - 15) / (35 - 15);
+	if (y > 15) {
+		float factor = 1;
+		if (y < 35) {
+			factor = (y - 15) / (35 - 15);
+		}
+		drawCaveBackground(ctx, rnd, pos, factor);
 	}
-	opacity *= 0.3;
+}
 
+void DefaultWorldGen::drawSurfaceBackground(
+	Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos, float factor)
+{
+	pos.x += std::fmod(time_, 8);
+	int shift = time_ / 8;
+	pos -= {2.5, 2.5};
+	pos /= 8;
+	Swan::Vec2i whole = pos.as<int>();
+	Swan::Vec2 frac = pos - whole.as<float>();
+
+	pos = whole.as<float>() * 8 + frac * 4;
+	for (int y = -10; y <= 10; ++y) {
+		if (Swan::random(seed_ ^ (y + whole.y)) % 32 > 8) {
+			continue;
+		}
+
+		for (int x = -15; x <= 15; ++x) {
+			uint32_t res = Swan::random(
+				seed_ ^
+				((y + whole.y) << 16) ^
+				(x + whole.x - shift));
+			int variant = res % 64;
+			if (variant >= 3) {
+				continue;
+			}
+
+			rnd.drawSprite(Cygnet::RenderLayer::BACKGROUND, {
+				.transform = Cygnet::Mat3gf{}
+					.scale({3, 3})
+					.translate(pos.add(x * 4, y * 4)),
+				.sprite = clouds_[variant],
+				.opacity = factor,
+			});
+		}
+	}
+}
+
+void DefaultWorldGen::drawCaveBackground(
+	Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos, float factor)
+{
 	pos -= {2.5, 2.5};
 	pos /= 8;
 	Swan::Vec2i whole = pos.as<int>();
@@ -48,7 +97,7 @@ void DefaultWorldGen::drawBackground(
 			rnd.drawSprite(Cygnet::RenderLayer::BACKGROUND, {
 				.transform = Cygnet::Mat3gf{}.translate(pos.add(x * 4, y * 4)),
 				.sprite = bgCave_,
-				.opacity = opacity,
+				.opacity = factor * 0.3f,
 			});
 		}
 	}
