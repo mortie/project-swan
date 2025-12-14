@@ -97,7 +97,7 @@ void DefaultWorldGen::drawCaveBackground(
 			rnd.drawSprite(Cygnet::RenderLayer::BACKGROUND, {
 				.transform = Cygnet::Mat3gf{}.translate(pos.add(x * 4, y * 4)),
 				.sprite = bgCave_,
-				.opacity = factor * 0.3f,
+				.opacity = factor * 0.8f,
 			});
 		}
 	}
