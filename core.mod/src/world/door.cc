@@ -32,7 +32,7 @@ static bool spawnDoor(Swan::Ctx &ctx, Swan::TilePos pos)
 	}
 
 	bool placeBottom =
-		ctx.plane.tiles().get(pos.add(0, 1)).isSolid() &&
+		ctx.plane.tiles().get(pos.add(0, 1)).isSupportV() &&
 		ctx.plane.tiles().get(pos.add(0, -1)).isReplacable();
 	if (placeBottom) {
 		breakTileAndDropItem(ctx, pos.add(0, -1));
@@ -41,7 +41,7 @@ static bool spawnDoor(Swan::Ctx &ctx, Swan::TilePos pos)
 	}
 
 	bool placeTop =
-		ctx.plane.tiles().get(pos.add(0, 2)).isSolid() &&
+		ctx.plane.tiles().get(pos.add(0, 2)).isSupportV() &&
 		ctx.plane.tiles().get(pos.add(0, 1)).isReplacable() &&
 		ctx.plane.tiles().get(pos.add(0, 0)).isReplacable();
 	if (placeTop) {

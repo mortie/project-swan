@@ -22,8 +22,8 @@ static bool spawnWorkbench(Swan::Ctx &ctx, Swan::TilePos pos)
 	bool place =
 		ctx.plane.tiles().get(pos).isReplacable() &&
 		ctx.plane.tiles().get(pos.add(1, 0)).isReplacable() &&
-		ctx.plane.tiles().get(pos.add(0, 1)).isSolid() &&
-		ctx.plane.tiles().get(pos.add(1, 1)).isSolid();
+		ctx.plane.tiles().get(pos.add(0, 1)).isSupportV() &&
+		ctx.plane.tiles().get(pos.add(1, 1)).isSupportV();
 	if (!place) {
 		return false;
 	}
