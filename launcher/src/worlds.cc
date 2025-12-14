@@ -9,8 +9,17 @@
 #include <algorithm>
 #include <fstream>
 #include <cpptoml.h>
-
 #include <stdexcept>
+
+#ifdef __MINGW32__
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <shlobj.h>
+#endif
 
 static constexpr const char *identifier = "coffee.mort.Swan";
 
@@ -39,8 +48,13 @@ static std::filesystem::path dataDir()
 		path = fs::path(home) / ".local" / "share" / identifier;
 	}
 #elif defined(__MINGW32__)
-	// TODO
-	path = ".";
+	PWSTR str;
+	if (SHGetKnownFolderPath(FOLDERID_SavedGames, 0, nullptr, &str) != S_OK) {
+		throw std::runtime_error("Failed to get saved games folder");
+	}
+
+	path = fs::path(str) / identifier;
+	CoTaskMemFree(str);
 #else
 #error "Unsupported platform"
 #endif
