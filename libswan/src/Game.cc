@@ -1,9 +1,11 @@
 #include "Game.h"
+#include "kj/io.h"
 
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <math.h>
+#include <sstream>
 #include <time.h>
 #include <memory>
 #include <imgui/imgui.h>
@@ -12,7 +14,6 @@
 
 #include <capnp/message.h>
 #include <capnp/serialize-packed.h>
-#include <kj/filesystem.h>
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -69,21 +70,23 @@ void Game::createWorld(
 void Game::loadWorld(
 	std::string worldPath, std::span<const std::string> modPaths)
 {
-	auto fs = kj::newDiskFilesystem();
-	std::string path = worldPath;
-	const auto *dir = [&] {
-		if (path[0] == '/') {
-			path = path.substr(1);
-			return &fs->getRoot();
-		} else {
-			return &fs->getCurrent();
-		}
-	}();
+	std::ifstream f(worldPath);
+	if (!f) {
+		warn << "Failed to open " << worldPath << '!';
+		return;
+	}
 
-	auto worldFile = dir->openFile(kj::Path::parse(path));
-	auto bytes = worldFile->readAllBytes();
-	auto data = kj::ArrayInputStream(bytes);
-	capnp::PackedMessageReader reader(data);
+	std::stringstream ss;
+	ss << f.rdbuf();
+	f.close();
+	if (!f) {
+		warn << "Failed to load " << worldPath << '!';
+		return;
+	}
+
+	auto data = std::move(ss).str();
+	kj::ArrayInputStream stream({(unsigned char *)data.data(), data.size()});
+	capnp::PackedMessageReader reader(stream);
 
 	world_ = std::make_unique<World>(this, 0, modPaths);
 	for (auto &mod: world_->mods_) {
@@ -676,28 +679,32 @@ void Game::save()
 	capnp::MallocMessageBuilder mb;
 	auto world = mb.initRoot<proto::World>();
 	world_->serialize(world);
-
-	auto fs = kj::newDiskFilesystem();
-
-	std::string path = worldPath_;
-	const auto *dir = [&] {
-		if (path[0] == '/') {
-			path = path.substr(1);
-			return &fs->getRoot();
-		} else {
-			return &fs->getCurrent();
-		}
-	}();
+	kj::VectorOutputStream out;
+	capnp::writePackedMessage(out, mb);
 
 	info << "Writing to " << worldPath_ << "...";
-	auto replacer = dir->replaceFile(
-		kj::Path::parse(path),
-		kj::WriteMode::CREATE | kj::WriteMode::MODIFY);
-	auto appender = kj::newFileAppender(replacer->get().clone());
-	capnp::writePackedMessage(*appender, mb);
+	auto tmpPath = cat(worldPath_, ".tmp");
+	std::ofstream f(tmpPath);
+	if (!f) {
+		warn << "Failed to open " << tmpPath << " for writing!";
+		return;
+	}
+
+	f.write((char *)&out.getArray().front(), out.getArray().size());
+	f.close();
+	if (!f) {
+		warn << "Failed write to " << tmpPath << '!';
+		return;
+	}
+
+	std::error_code ec;
+	std::filesystem::rename(tmpPath, worldPath_, ec);
+	if (ec) {
+		warn << "Failed to commit file: " << ec.message();
+		return;
+	}
 
 	info << "Done!";
-	replacer->commit();
 }
 
 bool Game::reload()
