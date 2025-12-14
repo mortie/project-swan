@@ -70,7 +70,7 @@ void Game::createWorld(
 void Game::loadWorld(
 	std::string worldPath, std::span<const std::string> modPaths)
 {
-	std::ifstream f(worldPath);
+	std::ifstream f(worldPath, std::ios::binary);
 	if (!f) {
 		warn << "Failed to open " << worldPath << '!';
 		return;
@@ -684,7 +684,7 @@ void Game::save()
 
 	info << "Writing to " << worldPath_ << "...";
 	auto tmpPath = cat(worldPath_, ".tmp");
-	std::ofstream f(tmpPath);
+	std::ofstream f(tmpPath, std::ios::binary);
 	if (!f) {
 		warn << "Failed to open " << tmpPath << " for writing!";
 		return;
