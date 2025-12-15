@@ -28,10 +28,8 @@ struct InputHandler::LogEntry {
 };
 
 struct InputHandler::Gamepad {
-	std::array<float, 6> prevAxes;
-	std::array<float, 6> axes;
-	std::bitset<20> prevButtons;
-	std::bitset<20> buttons;
+	GLFWgamepadstate state = {};
+	GLFWgamepadstate prevState = {};
 };
 
 struct InputHandler::Impl {
@@ -79,9 +77,15 @@ Action *InputHandler::action(std::string_view name)
 
 void InputHandler::onKeyDown(int scancode)
 {
-	if (impl_->pressedKeys[scancode]) {
+	bool ignore =
+		scancode < 0 ||
+		size_t(scancode) >= impl_->pressedKeys.size() ||
+		impl_->pressedKeys[scancode];
+	if (ignore) {
+		warn << "Ignoring unknown key: " << scancode;
 		return;
 	}
+
 	impl_->pressedKeys[scancode] = true;
 
 	if (impl_->verbose) {
@@ -107,9 +111,14 @@ void InputHandler::onKeyDown(int scancode)
 
 void InputHandler::onKeyUp(int scancode)
 {
-	if (!impl_->pressedKeys[scancode]) {
+	bool ignore =
+		scancode < 0 ||
+		size_t(scancode) >= impl_->pressedKeys.size() ||
+		!impl_->pressedKeys[scancode];
+	if (ignore) {
 		return;
 	}
+
 	impl_->pressedKeys[scancode] = false;
 
 	if (impl_->verbose) {
@@ -139,9 +148,15 @@ void InputHandler::onKeyUp(int scancode)
 
 void InputHandler::onMouseDown(int button)
 {
-	if (impl_->pressedMouseButtons[button]) {
+	bool ignore =
+		button < 0 ||
+		size_t(button) >= impl_->pressedMouseButtons.size() ||
+		impl_->pressedMouseButtons[button];
+	if (ignore) {
+		warn << "Ignoring unknown mouse button: " << button;
 		return;
 	}
+
 	impl_->pressedMouseButtons[button] = true;
 
 	if (impl_->verbose) {
@@ -167,9 +182,14 @@ void InputHandler::onMouseDown(int button)
 
 void InputHandler::onMouseUp(int button)
 {
-	if (!impl_->pressedMouseButtons[button]) {
+	bool ignore =
+		button < 0 ||
+		size_t(button) >= impl_->pressedMouseButtons.size() ||
+		!impl_->pressedMouseButtons[button];
+	if (ignore) {
 		return;
 	}
+
 	impl_->pressedMouseButtons[button] = false;
 
 	if (impl_->verbose) {
@@ -248,16 +268,17 @@ void InputHandler::drawDebug()
 		}
 
 		auto &pad = *impl_->gamepads[jid];
-		ImGui::Text("Gamepad %zu (%s):", jid, glfwGetJoystickName(jid));
+		ImGui::Text("Gamepad %zu (%s):", jid, glfwGetGamepadName(jid));
 
-		for (size_t ax = 0; ax < pad.axes.size(); ++ax) {
+		for (size_t ax = 0; ax <= GLFW_GAMEPAD_AXIS_LAST; ++ax) {
 			const char *name = gamepadAxisToName(ax).data();
-			ImGui::Text("* Axis %zu (%s): %f", ax, name, pad.axes[ax]);
+			float val = pad.state.axes[ax];
+			ImGui::Text("* Axis %zu (%s): %f", ax, name, val);
 		}
 
-		for (size_t btn = 0; btn < pad.buttons.size(); ++btn) {
+		for (size_t btn = 0; btn < GLFW_GAMEPAD_BUTTON_LAST; ++btn) {
 			const char *name = gamepadButtonToName(btn).data();
-			int val = pad.buttons[btn];
+			int val = pad.state.buttons[btn];
 			ImGui::Text("* %zu (%s): %d", btn, name, val);
 		}
 	}
@@ -298,22 +319,6 @@ void InputHandler::setActions(std::vector<ActionSpec> actions)
 	}
 }
 
-static bool isGamepadOK(int jid)
-{
-	if (glfwJoystickIsGamepad(jid)) {
-		return true;
-	}
-
-	std::string_view name = glfwGetJoystickName(jid);
-	if (name.find("Xbox") != name.npos) {
-		info << "Allowing non-gamepad joystick '" << name << '\'';
-		return true;
-	}
-
-	info << "Denying non-gamepad joystick '" << name << '\'';
-	return false;
-}
-
 void InputHandler::beginFrame()
 {
 	for (int jid = 0; jid <= GLFW_JOYSTICK_LAST; ++jid) {
@@ -325,7 +330,7 @@ void InputHandler::beginFrame()
 					continue;
 				}
 
-				if (!isGamepadOK(jid)) {
+				if (!glfwJoystickIsGamepad(jid)) {
 					impl_->disabledGamepads[jid] = true;
 					continue;
 				}
@@ -335,24 +340,11 @@ void InputHandler::beginFrame()
 
 			Gamepad &gamepad = *impl_->gamepads[jid];
 
-			int count;
-			const float *axes = glfwGetJoystickAxes(jid, &count);
-			count = std::min(size_t(count), gamepad.axes.size());
-			for (int i = 0; i < count; ++i) {
-				gamepad.axes[i] = axes[i];
-			}
-
-			const auto *buttons = glfwGetJoystickButtons(jid, &count);
-			count = std::min(size_t(count), gamepad.buttons.size());
-			for (int i = 0; i < count; ++i) {
-				gamepad.buttons[i] = buttons[i];
-			}
-
+			glfwGetGamepadState(jid, &gamepad.state);
 			updateGamepad(gamepad);
 		} else if (impl_->gamepads[jid]) {
 			Gamepad &gamepad = *impl_->gamepads[jid];
-			gamepad.axes = {};
-			gamepad.buttons = {};
+			gamepad.state = {};
 			updateGamepad(gamepad);
 
 			impl_->gamepads[jid] = std::nullopt;
@@ -382,20 +374,20 @@ void InputHandler::endFrame()
 
 void InputHandler::updateGamepad(Gamepad &gamepad)
 {
-	for (int i = 0; i < int(gamepad.axes.size()); ++i) {
-		float val = gamepad.axes[i];
+	for (int i = 0; i <= GLFW_GAMEPAD_AXIS_LAST; ++i) {
+		float val = gamepad.state.axes[i];
 		if (std::abs(val) < 0.1) {
 			val = 0;
 		}
 
-		float delta = val - gamepad.prevAxes[i];
+		float delta = val - gamepad.prevState.axes[i];
 		if (delta == 0) {
 			continue;
 		}
-		gamepad.prevAxes[i] = val;
+		gamepad.prevState.axes[i] = val;
 
 		auto it = impl_->joystickAxes.find(i);
-		if (it == impl_->keys.end()) {
+		if (it == impl_->joystickAxes.end()) {
 			return;
 		}
 
@@ -407,13 +399,13 @@ void InputHandler::updateGamepad(Gamepad &gamepad)
 		}
 	}
 
-	for (int i = 0; i < int(gamepad.buttons.size()); ++i) {
-		bool pressed = gamepad.buttons[i];
-		bool prevPressed = gamepad.prevButtons[i];
+	for (int i = 0; i <= GLFW_GAMEPAD_BUTTON_LAST; ++i) {
+		bool pressed = gamepad.state.buttons[i];
+		bool prevPressed = gamepad.prevState.buttons[i];
 		if (pressed == prevPressed) {
 			continue;
 		}
-		gamepad.prevButtons[i] = pressed;
+		gamepad.prevState.buttons[i] = pressed;
 
 		if (pressed) {
 			onButtonDown(i);

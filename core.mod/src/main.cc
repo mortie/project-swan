@@ -485,7 +485,7 @@ public:
 		registerAction({
 			.name = "return-home",
 			.kind = Swan::ActionKind::ONESHOT,
-			.defaultInputs = {"key:B", "button:RIGHT_STICK"},
+			.defaultInputs = {"key:B", "button:RIGHT_THUMB"},
 		});
 		registerAction({
 			.name = "break-tile",
@@ -510,7 +510,7 @@ public:
 		registerAction({
 			.name = "sprint",
 			.kind = Swan::ActionKind::CONTINUOUS,
-			.defaultInputs = {"key:LEFT_SHIFT", "button:LEFT_STICK"},
+			.defaultInputs = {"key:LEFT_SHIFT", "button:LEFT_THUMB"},
 		});
 		registerAction({
 			.name = "jump",

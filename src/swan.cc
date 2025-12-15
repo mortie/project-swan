@@ -190,7 +190,9 @@ int main(int argc, char **argv)
 			std::stringstream ss;
 			ss << f.rdbuf();
 			auto str = std::move(ss).str();
-			glfwUpdateGamepadMappings(str.c_str());
+			if (!glfwUpdateGamepadMappings(str.c_str())) {
+				warn << "Failed to update gamepad mappings";
+			}
 		} else {
 			Swan::warn << "Failed to open assets/gamecontrollerdb.txt";
 		}
