@@ -52,7 +52,6 @@ void GrassSeedEntity::tick(Swan::Ctx &ctx, float dt)
 
 		auto pos = pos_ + dir;
 		if (!ctx.plane.tiles().get(pos).isSolid()) {
-			Swan::info << "Moving to " << pos;
 			pos_ = pos;
 		}
 	}
