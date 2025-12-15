@@ -27,7 +27,6 @@ public:
 	int width() { return width_; }
 	int height() { return height_; }
 
-
 private:
 	int32_t texture_ = -1;
 	int width_ = 0;
@@ -71,4 +70,5 @@ private:
 	std::shared_ptr<std::atomic<bool>> running_;
 	bool wasRunning_ = false;
 	bool reloadWorlds_ = false;
+	bool restoreNavCursor_ = false;
 };

@@ -102,6 +102,11 @@ void MainWindow::update()
 
 	if (!running && wasRunning_) {
 		reloadWorlds_ = true;
+		ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+		if (restoreNavCursor_) {
+			ImGui::SetNavCursorVisible(true);
+			restoreNavCursor_ = false;
+		}
 	}
 	wasRunning_ = running;
 
@@ -276,6 +281,14 @@ void MainWindow::launch(
 	std::string worldID,
 	std::optional<uint32_t> seed)
 {
+	if (running_->load()) {
+		return;
+	}
+
+	restoreNavCursor_ = ImGui::GetIO().NavVisible;
+	ImGui::SetNavCursorVisible(false);
+	ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableGamepad;
+
 	running_->store(true);
 	updateWorldLastPlayedTime(worldID);
 	std::thread([running = running_, worldID = std::move(worldID), seed] {

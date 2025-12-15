@@ -96,6 +96,7 @@ int main()
 	Cygnet::glCheck();
 
 	imguiIo = &ImGui::GetIO();
+	imguiIo->ConfigFlags = ImGuiConfigFlags_NavEnableGamepad;
 	imguiIo->IniFilename = nullptr;
 
 	StyleColors();
