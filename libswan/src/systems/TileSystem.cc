@@ -346,13 +346,18 @@ void TileSystemImpl::spawnTileParticles(TilePos pos, const Tile &tile)
 		for (int x = 0; x < 8; ++x) {
 			float fx = pos.x + (x / 8.0);
 
+			auto color = tile.more->particles->particles[y][x];
+			if (color.a < 10) {
+				continue;
+			}
+
 			plane_.world_->game_->spawnParticle(layer, {
 				.pos = {fx, fy},
 				.vel = {
 					(randfloat() - 0.5f) * 2.0f,
 					-randfloat() * 2.0f,
 				},
-				.color = tile.more->particles->particles[y][x],
+				.color = color,
 				.lifetime = (randfloat() * 0.5f) + 0.1f,
 			});
 		}
