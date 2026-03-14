@@ -2,8 +2,10 @@
 
 #include "entities/PlayerEntity.h"
 #include "swan/constants.h"
+#include "swan/util.h"
 #include "worldgen/StructureDef.h"
 #include <cmath>
+#include <numbers>
 
 namespace CoreMod {
 
@@ -83,7 +85,7 @@ void DefaultWorldGen::drawSurfaceBackground(
 					.scale({sx, sy})
 					.translate(pos.add(x * 4, y * 4)),
 				.sprite = clouds_[variant],
-				.opacity = factor,
+				.opacity = factor * sunlightLevel_,
 			});
 		}
 	}
@@ -112,9 +114,9 @@ void DefaultWorldGen::drawCaveBackground(
 Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos)
 {
 	float y = pos.y;
-
+	float b = sunlightLevel_;
 	return Swan::UI::linearGradient(y, {
-		{0, Cygnet::ByteColor{128, 220, 250}},
+		{0, Cygnet::ByteColor{uint8_t(128 * b), uint8_t(220 * b), uint8_t(250 * b)}},
 		{70, Cygnet::ByteColor{107, 87, 5}},
 		{100, Cygnet::ByteColor{107, 87, 5}},
 		{200, Cygnet::ByteColor{20, 20, 23}},
@@ -307,6 +309,53 @@ Swan::EntityRef DefaultWorldGen::spawnPlayer(Swan::Ctx &ctx)
 
 	return ctx.plane.entities().spawn<PlayerEntity>(
 		Swan::Vec2{(float)x, (float)getGrassLevel(perlin_, x) - 2});
+}
+
+
+void DefaultWorldGen::update(Swan::Ctx &ctx, float dt)
+{
+	time_ += dt;
+
+	timeOfDay_ += dt / DAY_LENGTH;
+	if (timeOfDay_ >= 1) {
+		timeOfDay_ -= 1;
+	}
+
+	// Daylight cycle
+	float level;
+	if (timeOfDay_ < 0.1) {
+		// Late night
+		level = 0;
+	} else if (timeOfDay_ < 0.3) {
+		// Morning
+		level = (timeOfDay_ - 0.1) / 0.2;
+	} else if (timeOfDay_ < 0.7) {
+		// Day
+		level = 1;
+	} else if (timeOfDay_ < 0.9) {
+		// Evening
+		level = 1 - (timeOfDay_ - 0.7) / 0.2;
+	} else {
+		// Early night
+		level = 0;
+	}
+
+	// Re-scale from 0-1 to 0.1-1
+	level = (level * 0.9) + 0.1;
+
+	if (level != sunlightLevel_) {
+		if (level == 1 || std::abs(level- sunlightLevel_) > 0.005) {
+			sunlightLevel_ = level;
+			ctx.plane.lights().setSunlightLevel(sunlightLevel_);
+		}
+	}
+}
+
+void DefaultWorldGen::debugInfo()
+{
+	ImGui::Text(
+		"Time of day: %d%%, sunlight: %d%%",
+		int(timeOfDay_ * 100), int(sunlightLevel_ * 100));
 }
 
 }

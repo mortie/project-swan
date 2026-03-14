@@ -57,6 +57,7 @@ public:
 	void onLightRemoved(TilePos pos, float level);
 	void onChunkAdded(ChunkPos pos, NewLightChunk &&chunk);
 	void onChunkRemoved(ChunkPos pos);
+	void updateSunlightLevel(float level);
 	void flip();
 
 private:
@@ -66,7 +67,7 @@ private:
 	struct Event {
 		enum class Tag {
 			BLOCK_ADDED, BLOCK_REMOVED, LIGHT_ADDED, LIGHT_REMOVED,
-			CHUNK_ADDED, CHUNK_REMOVED,
+			CHUNK_ADDED, CHUNK_REMOVED, UPDATE_SUNLIGHT_LEVEL,
 		} tag;
 
 		TilePos pos;
@@ -93,8 +94,10 @@ private:
 	bool running_ = true;
 	std::unordered_map<ChunkPos, LightChunk> chunks_;
 	std::unordered_set<ChunkPos> updatedChunks_;
+	std::unordered_set<ChunkPos> chunksWithSun_;
 	LightChunk *cachedChunk_ = nullptr;
 	Vec2i cachedChunkPos_;
+	float sunlightLevel_ = 1;
 
 	int buffer_ = 0;
 	std::vector<Event> buffers_[2] = {{}, {}};
@@ -149,6 +152,13 @@ inline void LightServer::onChunkRemoved(Vec2i pos)
 	std::lock_guard<std::mutex> lock(mut_);
 
 	buffers_[buffer_].push_back({Event::Tag::CHUNK_REMOVED, pos, {.i = 0}});
+}
+
+inline void LightServer::updateSunlightLevel(float level)
+{
+    std::lock_guard<std::mutex> lock(mut_);
+
+    buffers_[buffer_].push_back({Event::Tag::UPDATE_SUNLIGHT_LEVEL, {}, {.f = level}});
 }
 
 inline void LightServer::flip()

@@ -183,6 +183,8 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 		}
 
 		chunks_.erase(evt.pos);
+		chunksWithSun_.erase(evt.pos);
+		updatedChunks_.erase(evt.pos);
 		markAdjacentChunksModified(evt.pos);
 		return;
 	}
@@ -223,6 +225,13 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 	// These were handled earlier
 	case Event::Tag::CHUNK_ADDED:
 	case Event::Tag::CHUNK_REMOVED:
+		break;
+
+	case Event::Tag::UPDATE_SUNLIGHT_LEVEL:
+		sunlightLevel_ = evt.f;
+		for (auto pos: chunksWithSun_) {
+			markAdjacentChunksModified(pos);
+		}
 		break;
 	}
 }
@@ -353,6 +362,7 @@ float LightServer::recalcTile(
 
 void LightServer::processChunkSun(LightChunk &chunk, ChunkPos cpos)
 {
+	bool hasSun = false;
 	LightChunk *tc = getChunk(cpos + Vec2i(0, -1));
 
 	int base = cpos.y * CHUNK_HEIGHT;
@@ -375,7 +385,8 @@ void LightServer::processChunkSun(LightChunk &chunk, ChunkPos cpos)
 		for (int rx = 0; rx < CHUNK_WIDTH; ++rx) {
 			bool lit = light > 0 && tc && tc->blocksLine[rx] == 0 && !line[rx];
 			if (lit) {
-				chunk.lightBuffer()[ry * CHUNK_WIDTH + rx] = light;
+				hasSun = true;
+				chunk.lightBuffer()[ry * CHUNK_WIDTH + rx] = light * sunlightLevel_;
 				if (chunk.blocks[ry * CHUNK_WIDTH + rx]) {
 					line[rx] = true;
 				}
@@ -384,6 +395,12 @@ void LightServer::processChunkSun(LightChunk &chunk, ChunkPos cpos)
 				chunk.lightBuffer()[ry * CHUNK_WIDTH + rx] = 0;
 			}
 		}
+	}
+
+	if (hasSun) {
+		chunksWithSun_.insert(cpos);
+	} else {
+		chunksWithSun_.erase(cpos);
 	}
 }
 
@@ -474,7 +491,8 @@ void LightServer::processChunkSmoothing(LightChunk &chunk, ChunkPos cpos)
 	LightChunk *rc = getChunk(cpos + Vec2i(1, 0));
 
 	auto getLight = [&](LightChunk &chunk, int x, int y) {
-		return chunk.lightBuffer()[y * CHUNK_WIDTH + x];
+		int idx = y * CHUNK_WIDTH + x;
+		return chunk.lightBuffer()[idx];
 	};
 
 	auto calc = [&](int x1, int x2, int y1, int y2, auto tf, auto bf, auto lf, auto rf) {
@@ -651,8 +669,8 @@ void LightServer::finalizeChunk(LightChunk &chunk)
 {
 	for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 		for (int x = 0; x < CHUNK_WIDTH; ++x) {
-			chunk.lightLevels[y * CHUNK_WIDTH + x] =
-				linToSRGB(chunk.lightBuffer()[y * CHUNK_HEIGHT + x]);
+			int idx = y * CHUNK_HEIGHT + x;
+			chunk.lightLevels[idx] = linToSRGB(chunk.lightBuffer()[idx]);
 		}
 	}
 }

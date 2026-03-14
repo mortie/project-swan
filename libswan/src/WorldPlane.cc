@@ -158,7 +158,8 @@ void WorldPlane::update(float dt)
 {
 	ZoneScopedN("WorldPlane update");
 
-	worldGen_->update(dt);
+	worldGen_->update(getContext(), dt);
+
 	// Just init one chunk per frame
 	if (chunkInitList_.size() > 0) {
 		Chunk *chunk = chunkInitList_.front();

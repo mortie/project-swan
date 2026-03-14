@@ -25,6 +25,11 @@ void LightSystemImpl::removeLight(TilePos pos, float level)
 	server_.onLightRemoved(pos, level);
 }
 
+void LightSystemImpl::setSunlightLevel(float level)
+{
+	server_.updateSunlightLevel(level);
+}
+
 void LightSystemImpl::addSolidBlock(TilePos pos)
 {
 	server_.onSolidBlockAdded(pos);

@@ -12,6 +12,8 @@ namespace CoreMod {
 
 class DefaultWorldGen: public Swan::WorldGen {
 public:
+	static constexpr float DAY_LENGTH = 15 * 60;
+
 	DefaultWorldGen(Swan::World &world, uint32_t seed):
 		seed_(seed),
 		tGrass_(world.getTileID("core::grass")),
@@ -38,11 +40,8 @@ public:
 	Cygnet::Color backgroundColor(Swan::Vec2 pos) override;
 	void genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) override;
 	Swan::EntityRef spawnPlayer(Swan::Ctx &ctx) override;
-
-	void update(float dt) override
-	{
-		time_ += dt;
-	}
+	void update(Swan::Ctx &ctx, float dt) override;
+	void debugInfo() override;
 
 private:
 	void drawSurfaceBackground(
@@ -69,6 +68,8 @@ private:
 	TallGrassDef tallGrassDef_;
 	TreeDef treeDef_;
 	float time_ = 0;
+	float timeOfDay_ = 0.3;
+	float sunlightLevel_ = 1;
 };
 
 }

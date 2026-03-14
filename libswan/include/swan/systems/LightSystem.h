@@ -23,6 +23,7 @@ public:
 
 	void addLight(TilePos pos, float level);
 	void removeLight(TilePos pos, float level);
+	void setSunlightLevel(float level);
 
 	/*
 	 * Available to friends
@@ -63,6 +64,7 @@ public:
 
 	using LightSystemImpl::addLight;
 	using LightSystemImpl::removeLight;
+	using LightSystemImpl::setSunlightLevel;
 
 	friend WorldPlane;
 	friend TileSystemImpl;
