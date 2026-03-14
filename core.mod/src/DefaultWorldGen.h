@@ -43,6 +43,9 @@ public:
 	void update(Swan::Ctx &ctx, float dt) override;
 	void debugInfo() override;
 
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
+
 private:
 	void drawSurfaceBackground(
 		Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos, float factor);

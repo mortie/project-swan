@@ -1,5 +1,6 @@
 #include "DefaultWorldGen.h"
 
+#include "core_mod.capnp.h"
 #include "entities/PlayerEntity.h"
 #include "swan/constants.h"
 #include "swan/util.h"
@@ -341,7 +342,7 @@ void DefaultWorldGen::update(Swan::Ctx &ctx, float dt)
 	}
 
 	// Re-scale from 0-1 to 0.1-1
-	level = (level * 0.9) + 0.1;
+	level = (level * 0.99) + 0.01;
 
 	if (level != sunlightLevel_) {
 		if (level == 1 || std::abs(level- sunlightLevel_) > 0.005) {
@@ -356,6 +357,19 @@ void DefaultWorldGen::debugInfo()
 	ImGui::Text(
 		"Time of day: %d%%, sunlight: %d%%",
 		int(timeOfDay_ * 100), int(sunlightLevel_ * 100));
+}
+
+void DefaultWorldGen::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
+{
+	auto root = mb.initRoot<proto::DefaultWorldGen>();
+	root.setTimeOfDay(timeOfDay_);
+}
+
+void DefaultWorldGen::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
+{
+	auto root = mr.getRoot<proto::DefaultWorldGen>();
+	timeOfDay_ = root.getTimeOfDay();
+	update(ctx, 0);
 }
 
 }

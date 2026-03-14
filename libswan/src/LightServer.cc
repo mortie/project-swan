@@ -188,10 +188,18 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 		markAdjacentChunksModified(evt.pos);
 		return;
 	}
+	else if (evt.tag == Event::Tag::UPDATE_SUNLIGHT_LEVEL) {
+		sunlightLevel_ = evt.f;
+		for (auto pos: chunksWithSun_) {
+			markAdjacentChunksModified(pos);
+		}
+		return;
+	}
 
 	ChunkPos cpos = lightChunkPos(evt.pos);
 	LightChunk *ch = getChunk(cpos);
 	if (!ch) {
+		warn << "LightServer: Event for a non-existent chunk " << evt.pos;
 		return;
 	}
 	Vec2i rpos = lightRelPos(evt.pos);
@@ -225,13 +233,7 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 	// These were handled earlier
 	case Event::Tag::CHUNK_ADDED:
 	case Event::Tag::CHUNK_REMOVED:
-		break;
-
 	case Event::Tag::UPDATE_SUNLIGHT_LEVEL:
-		sunlightLevel_ = evt.f;
-		for (auto pos: chunksWithSun_) {
-			markAdjacentChunksModified(pos);
-		}
 		break;
 	}
 }

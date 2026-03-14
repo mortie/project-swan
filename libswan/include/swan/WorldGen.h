@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <cygnet/util.h>
+#include <capnp/message.h>
 
 #include "common.h"
 #include "Chunk.h"
@@ -30,6 +31,9 @@ public:
 
 	virtual void update(Ctx &ctx, float dt) {}
 	virtual void debugInfo() {}
+
+	virtual void serialize(Ctx &ctx, capnp::MessageBuilder &mb) {}
+	virtual void deserialize(Ctx &ctx, capnp::MessageReader &mr) {}
 };
 
 }

@@ -2,6 +2,9 @@
 
 #include <math.h>
 #include <utility>
+#include <capnp/message.h>
+#include <capnp/serialize-packed.h>
+#include <kj/io.h>
 
 #include <swan/log.h>
 #include "Clock.h"
@@ -335,10 +338,31 @@ void WorldPlane::serialize(proto::WorldPlane::Builder w)
 			chunk.serialize(chunks[index++]);
 		}
 	}
+
+	{
+		// Serialize world generator
+		capnp::MallocMessageBuilder mb;
+		worldGen_->serialize(getContext(), mb);
+		kj::VectorOutputStream out;
+		capnp::writePackedMessage(out, mb);
+		auto arr = out.getArray();
+		auto data = w.initWorldGenData(arr.size());
+		memcpy(&data.front(), &arr.front(), arr.size());
+	}
 }
 
 void WorldPlane::deserialize(proto::WorldPlane::Reader r, std::span<Tile::ID> tileMap)
 {
+	{
+		// Deserialize world generator
+		auto data = r.getWorldGenData();
+		if (data.size() > 0) {
+			kj::ArrayInputStream stream(data);
+			capnp::PackedMessageReader reader(stream);
+			worldGen_->deserialize(getContext(), reader);
+		}
+	}
+
 	chunks_.clear();
 	activeChunks_.clear();
 	tickChunks_.clear();

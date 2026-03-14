@@ -114,3 +114,7 @@ struct AqueductTileEntity {
 	fluidLevel @1 :Float32;
 	fluidType @2 :Text;
 }
+
+struct DefaultWorldGen {
+	timeOfDay @0 :Float32;
+}

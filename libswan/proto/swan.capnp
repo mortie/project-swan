@@ -70,6 +70,7 @@ struct WorldPlane {
 	chunks @1 :List(Chunk);
 	entitySystem @2 :EntitySystem;
 	fluidSystem @3 :FluidSystem;
+	worldGenData @4 :Data;
 }
 
 struct Chunk {
