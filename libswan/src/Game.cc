@@ -859,6 +859,7 @@ void Game::initInputHandler()
 
 void Game::initCommandHandler()
 {
+	commandSets_.clear();
 	commandSets_.push_back({
 		.name = "@",
 	});

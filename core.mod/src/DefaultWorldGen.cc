@@ -115,9 +115,13 @@ void DefaultWorldGen::drawCaveBackground(
 Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos)
 {
 	float y = pos.y;
-	float b = sunlightLevel_;
+	auto skyColor = Swan::UI::linearGradient(sunlightLevel_, {
+		{0, Cygnet::ByteColor(100, 100, 255)},
+		{1, Cygnet::ByteColor(128, 220, 250)},
+	});
+
 	return Swan::UI::linearGradient(y, {
-		{0, Cygnet::ByteColor{uint8_t(128 * b), uint8_t(220 * b), uint8_t(250 * b)}},
+		{0, skyColor},
 		{70, Cygnet::ByteColor{107, 87, 5}},
 		{100, Cygnet::ByteColor{107, 87, 5}},
 		{200, Cygnet::ByteColor{20, 20, 23}},
