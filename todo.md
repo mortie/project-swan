@@ -1,4 +1,4 @@
-* [ ] Day night cycle
+* [X] Day night cycle
 * [ ] Biomes
     * [ ] Desert biome: Hurt you during day unless you have protective gear
     * [ ] Cold biome: Hurt you during night unless you have warm gear
@@ -8,8 +8,9 @@
 * [ ] Power system
     * [ ] Windmill?
     * [ ] Water wheel?
-* [ ] Clouds
+* [X] Clouds
 * [ ] "Creeping darkness", dangerous ooze in the depths
 * [X] Grass seeds to repopulate broken grass
 * [ ] Physics collide against fluid data
 * [ ] Dimensional rift/loop
+* [X] Command system
