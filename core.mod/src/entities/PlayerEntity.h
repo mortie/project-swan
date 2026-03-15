@@ -122,7 +122,8 @@ private:
 			slot6(ctx.game.action("core::select-slot-6")),
 			slot7(ctx.game.action("core::select-slot-7")),
 			slot8(ctx.game.action("core::select-slot-8")),
-			slot9(ctx.game.action("core::select-slot-9"))
+			slot9(ctx.game.action("core::select-slot-9")),
+			openConsole(ctx.game.action("core::open-console"))
 		{}
 
 		Swan::Action *cheatHeal;
@@ -161,6 +162,8 @@ private:
 		Swan::Action *slot7;
 		Swan::Action *slot8;
 		Swan::Action *slot9;
+
+		Swan::Action *openConsole;
 	};
 
 	struct UI {
@@ -208,6 +211,7 @@ private:
 	void handleInventoryHover(Swan::Ctx &ctx);
 
 	void drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd);
+	void drawConsole(Swan::Ctx &ctx);
 
 	State state_ = State::IDLE;
 	Vit vit_ = Vit::OK;
@@ -261,6 +265,11 @@ private:
 	Swan::BasicInventory inventory_;
 	CraftingInventory craftingInventory_;
 	Swan::BasicPhysicsBody physicsBody_;
+
+	std::string consoleOutput_;
+	std::string consoleInput_;
+	bool consoleVisible_ = false;
+	bool consoleFirstFrame_ = false;
 };
 
 }

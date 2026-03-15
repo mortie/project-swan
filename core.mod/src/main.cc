@@ -588,6 +588,12 @@ public:
 			.kind = Swan::ActionKind::ONESHOT,
 			.defaultInputs = {"key:0"},
 		});
+
+		registerAction({
+			.name = "open-console",
+			.kind = Swan::ActionKind::ONESHOT,
+			.defaultInputs = {"key:SLASH"},
+		});
 	}
 };
 

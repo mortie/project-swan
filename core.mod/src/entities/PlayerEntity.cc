@@ -255,6 +255,11 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 			ctx, rnd, ctx.game.getMouseUIPos(),
 			ui_.hoveredAuxInventorySlot);
 	}
+
+	// Draw console
+	if (consoleVisible_) {
+		drawConsole(ctx);
+	}
 }
 
 void PlayerEntity::drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
@@ -281,6 +286,37 @@ void PlayerEntity::drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 			}, Cygnet::Anchor::TOP_LEFT);
 		}
 	}, Cygnet::Anchor::BOTTOM);
+}
+
+void PlayerEntity::drawConsole(Swan::Ctx &ctx)
+{
+	ImGui::SetNextWindowSize(ImVec2(300, 200));
+	ImGui::Begin("Console", &consoleVisible_);
+	ImGui::Text("Command");
+
+	if (consoleFirstFrame_) {
+		ImGui::SetKeyboardFocusHere();
+	}
+	consoleFirstFrame_ = false;
+
+	ImGui::SetNextItemWidth(-1);
+	bool enter = ImGui::InputText(
+		"##Command", &consoleInput_,
+		ImGuiInputTextFlags_EnterReturnsTrue);
+
+	if (enter) {
+		if (consoleInput_ == "") {
+			consoleVisible_ = false;
+		}
+
+		ImGui::SetKeyboardFocusHere(-1);
+		consoleOutput_.clear();
+		ctx.game.runCommand(ctx, consoleInput_, consoleOutput_);
+		consoleInput_ = "";
+	}
+
+	ImGui::TextWrapped("%s", consoleOutput_.c_str());
+	ImGui::End();
 }
 
 void PlayerEntity::update(Swan::Ctx &ctx, float dt)
@@ -399,6 +435,12 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 		}
 		Swan::ItemStack stack(&ctx.world.getItem(tile.name), count);
 		inventory_.insert(stack);
+	}
+
+	// Console
+	if (*actions_.openConsole) {
+		consoleVisible_ = true;
+		consoleFirstFrame_ = true;
 	}
 
 	// Break block, or click UI

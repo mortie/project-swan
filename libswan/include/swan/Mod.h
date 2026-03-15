@@ -12,6 +12,7 @@
 #include "WorldGen.h"
 #include "EntityCollection.h"
 #include "OS.h"
+#include "Command.h"
 
 namespace cpptomlng {
 class table;
@@ -58,6 +59,11 @@ public:
 		actions_.push_back(std::move(action));
 	}
 
+	void registerCommand(CommandSpec command)
+	{
+		commands_.push_back(std::move(command));
+	}
+
 	template<typename WG>
 	void registerWorldGen(std::string name);
 
@@ -77,6 +83,7 @@ private:
 	std::vector<EntityCollection::Factory> entities_;
 	std::vector<std::string> recipeKinds_;
 	std::vector<ActionSpec> actions_;
+	std::vector<CommandSpec> commands_;
 
 	friend ModWrapper;
 	friend World;
@@ -92,6 +99,8 @@ public:
 
 	// This uses string& due to cpptoml >_>
 	std::string lang(const std::string &cat, const std::string &name);
+
+	std::vector<CommandSpec> takeCommands() { return std::move(mod_->commands_); }
 
 	void loadLang(std::string_view lang);
 

@@ -41,6 +41,7 @@ libswan = declare_dependency(
     'src/assets.cc',
     'src/Chunk.cc',
     'src/Clock.cc',
+    'src/Command.cc',
     'src/uiutil.cc',
     'src/EntityCollection.cc',
     'src/FrameRecorder.cc',

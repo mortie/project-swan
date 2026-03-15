@@ -268,6 +268,8 @@ public:
 		}
 	}
 
+	ROString(const char *str): ROString(std::string_view(str)) {}
+
 	template<typename T>
 	ROString(const std::optional<T> &v)
 	{
@@ -295,14 +297,10 @@ public:
 	operator std::string_view() const { return str_; }
 	operator bool() const { return str_[0]; }
 
-	friend bool operator==(const ROString &a, std::string_view b)
+	template<typename T>
+	friend bool operator==(const ROString &a, const T &b)
 	{
-		return a.str() == b;
-	}
-
-	friend bool operator==(const ROString &a, const ROString &b)
-	{
-		return a.str() == b.str();
+		return a.str() == std::string_view(b);
 	}
 
 private:

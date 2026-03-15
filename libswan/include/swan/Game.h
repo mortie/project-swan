@@ -11,7 +11,9 @@
 #include <cygnet/util.h>
 
 #include <kj/io.h>
+#include <vector>
 
+#include "Command.h"
 #include "InputHandler.h"
 #include "common.h"
 #include "World.h"
@@ -125,6 +127,9 @@ public:
 	InputHandler &inputs() { return inputHandler_; }
 	Action *action(std::string_view name) { return inputs().action(name); }
 
+	CommandSpec *matchCommand(std::span<CowStr> tokens, std::vector<CowStr> &out);
+	void runCommand(Ctx &ctx, std::string_view command, std::string &out);
+
 	std::unique_ptr<World> world_ = NULL;
 	std::string worldPath_;
 	Cygnet::Renderer renderer_;
@@ -167,10 +172,13 @@ public:
 	Action *uiModAction_;
 	Action *uiCameraZoomAction_;
 
+	std::vector<CommandSet> commandSets_;
+
 private:
 	bool reload();
 	void tick();
 	void initInputHandler();
+	void initCommandHandler();
 
 	float tickAcc_ = 0;
 
@@ -187,6 +195,9 @@ private:
 
 	double didScroll_ = 0;
 	std::function<bool()> recompileMods_;
+
+	std::vector<CowStr> commandTokensBuf_;
+	std::vector<CowStr> commandArgvBuf_;
 };
 
 

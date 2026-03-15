@@ -59,6 +59,7 @@ void Game::createWorld(
 	}
 
 	initInputHandler();
+	initCommandHandler();
 
 	world_->setWorldGen(worldgen);
 	world_->setCurrentPlane(world_->addPlane());
@@ -94,6 +95,7 @@ void Game::loadWorld(
 	}
 
 	initInputHandler();
+	initCommandHandler();
 
 	auto world = reader.getRoot<proto::World>();
 	world_->deserialize(world);
@@ -709,6 +711,65 @@ void Game::save()
 	info << "Done!";
 }
 
+CommandSpec *Game::matchCommand(std::span<CowStr> tokens, std::vector<CowStr> &out)
+{
+	if (tokens.empty()) {
+		return &commandSets_[0].commands[0];
+	}
+
+	std::string_view setFilter = "";
+	if (tokens[0].str().starts_with("@")) {
+		setFilter = tokens[0];
+		if (setFilter != "@") {
+			setFilter = setFilter.substr(1);
+		}
+
+		tokens = tokens.subspan(1);
+	}
+
+	if (tokens.empty()) {
+		return &commandSets_[0].commands[0];
+	}
+
+	for (auto &set: commandSets_) {
+		if (setFilter != "" && setFilter != set.name) {
+			continue;
+		}
+
+		for (auto &cmd: set.commands) {
+			if (cmd.pattern.empty()) {
+				continue;
+			}
+
+			if (!Swan::matchCommand(cmd.pattern, tokens, out)) {
+				continue;
+			}
+
+			return &cmd;
+		}
+	}
+
+	return &commandSets_[0].commands[0];
+}
+
+void Game::runCommand(Ctx &ctx, std::string_view command, std::string &out)
+{
+	commandTokensBuf_.clear();
+	if (!tokenizeCommand(command, commandTokensBuf_)) {
+		out = "Parse error";
+		return;
+	}
+
+	if (commandTokensBuf_.empty()) {
+		out = "";
+		return;
+	}
+
+	commandArgvBuf_.clear();
+	CommandSpec *cmd = matchCommand(commandTokensBuf_, commandArgvBuf_);
+	cmd->handler(ctx, commandArgvBuf_, out);
+}
+
 bool Game::reload()
 {
 	RTClock startTime;
@@ -794,6 +855,87 @@ void Game::initInputHandler()
 	uiActivateAction_ = inputHandler_.action("@::ui-activate");
 	uiModAction_ = inputHandler_.action("@::ui-mod");
 	uiCameraZoomAction_ = inputHandler_.action("@::ui-camera-zoom");
+}
+
+void Game::initCommandHandler()
+{
+	commandSets_.push_back({
+		.name = "@",
+	});
+	auto &builtins = commandSets_.back().commands;
+
+	builtins.push_back({
+		.pattern = {},
+		.help = "No such command.",
+		.handler = +[](Swan::Ctx &ctx, std::span<CowStr>, std::string &out) {
+			out = "No such command.";
+		},
+	});
+
+	builtins.push_back({
+		.pattern = {"help"},
+		.help = "Show help info.",
+		.handler = +[](Swan::Ctx &ctx, std::span<CowStr>, std::string &out) {
+			out = "Available commands:\n";
+
+			for (auto &set: ctx.game.commandSets_) {
+				for (auto &cmd: set.commands) {
+					if (cmd.pattern.empty()) {
+						continue;
+					}
+
+					out += '[';
+					out += set.name;
+					out += ']';
+					for (auto &part: cmd.pattern) {
+						out += ' ';
+						out += part;
+					}
+					out += '\n';
+				}
+			}
+		},
+	});
+
+	builtins.push_back({
+		.pattern = {"help", "@command..."},
+		.help = "Show help info for a given command.",
+		.handler = +[](Swan::Ctx &ctx, std::span<CowStr> argv, std::string &out) {
+			std::vector<CowStr> params;
+			CommandSpec *command = ctx.game.matchCommand(argv, params);
+			for (auto &part: command->pattern) {
+				if (out != "") {
+					out += ' ';
+				}
+				out += part;
+			}
+			if (!command->pattern.empty()) {
+				out += '\n';
+			}
+
+			out += command->help;
+		},
+	});
+
+	builtins.push_back({
+		.pattern = {"echo", "@text..."},
+		.help = "Echo back the parameters.",
+		.handler = +[](Swan::Ctx &ctx, std::span<Swan::CowStr> params, std::string &out) {
+			for (auto &param: params) {
+				if (out != "") {
+					out += ' ';
+				}
+				out += param;
+			}
+		},
+	});
+
+	for (auto &mod: world_->mods_) {
+		commandSets_.push_back({
+			.name = std::string(mod.name()),
+			.commands = mod.takeCommands(),
+		});
+	}
 }
 
 }
