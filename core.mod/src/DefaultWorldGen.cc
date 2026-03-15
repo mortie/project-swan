@@ -116,8 +116,8 @@ Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos)
 {
 	float y = pos.y;
 	auto skyColor = Swan::UI::linearGradient(sunlightLevel_, {
-		{0, Cygnet::ByteColor(100, 100, 255)},
-		{1, Cygnet::ByteColor(128, 220, 250)},
+		{0, Cygnet::ByteColor{100, 100, 255}},
+		{1, Cygnet::ByteColor{128, 220, 250}},
 	});
 
 	return Swan::UI::linearGradient(y, {

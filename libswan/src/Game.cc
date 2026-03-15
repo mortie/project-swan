@@ -862,6 +862,7 @@ void Game::initCommandHandler()
 	commandSets_.clear();
 	commandSets_.push_back({
 		.name = "@",
+		.commands = {},
 	});
 	auto &builtins = commandSets_.back().commands;
 

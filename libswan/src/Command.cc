@@ -96,8 +96,7 @@ std::optional<CowStr> parseString(Reader &r, char quote)
 		r2.consume();
 	}
 
-	// NRVO doesn't apply here
-	return std::move(output);
+	return output;
 }
 
 }
