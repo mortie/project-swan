@@ -35,6 +35,9 @@ public:
 		treeDef_(world, seed_)
 	{}
 
+	void setTimeOfDay(float time) { timeOfDay_ = time; }
+	float timeOfDay() { return timeOfDay_; }
+
 	void drawBackground(
 		Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos) override;
 	Cygnet::Color backgroundColor(Swan::Vec2 pos) override;

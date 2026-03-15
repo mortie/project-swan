@@ -1,3 +1,5 @@
+#include <charconv>
+#include <string>
 #include <swan/swan.h>
 
 #include "DefaultWorldGen.h"
@@ -593,6 +595,51 @@ public:
 			.name = "open-console",
 			.kind = Swan::ActionKind::ONESHOT,
 			.defaultInputs = {"key:SLASH"},
+		});
+
+		registerCommand({
+			.pattern = {"time"},
+			.help = "Set or get the time of day.",
+			.handler = +[](Swan::Ctx &ctx, std::span<Swan::CowStr> argv, std::string &out) {
+				auto *gen = dynamic_cast<DefaultWorldGen *>(ctx.plane.worldGen_.get());
+				if (!gen) {
+					out = "Unknown current world generator.";
+					return;
+				}
+
+				char buf[8];
+				snprintf(buf, sizeof(buf), "%.1f%%", gen->timeOfDay() * 100);
+				out = buf;
+			},
+		});
+		registerCommand({
+			.pattern = {"time", "@time"},
+			.help = "Set the time of day to @time (a value between 0 and 100).",
+			.handler = +[](Swan::Ctx &ctx, std::span<Swan::CowStr> argv, std::string &out) {
+				auto *gen = dynamic_cast<DefaultWorldGen *>(ctx.plane.worldGen_.get());
+				if (!gen) {
+					out = "Unknown current world generator.";
+					return;
+				}
+
+				const char *data = argv[0].data();
+				float val;
+				auto res = std::from_chars(data, data + argv[0].size(), val);
+				if (res.ptr != data + argv[0].size()) {
+					out = "Bad time parameter";
+					return;
+				}
+
+				if (val < 0 || val > 100) {
+					out = "Bad time parameter";
+					return;
+				}
+
+				gen->setTimeOfDay(val / 100);
+				out = "Set time of day to ";
+				out += std::to_string(val);
+				out += '%';
+			},
 		});
 	}
 };
