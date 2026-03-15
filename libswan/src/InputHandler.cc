@@ -79,8 +79,7 @@ void InputHandler::onKeyDown(int scancode)
 {
 	bool ignore =
 		scancode < 0 ||
-		size_t(scancode) >= impl_->pressedKeys.size() ||
-		impl_->pressedKeys[scancode];
+		size_t(scancode) >= impl_->pressedKeys.size();
 	if (ignore) {
 		warn << "Ignoring unknown key: " << scancode;
 		return;
