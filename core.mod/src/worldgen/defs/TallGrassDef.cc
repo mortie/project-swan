@@ -1,8 +1,10 @@
 #include "TallGrassDef.h"
 
+#include "tiles.h"
+
 namespace CoreMod {
 
-void TallGrassDef::generateArea(Area &area)
+void TallGrassDef::generateArea(WorldArea &area)
 {
 	if (!area.hasSurface) {
 		return;
@@ -20,8 +22,8 @@ void TallGrassDef::generateArea(Area &area)
 		for (int y = area.begin.y; y < area.end.y; ++y) {
 			Swan::Tile::ID tile = area({x, y});
 			Swan::Tile::ID tileBelow = area({x, y + 1});
-			if (tileBelow == tGrass_ && tile == Swan::World::AIR_TILE_ID) {
-				area({x, y}) = tTallGrass_;
+			if (tileBelow == tiles::grass && tile == Swan::World::AIR_TILE_ID) {
+				area({x, y}) = tiles::tallGrass;
 			}
 		}
 	}

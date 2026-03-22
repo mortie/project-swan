@@ -1,10 +1,8 @@
-#include "StructureDef.h"
-
-#include "Prefab.h"
+#include "WorldArea.h"
 
 namespace CoreMod {
 
-void StructureDef::Area::place(const Prefab &prefab, Swan::Vec2i pos)
+void WorldArea::place(const Prefab &prefab, Swan::Vec2i pos)
 {
 	for (int y = 0; y < prefab.height; ++y) {
 		Swan::Tile::ID *row = &prefab.tiles[y * prefab.width];

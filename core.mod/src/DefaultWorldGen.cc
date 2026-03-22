@@ -5,6 +5,7 @@
 #include "swan/constants.h"
 #include "swan/util.h"
 #include "worldgen/StructureDef.h"
+#include "tiles.h"
 #include <cmath>
 #include <numbers>
 
@@ -218,15 +219,15 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 			!isOil(pos.add(0, -1), grassLevel) &&
 			!isOil(pos.add(0, 1), grassLevel)));
 	if (spawnCave) {
-		return tAir_;
+		return Swan::World::AIR_TILE_ID;
 	}
 
 	if (isLake(pos, grassLevel, stoneLevel)) {
-		return tWater_;
+		return tiles::water;
 	}
 
 	if (isClay(pos, grassLevel, stoneLevel)) {
-		return tClay_;
+		return tiles::clayTile;
 	}
 
 	// Same thing as with spawnCave,
@@ -239,20 +240,20 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 			!isCave(pos.add(0, -1), grassLevel) &&
 			!isCave(pos.add(0, 1), grassLevel)));
 	if (spawnOil) {
-		return tOil_;
+		return tiles::oil;
 	}
 
 	if (pos.y > stoneLevel) {
-		return tStone_;
+		return tiles::stone;
 	}
 	if (pos.y > grassLevel) {
-		return tDirt_;
+		return tiles::dirt;
 	}
 	if (pos.y == grassLevel) {
-		return tGrass_;
+		return tiles::grass;
 	}
 	else {
-		return tAir_;
+		return Swan::World::AIR_TILE_ID;
 	}
 }
 
@@ -264,7 +265,7 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 	constexpr int GEN_WIDTH = Swan::CHUNK_WIDTH + GEN_PADDING * 2;
 	constexpr int GEN_HEIGHT = Swan::CHUNK_HEIGHT + GEN_PADDING * 2;
 
-	StructureDef::Area area;
+	WorldArea area;
 
 	area.begin = chunkTilePos.add(-GEN_PADDING, -GEN_PADDING);
 	area.end = area.begin.add(GEN_WIDTH, GEN_HEIGHT);

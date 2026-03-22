@@ -1,12 +1,12 @@
 #include "TreeDef.h"
 
-#include "../prefabs/TreeCrown.h"
+#include "worldgen/prefabs/TreeCrown.h"
+#include "tiles.h"
 
 namespace CoreMod {
 
 TreeDef::TreeDef(Swan::World &world, uint32_t seed):
-	seed_(seed),
-	tiles_(world)
+	seed_(seed)
 {
 	crowns_.reserve(5);
 	crowns_.emplace_back(world, TreeCrown::map, TreeCrown::variant1);
@@ -17,7 +17,7 @@ TreeDef::TreeDef(Swan::World &world, uint32_t seed):
 }
 
 void TreeDef::spawnTree(
-	Swan::TilePos pos, Area &area)
+	Swan::TilePos pos, WorldArea &area)
 {
 	if (!area.hasSurface) {
 		return;
@@ -27,9 +27,9 @@ void TreeDef::spawnTree(
 	for (int y = 0; y < height; ++y) {
 		auto ap = pos.add(0, -y);
 		if (y == 0) {
-			area(ap) = tiles_.treeBase;
+			area(ap) = tiles::tree__base;
 		} else {
-			area(ap) = tiles_.treeStem;
+			area(ap) = tiles::tree__stem;
 		}
 	}
 
@@ -39,7 +39,7 @@ void TreeDef::spawnTree(
 	area.place(crown, pos.add(-crown.width / 2, -height - crown.height + 1));
 }
 
-void TreeDef::generateArea(Area &area)
+void TreeDef::generateArea(WorldArea &area)
 {
 	auto shouldSpawnTree = [&](int x) {
 		return Swan::random(x ^ seed_) % 4 == 0;
@@ -70,7 +70,7 @@ void TreeDef::generateArea(Area &area)
 		for (int y = area.begin.y; y < area.end.y; ++y) {
 			Swan::Tile::ID tile = area({x, y});
 			Swan::Tile::ID tileBelow = area({x, y + 1});
-			if (tileBelow == tiles_.grass && tile == Swan::World::AIR_TILE_ID) {
+			if (tileBelow == tiles::grass && tile == Swan::World::AIR_TILE_ID) {
 				spawnTree({x, y}, area);
 			}
 		}

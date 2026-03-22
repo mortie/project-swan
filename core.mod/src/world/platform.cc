@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "util.h"
+#include "tiles.h"
 
 namespace CoreMod {
 
@@ -39,45 +40,45 @@ static void updatePlatform(Swan::Ctx &ctx, Swan::TilePos pos)
 	bool hasPlatformRight = dynamic_cast<PlatformTraits *>(right.more->traits.get());
 	bool hasSolidRight = right.isSupportH() && !hasPlatformRight;
 
-	std::string_view desired = "";
+	Swan::Tile::ID desired = Swan::World::AIR_TILE_ID;
 	if (hasSolidBelow) {
 		if (hasPlatformLeft && hasPlatformRight) {
-			desired = "core::platform::supported::center";
+			desired = tiles::platform__supported__center;
 		} else if (hasPlatformLeft) {
-			desired = "core::platform::supported::right";
+			desired = tiles::platform__supported__right;
 		} else if (hasPlatformRight) {
-			desired = "core::platform::supported::left";
+			desired = tiles::platform__supported__left;
 		} else {
-			desired = "core::platform::supported::lone";
+			desired = tiles::platform__supported__lone;
 		}
 	} else {
 		if (hasPlatformLeft && hasPlatformRight) {
-			desired = "core::platform::center";
+			desired = tiles::platform__center;
 		} else if (hasPlatformLeft && hasSolidRight) {
-			desired = "core::platform::anchored::right";
+			desired = tiles::platform__anchored__right;
 		} else if (hasSolidLeft && hasPlatformRight) {
-			desired = "core::platform::anchored::left";
+			desired = tiles::platform__anchored__left;
 		} else if (hasPlatformLeft) {
-			desired = "core::platform::right";
+			desired = tiles::platform__right;
 		} else if (hasPlatformRight) {
-			desired = "core::platform::left";
+			desired = tiles::platform__left;
 		} else if (hasSolidLeft) {
-			desired = "core::platform::anchored::stub::right";
+			desired = tiles::platform__anchored__stub__right;
 		} else if (hasSolidRight) {
-			desired = "core::platform::anchored::stub::left";
+			desired = tiles::platform__anchored__stub__left;
 		}
 	}
 
-	if (desired == "") {
+	if (desired == Swan::World::AIR_TILE_ID) {
 		breakTileAndDropItem(ctx, pos);
 		return;
 	}
 
-	if (self.name == desired) {
+	if (self.id == desired) {
 		return;
 	}
 
-	auto &desiredSelf = ctx.world.getTile(desired);
+	auto &desiredSelf = ctx.world.getTileByID(desired);
 
 	auto tileIsPlatform = [](Swan::Tile &t) {
 		auto ptr = dynamic_cast<PlatformTraits *>(t.more->traits.get());

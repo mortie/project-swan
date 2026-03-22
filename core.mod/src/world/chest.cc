@@ -2,6 +2,7 @@
 
 #include "tileentities/ChestTileEntity.h"
 #include "entities/PlayerEntity.h"
+#include "tiles.h"
 
 namespace CoreMod {
 
@@ -9,7 +10,7 @@ static void closeCallback(Swan::Ctx &ctx, Swan::EntityRef ref)
 {
 	auto pos = ref->trait<Swan::TileEntityTrait>()->pos;
 	ctx.game.playSound(ctx.world.getSound("core::misc/lock-close"), pos);
-	ctx.plane.tiles().set(pos, "core::chest");
+	ctx.plane.tiles().setID(pos, tiles::chest);
 }
 
 static void openChest(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
@@ -29,7 +30,7 @@ static void openChest(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMet
 	}
 
 	ctx.game.playSound(ctx.world.getSound("core::misc/lock-open"), pos);
-	ctx.plane.tiles().set(pos, "core::chest::open");
+	ctx.plane.tiles().setID(pos, tiles::chest__open);
 }
 
 static void closeChest(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)

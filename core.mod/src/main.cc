@@ -3,6 +3,7 @@
 #include <swan/swan.h>
 
 #include "DefaultWorldGen.h"
+#include "tiles.h"
 #include "entities/DynamiteEntity.h"
 #include "entities/GrassSeedEntity.h"
 #include "entities/PlayerEntity.h"
@@ -52,7 +53,7 @@ public:
 				}
 
 				auto isGrass = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
-					return ctx.plane.tiles().get(pos).name == "core::grass";
+					return ctx.plane.tiles().getID(pos) == tiles::grass;
 				};
 				bool hasNearbyGrass =
 					isGrass(ctx, pos.add(-1, 0)) ||
@@ -70,7 +71,7 @@ public:
 					return;
 				}
 
-				ctx.plane.tiles().set(pos, "core::grass");
+				ctx.plane.tiles().setID(pos, tiles::grass);
 			},
 		});
 		registerTile({
@@ -96,13 +97,13 @@ public:
 			.droppedItem = "core::dirt",
 			.onTileUpdate = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
 				if (ctx.plane.tiles().get(pos.add(0, -1)).isOpaque()) {
-					ctx.plane.tiles().set(pos, "core::dirt");
+					ctx.plane.tiles().setID(pos, tiles::dirt);
 				}
 			},
 			.onWorldTick = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
 				auto fluid = ctx.plane.fluids().getAtPos(pos.as<float>().add(0.5, -0.2));
 				if (fluid.density > 0) {
-					ctx.plane.tiles().set(pos, "core::dirt");
+					ctx.plane.tiles().setID(pos, tiles::dirt);
 				}
 			},
 		});
@@ -263,13 +264,13 @@ public:
 			.name = "potato",
 			.image = "core::items/potato",
 			.onActivate = +[](Swan::Ctx &ctx, Swan::Item::ActivateMeta meta) {
-				Swan::Tile &tile = ctx.plane.tiles().get(meta.cursor);
+				Swan::Tile::ID tile = ctx.plane.tiles().getID(meta.cursor);
 				auto above = meta.cursor.add(0, -1);
 				bool plantPotato =
-					(tile.name == "core::dirt" || tile.name == "core::grass") &&
+					(tile == tiles::dirt || tile == tiles::grass) &&
 					(ctx.plane.tiles().getID(above) == Swan::World::AIR_TILE_ID);
 				if (plantPotato) {
-					ctx.plane.tiles().set(above, "core::potato-bush::0");
+					ctx.plane.tiles().setID(above, tiles::potatoBush__0);
 					meta.stack.remove(1);
 				}
 			},
@@ -641,6 +642,11 @@ public:
 				out += '%';
 			},
 		});
+	}
+
+	void start(Swan::World &world)
+	{
+		tiles::init(world);
 	}
 };
 

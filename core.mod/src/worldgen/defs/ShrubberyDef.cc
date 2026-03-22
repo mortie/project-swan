@@ -1,8 +1,10 @@
 #include "ShrubberyDef.h"
 
+#include "tiles.h"
+
 namespace CoreMod {
 
-void ShrubberyDef::generateArea(Area &area)
+void ShrubberyDef::generateArea(WorldArea &area)
 {
 	if (!area.hasSurface) {
 		return;
@@ -20,14 +22,14 @@ void ShrubberyDef::generateArea(Area &area)
 		int surfaceLevel = area.surfaceLevel(x);
 		Swan::Tile::ID tile = area({x, surfaceLevel - 1});
 		Swan::Tile::ID tileBelow = area({x, surfaceLevel});
-		if (tileBelow == tGrass_ && tile == Swan::World::AIR_TILE_ID) {
+		if (tileBelow == tiles::grass && tile == Swan::World::AIR_TILE_ID) {
 			int r = Swan::random(seed_ * 3 + x) % 16;
 			if (r > 14) {
-				area({x, surfaceLevel - 1}) = tPotatoBush_;
+				area({x, surfaceLevel - 1}) = tiles::potatoBush;
 			} else if (r > 9) {
-				area({x, surfaceLevel - 1}) = tDeadShrub_;
+				area({x, surfaceLevel - 1}) = tiles::deadShrub;
 			} else {
-				area({x, surfaceLevel - 1}) = tBoulder_;
+				area({x, surfaceLevel - 1}) = tiles::boulder;
 			}
 		}
 	}

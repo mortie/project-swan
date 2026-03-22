@@ -2,8 +2,10 @@
 #include "kj/io.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstdlib>
+#include <fstream>
 #include <math.h>
 #include <sstream>
 #include <time.h>
@@ -928,6 +930,78 @@ void Game::initCommandHandler()
 					out += ' ';
 				}
 				out += param;
+			}
+		},
+	});
+
+	builtins.push_back({
+		.pattern = {"gen-tiles-file", "@mod"},
+		.help = "Generate a tiles.x file for all tiles from the given mod.",
+		.handler = +[](Swan::Ctx &ctx, std::span<Swan::CowStr> params, std::string &out) {
+			auto mod = params[0].str();
+			int tileCount = 0;
+			std::string prefix = cat(mod, "::");
+
+			auto predicate = [&](std::string_view tileName) {
+				if (!tileName.starts_with(prefix)) {
+					return false;
+				}
+				if (tileName.find('@') != std::string_view::npos) {
+					return false;
+				}
+
+				return true;
+			};
+
+			for (auto &tile: ctx.world.tiles_) {
+				if (predicate(tile.name.str())) {
+					tileCount += 1;
+				}
+			}
+
+			if (!tileCount) {
+				out += "Fonud no matching tiles. Aborting.\n";
+				return;
+			}
+
+			std::string filename = cat("tiles_", mod, ".x");
+			out += cat("Writing ", filename, " with ", tileCount, " entries...\n");
+
+			std::ofstream f(filename);
+			if (!f) {
+				out += "Failed to open file!\n";
+				return;
+			}
+
+			std::string varName;
+			for (auto &tile: ctx.world.tiles_) {
+				if (!predicate(tile.name.str())) {
+					continue;
+				}
+
+				varName.clear();
+				auto shortName = tile.name.str().substr(prefix.size());
+				for (size_t i = 0; i < shortName.size(); ++i) {
+					char ch = shortName[i];
+					if (ch == '-' && i < shortName.size() - 1) {
+						varName += char(toupper(shortName[i + 1]));
+						i += 1;
+					} else if (ch == ':' || ch == '-') {
+						varName += '_';
+					} else {
+						varName += ch;
+					}
+				}
+
+				f << "X(" << varName << ", \"" << tile.name.str() << "\");\n";
+			}
+
+			f.flush();
+			f.close();
+			if (f.fail()) {
+				out += "Write failed!\n";
+			} else {
+				out += "Done.\n";
 			}
 		},
 	});

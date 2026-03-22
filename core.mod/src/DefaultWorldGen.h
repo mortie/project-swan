@@ -16,13 +16,6 @@ public:
 
 	DefaultWorldGen(Swan::World &world, uint32_t seed):
 		seed_(seed),
-		tGrass_(world.getTileID("core::grass")),
-		tDirt_(world.getTileID("core::dirt")),
-		tStone_(world.getTileID("core::stone")),
-		tClay_(world.getTileID("core::clay-tile")),
-		tWater_(world.getTileID("core::water")),
-		tOil_(world.getTileID("core::oil")),
-		tAir_(world.getTileID("@::air")),
 		bgCave_(world.getSprite("core::misc/background-cave")),
 		clouds_{
 			world.getSprite("core::misc/cloud-1"),
@@ -64,7 +57,6 @@ private:
 	void initializeTile(Swan::Ctx &ctx, Swan::TilePos pos);
 
 	const uint32_t seed_;
-	Swan::Tile::ID tGrass_, tDirt_, tStone_, tClay_, tWater_, tOil_, tAir_;
 	Cygnet::RenderSprite bgCave_;
 	Cygnet::RenderSprite clouds_[3];
 	siv::PerlinNoise perlin_{seed_};

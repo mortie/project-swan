@@ -1,5 +1,6 @@
 #include "torch.h"
 #include "util.h"
+#include "tiles.h"
 
 namespace CoreMod {
 
@@ -12,11 +13,11 @@ static bool onTorchSpawn(Swan::Ctx &ctx, Swan::TilePos pos)
 	}
 
 	if (ctx.plane.tiles().get(pos.add(-1, 0)).isFullSupportH()) {
-		ctx.plane.tiles().set(pos, "core::torch::left");
+		ctx.plane.tiles().setID(pos, tiles::torch__left);
 		return true;
 	}
 	else if (ctx.plane.tiles().get(pos.add(1, 0)).isFullSupportH()) {
-		ctx.plane.tiles().set(pos, "core::torch::right");
+		ctx.plane.tiles().setID(pos, tiles::torch__right);
 		return true;
 	}
 
@@ -25,20 +26,20 @@ static bool onTorchSpawn(Swan::Ctx &ctx, Swan::TilePos pos)
 
 static void onTorchUpdate(Swan::Ctx &ctx, Swan::TilePos pos)
 {
-	auto &tile = ctx.plane.tiles().get(pos);
+	auto id = ctx.plane.tiles().getID(pos);
 	bool isSupported;
 
-	if (tile.name == "core::torch") {
+	if (id == tiles::torch) {
 		isSupported = ctx.plane.tiles().get(pos.add(0, 1)).isSupportV();
 	}
-	else if (tile.name == "core::torch::left") {
+	else if (id == tiles::torch__left) {
 		isSupported = ctx.plane.tiles().get(pos.add(-1, 0)).isFullSupportH();
 	}
-	else if (tile.name == "core::torch::right") {
+	else if (id == tiles::torch__right) {
 		isSupported = ctx.plane.tiles().get(pos.add(1, 0)).isFullSupportH();
 	}
 	else {
-		Swan::warn << "Torch update for unknown torch tile " << tile.name;
+		Swan::warn << "Torch update for unknown torch tile " << ctx.world.getTileByID(id).name;
 		return;
 	}
 

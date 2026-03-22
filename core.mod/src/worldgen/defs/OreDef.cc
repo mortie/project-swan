@@ -1,8 +1,10 @@
 #include "OreDef.h"
 
+#include "tiles.h"
+
 namespace CoreMod {
 
-void OreDef::generateArea(Area &area)
+void OreDef::generateArea(WorldArea &area)
 {
 	for (int y = area.begin.y; y <= area.end.y; ++y) {
 		if (y < 10 || y > 400) {
@@ -31,16 +33,16 @@ void OreDef::generateArea(Area &area)
 				set = &tSulphurOutcrop_;
 			}
 
-			if (area({x, y + 1}) == tStone_) {
+			if (area({x, y + 1}) == tiles::stone) {
 				id = set->normal;
 			}
-			else if (area({x - 1, y}) == tStone_) {
+			else if (area({x - 1, y}) == tiles::stone) {
 				id = set->left;
 			}
-			else if (area({x + 1, y}) == tStone_) {
+			else if (area({x + 1, y}) == tiles::stone) {
 				id = set->right;
 			}
-			else if (area({x, y - 1}) == tStone_) {
+			else if (area({x, y - 1}) == tiles::stone) {
 				id = set->hanging;
 			}
 		}

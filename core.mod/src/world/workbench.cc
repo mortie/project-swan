@@ -1,4 +1,5 @@
 #include "workbench.h"
+#include "tiles.h"
 #include "world/util.h"
 
 using namespace std::literals;
@@ -28,10 +29,8 @@ static bool spawnWorkbench(Swan::Ctx &ctx, Swan::TilePos pos)
 		return false;
 	}
 
-	auto leftID = ctx.world.getTileID("core::workbench::left");
-	auto rightID = ctx.world.getTileID("core::workbench::right");
-	ctx.plane.tiles().setIDWithoutUpdate(pos, leftID);
-	ctx.plane.tiles().setIDWithoutUpdate(pos.add(1, 0), rightID);
+	ctx.plane.tiles().setIDWithoutUpdate(pos, tiles::workbench__left);
+	ctx.plane.tiles().setIDWithoutUpdate(pos.add(1, 0), tiles::workbench__right);
 	ctx.plane.tiles().scheduleUpdate(pos);
 	ctx.plane.tiles().scheduleUpdate(pos.add(1, 0));
 	return true;

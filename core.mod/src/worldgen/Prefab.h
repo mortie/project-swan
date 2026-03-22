@@ -1,8 +1,8 @@
 #pragma once
 
+#include <swan/swan.h>
 #include <initializer_list>
 #include <memory>
-#include <swan/swan.h>
 #include <span>
 
 namespace CoreMod {

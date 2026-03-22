@@ -1,6 +1,7 @@
 #include "aqueduct.h"
 #include "swan/util.h"
 #include "tileentities/AqueductTileEntity.h"
+#include "tiles.h"
 
 namespace CoreMod {
 
@@ -26,13 +27,13 @@ static void updateAqueduct(Swan::Ctx &ctx, Swan::TilePos pos)
 	bool hasRight = right && right->connectable.has(Swan::Direction::LEFT);
 
 	if (hasLeft && hasRight) {
-		ctx.plane.tiles().set(pos, "core::aqueduct::center");
+		ctx.plane.tiles().setID(pos, tiles::aqueduct__center);
 	} else if (hasLeft) {
-		ctx.plane.tiles().set(pos, "core::aqueduct::right");
+		ctx.plane.tiles().setID(pos, tiles::aqueduct__right);
 	} else if (hasRight) {
-		ctx.plane.tiles().set(pos, "core::aqueduct::left");
+		ctx.plane.tiles().setID(pos, tiles::aqueduct__left);
 	} else {
-		ctx.plane.tiles().set(pos, "core::aqueduct");
+		ctx.plane.tiles().setID(pos, tiles::aqueduct);
 	}
 
 	updateAqueductTileEntity(ctx, pos);
