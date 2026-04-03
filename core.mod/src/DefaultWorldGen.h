@@ -3,10 +3,8 @@
 #include <swan/swan.h>
 #include <PerlinNoise.hpp>
 
-#include "worldgen/defs/OreDef.h"
-#include "worldgen/defs/ShrubberyDef.h"
-#include "worldgen/defs/TallGrassDef.h"
-#include "worldgen/defs/TreeDef.h"
+#include "worldgen/Biome.h"
+#include "worldgen/WGContext.h"
 
 namespace CoreMod {
 
@@ -15,17 +13,13 @@ public:
 	static constexpr float DAY_LENGTH = 15 * 60;
 
 	DefaultWorldGen(Swan::World &world, uint32_t seed):
-		seed_(seed),
 		bgCave_(world.getSprite("core::misc/background-cave")),
 		clouds_{
 			world.getSprite("core::misc/cloud-1"),
 			world.getSprite("core::misc/cloud-2"),
 			world.getSprite("core::misc/cloud-3"),
 		},
-		oreDef_(world, seed_),
-		shrubberyDef_(world, seed_),
-		tallGrassDef_(world, seed_),
-		treeDef_(world, seed_)
+		wg_(seed, world)
 	{}
 
 	void setTimeOfDay(float time) { timeOfDay_ = time; }
@@ -49,25 +43,22 @@ private:
 		Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos, float factor);
 
 	bool isCave(Swan::TilePos pos, int grassLevel);
-	bool isLake(Swan::TilePos pos, int grassLevel, int stoneLevel);
 	bool isOil(Swan::TilePos pos, int grassLevel);
-	bool isClay(Swan::TilePos pos, int grassLevel, int stoneLevel);
 
-	Swan::Tile::ID genTile(Swan::TilePos pos, int grassLevel, int stoneLevel);
-	void initializeTile(Swan::Ctx &ctx, Swan::TilePos pos);
+	Swan::Tile::ID genTile(
+		Swan::TilePos pos, const Biome &biome,
+		int grassLevel, int stoneLevel);
 
-	const uint32_t seed_;
+	const Biome &getBiome(int x);
+
 	Cygnet::RenderSprite bgCave_;
 	Cygnet::RenderSprite clouds_[3];
-	siv::PerlinNoise perlin_{seed_};
 
-	OreDef oreDef_;
-	ShrubberyDef shrubberyDef_;
-	TallGrassDef tallGrassDef_;
-	TreeDef treeDef_;
 	float time_ = 0;
 	float timeOfDay_ = 0.3;
 	float sunlightLevel_ = 1;
+
+	WGContext wg_;
 };
 
 }

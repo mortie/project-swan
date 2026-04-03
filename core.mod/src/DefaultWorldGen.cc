@@ -6,7 +6,9 @@
 #include "swan/util.h"
 #include "worldgen/StructureDef.h"
 #include "tiles.h"
+#include "worldgen/biomes/biomes.h"
 #include <cmath>
+#include <limits>
 #include <numbers>
 
 namespace CoreMod {
@@ -63,13 +65,13 @@ void DefaultWorldGen::drawSurfaceBackground(
 
 	pos = whole.as<float>() * 8 + frac * 4;
 	for (int y = -10; y <= 10; ++y) {
-		if (Swan::random(seed_ ^ (y + whole.y)) % 32 > 8) {
+		if (Swan::random(wg_.seed ^ (y + whole.y)) % 32 > 8) {
 			continue;
 		}
 
 		for (int x = -15; x <= 15; ++x) {
 			uint32_t res = Swan::random(Swan::random(
-				seed_ ^
+				wg_.seed ^
 				((y + whole.y) << 16) ^
 				(x + whole.x - shift)));
 			int variant = res % 64;
@@ -144,15 +146,7 @@ bool DefaultWorldGen::isCave(Swan::TilePos pos, int grassLevel)
 		threshold += (6 - diff) * 0.03;
 	}
 
-	return perlin_.noise2D(pos.x / 43.37, pos.y / 16.37) > threshold;
-}
-
-bool DefaultWorldGen::isLake(Swan::TilePos pos, int grassLevel,  int stoneLevel)
-{
-	return
-		pos.y >= grassLevel &&
-		pos.y <= stoneLevel + 10 &&
-		perlin_.noise2D(pos.x / 32.6, pos.y / 21.565) > 0.4;
+	return wg_.perlin.noise2D(pos.x / 43.37, pos.y / 16.37) > threshold;
 }
 
 bool DefaultWorldGen::isOil(Swan::TilePos pos, int grassLevel)
@@ -160,53 +154,12 @@ bool DefaultWorldGen::isOil(Swan::TilePos pos, int grassLevel)
 	return
 		pos.y > grassLevel + 30 &&
 		pos.y <= grassLevel + 500 &&
-		perlin_.noise2D(pos.x / 70.6, pos.y / 40.565) > 0.4;
-}
-
-bool DefaultWorldGen::isClay(Swan::TilePos pos, int grassLevel, int stoneLevel)
-{
-	if (pos.y > stoneLevel + 3) {
-		return false;
-	}
-
-	bool hasLake =
-		isLake(pos.add(-1, -1), grassLevel, stoneLevel) ||
-		isLake(pos.add(1, -1), grassLevel, stoneLevel) ||
-		isLake(pos.add(1, 0), grassLevel, stoneLevel);
-	if (hasLake && Swan::random(pos.x) % 32 < 31) {
-		return true;
-	}
-
-	uint32_t rand = Swan::random((pos.x << 5) ^ pos.y) % 16;
-	if (rand < 14) {
-		return false;
-	}
-
-	if (isLake(pos.add(0, -1), grassLevel, stoneLevel)) {
-		return true;
-	}
-
-	if (isClay(pos.add(0, -1), grassLevel, stoneLevel)) {
-		return true;
-	}
-
-	if (rand < 14) {
-		return false;
-	}
-
-	if (isClay(pos.add(-1, -1), grassLevel, stoneLevel)) {
-		return true;
-	}
-
-	if (isClay(pos.add(1, -1), grassLevel, stoneLevel)) {
-		return true;
-	}
-
-	return false;
+		wg_.perlin.noise2D(pos.x / 70.6, pos.y / 40.565) > 0.4;
 }
 
 Swan::Tile::ID DefaultWorldGen::genTile(
 	Swan::TilePos pos,
+	const Biome &biome,
 	int grassLevel,
 	int stoneLevel)
 {
@@ -220,14 +173,6 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 			!isOil(pos.add(0, 1), grassLevel)));
 	if (spawnCave) {
 		return Swan::World::AIR_TILE_ID;
-	}
-
-	if (isLake(pos, grassLevel, stoneLevel)) {
-		return tiles::water;
-	}
-
-	if (isClay(pos, grassLevel, stoneLevel)) {
-		return tiles::clayTile;
 	}
 
 	// Same thing as with spawnCave,
@@ -247,20 +192,45 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 		return tiles::stone;
 	}
 	if (pos.y > grassLevel) {
-		return tiles::dirt;
+		return biome.soilTile;
 	}
 	if (pos.y == grassLevel) {
-		return tiles::grass;
+		return biome.surfaceTile;
 	}
 	else {
 		return Swan::World::AIR_TILE_ID;
 	}
 }
 
+const Biome &DefaultWorldGen::getBiome(int x)
+{
+	float humidity = wg_.perlin.noise1D(x / 223.6) * 2;
+	float temperature = wg_.perlin.noise1D(x / 197.6213) * 2;
+	float elevation = 0;
+	float steepness = 0;
+
+	const Biome *closestBiome = &biomes::grassland;
+	float smallestSqDist = std::numeric_limits<float>::infinity();
+	for (auto biome: biomes::biomes) {
+		float dh = biome->humidity.normalizedValue - humidity;
+		float dt = biome->temperature.normalizedValue - temperature;
+		float de = biome->elevation.normalizedValue - elevation;
+		float ds = biome->steepness.normalizedValue - steepness;
+		float sqDist = dh * dh + dt * dt + de * de + ds * ds;
+		if (sqDist < smallestSqDist) {
+			smallestSqDist = sqDist;
+			closestBiome = biome;
+		}
+	}
+
+	return *closestBiome;
+}
+
 void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 {
 	Swan::TilePos chunkTilePos = chunk.pos() *
 		Swan::TilePos{Swan::CHUNK_WIDTH, Swan::CHUNK_HEIGHT};
+	int chunkCenterX = chunkTilePos.x + Swan::CHUNK_WIDTH / 2;
 
 	constexpr int GEN_WIDTH = Swan::CHUNK_WIDTH + GEN_PADDING * 2;
 	constexpr int GEN_HEIGHT = Swan::CHUNK_HEIGHT + GEN_PADDING * 2;
@@ -281,24 +251,24 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 	int surfaceLevels[GEN_WIDTH];
 	area.surfaceLevels = surfaceLevels;
 
+	const Biome &biome = getBiome(chunkCenterX);
+
 	for (int x = area.begin.x; x <= area.end.x; ++x) {
-		int grassLevel = getGrassLevel(perlin_, x);
+		int grassLevel = getGrassLevel(wg_.perlin, x);
 		area.surfaceLevel(x) = grassLevel;
 
 		if (grassLevel >= area.begin.y && grassLevel < area.end.y) {
 			area.hasSurface = true;
 		}
 
-		int stoneLevel = getStoneLevel(perlin_, x);
+		int stoneLevel = getStoneLevel(wg_.perlin, x);
 		for (int y = area.begin.y; y <= area.end.y; ++y) {
-			area({x, y}) = genTile({x, y}, grassLevel, stoneLevel);
+			area({x, y}) = genTile({x, y}, biome, grassLevel, stoneLevel);
 		}
 	}
 
-	oreDef_.generateArea(area);
-	shrubberyDef_.generateArea(area);
-	treeDef_.generateArea(area);
-	tallGrassDef_.generateArea(area);
+	// Process biome
+	biome.postProcess(area, wg_);
 
 	for (int cy = 0; cy < Swan::CHUNK_HEIGHT; ++cy) {
 		Swan::Tile::ID *crow = &chunk.getTileData()[cy * Swan::CHUNK_WIDTH];
@@ -311,10 +281,10 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 
 Swan::EntityRef DefaultWorldGen::spawnPlayer(Swan::Ctx &ctx)
 {
-	int x = getPlayerX(perlin_);
+	int x = getPlayerX(wg_.perlin);
 
 	return ctx.plane.entities().spawn<PlayerEntity>(
-		Swan::Vec2{(float)x, (float)getGrassLevel(perlin_, x) - 2});
+		Swan::Vec2{(float)x, (float)getGrassLevel(wg_.perlin, x) - 2});
 }
 
 

@@ -75,6 +75,7 @@ void registerTree(Swan::Mod &mod)
 		{"tree::stem", "core::tiles/tree@11"},
 		{"tree::cross", "core::tiles/tree@4"},
 		{"tree::top", "core::tiles/tree@1"},
+		{"tree::center", "core::tiles/tree@7"},
 	};
 	for (auto [name, image]: treeSpecs) {
 		mod.registerTile({
@@ -97,7 +98,6 @@ void registerTree(Swan::Mod &mod)
 		{"tree::leaves::right", "core::tiles/tree@2"},
 		{"tree::branch::left", "core::tiles/tree@6"},
 		{"tree::branch::right", "core::tiles/tree@8"},
-		{"tree::center", "core::tiles/tree@7"},
 		{"tree::stub::left", "core::tiles/tree@3"},
 		{"tree::stub::right", "core::tiles/tree@5"},
 	};
