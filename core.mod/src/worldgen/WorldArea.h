@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bitset>
 #include <swan/swan.h>
 
 #include "Prefab.h"
@@ -11,6 +12,7 @@ struct WorldArea {
 	Swan::TilePos end;
 	Swan::Tile::ID **rows;
 	int *surfaceLevels;
+	bool *sameBiomes;
 	bool hasSurface = false;
 
 	Swan::Tile::ID &get(Swan::TilePos tp)
@@ -34,6 +36,15 @@ struct WorldArea {
 		}
 
 		return surfaceLevels[x - begin.x];
+	}
+
+	bool isSameBiome(int x)
+	{
+		if (x < begin.x || x >= end.x) {
+			return false;
+		}
+
+		return sameBiomes[x - begin.x];
 	}
 
 	void place(const Prefab &prefab, Swan::TilePos pos);

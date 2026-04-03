@@ -102,12 +102,13 @@ static void generateTrees(
 		return Swan::random(x ^ wg.seed) % 4 == 0;
 	};
 
-	if (area.end.y > 100 || area.begin.y < -100) {
-		return;
-	}
-
 	for (int x = area.begin.x; x < area.end.x; ++x) {
 		if (!shouldSpawnTree(x)) {
+			continue;
+		}
+
+		// Avoid generating trees near biome boundaries
+		if (!area.isSameBiome(x - 5) || !area.isSameBiome(x + 5)) {
 			continue;
 		}
 

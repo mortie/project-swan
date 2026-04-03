@@ -258,7 +258,31 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 	int surfaceLevels[GEN_WIDTH];
 	area.surfaceLevels = surfaceLevels;
 
+	bool sameBiomes[GEN_WIDTH];
+	area.sameBiomes = sameBiomes;
+
 	const Biome &biome = getBiome(chunkCenterX);
+
+	// Mark current chunk as same biome
+	for (int i = 0; i < Swan::CHUNK_WIDTH; ++i) {
+		sameBiomes[GEN_PADDING + i] = true;
+	}
+
+	// If the left chunk has the same biome,
+	// mark it so
+	if (&getBiome(chunkCenterX - Swan::CHUNK_WIDTH) == &biome) {
+		for (int i = 0; i < GEN_PADDING; ++i) {
+			sameBiomes[i] = true;
+		}
+	}
+
+	// If the right chunk has the same biome,
+	// mark it so
+	if (&getBiome(chunkCenterX + Swan::CHUNK_WIDTH) == &biome) {
+		for (int i = 0; i < GEN_PADDING; ++i) {
+			sameBiomes[Swan::CHUNK_WIDTH + GEN_PADDING + i] = true;
+		}
+	}
 
 	for (int x = area.begin.x; x <= area.end.x; ++x) {
 		int grassLevel = getGrassLevel(wg_.perlin, x);
