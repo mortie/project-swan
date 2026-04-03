@@ -69,7 +69,7 @@ void DefaultWorldGen::drawSurfaceBackground(
 			continue;
 		}
 
-		for (int x = -15; x <= 15; ++x) {
+		for (int x = -20; x <= 20; ++x) {
 			uint32_t res = Swan::random(Swan::random(
 				wg_.seed ^
 				((y + whole.y) << 16) ^
