@@ -29,8 +29,8 @@ jobs:
 
     - name: Select MinGW flavor
       run: |
-        sudo ln -s x86_64-w64-mingw32-gcc-posix /usr/bin/x86_64-w64-mingw32-gcc
-        sudo ln -s x86_64-w64-mingw32-g++-posix /usr/bin/x86_64-w64-mingw32-g++
+        sudo ln -sf x86_64-w64-mingw32-gcc-posix /usr/bin/x86_64-w64-mingw32-gcc
+        sudo ln -sf x86_64-w64-mingw32-g++-posix /usr/bin/x86_64-w64-mingw32-g++
 
     - name: 'Compile Project: SWAN'
       run: ./swan-build/mingw/build-swan.sh "${{steps.ghd.outputs.describe}}"
