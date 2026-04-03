@@ -40,7 +40,7 @@ static void generateLakes(
 		bool hasLake =
 			isLake(pos.add(-1, -1)) ||
 			isLake(pos.add(1, -1)) ||
-			isLake(pos.add(1, 0));
+			(isLake(pos.add(1, 0)) && area(pos.add(-1, 0)) != Swan::World::AIR_TILE_ID);
 		if (hasLake && Swan::random(pos.x) % 32 < 31) {
 			return true;
 		}

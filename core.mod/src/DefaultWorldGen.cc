@@ -205,9 +205,16 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 const Biome &DefaultWorldGen::getBiome(int x)
 {
 	float humidity = wg_.perlin.noise1D(x / 223.6) * 2;
-	float temperature = wg_.perlin.noise1D(x / 197.6213) * 2;
+	float temperature = wg_.perlin.noise1D(x / 197.6213);
 	float elevation = 0;
 	float steepness = 0;
+
+	float largeScaleTemp = wg_.perlin.noise1D(x / 627.3);
+	if (largeScaleTemp > 0.3) {
+		temperature += 0.5;
+	} else if (largeScaleTemp < -0.3) {
+		temperature -= 0.5;
+	}
 
 	const Biome *closestBiome = &biomes::grassland;
 	float smallestSqDist = std::numeric_limits<float>::infinity();
