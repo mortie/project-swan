@@ -107,6 +107,15 @@ public:
 				}
 			},
 		});
+
+		registerTile({
+			.name = "snow",
+			.image = "core::tiles/snow",
+			.stepSound = "core::step/sand",
+			.droppedItem = "core::snow",
+			.onTileUpdate = fallIfFloating,
+		});
+
 		registerTile({
 			.name = "wood-pole",
 			.image = "core::tiles/wood-pole",

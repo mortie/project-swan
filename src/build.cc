@@ -211,7 +211,10 @@ static void iterateSources(
 		SourceType type;
 		if (name.ends_with(".cpp") || name.ends_with(".cc") || name.ends_with(".cpp")) {
 			type = SourceType::SOURCE;
-		} else if (name.ends_with(".h") || name.ends_with("hh") || name.ends_with(".hpp")) {
+		} else if (
+			name.ends_with(".h") || name.ends_with("hh") ||
+			name.ends_with(".hpp") || name.ends_with(".x")
+		) {
 			type = SourceType::HEADER;
 		} else if (name.ends_with(".capnp")) {
 			type = SourceType::PROTO;

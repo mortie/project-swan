@@ -5,12 +5,14 @@
 
 namespace CoreMod::biomes {
 
-	extern Biome desert;
+extern Biome desert;
 extern Biome grassland;
+extern Biome snowland;
 
 inline std::array biomes = {
 	&desert,
 	&grassland,
+	&snowland,
 };
 
 }
