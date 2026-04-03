@@ -55,6 +55,8 @@ void Game::createWorld(
 	std::string worldPath, const std::string &worldgen,
 	uint32_t seed, std::span<std::string> modPaths)
 {
+	ScopedTimer timer("create world");
+
 	world_ = std::make_unique<World>(this, seed, modPaths);
 	for (auto &mod: world_->mods_) {
 		mod.mod_->start(*world_);
@@ -73,6 +75,8 @@ void Game::createWorld(
 void Game::loadWorld(
 	std::string worldPath, std::span<const std::string> modPaths)
 {
+	ScopedTimer timer("load world");
+
 	std::ifstream f(worldPath, std::ios::binary);
 	if (!f) {
 		warn << "Failed to open " << worldPath << '!';
@@ -672,6 +676,8 @@ void Game::tick()
 
 void Game::save()
 {
+	ScopedTimer timer("save world");
+
 	if (tickInProgress_) {
 		info << "Completing current tick...";
 		if (world_->tick(TICK_DELTA, RTDeadline(2))) {

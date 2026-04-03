@@ -1,7 +1,9 @@
 #pragma once
 
+#include "swan/log.h"
 #include <chrono>
 #include <ostream>
+#include <string_view>
 
 namespace Swan {
 
@@ -70,6 +72,19 @@ public:
 
 private:
 	double deadline_;
+};
+
+class ScopedTimer {
+public:
+	ScopedTimer(std::string_view name): name_(name) {}
+	~ScopedTimer()
+	{
+		info << "Timer '" << name_ << "': " << clock_;
+	}
+
+private:
+	RTClock clock_;
+	std::string_view name_;
 };
 
 }

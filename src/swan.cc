@@ -1,3 +1,4 @@
+#include "swan/Clock.h"
 #include <cstdlib>
 #include <random>
 #include <sstream>
@@ -114,6 +115,8 @@ static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
 
 int main(int argc, char **argv)
 {
+	RTClock initTimer;
+
 	std::optional<uint32_t> seedArg;
 	const char *worldPath = nullptr;
 
@@ -161,6 +164,8 @@ int main(int argc, char **argv)
 		if (!doCompileMods) {
 			return true;
 		}
+
+		ScopedTimer timer("compile mods");
 
 		for (auto &mod: mods) {
 			if (!SwanBuild::build(mod.c_str(), swanRoot)) {
@@ -318,6 +323,8 @@ int main(int argc, char **argv)
 	GLuint globalVao;
 	glGenVertexArrays(1, &globalVao);
 	glBindVertexArray(globalVao);
+
+	Swan::info << "Timer 'initialize': " << initTimer;
 
 	auto prevTime = std::chrono::steady_clock::now();
 

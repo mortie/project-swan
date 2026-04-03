@@ -22,6 +22,8 @@ static void chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &d
 
 std::vector<ModWrapper> World::loadMods(std::span<const std::string> paths)
 {
+	ScopedTimer timer("load mods");
+
 	std::vector<ModWrapper> mods;
 
 	mods.reserve(paths.size());
@@ -43,6 +45,8 @@ std::vector<ModWrapper> World::loadMods(std::span<const std::string> paths)
 
 void World::buildResources()
 {
+	ScopedTimer timer("build resources");
+
 	Cygnet::ResourceBuilder builder(&game_->renderer_);
 
 	// We need default all-filled fluid collision
