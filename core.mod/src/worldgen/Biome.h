@@ -8,7 +8,7 @@
 
 namespace CoreMod {
 
-template<float Min, float Max>
+template<int Min, int Max>
 struct BiomeRange {
 	constexpr BiomeRange(): normalizedValue(0) {}
 	constexpr BiomeRange(float val): normalizedValue(normalize(val)) {}
@@ -24,7 +24,7 @@ struct BiomeRange {
 	float normalizedValue;
 
 	static constexpr float normalize(float val) {
-		return ((val - Min) / (Max - Min)) * 2 - 1;
+		return ((val - Min) / float(Max - Min)) * 2 - 1;
 	}
 
 	constexpr float denorm() {
@@ -36,19 +36,19 @@ struct Biome {
 	const char *name;
 
 	// Relative humidity, percentage
-	using Humidity = BiomeRange<0.f, 100.f>;
+	using Humidity = BiomeRange<0, 100>;
 	Humidity humidity;
 
 	// Degrees celsius
-	using Temperature = BiomeRange<-20.f, 60.f>;
+	using Temperature = BiomeRange<-20, 60>;
 	Temperature temperature;
 
 	// Meters above sea level
-	using Elevation = BiomeRange<-50.f, 400.f>;
+	using Elevation = BiomeRange<-50, 400>;
 	Elevation elevation;
 
 	// Sleepness of the terrain slope
-	using Steepness = BiomeRange<0.f, 1.f>;
+	using Steepness = BiomeRange<0, 1>;
 	Steepness steepness;
 
 	Swan::Tile::ID &surfaceTile = tiles::grass;
