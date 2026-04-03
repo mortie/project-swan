@@ -47,32 +47,6 @@ public:
 			.stepSound = "core::step/grass",
 			.placeSound = "core::place/dirt",
 			.droppedItem = "core::dirt",
-			.onWorldTick = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
-				if (ctx.plane.tiles().get(pos.add(0, -1)).isSolid()) {
-					return;
-				}
-
-				auto isGrass = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
-					return ctx.plane.tiles().getID(pos) == tiles::grass;
-				};
-				bool hasNearbyGrass =
-					isGrass(ctx, pos.add(-1, 0)) ||
-					isGrass(ctx, pos.add(1, 0)) ||
-					isGrass(ctx, pos.add(-1, -1)) ||
-					isGrass(ctx, pos.add(1, -1)) ||
-					isGrass(ctx, pos.add(-1, 1)) ||
-					isGrass(ctx, pos.add(1, 1));
-				if (!hasNearbyGrass) {
-					return;
-				}
-
-				auto fluid = ctx.plane.fluids().getAtPos(pos.as<float>().add(0.5, -0.2));
-				if (fluid.density > 0) {
-					return;
-				}
-
-				ctx.plane.tiles().setID(pos, tiles::grass);
-			},
 		});
 		registerTile({
 			.name = "sand",
@@ -101,9 +75,34 @@ public:
 				}
 			},
 			.onWorldTick = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
+				// Convert self into dirt if there's fluid
 				auto fluid = ctx.plane.fluids().getAtPos(pos.as<float>().add(0.5, -0.2));
 				if (fluid.density > 0) {
 					ctx.plane.tiles().setID(pos, tiles::dirt);
+					return;
+				}
+
+				auto neighbours = {
+					pos.add(-1, 0),
+					pos.add(1, 0),
+					pos.add(-1, -1),
+					pos.add(1, -1),
+					pos.add(-1, 1),
+					pos.add(1, 1),
+				};
+
+				// Convert nearby dirt into grass
+				for (auto pos: neighbours) {
+					if (ctx.plane.tiles().getID(pos) != tiles::dirt) {
+						continue;
+					}
+
+					if (ctx.plane.tiles().getID(pos.add(0, -1)) != Swan::World::AIR_TILE_ID) {
+						continue;
+					}
+
+					ctx.plane.tiles().setID(pos, tiles::grass);
+					return;
 				}
 			},
 		});
