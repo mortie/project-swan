@@ -9,6 +9,7 @@ enum class Tool: uint8_t {
 	NONE = 0,
 	HAND = 1 << 0,
 	AXE = 1 << 1,
+	SHOVEL = 1 << 2,
 };
 
 class ToolSet {

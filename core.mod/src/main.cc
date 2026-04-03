@@ -221,6 +221,11 @@ public:
 			.tool = Swan::Tool::AXE,
 		});
 		registerItem({
+			.name = "shovel",
+			.image = "core::items/tools/shovel",
+			.tool = Swan::Tool::SHOVEL,
+		});
+		registerItem({
 			.name = "dynamite",
 			.image = "core::items/dynamite",
 			.onActivate = [](Swan::Ctx &ctx, Swan::Item::ActivateMeta meta) {
@@ -346,6 +351,15 @@ public:
 				{2, "core::rock"},
 			},
 			.output = {1, "core::axe"},
+			.kind = "core::crafting",
+		});
+		registerRecipe({
+			.inputs = {
+				{1, "core::rope"},
+				{3, "core::stick"},
+				{3, "core::rock"},
+			},
+			.output = {1, "core::shovel"},
 			.kind = "core::crafting",
 		});
 		registerRecipe({
