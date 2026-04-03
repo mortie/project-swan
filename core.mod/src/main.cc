@@ -1,4 +1,5 @@
 #include <charconv>
+#include <cstdlib>
 #include <string>
 #include <swan/swan.h>
 
@@ -639,6 +640,18 @@ public:
 				out = "Set time of day to ";
 				out += std::to_string(val);
 				out += '%';
+			},
+		});
+		registerCommand({
+			.pattern = {"tp", "@x", "@y"},
+			.help = "Set the player position to (@x, @y). Use '-' for current coordinate.",
+			.handler = +[](Swan::Ctx &ctx, std::span<Swan::CowStr> argv, std::string &out) {
+				if (argv[0].str() != "-") {
+					ctx.world.player_->setMidX(strtof(std::string(argv[0].str()).c_str(), nullptr));
+				}
+				if (argv[1].str() != "-") {
+					ctx.world.player_->setMidY(strtof(std::string(argv[1].str()).c_str(), nullptr));
+				}
 			},
 		});
 	}
