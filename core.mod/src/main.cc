@@ -138,7 +138,12 @@ public:
 				dropRandomItemCount<"core::fiber">(ctx, pos);
 				ctx.plane.entities().spawn<GrassSeedEntity>(pos);
 			},
-			.onTileUpdate = breakIfFloating,
+			.onTileUpdate = [](Swan::Ctx &ctx, Swan::TilePos pos) {
+				auto below = pos.add(0, 1);
+				if (ctx.plane.tiles().getID(below) != tiles::grass) {
+					breakTileAndDropItem(ctx, pos);
+				}
+			},
 		});
 		registerTile({
 			.name = "dead-shrub",
