@@ -73,4 +73,51 @@ public:
 	T shader;
 };
 
+class GlFramebuffer {
+public:
+	GlFramebuffer(GLint internalFormat, GLenum format, GLenum type);
+
+	GlFramebuffer(const GlFramebuffer &) = delete;
+	GlFramebuffer(GlFramebuffer &&other);
+
+	~GlFramebuffer()
+	{
+		destroy();
+	}
+
+	GlFramebuffer &operator=(const GlFramebuffer &) = delete;
+	GlFramebuffer &operator=(GlFramebuffer &&other);
+
+	static GlFramebuffer withStencil(GLint internalFormat, GLenum format, GLenum type)
+	{
+		GlFramebuffer fbo(internalFormat, format, type);
+		fbo.withStencil_ = true;
+		return fbo;
+	}
+
+	void setSize(Swan::Vec2i size);
+	void destroy();
+
+	GLuint fbo()
+	{
+		return fbo_;
+	}
+
+	GLuint tex()
+	{
+		return tex_;
+	}
+
+private:
+	GLint internalFormat_;
+	GLenum format_;
+	GLenum type_;
+
+	GLuint fbo_ = 0;
+	GLuint tex_ = 0;
+	GLuint stencilTex_ = 0;
+	bool withStencil_ = false;
+	Swan::Vec2i size_ = {-1, -1};
+};
+
 }

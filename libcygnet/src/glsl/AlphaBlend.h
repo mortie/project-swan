@@ -1,18 +1,18 @@
-#include "Blend.glsl.h"
+#include "AlphaBlend.glsl.h"
 
 #include "GlWrappers.h"
 
 namespace Cygnet {
 
-struct BlendProg: public GlProg<Shader::Blend> {
-	void draw(GLuint tex, float gamma)
+struct AlphaBlendProg: public GlProg<Shader::AlphaBlend> {
+	void draw(GLuint tex, float alpha)
 	{
 		glUseProgram(id());
 		glCheck();
 
 		glUniform1i(shader.uniTex, 0);
 		glCheck();
-		glUniform1f(shader.uniDesaturate, std::min(gamma - 1.0, 1.0));
+		glUniform1f(shader.uniAlpha, alpha);
 		glCheck();
 
 		glActiveTexture(GL_TEXTURE0);

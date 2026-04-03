@@ -125,4 +125,110 @@ void GlProgram::link()
 	}
 }
 
+GlFramebuffer::GlFramebuffer(GLint internalFormat, GLenum format, GLenum type):
+	internalFormat_(internalFormat),
+	format_(format),
+	type_(type)
+{}
+
+GlFramebuffer::GlFramebuffer(GlFramebuffer &&other):
+	internalFormat_(other.internalFormat_),
+	format_(other.format_),
+	type_(other.type_),
+	fbo_(other.fbo_),
+	tex_(other.tex_),
+	stencilTex_(other.stencilTex_),
+	withStencil_(other.withStencil_),
+	size_(other.size_)
+{
+	other.fbo_ = 0;
+	other.tex_ = 0;
+	other.stencilTex_ = 0;
+}
+
+GlFramebuffer &GlFramebuffer::operator=(GlFramebuffer &&other)
+{
+	if (&other == this) {
+		return *this;
+	}
+
+	this->~GlFramebuffer();
+	new (this) GlFramebuffer(std::move(other));
+	return *this;
+}
+
+void GlFramebuffer::setSize(Swan::Vec2i size)
+{
+	if (size == size_) {
+		return;
+	}
+
+	destroy();
+
+	// Generate texture
+	glGenTextures(1, &tex_);
+	glBindTexture(GL_TEXTURE_2D, tex_);
+	glCheck();
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, internalFormat_, size.x, size.y, 0,
+		format_, type_, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glCheck();
+
+	// Generate stencil texture
+	if (withStencil_) {
+		glGenTextures(1, &stencilTex_);
+		glBindTexture(GL_TEXTURE_2D, stencilTex_);
+		glCheck();
+		glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, size.x, size.y, 0,
+			GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glCheck();
+	}
+
+	// Remember previous FBO
+	GLint prevFBO;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFBO);
+
+	// Generate framebuffer
+	glGenFramebuffers(1, &fbo_);
+	glCheck();
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+	glCheck();
+	glFramebufferTexture2D(
+		GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+		tex_, 0);
+	glFramebufferTexture2D(
+		GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
+		stencilTex_, 0);
+	glCheck();
+
+	// Restore previous FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+}
+
+void GlFramebuffer::destroy()
+{
+	if (fbo_ != 0) {
+		glDeleteFramebuffers(1, &fbo_);
+		glCheck();
+		fbo_ = 0;
+	}
+
+	if (tex_ != 0) {
+		glDeleteTextures(1, &tex_);
+		glCheck();
+		tex_ = 0;
+	}
+
+	if (stencilTex_ != 0) {
+		glDeleteTextures(1, &stencilTex_);
+		glCheck();
+		stencilTex_ = 0;
+	}
+}
+
 }

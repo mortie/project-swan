@@ -40,7 +40,8 @@ void DefaultWorldGen::drawBackground(
 		if (y > 0) {
 			factor = 1 - y / 10;
 		}
-		drawSurfaceBackground(ctx, rnd, pos, factor);
+		rnd.setBackgroundOpacity(factor * sunlightLevel_);
+		drawSurfaceBackground(ctx, rnd, pos);
 	}
 
 	if (y > 15) {
@@ -48,12 +49,13 @@ void DefaultWorldGen::drawBackground(
 		if (y < 35) {
 			factor = (y - 15) / (35 - 15);
 		}
-		drawCaveBackground(ctx, rnd, pos, factor);
+		rnd.setBackgroundOpacity(factor * 0.8);
+		drawCaveBackground(ctx, rnd, pos);
 	}
 }
 
 void DefaultWorldGen::drawSurfaceBackground(
-	Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos, float factor)
+	Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos)
 {
 	float motion = time_ * 0.5;
 	pos.x += std::fmod(motion, 8);
@@ -89,14 +91,13 @@ void DefaultWorldGen::drawSurfaceBackground(
 					.scale({sx, sy})
 					.translate(pos.add(x * 4, y * 4)),
 				.sprite = clouds_[variant],
-				.opacity = factor * sunlightLevel_,
 			});
 		}
 	}
 }
 
 void DefaultWorldGen::drawCaveBackground(
-	Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos, float factor)
+	Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos)
 {
 	pos -= {2.5, 2.5};
 	pos /= 8;
@@ -109,7 +110,6 @@ void DefaultWorldGen::drawCaveBackground(
 			rnd.drawSprite(Cygnet::RenderLayer::BACKGROUND, {
 				.transform = Cygnet::Mat3gf{}.translate(pos.add(x * 4, y * 4)),
 				.sprite = bgCave_,
-				.opacity = factor * 0.8f,
 			});
 		}
 	}

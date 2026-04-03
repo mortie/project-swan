@@ -1,18 +1,21 @@
 #include "Renderer.h"
 
 #include <cassert>
+#include <ios>
 #include <iostream>
 #include <stdio.h>
 #include <swan/constants.h>
 #include <string.h>
 #include <span>
 
+#include "gl.h"
 #include "util.h"
 
-#include "glsl/Blend.h"
+#include "glsl/AlphaBlend.h"
 #include "glsl/Chunk.h"
 #include "glsl/ChunkFluid.h"
 #include "glsl/ChunkShadow.h"
+#include "glsl/GammaBlend.h"
 #include "glsl/Mask.h"
 #include "glsl/Particle.h"
 #include "glsl/Rect.h"
@@ -28,10 +31,11 @@
 namespace Cygnet {
 
 struct RendererState {
-	BlendProg blendProg{};
+	AlphaBlendProg alphaBlendProg{};
 	ChunkProg chunkProg{};
 	ChunkFluidProg chunkFluidProg{};
 	ChunkShadowProg chunkShadowProg{};
+	GammaBlendProg gammaBlendProg{};
 	MaskProg maskProg{};
 	ParticleProg particleProg{};
 	RectProg rectProg{};
@@ -40,14 +44,16 @@ struct RendererState {
 	TileProg tileProg{};
 
 	Swan::Vec2i screenSize;
-	GLuint offscreenFramebuffer = 0;
-	GLuint offscreenTex = 0;
-	GLuint offscreenStencilTex = 0;
 	GLuint tileAtlasTex = 0;
 	Swan::Vec2 tileAtlasTexSize;
 	GLuint tileMapTex = 0;
 	float tileMapTexSize = 0;
 	GLuint fluidAtlasTex = 0;
+
+	GlFramebuffer offscreenFB = GlFramebuffer::withStencil(
+		GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+	GlFramebuffer backgroundFB = GlFramebuffer(
+		GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
 };
 
 Renderer::Renderer(): state_(std::make_unique<RendererState>())
@@ -60,19 +66,10 @@ Renderer::Renderer(): state_(std::make_unique<RendererState>())
 
 	glGenTextures(1, &state_->fluidAtlasTex);
 	glCheck();
-
-	glGenTextures(1, &state_->offscreenTex);
-	glCheck();
-
-	glGenTextures(1, &state_->offscreenStencilTex);
-	glCheck();
 }
 
 Renderer::~Renderer()
 {
-	glDeleteFramebuffers(1, &state_->offscreenFramebuffer);
-	glDeleteTextures(1, &state_->offscreenStencilTex);
-	glDeleteTextures(1, &state_->offscreenTex);
 	glDeleteTextures(1, &state_->tileAtlasTex);
 	glDeleteTextures(1, &state_->tileMapTex);
 	glDeleteTextures(1, &state_->fluidAtlasTex);
@@ -108,11 +105,11 @@ void Renderer::update(float dt)
 void Renderer::clear()
 {
 	for (int idx = 0; idx <= (int)RenderLayer::MAX; ++idx) {
-		drawTiles_[idx].clear();
-		drawSprites_[idx].clear();
-		drawParticles_[idx].clear();
-		drawRects_[idx].clear();
-		drawTexts_[idx].clear();
+		baseLayers_[idx].drawTile.clear();
+		baseLayers_[idx].drawSprite.clear();
+		baseLayers_[idx].drawParticle.clear();
+		baseLayers_[idx].drawRect.clear();
+		baseLayers_[idx].drawText.clear();
 	}
 
 	drawChunks_.clear();
@@ -153,53 +150,32 @@ void Renderer::render(const RenderCamera &cam, RenderProps props)
 
 	if (state_->screenSize != cam.size) {
 		state_->screenSize = cam.size;
-
-		// Generate offscreen texture
-		glBindTexture(GL_TEXTURE_2D, state_->offscreenTex);
-		glCheck();
-		glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_RGBA, cam.size.x, cam.size.y, 0,
-			GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glCheck();
-
-		// Generate offscreen stencil texture
-		glBindTexture(GL_TEXTURE_2D, state_->offscreenStencilTex);
-		glCheck();
-		glTexImage2D(
-			GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, cam.size.x, cam.size.y, 0,
-			GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glCheck();
-
-		glGenFramebuffers(1, &state_->offscreenFramebuffer);
-		glCheck();
-		glBindFramebuffer(GL_FRAMEBUFFER, state_->offscreenFramebuffer);
-		glCheck();
-		glFramebufferTexture2D(
-			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-			state_->offscreenTex, 0);
-		glFramebufferTexture2D(
-			GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
-			state_->offscreenStencilTex, 0);
-		glCheck();
 	}
 
+	state_->offscreenFB.setSize(cam.size);
+	state_->backgroundFB.setSize(cam.size);
+
+	// Set up and render background layer to background FB
+	glBindFramebuffer(GL_FRAMEBUFFER, state_->backgroundFB.fbo());
+	glClearColor(
+		backgroundColor_.r, backgroundColor_.g,
+		backgroundColor_.b, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	renderLayer(RenderLayer::BACKGROUND, camMat);
+
 	// Set up and clear the offscreen frame buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, state_->offscreenFramebuffer);
-	glFramebufferTexture2D(
-		GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-		state_->offscreenTex, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, state_->offscreenFB.fbo());
 	glClearColor(
 		backgroundColor_.r, backgroundColor_.g,
 		backgroundColor_.b, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glCheck();
 
-	// Render background layers
-	for (int i = 0; i < (int)RenderLayer::NORMAL; ++i) {
+	// Blend in the background layer
+	state_->alphaBlendProg.draw(state_->backgroundFB.tex(), backgroundOpacity_);
+
+	// Render layers behind normal layer
+	for (int i = 1; i < (int)RenderLayer::NORMAL; ++i) {
 		renderLayer(RenderLayer(i), camMat);
 	}
 
@@ -242,7 +218,7 @@ void Renderer::render(const RenderCamera &cam, RenderProps props)
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, screenFBO);
-	state_->blendProg.draw(state_->offscreenTex, gamma_);
+	state_->gammaBlendProg.draw(state_->offscreenFB.tex(), gamma_);
 	glCheck();
 
 	state_->chunkShadowProg.draw(drawChunkShadows_, camMat, gamma_);
@@ -256,11 +232,11 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 	int idx = (int)layer;
 
 	state_->tileProg.draw(
-		drawTiles_[idx], camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
+		baseLayers_[idx].drawTile, camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
 		state_->tileMapTex, state_->tileMapTexSize);
-	state_->spriteProg.draw(drawSprites_[idx], camMat);
+	state_->spriteProg.draw(baseLayers_[idx].drawSprite, camMat);
 	glEnable(GL_STENCIL_TEST);
-	state_->particleProg.draw(drawParticles_[idx], camMat);
+	state_->particleProg.draw(baseLayers_[idx].drawParticle, camMat);
 	glDisable(GL_STENCIL_TEST);
 
 	// Use the stencil buffer to ensure that spawned particles don't
@@ -276,8 +252,8 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 		glDisable(GL_STENCIL_TEST);
 	}
 
-	state_->rectProg.draw(drawRects_[idx], camMat);
-	state_->textProg.draw(drawTexts_[idx], textBuffer_, camMat, 1.0 / 128);
+	state_->rectProg.draw(baseLayers_[idx].drawRect, camMat);
+	state_->textProg.draw(baseLayers_[idx].drawText, textBuffer_, camMat, 1.0 / 128);
 
 	glCheck();
 }
@@ -301,7 +277,7 @@ void Renderer::renderUI(const RenderCamera &cam, RenderProps props)
 	uiViewStack_.resize(1);
 	uiViewStack_[0].size = scale;
 
-	if (props.vflip){ 
+	if (props.vflip){
 		camMat.scale({1, -1});
 	}
 

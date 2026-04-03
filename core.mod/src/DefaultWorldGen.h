@@ -38,9 +38,9 @@ public:
 
 private:
 	void drawSurfaceBackground(
-		Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos, float factor);
+		Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos);
 	void drawCaveBackground(
-		Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos, float factor);
+		Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos);
 
 	bool isCave(Swan::TilePos pos, int grassLevel);
 	bool isOil(Swan::TilePos pos, int grassLevel);

@@ -225,7 +225,7 @@ public:
 
 	void drawTile(RenderLayer layer, DrawTile drawTile)
 	{
-		drawTiles_[(int)layer].push_back(drawTile);
+		baseLayers_[int(layer)].drawTile.push_back(drawTile);
 	}
 	void drawTile(DrawTile dt)
 	{
@@ -234,7 +234,7 @@ public:
 
 	void drawSprite(RenderLayer layer, DrawSprite drawSprite)
 	{
-		drawSprites_[(int)layer].push_back(drawSprite);
+		baseLayers_[int(layer)].drawSprite.push_back(drawSprite);
 	}
 	void drawSprite(DrawSprite ds)
 	{
@@ -248,7 +248,7 @@ public:
 
 	void drawParticle(RenderLayer layer, DrawParticle drawParticle)
 	{
-		drawParticles_[(int)layer].push_back(drawParticle);
+		baseLayers_[int(layer)].drawParticle.push_back(drawParticle);
 	}
 	void drawParticle(DrawParticle dp)
 	{
@@ -285,7 +285,7 @@ public:
 
 	void drawRect(RenderLayer layer, DrawRect drawRect)
 	{
-		drawRects_[(int)layer].push_back(drawRect);
+		baseLayers_[int(layer)].drawRect.push_back(drawRect);
 	}
 	void drawRect(DrawRect dr)
 	{
@@ -298,14 +298,14 @@ public:
 		size_t start = textBuffer_.size();
 
 		drawText.textCache.renderString(drawText.text, textBuffer_, size);
-		drawTexts_[(int)layer].push_back({
+		baseLayers_[int(layer)].drawText.push_back({
 			.drawText = drawText,
 			.atlas = drawText.textCache.atlas_,
 			.size = size / 128,
 			.start = start,
 			.end = textBuffer_.size(),
 		});
-		return drawTexts_[(int)layer].back();
+		return baseLayers_[int(layer)].drawText.back();
 	}
 	TextSegment &drawText(DrawText dt)
 	{
@@ -427,6 +427,11 @@ public:
 		gamma_ = gamma;
 	}
 
+	void setBackgroundOpacity(float opacity)
+	{
+		backgroundOpacity_ = opacity;
+	}
+
 	Swan::Vec2 winScale()
 	{
 		return winScale_;
@@ -465,7 +470,8 @@ private:
 	Rect cullRect_;
 	std::unique_ptr<RendererState> state_;
 	Swan::Vec2 winScale_ = {1, 1};
-	float gamma_;
+	float gamma_ = 1;
+	float backgroundOpacity_ = 1;
 	Color backgroundColor_;
 
 	std::vector<Rect> uiViewStack_ = {{{0, 0}, {1, 1}}};
@@ -478,11 +484,15 @@ private:
 	std::vector<DrawParticle> drawTileParticles_;
 	std::vector<DrawMask> drawFluidMasks_;
 
-	std::vector<DrawTile> drawTiles_[LAYER_COUNT];
-	std::vector<DrawSprite> drawSprites_[LAYER_COUNT];
-	std::vector<DrawParticle> drawParticles_[LAYER_COUNT];
-	std::vector<DrawRect> drawRects_[LAYER_COUNT];
-	std::vector<TextSegment> drawTexts_[LAYER_COUNT];
+	struct Layer {
+		std::vector<DrawTile> drawTile;
+		std::vector<DrawSprite> drawSprite;
+		std::vector<DrawParticle> drawParticle;
+		std::vector<DrawRect> drawRect;
+		std::vector<TextSegment> drawText;
+	};
+
+	Layer baseLayers_[LAYER_COUNT];
 	std::vector<TextCache::RenderedCodepoint> textBuffer_;
 
 	using UIElement = std::variant<

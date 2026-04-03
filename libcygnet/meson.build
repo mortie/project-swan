@@ -16,10 +16,11 @@ libcygnet = declare_dependency(
     'src/TileAtlas.cc',
     'src/util.cc',
     shader_gen.process(
-      'src/glsl/Blend.glsl',
+      'src/glsl/AlphaBlend.glsl',
       'src/glsl/Chunk.glsl',
       'src/glsl/ChunkFluid.glsl',
       'src/glsl/ChunkShadow.glsl',
+      'src/glsl/GammaBlend.glsl',
       'src/glsl/Mask.glsl',
       'src/glsl/Particle.glsl',
       'src/glsl/Rect.glsl',
