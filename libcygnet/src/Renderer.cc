@@ -1,7 +1,6 @@
 #include "Renderer.h"
 
 #include <cassert>
-#include <ios>
 #include <iostream>
 #include <stdio.h>
 #include <swan/constants.h>
@@ -53,7 +52,7 @@ struct RendererState {
 	GlFramebuffer offscreenFB = GlFramebuffer::withStencil(
 		GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
 	GlFramebuffer backgroundFB = GlFramebuffer(
-		GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+		GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
 };
 
 Renderer::Renderer(): state_(std::make_unique<RendererState>())
