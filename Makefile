@@ -23,6 +23,10 @@ SRCS = $(shell find \
 llrun:
 	${MAKE} run CMD='lldb --'
 
+.PHONY: gdrun
+gdrun:
+	${MAKE} run CMD='gdb -ex "set debuginfod enabled off" --args'
+
 .PHONY: run
 run: pfx
 	cd $(OUT)/pfx && $(CMD) ./bin/swan --mod $(abspath core.mod) --world default.swan
