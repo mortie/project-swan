@@ -98,7 +98,7 @@ public:
 						continue;
 					}
 
-					if (ctx.plane.tiles().getID(pos.add(0, -1)) != Swan::World::AIR_TILE_ID) {
+					if (ctx.plane.tiles().get(pos.add(0, -1)).isSolid()) {
 						continue;
 					}
 
