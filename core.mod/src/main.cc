@@ -661,20 +661,19 @@ public:
 					return;
 				}
 
-				const char *data = argv[0].data();
-				float val;
-				auto res = std::from_chars(data, data + argv[0].size(), val);
-				if (res.ptr != data + argv[0].size()) {
-					out = "Bad time parameter";
+				auto res = Swan::parseInt(argv[0]);
+				if (!res) {
+					out = res.err();
 					return;
 				}
 
+				auto val = res.value();
 				if (val < 0 || val > 100) {
 					out = "Bad time parameter";
 					return;
 				}
 
-				gen->setTimeOfDay(val / 100);
+				gen->setTimeOfDay(float(val) / 100);
 				out = "Set time of day to ";
 				out += std::to_string(val);
 				out += '%';

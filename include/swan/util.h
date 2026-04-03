@@ -389,6 +389,35 @@ inline std::string cat(Args &&... args)
 	return buf;
 }
 
+inline Result<long> parseInt(std::string_view str)
+{
+	long val = 0;
+	bool negative = false;
+
+	if (str.length() > 0 && str[0] == '-') {
+		negative = true;
+		str = str.substr(1);
+	}
+
+	if (str == "") {
+		return {Err, "Empty string"};
+	}
+
+	while (str != "") {
+		val *= 10;
+		char ch = str[0];
+		if (ch >= '0' && ch <= '9') {
+			val += (ch - '0');
+		} else {
+			return {Err, cat("Unexpected character in number: '", ch, '\'')};
+		}
+
+		str = str.substr(1);
+	}
+
+	return {Ok, negative ? -val : val};
+}
+
 template<typename A, typename B>
 auto max(A a, B b)
 {
