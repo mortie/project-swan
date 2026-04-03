@@ -177,6 +177,16 @@ static void postProcess(WorldArea &area, WGContext &wg)
 		{tiles::grass, tiles::deadShrub, 2},
 		{tiles::grass, tiles::boulder, 2},
 	});
+
+	generateOutcrops(area, wg, 10, {5, 55}, {
+		{tiles::coalOutcrop, 1},
+		{tiles::sulphurOutcrop, 1},
+	});
+
+	generateOutcrops(area, wg, 14, {30, 300}, {
+		{tiles::ironOutcrop, 1},
+		{tiles::copperOutcrop, 1},
+	});
 }
 
 Biome grassland = {

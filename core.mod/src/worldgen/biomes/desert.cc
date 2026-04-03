@@ -9,6 +9,16 @@ static void postProcess(WorldArea &area, WGContext &wg)
 	generateSurfaceShrubs(area, wg, 16, {
 		{tiles::sand, tiles::deadShrub, 1},
 	});
+
+	generateOutcrops(area, wg, 10, {5, 55}, {
+		{tiles::coalOutcrop, 1},
+		{tiles::sulphurOutcrop, 1},
+	});
+
+	generateOutcrops(area, wg, 14, {30, 300}, {
+		{tiles::ironOutcrop, 3},
+		{tiles::copperOutcrop, 2},
+	});
 }
 
 Biome desert = {
