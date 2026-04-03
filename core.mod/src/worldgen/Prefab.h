@@ -4,8 +4,6 @@
 #include <stdexcept>
 #include <swan/swan.h>
 #include <initializer_list>
-#include <memory>
-#include <span>
 
 namespace CoreMod {
 
@@ -50,8 +48,9 @@ inline Prefab::Prefab(Map map, Data data)
 	width = 0;
 	height = data.size();
 	for (std::string_view row: data) {
-		if (row.length() > width) {
-			width = row.length();
+		int rowLen = int(row.length());
+		if (rowLen > width) {
+			width = rowLen;
 		}
 	}
 
@@ -64,7 +63,8 @@ inline Prefab::Prefab(Map map, Data data)
 	tiles.resize(width * height, &Swan::World::AIR_TILE_ID);
 	int y = 0;
 	for (std::string_view row: data) {
-		for (int x = 0; x < row.length(); ++x) {
+		int rowLen = int(row.length());
+		for (int x = 0; x < rowLen; ++x) {
 			tiles[y * width + x] = lookup(row[x]);
 		}
 		y += 1;
