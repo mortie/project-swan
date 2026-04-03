@@ -135,7 +135,7 @@ public:
 
 	bool isActive() const
 	{
-		return !isCompressed();
+		return !isCompressed() && data_;
 	}
 
 	bool isModified() const
