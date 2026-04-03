@@ -1,5 +1,6 @@
-#include "biomes.h"
 #include "tiles.h"
+#include "biomes.h"
+#include "swan/common.h"
 #include "worldgen/prefabs/TreeCrown.h"
 #include "worldgen/wgutil.h"
 
@@ -23,9 +24,80 @@ static void spawnTree(
 	area.place(*crown, pos.add(-crown->width / 2, -height - crown->height + 1));
 }
 
+static void generateLakes(
+	WorldArea &area, WGContext &wg)
+{
+	auto isLake = [&](Swan::TilePos pos) {
+		int surface = area.surfaceLevel(pos.x);
+		return
+			pos.y >= surface &&
+			pos.y <= surface + 20 &&
+			wg.perlin.noise2D(pos.x / 32.6, pos.y / 21.565) > 0.4;
+	};
+
+	// Recursive lambdas need to take themselves as a parameter
+	auto isClayBase = [&](const auto &self, Swan::TilePos pos) {
+		bool hasLake =
+			isLake(pos.add(-1, -1)) ||
+			isLake(pos.add(1, -1)) ||
+			isLake(pos.add(1, 0));
+		if (hasLake && Swan::random(pos.x) % 32 < 31) {
+			return true;
+		}
+
+		uint32_t rand = Swan::random((pos.x << 5) ^ pos.y) % 16;
+		if (rand < 14) {
+			return false;
+		}
+
+		if (isLake(pos.add(0, -1))) {
+			return true;
+		}
+
+		if (self(self, pos.add(0, -1))) {
+			return true;
+		}
+
+		if (rand < 14) {
+			return false;
+		}
+
+		if (self(self, pos.add(-1, -1))) {
+			return true;
+		}
+
+		if (self(self, pos.add(1, -1))) {
+			return true;
+		}
+
+		return false;
+	};
+
+	auto isClay = [&](Swan::TilePos pos) {
+		return isClayBase(isClayBase, pos);
+	};
+
+	// Generate lake
+	for (int y = area.begin.y; y <= area.end.y; ++y) {
+		for (int x = area.begin.x; x <= area.end.x; ++x) {
+			Swan::TilePos pos = {x, y};
+
+			if (isLake(pos)) {
+				area(pos) = tiles::water;
+			} else if (isClay(pos)) {
+				area(pos) = tiles::clayTile;
+			}
+		}
+	}
+}
+
 static void generateTrees(
 	WorldArea &area, WGContext &wg)
 {
+	if (!area.hasSurface) {
+		return;
+	}
+
 	auto shouldSpawnTree = [&](int x) {
 		return Swan::random(x ^ wg.seed) % 4 == 0;
 	};
@@ -90,6 +162,7 @@ void generateTallGrass(WorldArea &area, WGContext &wg)
 
 static void postProcess(WorldArea &area, WGContext &wg)
 {
+	generateLakes(area, wg);
 	generateTallGrass(area, wg);
 	generateTrees(area, wg);
 
