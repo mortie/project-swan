@@ -48,6 +48,7 @@ glfw_opts.add_cmake_defines({
   'GLFW_BUILD_EXAMPLES': false,
   'GLFW_BUILD_TESTS': false,
   'GLFW_BUILD_DOCS': false,
+  'CMAKE_INSTALL_LIBDIR': 'lib',
 })
 glfw_opts.set_override_option('warning_level', '1')
 glfw_sub = cmake.subproject('glfw', options: glfw_opts)
@@ -56,6 +57,7 @@ libglfw3 = glfw_sub.dependency('glfw')
 portaudio_opts = cmake.subproject_options()
 portaudio_opts.add_cmake_defines({
   'BUILD_SHARED_LIBS': true,
+  'CMAKE_INSTALL_LIBDIR': 'lib',
 })
 portaudio_opts.set_override_option('warning_level', '0')
 portaudio_sub = cmake.subproject('portaudio', options: portaudio_opts)
@@ -71,6 +73,7 @@ libtpl = tpl_sub.dependency('tiny-process-library')
 zlibng_opts = cmake.subproject_options()
 zlibng_opts.add_cmake_defines({
   'BUILD_SHARED_LIBS': true,
+  'CMAKE_INSTALL_LIBDIR': 'lib',
 })
 zlibng_opts.set_override_option('warning_level', '1')
 zlibng_sub = cmake.subproject('zlib-ng', options: zlibng_opts)
