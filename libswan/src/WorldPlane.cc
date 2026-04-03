@@ -47,9 +47,29 @@ Chunk &WorldPlane::getChunk(ChunkPos pos)
 	}
 
 	Chunk &chunk = slowGetChunk(pos);
-	chunk.keepActive();
+	if (suppressChunkKeepalive_ == 0) {
+		chunk.keepActive();
+	}
 	tickChunks_.push_back({pos, &chunk});
 	return chunk;
+}
+
+// Like getChunk, but does not keep chunks active
+Chunk *WorldPlane::subtleGetChunk(ChunkPos pos)
+{
+	// First, look through all chunks which have been in use this tick
+	for (auto [chpos, chunk]: tickChunks_) {
+		if (chpos == pos) {
+			return chunk;
+		}
+	}
+
+	auto it = chunks_.find(pos);
+	if (it != chunks_.end()) {
+		return &it->second;
+	}
+
+	return nullptr;
 }
 
 Chunk &WorldPlane::slowGetChunk(ChunkPos pos)
@@ -216,14 +236,12 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 
 	auto ctx = getContext();
 
-	// Any chunk which has been in use since last tick should be kept alive
-	for (std::pair<ChunkPos, Chunk *> &ch: tickChunks_) {
-		ch.second->keepActive();
-	}
+	// Clear tickChunks_ to prepare for the next tick
 	tickChunks_.clear();
 
 	// Perform world ticks
 	RTClock worldTickClock;
+	suppressChunkKeepalive_ += 1;
 	for (size_t i = 0; i < activeChunks_.size(); ++i) {
 		// Avoid range-based for loop because activeChunks_ might get resized
 		Chunk *chunk = activeChunks_[i];
@@ -248,24 +266,35 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 			}
 		}
 	}
+	suppressChunkKeepalive_ -= 1;
 	world_->game_->perf_.worldTickTime.record(worldTickClock.duration());
 
 	// Tick all chunks, figure out if any of them should be deleted or compressed
+	bool hasDeletedChunk = false;
 	for (size_t i = 0; i < activeChunks_.size();) {
 		Chunk *chunk = activeChunks_[i];
 
 		auto action = chunk->tick(dt);
+
+		// Only delete/deactivate up to one chunk per tick
+		if (hasDeletedChunk) {
+			action = Chunk::TickAction::NOTHING;
+		}
+
 		switch (action) {
 		case Chunk::TickAction::DEACTIVATE:
+			if (hasDeletedChunk) break;
 			info << "Compressing inactive modified chunk " << chunk->pos();
 			lightSystem_.removeChunk(chunk->pos());
 			chunk->destroyTextures(world_->game_->renderer_);
 			chunk->compress();
 			activeChunks_[i] = activeChunks_.back();
 			activeChunks_.pop_back();
+			hasDeletedChunk = true;
 			break;
 
 		case Chunk::TickAction::DELETE:
+			if (hasDeletedChunk) break;
 			info << "Deleting inactive unmodified chunk " << chunk->pos();
 			lightSystem_.removeChunk(chunk->pos());
 			chunk->destroyTextures(world_->game_->renderer_);

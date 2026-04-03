@@ -45,6 +45,7 @@ public:
 
 	bool hasChunk(ChunkPos pos);
 	Chunk &getChunk(ChunkPos pos);
+	Chunk *subtleGetChunk(ChunkPos pos);
 	Chunk &slowGetChunk(ChunkPos pos);
 
 	EntityRef spawnPlayer();
@@ -98,6 +99,9 @@ private:
 	EntitySystem entitySystem_;
 	LightSystem lightSystem_{*this};
 	TileSystem tileSystem_{*this};
+
+	// Keep track of whether or not we should keep chunks alive
+	int suppressChunkKeepalive_ = 0;
 
 	friend Chunk;
 	friend World;

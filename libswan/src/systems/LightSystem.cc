@@ -54,8 +54,10 @@ void LightSystemImpl::flip()
 {
 	std::lock_guard lock(mut_);
 	for (auto &update: updates_) {
-		auto &chunk = plane_.getChunk(update.pos);
-		chunk.setLightData(update.levels);
+		auto *chunk = plane_.subtleGetChunk(update.pos);
+		if (chunk && chunk->isActive()) {
+			chunk->setLightData(update.levels);
+		}
 	}
 
 	server_.flip();

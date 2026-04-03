@@ -135,7 +135,7 @@ public:
 
 	bool isActive() const
 	{
-		return deactivateTimer_ > 0;
+		return !isCompressed();
 	}
 
 	bool isModified() const
