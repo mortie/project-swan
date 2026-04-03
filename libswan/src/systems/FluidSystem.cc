@@ -195,6 +195,22 @@ void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 	triggerUpdateInTile(pos);
 }
 
+void FluidSystemImpl::setPartialInTile(TilePos pos, Fluid::ID fluid)
+{
+	auto chunkPos = tilePosToChunkPos(pos);
+	auto relPos = tilePosToChunkRelPos(pos);
+	auto &chunk = plane_.getChunk(chunkPos);
+	auto *data = chunk.getFluidData();
+
+	for (size_t y = FLUID_RESOLUTION / 2; y < FLUID_RESOLUTION; ++y) {
+		int gridY = relPos.y * FLUID_RESOLUTION + y;
+		auto *pos = &data[gridY * FLUID_RESOLUTION * CHUNK_WIDTH];
+		for (size_t x = 0; x < FLUID_RESOLUTION; ++x) {
+			pos[relPos.x * FLUID_RESOLUTION + x] = fluid;
+		}
+	}
+}
+
 void FluidSystemImpl::replaceInTile(TilePos pos, Fluid::ID fluid)
 {
 	auto chunkPos = tilePosToChunkPos(pos);

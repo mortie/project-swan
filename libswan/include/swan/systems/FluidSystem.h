@@ -33,6 +33,7 @@ public:
 
 	void triggerUpdateInTile(TilePos pos);
 	void setInTile(TilePos pos, Fluid::ID fluid);
+	void setPartialInTile(TilePos pos, Fluid::ID fluid);
 	void replaceInTile(TilePos pos, Fluid::ID fluid);
 	void setSolid(TilePos pos, const FluidCollision &collision);
 	void clearSolid(TilePos pos);
@@ -102,6 +103,7 @@ public:
 
 	using FluidSystemImpl::triggerUpdateInTile;
 	using FluidSystemImpl::setInTile;
+	using FluidSystemImpl::setPartialInTile;
 	using FluidSystemImpl::replaceInTile;
 	using FluidSystemImpl::setSolid;
 	using FluidSystemImpl::clearSolid;

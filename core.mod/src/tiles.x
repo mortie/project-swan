@@ -9,6 +9,7 @@ X(tallGrass, "core::tall-grass");
 X(deadShrub, "core::dead-shrub");
 X(boulder, "core::boulder");
 X(water, "core::water");
+X(partialWater, "core::partial-water");
 X(oil, "core::oil");
 X(aqueduct, "core::aqueduct");
 X(aqueduct__center, "core::aqueduct::center");

@@ -169,6 +169,16 @@ public:
 			},
 		});
 		registerTile({
+			.name = "partial-water",
+			.image = "@::invalid",
+			.isSolid = false,
+			.onSpawn = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
+				ctx.plane.tiles().setIDWithoutUpdate(pos, Swan::World::AIR_TILE_ID);
+				ctx.plane.fluids().setPartialInTile(pos, ctx.world.getFluid("core::water").id);
+				return true;
+			},
+		});
+		registerTile({
 			.name = "oil",
 			.image = "@::invalid",
 			.isSolid = false,

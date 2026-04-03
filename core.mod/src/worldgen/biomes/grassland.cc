@@ -30,7 +30,7 @@ static void generateLakes(
 	auto isLake = [&](Swan::TilePos pos) {
 		int surface = area.surfaceLevel(pos.x);
 		return
-			pos.y >= surface &&
+			pos.y >= surface + 1 &&
 			pos.y <= surface + 20 &&
 			wg.perlin.noise2D(pos.x / 32.6, pos.y / 21.565) > 0.4;
 	};
@@ -82,7 +82,12 @@ static void generateLakes(
 		for (int x = area.begin.x; x <= area.end.x; ++x) {
 			Swan::TilePos pos = {x, y};
 
-			if (isLake(pos)) {
+			bool posIsLake = isLake(pos);
+			Swan::Tile::ID above = area(pos.add(0, -1));
+			if (posIsLake && (above != tiles::partialWater && above != tiles::water)) {
+				area(pos.add(0, -1)) = Swan::World::AIR_TILE_ID;
+				area(pos) = tiles::partialWater;
+			} else if (isLake(pos)) {
 				area(pos) = tiles::water;
 			} else if (isClay(pos)) {
 				area(pos) = tiles::clayTile;
