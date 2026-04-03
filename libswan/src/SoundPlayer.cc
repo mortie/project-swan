@@ -139,6 +139,7 @@ static int callback(
 			attL *= 4 / (distL + 2);
 			attR *= 4 / (distR + 2);
 			if (attL < 0.01 || attR < 0.01) {
+				idx += 1;
 				continue;
 			}
 		}
