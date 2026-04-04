@@ -1,9 +1,11 @@
 #include "SoundPlayer.h"
 
+#include <cassert>
 #include <portaudio.h>
 #include <thread>
 #include <utility>
 #include <swan/log.h>
+#include <atomic>
 
 #include "RingBuffer.h"
 
@@ -105,17 +107,24 @@ static int callback(
 
 	// Add all new playbacks
 	while (ctx->newPlaybacks.canRead()) {
+		auto playback = std::move(ctx->newPlaybacks.read());
 		if (ctx->playbackCount >= MAX_PLAYBACKS) {
 			break;
 		}
 
-		ctx->playbacks[ctx->playbackCount++] = std::move(ctx->newPlaybacks.read());
+		ctx->playbacks[ctx->playbackCount++] = std::move(playback);
 	}
 
 	// Sum up all playbacks into the output
 	size_t idx = 0;
 	while (idx < ctx->playbackCount) {
 		auto &playback = ctx->playbacks[idx];
+
+		if (!playback.handle) {
+			warn << "Playback " << idx << " has null handle??";
+			ctx->playbacks[idx] = ctx->playbacks[--ctx->playbackCount];
+			continue;
+		}
 
 		if (playback.handle->stop) {
 			ctx->playbacks[idx].handle->done = true;
@@ -269,6 +278,8 @@ void SoundPlayer::play(
 	std::optional<std::pair<float, float>> center,
 	SoundHandle handle)
 {
+	assert(handle.data_);
+
 	if (!asset) {
 		warn << "Attempt to play null asset";
 		return;

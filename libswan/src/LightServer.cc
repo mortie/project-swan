@@ -166,6 +166,7 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 				<< "LightServer: CHUNK_ADDED added an existing chunk "
 				<< evt.pos;
 			chunks_.erase(evt.pos);
+			cachedChunk_ = nullptr;
 		}
 
 		chunks_.emplace(std::piecewise_construct,
@@ -180,11 +181,13 @@ void LightServer::processEvent(const Event &evt, std::vector<NewLightChunk> &new
 				<< "LightServer: CHUNK_REMOVED removed a non-existent chunk "
 				<< evt.pos;
 			chunks_.erase(evt.pos);
+			cachedChunk_ = nullptr;
 		}
 
 		chunks_.erase(evt.pos);
 		chunksWithSun_.erase(evt.pos);
 		updatedChunks_.erase(evt.pos);
+		cachedChunk_ = nullptr;
 		markAdjacentChunksModified(evt.pos);
 		return;
 	}

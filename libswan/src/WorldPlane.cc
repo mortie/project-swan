@@ -299,6 +299,7 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 			lightSystem_.removeChunk(chunk->pos());
 			chunk->destroyTextures(world_->game_->renderer_);
 			chunks_.erase(chunk->pos());
+			tickChunks_.clear();
 			activeChunks_[i] = activeChunks_.back();
 			activeChunks_.pop_back();
 			break;
