@@ -29,7 +29,7 @@ libcygnet = declare_dependency(
       'src/glsl/Tile.glsl',
     ),
     dependencies: [
-      common, libthreads, libgl, libglfw3, libstb_truetype,
+      common, libthreads, libgl, libglfw3, libstb_truetype, libstb_image,
     ] + maybe_libtracy,
     install: true,
     install_rpath: origin_rpath,

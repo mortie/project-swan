@@ -5,6 +5,7 @@
 #include <swan/util.h>
 #include <string.h>
 #include <iostream>
+#include <stb/stb_image_write.h>
 
 namespace Cygnet {
 
@@ -97,11 +98,11 @@ ResourceManager::ResourceManager(ResourceBuilder &&builder):
 
 	const char *exportAtlas = getenv("SWAN_EXPORT_ATLAS");
 	if (exportAtlas && std::string_view(exportAtlas) == "1") {
-		FILE *f = fopen("atlas.rgba", "wb");
-		fwrite(data, 1, width * Swan::TILE_SIZE * height * Swan::TILE_SIZE, f);
-		fclose(f);
+		stbi_write_png(
+			"atlas.png", width, height, 4,
+			data, width * 4);
 		std::cerr
-			<< "Cygnet: Wrote tile atlas to atlas.rgba ("
+			<< "Cygnet: Wrote tile atlas to atlas.png ("
 			<< width << 'x' << height << ")\n";
 	}
 
