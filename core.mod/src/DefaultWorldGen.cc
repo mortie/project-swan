@@ -64,7 +64,7 @@ void DefaultWorldGen::drawSurfaceBackground(
 	Swan::Vec2 frac = pos - whole.as<float>();
 
 	pos = whole.as<float>() * 8 + frac * 4;
-	for (int y = -10; y <= 10; ++y) {
+	for (int y = -15; y <= 15; ++y) {
 		if (Swan::random(wg_.seed ^ (y + whole.y)) % 32 > 8) {
 			continue;
 		}
@@ -132,10 +132,10 @@ Cygnet::Color DefaultWorldGen::backgroundColor(Swan::Vec2 pos)
 	});
 }
 
-bool DefaultWorldGen::isCave(Swan::TilePos pos, int grassLevel)
+int DefaultWorldGen::isCave(Swan::TilePos pos, int grassLevel)
 {
 	if (pos.y < grassLevel) {
-		return false;
+		return 0;
 	}
 
 	float threshold = 0.2;
@@ -144,7 +144,14 @@ bool DefaultWorldGen::isCave(Swan::TilePos pos, int grassLevel)
 		threshold += (6 - diff) * 0.03;
 	}
 
-	return wg_.perlin.noise2D(pos.x / 43.37, pos.y / 16.37) > threshold;
+	float res = wg_.perlin.noise2D(pos.x / 43.37, pos.y / 16.37);
+	if (res > threshold * 2) {
+		return 2;
+	} else if (res > threshold) {
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 bool DefaultWorldGen::isOil(Swan::TilePos pos, int grassLevel)
@@ -155,22 +162,31 @@ bool DefaultWorldGen::isOil(Swan::TilePos pos, int grassLevel)
 		wg_.perlin.noise2D(pos.x / 70.6, pos.y / 40.565) > 0.4;
 }
 
-Swan::Tile::ID DefaultWorldGen::genTile(
+DefaultWorldGen::GeneratedTile DefaultWorldGen::genTile(
 	Swan::TilePos pos,
 	const Biome &biome,
 	int grassLevel,
 	int stoneLevel)
 {
+	Swan::Tile::ID background = tiles::background;
+
 	// Oil lakes leading into caves tanks performance,
 	// so only produce cave air if we're not next to oil
-	bool spawnCave = isCave(pos, grassLevel) && (
+	int caveState = isCave(pos, grassLevel);
+	bool spawnCave = caveState && (
 		pos.y < stoneLevel + 200 || (
 			!isOil(pos.add(-1, 0), grassLevel) &&
 			!isOil(pos.add(1, 0), grassLevel) &&
 			!isOil(pos.add(0, -1), grassLevel) &&
 			!isOil(pos.add(0, 1), grassLevel)));
 	if (spawnCave) {
-		return Swan::World::AIR_TILE_ID;
+		if (pos.y == grassLevel) {
+			return Swan::World::AIR_TILE_ID;
+		} else if (pos.y < stoneLevel + 30 || caveState == 1) {
+			return {Swan::World::AIR_TILE_ID, background};
+		} else {
+			return Swan::World::AIR_TILE_ID;
+		}
 	}
 
 	// Same thing as with spawnCave,
@@ -183,14 +199,14 @@ Swan::Tile::ID DefaultWorldGen::genTile(
 			!isCave(pos.add(0, -1), grassLevel) &&
 			!isCave(pos.add(0, 1), grassLevel)));
 	if (spawnOil) {
-		return tiles::oil;
+		return {tiles::oil, background};
 	}
 
 	if (pos.y > stoneLevel) {
-		return tiles::stone;
+		return {tiles::stone, background};
 	}
 	if (pos.y > grassLevel) {
-		return biome.soilTile;
+		return {biome.soilTile, background};
 	}
 	if (pos.y == grassLevel) {
 		return biome.surfaceTile;
@@ -247,10 +263,16 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 
 	Swan::Tile::ID *rows[GEN_HEIGHT];
 	area.rows = rows;
-
 	Swan::Tile::ID buffer[GEN_WIDTH * GEN_HEIGHT];
 	for (int ry = 0; ry < GEN_HEIGHT; ++ry) {
 		rows[ry] = &buffer[ry * GEN_WIDTH];
+	}
+
+	Swan::Tile::ID *backgroundRows[GEN_HEIGHT];
+	area.backgroundRows = backgroundRows;
+	Swan::Tile::ID backgroundBuffer[GEN_WIDTH * GEN_HEIGHT];
+	for (int ry = 0; ry < GEN_HEIGHT; ++ry) {
+		backgroundRows[ry] = &backgroundBuffer[ry * GEN_WIDTH];
 	}
 
 	int surfaceLevels[GEN_WIDTH];
@@ -292,7 +314,9 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 
 		int stoneLevel = getStoneLevel(wg_.perlin, x);
 		for (int y = area.begin.y; y <= area.end.y; ++y) {
-			area({x, y}) = genTile({x, y}, biome, grassLevel, stoneLevel);
+			auto gen = genTile({x, y}, biome, grassLevel, stoneLevel);
+			area({x, y}) = gen.tile;
+			area.background({x, y}) = gen.background;
 		}
 	}
 
@@ -300,8 +324,16 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 	biome.postProcess(area, wg_);
 
 	for (int cy = 0; cy < Swan::CHUNK_HEIGHT; ++cy) {
+		// Copy over tiles
 		Swan::Tile::ID *crow = &chunk.getTileData()[cy * Swan::CHUNK_WIDTH];
 		Swan::Tile::ID *arow = &buffer[(cy + GEN_PADDING) * GEN_WIDTH];
+		memcpy(
+			crow, &arow[GEN_PADDING],
+			Swan::CHUNK_WIDTH * sizeof(Swan::Tile::ID));
+
+		// Copy over background tiles
+		crow = &chunk.getBackgroundTileData()[cy * Swan::CHUNK_WIDTH];
+		arow = &backgroundBuffer[(cy + GEN_PADDING) * GEN_WIDTH];
 		memcpy(
 			crow, &arow[GEN_PADDING],
 			Swan::CHUNK_WIDTH * sizeof(Swan::Tile::ID));

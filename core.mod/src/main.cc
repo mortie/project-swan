@@ -49,6 +49,10 @@ public:
 			.droppedItem = "core::dirt",
 		});
 		registerTile({
+			.name = "background",
+			.image = "core::tiles/background",
+		});
+		registerTile({
 			.name = "sand",
 			.image = "core::tiles/sand",
 			.stepSound = "core::step/sand",

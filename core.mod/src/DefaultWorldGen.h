@@ -37,15 +37,29 @@ public:
 	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 private:
+	struct GeneratedTile {
+		GeneratedTile(Swan::Tile::ID tile): tile(tile) {}
+		GeneratedTile(Swan::Tile::ID tile, Swan::Tile::ID background):
+			tile(tile), background(background) {}
+
+		Swan::Tile::ID tile;
+		Swan::Tile::ID background = Swan::World::AIR_TILE_ID;
+	};
+
 	void drawSurfaceBackground(
 		Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos);
 	void drawCaveBackground(
 		Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos);
 
-	bool isCave(Swan::TilePos pos, int grassLevel);
+	// isCave returns 3 possibilities:
+	// 0: Solid
+	// 1: Cave with background
+	// 2: Cave without background
+	int isCave(Swan::TilePos pos, int grassLevel);
+
 	bool isOil(Swan::TilePos pos, int grassLevel);
 
-	Swan::Tile::ID genTile(
+	GeneratedTile genTile(
 		Swan::TilePos pos, const Biome &biome,
 		int grassLevel, int stoneLevel);
 

@@ -1,5 +1,6 @@
 X(stone, "core::stone");
 X(dirt, "core::dirt");
+X(background, "core::background");
 X(sand, "core::sand");
 X(glass, "core::glass");
 X(grass, "core::grass");

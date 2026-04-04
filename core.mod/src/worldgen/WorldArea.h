@@ -11,6 +11,7 @@ struct WorldArea {
 	Swan::TilePos begin;
 	Swan::TilePos end;
 	Swan::Tile::ID **rows;
+	Swan::Tile::ID **backgroundRows;
 	int *surfaceLevels;
 	bool *sameBiomes;
 	bool hasSurface = false;
@@ -19,7 +20,8 @@ struct WorldArea {
 	{
 		if (
 			tp.x < begin.x || tp.y < begin.y ||
-			tp.x >= end.x || tp.y >= end.y) {
+			tp.x >= end.x || tp.y >= end.y
+		) {
 			dummyTile = Swan::World::AIR_TILE_ID;
 			return dummyTile;
 		}
@@ -28,6 +30,19 @@ struct WorldArea {
 	}
 
 	Swan::Tile::ID &operator()(Swan::TilePos tp) { return get(tp); }
+
+	Swan::Tile::ID &background(Swan::TilePos tp)
+	{
+		if (
+			tp.x < begin.x || tp.y < begin.y ||
+			tp.x >= end.x || tp.y >= end.y
+		) {
+			dummyTile = Swan::World::AIR_TILE_ID;
+			return dummyTile;
+		}
+
+		return backgroundRows[tp.y - begin.y][tp.x - begin.x];
+	}
 
 	int &surfaceLevel(int x)
 	{
