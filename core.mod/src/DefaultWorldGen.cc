@@ -4,12 +4,10 @@
 #include "entities/PlayerEntity.h"
 #include "swan/constants.h"
 #include "swan/util.h"
-#include "worldgen/StructureDef.h"
 #include "tiles.h"
 #include "worldgen/biomes/biomes.h"
 #include <cmath>
 #include <limits>
-#include <numbers>
 
 namespace CoreMod {
 
@@ -216,7 +214,7 @@ const Biome &DefaultWorldGen::getBiome(int x)
 		temperature -= 0.5;
 	}
 
-	const Biome *closestBiome = &biomes::grassland;
+	const Biome *closestBiome = &biomes::grasslands;
 	float smallestSqDist = std::numeric_limits<float>::infinity();
 	for (auto biome: biomes::biomes) {
 		float dh = biome->humidity.normalizedValue - humidity;

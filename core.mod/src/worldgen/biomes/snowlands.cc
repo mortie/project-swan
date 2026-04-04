@@ -94,8 +94,8 @@ static void postProcess(WorldArea &area, WGContext &wg)
 	}
 }
 
-Biome snowland = {
-	.name = "snowland",
+Biome snowlands = {
+	.name = "snowlands",
 
 	.temperature = -5,
 

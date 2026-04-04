@@ -189,8 +189,8 @@ static void postProcess(WorldArea &area, WGContext &wg)
 	});
 }
 
-Biome grassland = {
-	.name = "grassland",
+Biome grasslands = {
+	.name = "grasslands",
 
 	.surfaceTile = tiles::grass,
 	.soilTile = tiles::dirt,
