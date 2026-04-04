@@ -535,7 +535,7 @@ void Renderer::modifyTile(TileID id, uint16_t newAssetID)
 }
 
 RenderChunk Renderer::createChunk(
-	TileID tiles[CHUNK_SIZE])
+	TileID tiles[CHUNK_SIZE], TileID backgroundTiles[CHUNK_SIZE])
 {
 	RenderChunk chunk;
 
@@ -556,6 +556,23 @@ RenderChunk Renderer::createChunk(
 		0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, tiles);
 	glCheck();
 
+	glGenTextures(1, &chunk.backgroundTex);
+	glCheck();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, chunk.backgroundTex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glCheck();
+
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_R16UI,
+		Swan::CHUNK_WIDTH, Swan::CHUNK_HEIGHT,
+		0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, backgroundTiles);
+	glCheck();
+
 	return chunk;
 }
 
@@ -572,10 +589,29 @@ void Renderer::modifyChunk(RenderChunk chunk, Swan::Vec2i pos, TileID id)
 	glCheck();
 }
 
+void Renderer::modifyChunkBackground(RenderChunk chunk, Swan::Vec2i pos, TileID id)
+{
+	assert(chunk.backgroundTex != ~(GLuint)0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, chunk.backgroundTex);
+	glCheck();
+
+	glTexSubImage2D(
+		GL_TEXTURE_2D, 0, pos.x, pos.y, 1, 1,
+		GL_RED_INTEGER, GL_UNSIGNED_SHORT, &id);
+	glCheck();
+}
+
 void Renderer::destroyChunk(RenderChunk chunk)
 {
 	assert(chunk.tex != ~(GLuint)0);
 	glDeleteTextures(1, &chunk.tex);
+	chunk.tex = 0;
+	glCheck();
+
+	assert(chunk.backgroundTex != ~(GLuint)0);
+	glDeleteTextures(1, &chunk.backgroundTex);
+	chunk.backgroundTex = 0;
 	glCheck();
 }
 

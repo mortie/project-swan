@@ -27,16 +27,19 @@ public:
 		CHUNK_WIDTH * CHUNK_HEIGHT * sizeof(Tile::ID);
 	static constexpr size_t TILE_DATA_OFFSET = 0;
 
+	static constexpr size_t BACKGROUND_TILE_DATA_SIZE = TILE_DATA_SIZE;
+	static constexpr size_t BACKGROUND_TILE_DATA_OFFSET = TILE_DATA_OFFSET + TILE_DATA_SIZE;
+
 	static constexpr size_t FLUID_DATA_SIZE =
 		CHUNK_WIDTH * FLUID_RESOLUTION * CHUNK_HEIGHT * FLUID_RESOLUTION;
-	static constexpr size_t FLUID_DATA_OFFSET = TILE_DATA_OFFSET + TILE_DATA_SIZE;
+	static constexpr size_t FLUID_DATA_OFFSET = BACKGROUND_TILE_DATA_OFFSET + BACKGROUND_TILE_DATA_SIZE;
 
 	static constexpr size_t LIGHT_DATA_SIZE =
 		CHUNK_WIDTH * CHUNK_HEIGHT;
 	static constexpr size_t LIGHT_DATA_OFFSET = FLUID_DATA_OFFSET + FLUID_DATA_SIZE;
 
-	static constexpr size_t DATA_SIZE =
-		TILE_DATA_SIZE + FLUID_DATA_SIZE + LIGHT_DATA_SIZE;
+	static constexpr size_t PERSISTENT_DATA_SIZE = TILE_DATA_SIZE + FLUID_DATA_SIZE + LIGHT_DATA_SIZE;
+	static constexpr size_t DATA_SIZE = PERSISTENT_DATA_SIZE + LIGHT_DATA_SIZE + BACKGROUND_TILE_DATA_SIZE;
 
 	// What does this chunk want the world gen to do after a tick?
 	enum class TickAction {
@@ -45,12 +48,7 @@ public:
 		NOTHING,
 	};
 
-	Chunk(ChunkPos pos): pos_(pos)
-	{
-		data_.reset(new uint8_t[DATA_SIZE]);
-		memset(getLightData(), 0, LIGHT_DATA_SIZE);
-		memset(getFluidData(), 0, FLUID_DATA_SIZE);
-	}
+	Chunk(ChunkPos pos);
 
 	Tile::ID *getTileData()
 	{
@@ -62,6 +60,18 @@ public:
 	{
 		assert(isActive());
 		return (Tile::ID *)(data_.get() + TILE_DATA_OFFSET);
+	}
+
+	Tile::ID *getBackgroundTileData()
+	{
+		assert(isActive());
+		return (Tile::ID *)(data_.get() + BACKGROUND_TILE_DATA_OFFSET);
+	}
+
+	const Tile::ID *getBackgroundTileData() const
+	{
+		assert(isActive());
+		return (Tile::ID *)(data_.get() + BACKGROUND_TILE_DATA_OFFSET);
 	}
 
 	Fluid::ID *getFluidData()
@@ -88,9 +98,16 @@ public:
 		isModified_ = true;
 	}
 
-	void setTileData(ChunkRelPos pos, Tile::ID id)
+	Tile::ID getBackgroundTileID(ChunkRelPos pos) const
 	{
-		getTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
+		return getBackgroundTileData()[pos.y * CHUNK_WIDTH + pos.x];
+	}
+
+	void setBackgroundTileID(ChunkRelPos pos, Tile::ID id)
+	{
+		getBackgroundTileData()[pos.y * CHUNK_WIDTH + pos.x] = id;
+		backgroundChangeList_.emplace_back(pos, id);
+		isModified_ = true;
 	}
 
 	void setFluidID(ChunkRelPos pos, Fluid::ID fluid);
@@ -173,6 +190,7 @@ private:
 
 	std::unique_ptr<uint8_t[]> data_;
 	std::vector<std::pair<ChunkRelPos, Tile::ID>> changeList_;
+	std::vector<std::pair<ChunkRelPos, Tile::ID>> backgroundChangeList_;
 
 	std::vector<std::pair<ChunkRelPos, Cygnet::Renderer::DrawMask>> fluidMasks_;
 	std::unordered_map<ChunkRelPos, size_t> fluidMaskMap_;

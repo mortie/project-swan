@@ -12,6 +12,18 @@
 
 namespace Swan {
 
+Chunk::Chunk(ChunkPos pos): pos_(pos)
+{
+	data_.reset(new uint8_t[DATA_SIZE]);
+	memset(getLightData(), 0, LIGHT_DATA_SIZE);
+	memset(getFluidData(), 0, FLUID_DATA_SIZE);
+
+	Tile::ID *backgroundData = getBackgroundTileData();
+	for (size_t i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT; ++i) {
+		backgroundData[i] = World::AIR_TILE_ID;
+	}
+}
+
 void Chunk::compress()
 {
 	if (isCompressed()) {
@@ -20,12 +32,12 @@ void Chunk::compress()
 
 	// We only need a fixed-length temp buffer;
 	// if the compressed data gets too big, there's no point in compressing
-	uint8_t dest[TILE_DATA_SIZE + FLUID_DATA_SIZE];
+	uint8_t dest[PERSISTENT_DATA_SIZE];
 
 	size_t destlen = sizeof(dest);
 	int ret = zng_compress2(
 		dest, &destlen,
-		data_.get(), TILE_DATA_SIZE + FLUID_DATA_SIZE,
+		data_.get(), PERSISTENT_DATA_SIZE,
 		Z_BEST_COMPRESSION);
 
 	if (ret == Z_OK) {
@@ -65,7 +77,7 @@ void Chunk::decompress()
 	}
 
 	auto dest = std::make_unique<uint8_t[]>(DATA_SIZE);
-	size_t destlen = TILE_DATA_SIZE + FLUID_DATA_SIZE;
+	size_t destlen = PERSISTENT_DATA_SIZE;
 	int ret = zng_uncompress(
 		dest.get(), &destlen,
 		data_.get(), compressedSize_);
@@ -86,7 +98,7 @@ void Chunk::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 	}
 
 	if (!isRendered_) {
-		renderChunk_ = rnd.createChunk(getTileData());
+		renderChunk_ = rnd.createChunk(getTileData(), getBackgroundTileData());
 		renderChunkFluid_ = rnd.createChunkFluid(getFluidData());
 		renderChunkShadow_ = rnd.createChunkShadow(getLightData());
 
@@ -122,6 +134,11 @@ void Chunk::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 		rnd.modifyChunk(renderChunk_, change.first, change.second);
 	}
 	changeList_.clear();
+
+	for (auto &change: backgroundChangeList_) {
+		rnd.modifyChunkBackground(renderChunk_, change.first, change.second);
+	}
+	backgroundChangeList_.clear();
 
 	if (needLightRender_) {
 		rnd.modifyChunkShadow(renderChunkShadow_, getLightData());
@@ -163,8 +180,8 @@ void Chunk::serialize(proto::Chunk::Builder w)
 	else {
 		w.setCompression(proto::Chunk::Compression::NONE);
 		static_assert(std::endian::native == std::endian::little);
-		auto data = w.initData(TILE_DATA_SIZE);
-		memcpy(&data.front(), getTileData(), TILE_DATA_SIZE);
+		auto data = w.initData(PERSISTENT_DATA_SIZE);
+		memcpy(&data.front(), getTileData(), PERSISTENT_DATA_SIZE);
 	}
 }
 

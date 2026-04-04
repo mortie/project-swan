@@ -52,6 +52,7 @@ inline constexpr bool operator&(TileClip a, TileClip b)
 
 struct RenderChunk {
 	GLuint tex = ~(GLuint)0;
+	GLuint backgroundTex = ~(GLuint)0;
 };
 
 struct RenderChunkFluid {
@@ -394,8 +395,9 @@ public:
 
 	static constexpr size_t CHUNK_SIZE = Swan::CHUNK_WIDTH * Swan::CHUNK_HEIGHT;
 	RenderChunk createChunk(
-		TileID tiles[CHUNK_SIZE]);
+		TileID tiles[CHUNK_SIZE], TileID backgroundTiles[CHUNK_SIZE]);
 	void modifyChunk(RenderChunk chunk, Swan::Vec2i pos, TileID id);
+	void modifyChunkBackground(RenderChunk chunk, Swan::Vec2i pos, TileID id);
 	void destroyChunk(RenderChunk chunk);
 
 	static constexpr size_t FLUID_CHUNK_SIZE =

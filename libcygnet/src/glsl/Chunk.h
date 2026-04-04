@@ -45,6 +45,13 @@ struct ChunkProg: public GlProg<Shader::Chunk> {
 
 		for (const auto &dc: drawChunks) {
 			glUniform2f(shader.uniPos, dc.pos.x, dc.pos.y);
+
+			glBindTexture(GL_TEXTURE_2D, dc.chunk.backgroundTex);
+			glDrawArrays(
+				GL_TRIANGLES, 0,
+				6 * Swan::CHUNK_WIDTH * Swan::CHUNK_HEIGHT);
+			glCheck();
+
 			glBindTexture(GL_TEXTURE_2D, dc.chunk.tex);
 			glDrawArrays(
 				GL_TRIANGLES, 0,
