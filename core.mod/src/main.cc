@@ -51,8 +51,8 @@ public:
 		registerBackgroundConnected47(*this, {
 			.name = "background",
 			.image = "core::tiles/background",
-			.isOpaque = false,
 			.isSolid = false,
+			.isOpaque = false,
 		});
 		registerTile({
 			.name = "sand",
