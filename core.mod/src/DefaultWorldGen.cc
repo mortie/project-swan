@@ -144,6 +144,8 @@ int DefaultWorldGen::isCave(Swan::TilePos pos, int grassLevel)
 		threshold += (6 - diff) * 0.03;
 	}
 
+	threshold *= 0.7;
+
 	float res = wg_.perlin.noise2D(pos.x / 43.37, pos.y / 16.37);
 	if (res > threshold * 2) {
 		return 2;
