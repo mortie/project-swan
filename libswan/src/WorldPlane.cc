@@ -192,14 +192,20 @@ void WorldPlane::update(float dt)
 		for (int y = 0; y < CHUNK_HEIGHT; ++y) {
 			for (int x = 0; x < CHUNK_WIDTH; ++x) {
 				Tile::ID id = chunk->getTileID({x, y});
-				Tile &tile = world_->getTileByID(id);
+				Tile *tile = &world_->getTileByID(id);
 
-				if (tile.isSolid()) {
+				if (tile->isSolid()) {
 					chunk->setFluidID({x, y}, World::SOLID_FLUID_ID);
 				}
 
-				if (tile.more->onSpawn) {
-					tile.more->onSpawn(getContext(), base + Vec2i{x, y});
+				if (tile->more->onSpawn) {
+					tile->more->onSpawn(getContext(), base + Vec2i{x, y});
+				}
+
+				id = chunk->getBackgroundTileID({x, y});
+				tile = &world_->getTileByID(id);
+				if (tile->more->onSpawn) {
+					tile->more->onSpawn(getContext(), base + Vec2i{x, y});
 				}
 			}
 		}

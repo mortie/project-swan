@@ -48,9 +48,11 @@ public:
 			.placeSound = "core::place/dirt",
 			.droppedItem = "core::dirt",
 		});
-		registerTile({
+		registerBackgroundConnected47(*this, {
 			.name = "background",
 			.image = "core::tiles/background",
+			.isOpaque = false,
+			.isSolid = false,
 		});
 		registerTile({
 			.name = "sand",
@@ -59,7 +61,7 @@ public:
 			.droppedItem = "core::sand",
 			.onTileUpdate = fallIfFloating,
 		});
-		registerConnected(*this, {
+		registerConnected16(*this, {
 			.name = "glass",
 			.image = "core::tiles/glass",
 			.isOpaque = false,

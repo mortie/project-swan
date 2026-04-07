@@ -28,9 +28,15 @@ public:
 	void set(TilePos pos, std::string_view name);
 	void setID(TilePos pos, Tile::ID id);
 	bool setIDWithoutUpdate(TilePos pos, Tile::ID id);
+	void setBackgroundID(TilePos pos, Tile::ID id);
+	bool setBackgroundIDWithoutUpdate(TilePos pos, Tile::ID id);
 
 	Tile &get(TilePos pos);
+	Tile *maybeGet(TilePos pos);
 	Tile::ID getID(TilePos pos);
+	Tile &getBackground(TilePos pos);
+	Tile *maybeGetBackground(TilePos pos);
+	Tile::ID getBackgroundID(TilePos pos);
 	uint8_t getLightLevel(TilePos pos);
 
 	bool breakTile(TilePos pos);
@@ -53,6 +59,20 @@ public:
 		scheduledUpdatesA_.push_back(pos.add(0, 1));
 	}
 
+	void scheduleBackgroundUpdate(TilePos pos)
+	{
+		scheduledBackgroundUpdatesA_.push_back(pos);
+	}
+
+	void scheduleBackgroundUpdateAround(TilePos pos)
+	{
+		scheduledBackgroundUpdatesA_.push_back(pos);
+		scheduledBackgroundUpdatesA_.push_back(pos.add(-1, 0));
+		scheduledBackgroundUpdatesA_.push_back(pos.add(1, 0));
+		scheduledBackgroundUpdatesA_.push_back(pos.add(0, -1));
+		scheduledBackgroundUpdatesA_.push_back(pos.add(0, 1));
+	}
+
 	void spawnTileParticles(TilePos pos, const Tile &tile);
 
 	/*
@@ -69,6 +89,10 @@ private:
 	std::vector<TilePos> scheduledUpdatesA_;
 	std::vector<TilePos> scheduledUpdatesB_;
 
+	// Background tiles to update the next tick
+	std::vector<TilePos> scheduledBackgroundUpdatesA_;
+	std::vector<TilePos> scheduledBackgroundUpdatesB_;
+
 	friend WorldPlane;
 };
 
@@ -78,8 +102,14 @@ public:
 	using TileSystemImpl::set;
 	using TileSystemImpl::setID;
 	using TileSystemImpl::setIDWithoutUpdate;
+	using TileSystemImpl::setBackgroundID;
+	using TileSystemImpl::setBackgroundIDWithoutUpdate;
 	using TileSystemImpl::get;
+	using TileSystemImpl::maybeGet;
 	using TileSystemImpl::getID;
+	using TileSystemImpl::getBackground;
+	using TileSystemImpl::maybeGetBackground;
+	using TileSystemImpl::getBackgroundID;
 	using TileSystemImpl::getLightLevel;
 	using TileSystemImpl::breakTile;
 	using TileSystemImpl::breakTileSilently;

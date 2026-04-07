@@ -18,6 +18,7 @@ class ItemStack;
 
 struct Tile {
 	using ID = uint16_t;
+	using Offset = uint16_t;
 
 	using FluidMaskIndex = uint16_t;
 
@@ -30,6 +31,7 @@ struct Tile {
 		IS_REPLACABLE = 1 << 4,
 		IS_PLATFORM = 1 << 5,
 		IS_FULL_SUPPORT_H = 1 << 6,
+		IS_BACKGROUND = 1 << 7,
 	};
 
 	friend constexpr Tile::Flags operator|(Tile::Flags a, Tile::Flags b) {
@@ -60,9 +62,14 @@ struct Tile {
 		bool isReplacable = false;
 		bool isPlatform = isSolid;
 		bool isFullSupportH = isSupportH;
+		bool isBackground = false;
 		float lightLevel = 0;
 		float temperature = 0;
 		ToolSet breakableBy = Tool::NONE;
+
+		// Some tiles are part of a collection of tiles (e.g connected tiles, direction variations, etc).
+		// The 'baseOffset' represents the offset from the first tile in the collection.
+		Tile::Offset baseOffset = 0;
 
 		std::optional<std::string> stepSound = std::nullopt;
 		std::optional<std::string> placeSound = std::nullopt;
@@ -117,6 +124,7 @@ struct Tile {
 			onTileUpdate(builder.onTileUpdate),
 			onActivate(builder.onActivate),
 			onWorldTick(builder.onWorldTick),
+			baseOffset(builder.baseOffset),
 			fluidCollision(builder.fluidCollision),
 			traits(builder.traits),
 			tileEntity(builder.tileEntity),
@@ -129,6 +137,8 @@ struct Tile {
 		void (*onTileUpdate)(Ctx &ctx, TilePos pos);
 		void (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta);
 		void (*onWorldTick)(Ctx &ctx, TilePos pos);
+
+		Tile::Offset baseOffset;
 
 		Cygnet::RenderMask fluidMask;
 		std::shared_ptr<TileParticles> particles;
@@ -166,7 +176,8 @@ struct Tile {
 			(builder.isSupportH ? IS_SUPPORT_H : NONE) |
 			(builder.isReplacable ? IS_REPLACABLE : NONE) |
 			(builder.isPlatform ? IS_PLATFORM : NONE) |
-			(builder.isFullSupportH ? IS_FULL_SUPPORT_H : NONE)),
+			(builder.isFullSupportH ? IS_FULL_SUPPORT_H : NONE) |
+			(builder.isBackground ? IS_BACKGROUND : NONE)),
 		breakableBy(builder.breakableBy),
 		name(name),
 		more(std::make_unique<More>(builder))
@@ -179,6 +190,7 @@ struct Tile {
 	bool isReplacable() const { return flags & IS_REPLACABLE; }
 	bool isPlatform() const { return flags & IS_PLATFORM; }
 	bool isFullSupportH() const { return flags & IS_FULL_SUPPORT_H; }
+	bool isBackground() const { return flags & IS_BACKGROUND; }
 };
 
 }

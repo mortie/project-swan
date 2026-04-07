@@ -103,9 +103,59 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 	return true;
 }
 
+void TileSystemImpl::setBackgroundID(TilePos pos, Tile::ID id)
+{
+	if (setBackgroundIDWithoutUpdate(pos, id)) {
+		// Update the new tile immediately
+		auto &tile = getBackground(pos);
+		if (tile.more->onTileUpdate) {
+			tile.more->onTileUpdate(plane_.getContext(), pos);
+		}
+
+		// Schedule surrounding tile updates for later
+		scheduleBackgroundUpdate(pos.add(-1, 0));
+		scheduleBackgroundUpdate(pos.add(0, -1));
+		scheduleBackgroundUpdate(pos.add(1, 0));
+		scheduleBackgroundUpdate(pos.add(0, 1));
+	}
+}
+
+bool TileSystemImpl::setBackgroundIDWithoutUpdate(TilePos pos, Tile::ID id)
+{
+	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
+	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+
+	Tile::ID old = chunk.getBackgroundTileID(rp);
+
+	if (id == old) {
+		return false;
+	}
+
+	Tile &newTile = plane_.world_->getTileByID(id);
+
+	chunk.setBackgroundTileID(rp, id);
+
+	if (newTile.more->onSpawn) {
+		newTile.more->onSpawn(plane_.getContext(), pos);
+	}
+
+	return true;
+}
+
 Tile &TileSystemImpl::get(TilePos pos)
 {
 	return plane_.world_->getTileByID(getID(pos));
+}
+
+Tile *TileSystemImpl::maybeGet(TilePos pos)
+{
+	Chunk *chunk = plane_.subtleGetChunk(tilePosToChunkPos(pos));
+	if (!chunk || !chunk->isActive()) {
+		return nullptr;
+	}
+
+	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+	return &plane_.world_->getTileByID(chunk->getTileID(rp));
 }
 
 Tile::ID TileSystemImpl::getID(TilePos pos)
@@ -113,6 +163,29 @@ Tile::ID TileSystemImpl::getID(TilePos pos)
 	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
 	ChunkRelPos rp = tilePosToChunkRelPos(pos);
 	return chunk.getTileID(rp);
+}
+
+Tile &TileSystemImpl::getBackground(TilePos pos)
+{
+	return plane_.world_->getTileByID(getBackgroundID(pos));
+}
+
+Tile *TileSystemImpl::maybeGetBackground(TilePos pos)
+{
+	Chunk *chunk = plane_.subtleGetChunk(tilePosToChunkPos(pos));
+	if (!chunk || !chunk->isActive()) {
+		return nullptr;
+	}
+
+	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+	return &plane_.world_->getTileByID(chunk->getBackgroundTileID(rp));
+}
+
+Tile::ID TileSystemImpl::getBackgroundID(TilePos pos)
+{
+	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
+	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+	return chunk.getBackgroundTileID(rp);
 }
 
 uint8_t TileSystemImpl::getLightLevel(TilePos pos)
@@ -167,6 +240,17 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
 	ChunkRelPos rp = tilePosToChunkRelPos(pos);
 
+	auto &newTileBeforeSpawn = plane_.world_->getTileByID(id);
+	if (newTileBeforeSpawn.isBackground()) {
+		Tile &oldTile = getBackground(pos);
+		if (id == oldTile.id || !oldTile.isReplacable()) {
+			return false;
+		}
+
+		setBackgroundID(pos, id);
+		return true;
+	}
+
 	Tile::ID old = chunk.getTileID(rp);
 	auto &oldTile = plane_.world_->getTileByID(old);
 
@@ -177,8 +261,6 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 	if (id == old) {
 		return false;
 	}
-
-	auto &newTileBeforeSpawn = plane_.world_->getTileByID(id);
 
 	// Try to run the onSpawn immediately,
 	// and revert if it returns false
@@ -338,7 +420,7 @@ void TileSystemImpl::spawnTileParticles(TilePos pos, const Tile &tile)
 	// Therefore, if the tile is in a fluid, braw it in layer BEHIND.
 	auto &fluid = plane_.fluids().getAtPos(pos.as<float>().add(0.5, 0.5));
 	auto layer = fluid.id > World::SOLID_FLUID_ID
-		? Cygnet::RenderLayer::BEHIND 
+		? Cygnet::RenderLayer::BEHIND
 		: Cygnet::RenderLayer::NORMAL;
 
 	for (int y = 0; y < 8; ++y) {
@@ -367,19 +449,33 @@ void TileSystemImpl::spawnTileParticles(TilePos pos, const Tile &tile)
 void TileSystemImpl::beginTick()
 {
 	std::swap(scheduledUpdatesA_, scheduledUpdatesB_);
+	std::swap(scheduledBackgroundUpdatesA_, scheduledBackgroundUpdatesB_);
 }
 
 void TileSystemImpl::endTick()
 {
 	auto ctx = plane_.getContext();
+
 	for (auto &pos: scheduledUpdatesB_) {
-		auto &tile = get(pos);
-		if (tile.more->onTileUpdate) {
-			tile.more->onTileUpdate(ctx, pos);
+		auto *tile = &get(pos);
+		if (tile->more->onTileUpdate) {
+			tile->more->onTileUpdate(ctx, pos);
+		}
+
+		tile = &getBackground(pos);
+		if (tile->more->onTileUpdate) {
+			tile->more->onTileUpdate(ctx, pos);
 		}
 	}
-
 	scheduledUpdatesB_.clear();
+
+	for (auto &pos: scheduledBackgroundUpdatesB_) {
+		auto *tile = maybeGetBackground(pos);
+		if (tile && tile->more->onTileUpdate) {
+			tile->more->onTileUpdate(ctx, pos);
+		}
+	}
+	scheduledBackgroundUpdatesB_.clear();
 }
 
 }

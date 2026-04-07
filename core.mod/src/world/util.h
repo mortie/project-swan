@@ -17,7 +17,17 @@ void breakIfInFluid(Swan::Ctx &ctx, Swan::TilePos pos);
 
 bool healPlayer(Swan::Ctx &ctx, Swan::EntityRef player, int n);
 
-void registerConnected(Swan::Mod &mod, Swan::Tile::Builder builder);
+// Lookup table from 4-bit connection bitmap to offset into a 16-tile connected tile set.
+// Bits: LEFT | RIGHT | UP | DOWN
+extern const std::array<uint8_t, 16> CONNECTION_LUT_16;
+
+// Lookup table from 8-bit connection bitmap to offset into a 47-tile connected tile set.
+// Bits: LEFT | RIGHT | UP | DOWN
+extern const std::array<uint8_t, 256> CONNECTION_LUT_47;
+
+void registerConnected16(Swan::Mod &mod, Swan::Tile::Builder builder);
+void registerConnected47(Swan::Mod &mod, Swan::Tile::Builder builder);
+void registerBackgroundConnected47(Swan::Mod &mod, Swan::Tile::Builder builder);
 
 template<int N>
 void foodItem(Swan::Ctx &ctx, Swan::Item::ActivateMeta meta)

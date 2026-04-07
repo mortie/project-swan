@@ -1,4 +1,5 @@
 [items]
+background = "Background"
 aqueduct = "Aqueduct"
 stone = "Stone"
 dirt = "Dirt"
