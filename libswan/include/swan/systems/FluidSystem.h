@@ -43,6 +43,7 @@ public:
 	Fluid &getAtPos(Vec2 pos);
 	bool takeFluidFromRow(TilePos pos, int y, Fluid::ID fluid);
 	Fluid &takeAnyFromRow(TilePos pos, int y);
+	bool isFluidCellSolid(FluidPos pos);
 
 	/*
 	 * Available to friends
@@ -113,6 +114,7 @@ public:
 	using FluidSystemImpl::getAtPos;
 	using FluidSystemImpl::takeFluidFromRow;
 	using FluidSystemImpl::takeAnyFromRow;
+	using FluidSystemImpl::isFluidCellSolid;
 
 	friend WorldPlane;
 };

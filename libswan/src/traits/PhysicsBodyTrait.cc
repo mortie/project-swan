@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "WorldPlane.h"
+#include "swan/constants.h"
 
 namespace Swan {
 
@@ -12,22 +13,22 @@ static void collideX(BasicPhysicsBody &phys, WorldPlane &plane)
 {
 	bool collided = false;
 
-	int firstY = (int)floor(phys.body.top() + epsilon);
-	int lastY = (int)floor(phys.body.bottom() - epsilon);
+	int64_t firstY = (int64_t)floor(phys.body.top() * FLUID_RESOLUTION + epsilon);
+	int64_t lastY = (int64_t)floor(phys.body.bottom() * FLUID_RESOLUTION - epsilon);
+	int64_t lx = (int64_t)floor(phys.body.left() * FLUID_RESOLUTION);
+	int64_t rx = (int64_t)floor(phys.body.right() * FLUID_RESOLUTION);
 
-	for (int y = firstY; y <= lastY; ++y) {
-		int lx = (int)floor(phys.body.left());
-		Tile &left = plane.tiles().get({lx, y});
-		if (left.isSolid()) {
-			phys.body.pos.x = (float)lx + 1.0;
+	for (int64_t y = firstY; y <= lastY; ++y) {
+		bool leftSolid = plane.fluids().isFluidCellSolid({lx, y});
+		if (leftSolid) {
+			phys.body.pos.x = float(lx) / FLUID_RESOLUTION + 1.0 / FLUID_RESOLUTION;
 			collided = true;
 			break;
 		}
 
-		int rx = (int)floor(phys.body.right());
-		Tile &right = plane.tiles().get({rx, y});
-		if (right.isSolid()) {
-			phys.body.pos.x = (float)rx - phys.body.size.x;
+		bool rightSolid = plane.fluids().isFluidCellSolid({rx, y});
+		if (rightSolid) {
+			phys.body.pos.x = float(rx) / FLUID_RESOLUTION - phys.body.size.x;
 			collided = true;
 			break;
 		}
@@ -47,25 +48,34 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane)
 
 	phys.onGround = false;
 
-	int firstX = (int)floor(phys.body.left() + epsilon);
-	int lastX = (int)floor(phys.body.right() - epsilon);
-	for (int x = firstX; x <= lastX; ++x) {
-		int by = (int)floor(phys.body.bottom() + 0.04);
-		Tile &bottom = plane.tiles().get({x, by});
-		bool onGround =
-			bottom.isSolid() ||
-			(phys.platformCollision && bottom.isPlatform() && phys.vel.y >= -0.1);
+	int64_t firstX = (int64_t)floor(phys.body.left() * FLUID_RESOLUTION + epsilon);
+	int64_t lastX = (int64_t)floor(phys.body.right() * FLUID_RESOLUTION - epsilon);
+	int64_t by = (int64_t)floor(phys.body.bottom() * FLUID_RESOLUTION + 0.04);
+	int64_t ty = (int64_t)floor(phys.body.top() * FLUID_RESOLUTION + 0.01);
+
+	for (int64_t x = firstX; x <= lastX; ++x) {
+		bool bottomSolid = plane.fluids().isFluidCellSolid({x, by});
+		bool onGround = bottomSolid;
+
+		// Handle platforms
+		if (!onGround && phys.platformCollision && phys.vel.y >= -0.1) {
+			Tile &bottom = plane.tiles().get({
+				(int)floor(float(x) / FLUID_RESOLUTION),
+				(int)floor(float(by) / FLUID_RESOLUTION),
+			});
+			onGround = bottom.isPlatform();
+		}
+
 		if (onGround) {
-			phys.body.pos.y = (float)by - phys.body.size.y;
+			phys.body.pos.y = float(by) / FLUID_RESOLUTION - phys.body.size.y;
 			collided = true;
 			phys.onGround = true;
 			break;
 		}
 
-		int ty = (int)floor(phys.body.top() + 0.01);
-		Tile &top = plane.tiles().get({x, ty});
-		if (top.isSolid()) {
-			phys.body.pos.y = (float)ty + 1.0;
+		bool topSolid = plane.fluids().isFluidCellSolid({x, ty});
+		if (topSolid) {
+			phys.body.pos.y = float(ty) / FLUID_RESOLUTION + 1.0 / FLUID_RESOLUTION;
 			collided = true;
 			break;
 		}
@@ -134,22 +144,6 @@ void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 	Vec2 dist = vel * dt;
 	Vec2 dir = dist.sign();
 	Vec2 step = dir * 0.4;
-
-	// Teleport out of the center of a block, if possible
-	auto tpos = body.center().as<int>();
-	if (ctx.plane.tiles().get(tpos).isSolid()) {
-		if (!(ctx.plane.tiles().get(tpos.add(0, -1)).isSolid())) {
-			body.setBottom(tpos.y - 0.01);
-		} else if (!(ctx.plane.tiles().get(tpos.add(-1, 0)).isSolid())) {
-			body.setRight(tpos.x - 0.01);
-		} else if (!(ctx.plane.tiles().get(tpos.add(1, 0)).isSolid())) {
-			body.setLeft(tpos.x + 1.01);
-		} else if (!(ctx.plane.tiles().get(tpos.add(0, -1)).isSolid())) {
-			body.setTop(tpos.y + 1.01);
-		} else {
-			body.setBottom(tpos.y - 0.01);
-		}
-	}
 
 	// Move in increments of at most 'step', on the Y axis
 	while (std::abs(dist.y) > std::abs(step.y)) {

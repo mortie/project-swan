@@ -320,7 +320,8 @@ bool FluidSystemImpl::takeFluidFromRow(TilePos pos, int y, Fluid::ID fluid) {
 	return false;
 }
 
-Fluid &FluidSystemImpl::takeAnyFromRow(TilePos pos, int y) {
+Fluid &FluidSystemImpl::takeAnyFromRow(TilePos pos, int y)
+{
 	FluidPos fpos = pos.as<int64_t>() * FLUID_RESOLUTION;
 	fpos.y += y;
 
@@ -353,6 +354,12 @@ Fluid &FluidSystemImpl::takeAnyFromRow(TilePos pos, int y) {
 	}
 
 	return plane_.world_->getFluidByID(World::AIR_FLUID_ID);
+}
+
+bool FluidSystemImpl::isFluidCellSolid(FluidPos gridPos)
+{
+	auto cell = getFluidCell(gridPos);
+	return cell.isSolid();
 }
 
 void FluidSystemImpl::draw(Cygnet::Renderer &rnd)

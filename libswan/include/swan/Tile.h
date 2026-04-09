@@ -60,7 +60,7 @@ struct Tile {
 		bool isSupportV = isSolid;
 		bool isSupportH = isSolid;
 		bool isReplacable = false;
-		bool isPlatform = isSolid;
+		bool isPlatform = false;
 		bool isFullSupportH = isSupportH;
 		bool isBackground = false;
 		float lightLevel = 0;
