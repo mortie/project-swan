@@ -163,26 +163,48 @@ void Chunk::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 	}
 }
 
-void Chunk::serialize(proto::Chunk::Builder w)
+void Chunk::serialize(proto::Chunk::Builder w) const
 {
-	compress();
+	using Compression = proto::Chunk::Compression;
+	uint8_t compressionBuf[PERSISTENT_DATA_SIZE];
+
+	uint8_t *dataPtr = data_.get();
+	size_t dataLen = PERSISTENT_DATA_SIZE;
+	Compression compression = Compression::NONE;
+
+	// If the chunk is already compressed,
+	// just re-use the buffer
+	if (isCompressed()) {
+		dataLen = compressedSize_;
+		compression = Compression::GZIP;
+	}
+
+	// If not, we try to compress it.
+	// If we don't gain anything by compressing,
+	// just use it uncompressed.
+	else {
+		size_t len = PERSISTENT_DATA_SIZE;
+		int ret = zng_compress2(
+			compressionBuf, &len,
+			data_.get(), PERSISTENT_DATA_SIZE,
+			Z_BEST_COMPRESSION);
+		if (ret == Z_OK) {
+			dataLen = len;
+			dataPtr = compressionBuf;
+			compression = Compression::GZIP;
+		} else if (ret != Z_BUF_ERROR) {
+			warn << "Chunk compression error: " << ret;
+		}
+	}
 
 	auto pos = w.initPos();
 	pos.setX(pos_.x);
 	pos.setY(pos_.y);
 
-	if (isCompressed()) {
-		w.setCompression(proto::Chunk::Compression::GZIP);
-		static_assert(std::endian::native == std::endian::little);
-		auto data = w.initData(compressedSize_);
-		memcpy(&data.front(), data_.get(), compressedSize_);
-	}
-	else {
-		w.setCompression(proto::Chunk::Compression::NONE);
-		static_assert(std::endian::native == std::endian::little);
-		auto data = w.initData(PERSISTENT_DATA_SIZE);
-		memcpy(&data.front(), getTileData(), PERSISTENT_DATA_SIZE);
-	}
+	w.setCompression(compression);
+	static_assert(std::endian::native == std::endian::little);
+	auto d = w.initData(dataLen);
+	memcpy(&d.front(), dataPtr, dataLen);
 }
 
 void Chunk::deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap)
@@ -194,7 +216,7 @@ void Chunk::deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap)
 	auto data = r.getData();
 	switch (r.getCompression()) {
 	case proto::Chunk::Compression::NONE:
-		if (data.size() != TILE_DATA_SIZE) {
+		if (data.size() != PERSISTENT_DATA_SIZE) {
 			throw std::runtime_error("Bad chunk size");
 		}
 

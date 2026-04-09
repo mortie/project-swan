@@ -175,7 +175,7 @@ public:
 		return isCompressed() ? compressedSize_ : DATA_SIZE;
 	}
 
-	void serialize(proto::Chunk::Builder w);
+	void serialize(proto::Chunk::Builder w) const;
 	void deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap);
 
 	std::unordered_set<EntityRef> entities_;
