@@ -38,7 +38,7 @@ public:
 		CHUNK_WIDTH * CHUNK_HEIGHT;
 	static constexpr size_t LIGHT_DATA_OFFSET = FLUID_DATA_OFFSET + FLUID_DATA_SIZE;
 
-	static constexpr size_t PERSISTENT_DATA_SIZE = TILE_DATA_SIZE + FLUID_DATA_SIZE + LIGHT_DATA_SIZE;
+	static constexpr size_t PERSISTENT_DATA_SIZE = TILE_DATA_SIZE + BACKGROUND_TILE_DATA_SIZE + FLUID_DATA_SIZE;
 	static constexpr size_t DATA_SIZE = PERSISTENT_DATA_SIZE + LIGHT_DATA_SIZE + BACKGROUND_TILE_DATA_SIZE;
 
 	// What does this chunk want the world gen to do after a tick?
