@@ -10,7 +10,7 @@ void activateClay(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta)
 {
 	if constexpr (N == 0) {
 		ctx.plane.tiles().setID(pos, Swan::World::AIR_TILE_ID);
-	} else{
+	} else {
 		std::string next = Swan::cat("core::clay-tile::", N - 1);
 		ctx.plane.tiles().set(pos, next);
 	}

@@ -42,7 +42,7 @@ void ItemStackEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 			.translate({0, item_->yOffset})
 			.scale({0.5, 0.5})
 			.translate(physicsBody_.body.pos),
-		item_->id, 0.8,
+		item_->id,
 	});
 }
 

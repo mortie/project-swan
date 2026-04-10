@@ -3,6 +3,7 @@
 #include "entities/ItemStackEntity.h"
 #include "entities/PlayerEntity.h"
 #include "entities/FallingTileEntity.h"
+#include "swan/common.h"
 #include <utility>
 
 namespace CoreMod {
@@ -362,6 +363,57 @@ void registerBackgroundConnected47(Swan::Mod &mod, Swan::Tile::Builder builder)
 		return true;
 	};
 	registerConnectedTiles42(mod, builder);
+}
+
+template<bool Last = false>
+void activateShovelable(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta)
+{
+	auto &tile = ctx.plane.tiles().get(pos);
+	auto *droppedItem = tile.more->droppedItem;
+	if (droppedItem) {
+		auto stack = ctx.plane.entities().spawn<ItemStackEntity>(
+			pos.as<float>().add(0.5, -0.3), droppedItem);
+		stack.trait<Swan::PhysicsBodyTrait>()->addVelocity({0, -3.0f});
+	}
+
+	ctx.game.playSound(tile.more->breakSound);
+
+	if constexpr (Last) {
+		ctx.plane.tiles().setID(pos, Swan::World::AIR_TILE_ID);
+	} else {
+		ctx.plane.tiles().setID(pos, tile.id + 1);
+	}
+}
+
+void registerShovelable(Swan::Mod &mod, Swan::Tile::Builder builder)
+{
+	mod.registerTile(builder.clone()
+		.withOnActivate(activateShovelable)
+		.withImage(Swan::cat(builder.image, "@0")));
+	mod.registerTile(builder.clone()
+		.withOnActivate(activateShovelable)
+		.withFluidCollision(std::make_shared<Swan::FluidCollision>(0b1111'1111'1111'0000))
+		.withName(Swan::cat(builder.name, "::1"))
+		.withImage(Swan::cat(builder.image, "@1"))
+		.withIsSupportV(false)
+		.withIsSupportH(false)
+		.withIsSolid(false));
+	mod.registerTile(builder.clone()
+		.withOnActivate(activateShovelable)
+		.withFluidCollision(std::make_shared<Swan::FluidCollision>(0b1111'1111'0000'0000))
+		.withName(Swan::cat(builder.name, "::2"))
+		.withImage(Swan::cat(builder.image, "@2"))
+		.withIsSupportV(false)
+		.withIsSupportH(false)
+		.withIsSolid(false));
+	mod.registerTile(builder.clone()
+		.withOnActivate(activateShovelable<true>)
+		.withFluidCollision(std::make_shared<Swan::FluidCollision>(0b1111'0000'0000'0000))
+		.withName(Swan::cat(builder.name, "::3"))
+		.withImage(Swan::cat(builder.image, "@3"))
+		.withIsSupportV(false)
+		.withIsSupportH(false)
+		.withIsSolid(false));
 }
 
 }

@@ -1,6 +1,7 @@
 #include "FallingTileEntity.h"
 
 #include "world/util.h"
+#include <cstdlib>
 
 namespace CoreMod {
 
@@ -36,12 +37,23 @@ void FallingTileEntity::update(Swan::Ctx &ctx, float dt)
 	physicsBody_.standardForces();
 	physicsBody_.update(ctx, dt);
 
+	// Decide whether we want to place the tile or not.
+	// We want to place if the physics engine thinks we're on ground,
+	// *and* the Y value is roughly tile-grid aligned.
 	// Normally, we would check onGround after collideAll
 	// and before update, to treat other entities as ground.
 	// However, here we only want to treat terrain as ground,
 	// so we let physicsBody_.update clear the onGround state
 	// from collideAll first.
-	if (physicsBody_.onGround) {
+	bool place = physicsBody_.onGround;
+	if (place) {
+		float offset = std::abs(physicsBody_.body.top() - floor(physicsBody_.body.top()));
+		if (offset > 0.2) {
+			place = false;
+		}
+	}
+
+	if (place) {
 		Swan::TilePos pos = {
 			(int)floor(physicsBody_.body.midX()),
 			(int)floor(physicsBody_.body.midY()),

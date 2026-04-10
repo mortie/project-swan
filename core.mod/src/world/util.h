@@ -29,6 +29,8 @@ void registerConnected16(Swan::Mod &mod, Swan::Tile::Builder builder);
 void registerConnected47(Swan::Mod &mod, Swan::Tile::Builder builder);
 void registerBackgroundConnected47(Swan::Mod &mod, Swan::Tile::Builder builder);
 
+void registerShovelable(Swan::Mod &mod, Swan::Tile::Builder builder);
+
 template<int N>
 void foodItem(Swan::Ctx &ctx, Swan::Item::ActivateMeta meta)
 {

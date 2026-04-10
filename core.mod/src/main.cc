@@ -55,11 +55,12 @@ public:
 			.isSolid = false,
 			.isOpaque = false,
 		});
-		registerTile({
+		registerShovelable(*this, {
 			.name = "sand",
 			.image = "core::tiles/sand",
 			.stepSound = "core::step/sand",
-			.droppedItem = "core::sand",
+			.breakSound = "core::step/sand2",
+			.droppedItem = "core::sand-pile",
 			.onTileUpdate = fallIfFloating,
 		});
 		registerConnected16(*this, {
@@ -114,11 +115,12 @@ public:
 			},
 		});
 
-		registerTile({
+		registerShovelable(*this, {
 			.name = "snow",
 			.image = "core::tiles/snow",
 			.stepSound = "core::step/sand",
-			.droppedItem = "core::snow",
+			.breakSound = "core::step/sand1",
+			.droppedItem = "core::snowball",
 			.onTileUpdate = fallIfFloating,
 		});
 
@@ -250,6 +252,14 @@ public:
 		registerItem({
 			.name = "clay",
 			.image = "core::items/clay",
+		});
+		registerItem({
+			.name = "snowball",
+			.image = "core::items/snowball",
+		});
+		registerItem({
+			.name = "sand-pile",
+			.image = "core::items/sand-pile",
 		});
 		registerItem({
 			.name = "coal",

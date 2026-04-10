@@ -1,4 +1,6 @@
 [items]
+snowball = "Snowball"
+sand-pile = "Sand"
 background = "Background"
 aqueduct = "Aqueduct"
 stone = "Stone"
