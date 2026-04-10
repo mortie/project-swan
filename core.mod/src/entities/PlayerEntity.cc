@@ -14,6 +14,7 @@ static constexpr Swan::BasicPhysicsBody::Props PROPS = {
 	.size = {0.6, 1.5},
 	.mass = 80,
 	.bounciness = 0,
+	.stepHeight = 2,
 };
 
 static constexpr int INVENTORY_SIZE = 40;

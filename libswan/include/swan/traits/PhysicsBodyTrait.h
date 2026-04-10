@@ -34,19 +34,22 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 		float bounciness = 0.6;
 		float mushyness = 2;
 		bool isSolid = true;
+		int stepHeight = 0;
 	};
 
 	BasicPhysicsBody(Props props):
 		body({.size = props.size, .isSolid = props.isSolid}),
 		mass(props.mass),
 		bounciness(props.bounciness),
-		mushyness(props.mushyness)
+		mushyness(props.mushyness),
+		stepHeight(props.stepHeight)
 	{}
 
 	BodyTrait::Body body;
 	float mass;
 	float bounciness;
 	float mushyness;
+	int stepHeight;
 
 	Vec2 vel{};
 	Vec2 force{};

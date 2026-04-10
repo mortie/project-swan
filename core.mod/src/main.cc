@@ -24,6 +24,7 @@
 #include "world/pipe.h"
 #include "world/platform.h"
 #include "world/potato.h"
+#include "world/stairs.h"
 #include "world/torch.h"
 #include "world/tree.h"
 #include "world/util.h"
@@ -216,6 +217,7 @@ public:
 		registerGlassPipe(*this);
 		registerPlatform(*this);
 		registerPotato(*this);
+		registerStairs(*this);
 		registerTorch(*this);
 		registerTree(*this);
 		registerWorkbench(*this);
