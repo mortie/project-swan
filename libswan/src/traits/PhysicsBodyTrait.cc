@@ -20,7 +20,7 @@ static void collideX(BasicPhysicsBody &phys, WorldPlane &plane)
 
 	for (int64_t y = firstY; y <= lastY; ++y) {
 		bool leftSolid = plane.fluids().isFluidCellSolid({lx, y});
-		if (leftSolid && y > lastY - phys.stepHeight) {
+		if (leftSolid && phys.onGround && y > lastY - phys.stepHeight) {
 			phys.body.pos.y -= 1.0 / FLUID_RESOLUTION;
 			break;
 		} else if (leftSolid) {
@@ -30,7 +30,7 @@ static void collideX(BasicPhysicsBody &phys, WorldPlane &plane)
 		}
 
 		bool rightSolid = plane.fluids().isFluidCellSolid({rx, y});
-		if (rightSolid && y > lastY - phys.stepHeight) {
+		if (rightSolid && phys.onGround && y > lastY - phys.stepHeight) {
 			phys.body.pos.y -= 1.0 / FLUID_RESOLUTION;
 			break;
 		} else if (rightSolid) {
