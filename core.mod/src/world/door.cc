@@ -164,7 +164,7 @@ void registerDoor(Swan::Mod &mod)
 		mod.registerTile({
 			.name = Swan::cat("door::", dir, "::closed::top"),
 			.image = Swan::cat("core::tiles/door/closed::", dir, "@0"),
-			.isOpaque = false,
+			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.droppedItem = "core::door",
 			.onTileUpdate = updateTop,
@@ -174,7 +174,7 @@ void registerDoor(Swan::Mod &mod)
 		mod.registerTile({
 			.name = Swan::cat("door::", dir, "::closed::bottom"),
 			.image = Swan::cat("core::tiles/door/closed::", dir, "@1"),
-			.isOpaque = false,
+			.isSolid = false,
 			.breakableBy = Swan::Tool::HAND,
 			.droppedItem = "core::door",
 			.onTileUpdate = updateBottom,

@@ -24,7 +24,7 @@ void registerStairs(Swan::Mod &mod)
 	mod.registerTile({
 		.name = "stairs",
 		.image = "core::tiles/stairs::left",
-		.isOpaque = false,
+		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::stairs",
 		.onSpawn = spawnStairs,
@@ -33,7 +33,7 @@ void registerStairs(Swan::Mod &mod)
 	mod.registerTile({
 		.name = "stairs::left",
 		.image = "core::tiles/stairs::left",
-		.isOpaque = false,
+		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::stairs",
 		.fluidCollision = std::make_shared<Swan::FluidCollision>(0b1111'0111'0011'0001),
@@ -42,7 +42,7 @@ void registerStairs(Swan::Mod &mod)
 	mod.registerTile({
 		.name = "stairs::right",
 		.image = "core::tiles/stairs::right",
-		.isOpaque = false,
+		.isSolid = false,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::stairs",
 		.fluidCollision = std::make_shared<Swan::FluidCollision>(0b1111'1110'1100'1000),
