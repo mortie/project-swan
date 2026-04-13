@@ -8,7 +8,7 @@
 namespace CoreMod {
 
 static constexpr Swan::BasicPhysicsBody::Props PROPS = {
-	.size = {0.8, 0.2},
+	.size = {0.6, 0.2},
 	.mass = 30,
 	.isSolid = false,
 };
@@ -95,7 +95,7 @@ void DynamiteEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	animation_.draw(rnd, Cygnet::Mat3gf{}
 		.scale({0.75, 0.75})
 		.translate(physicsBody_.body.pos)
-		.translate({0, -0.25}));
+		.translate({-0.05, -0.275}));
 }
 
 void DynamiteEntity::update(Swan::Ctx &ctx, float dt)
@@ -120,7 +120,7 @@ void DynamiteEntity::update(Swan::Ctx &ctx, float dt)
 void DynamiteEntity::tick(Swan::Ctx &ctx, float dt)
 {
 	ctx.game.spawnParticle({
-		.pos = physicsBody_.body.midRight().add(-0.13, -0.15),
+		.pos = physicsBody_.body.midRight().add(0.01, -0.16),
 		.vel = {(Swan::randfloat() - 0.5f) * 1, -(Swan::randfloat() * 0.5f + 0.6f)},
 		.size = {1.0f / 16, 1.0f / 16},
 		.color = {0.3f, 0.3f, 0.3f, Swan::randfloat() * 0.2f + 0.75f},
