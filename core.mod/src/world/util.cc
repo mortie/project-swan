@@ -389,7 +389,8 @@ void registerShovelable(Swan::Mod &mod, Swan::Tile::Builder builder)
 {
 	mod.registerTile(builder.clone()
 		.withOnActivate(activateShovelable)
-		.withImage(Swan::cat(builder.image, "@0")));
+		.withImage(Swan::cat(builder.image, "@0"))
+		.withTraits(std::make_shared<StackingTileTrait>(4, 4)));
 	mod.registerTile(builder.clone()
 		.withOnActivate(activateShovelable)
 		.withFluidCollision(std::make_shared<Swan::FluidCollision>(0b1111'1111'1111'0000))
@@ -397,7 +398,9 @@ void registerShovelable(Swan::Mod &mod, Swan::Tile::Builder builder)
 		.withImage(Swan::cat(builder.image, "@1"))
 		.withIsSupportV(false)
 		.withIsSupportH(false)
-		.withIsSolid(false));
+		.withIsSolid(false)
+		.withBaseOffset(1)
+		.withTraits(std::make_shared<StackingTileTrait>(3, 4)));
 	mod.registerTile(builder.clone()
 		.withOnActivate(activateShovelable)
 		.withFluidCollision(std::make_shared<Swan::FluidCollision>(0b1111'1111'0000'0000))
@@ -405,7 +408,9 @@ void registerShovelable(Swan::Mod &mod, Swan::Tile::Builder builder)
 		.withImage(Swan::cat(builder.image, "@2"))
 		.withIsSupportV(false)
 		.withIsSupportH(false)
-		.withIsSolid(false));
+		.withIsSolid(false)
+		.withBaseOffset(2)
+		.withTraits(std::make_shared<StackingTileTrait>(2, 4)));
 	mod.registerTile(builder.clone()
 		.withOnActivate(activateShovelable<true>)
 		.withFluidCollision(std::make_shared<Swan::FluidCollision>(0b1111'0000'0000'0000))
@@ -413,7 +418,9 @@ void registerShovelable(Swan::Mod &mod, Swan::Tile::Builder builder)
 		.withImage(Swan::cat(builder.image, "@3"))
 		.withIsSupportV(false)
 		.withIsSupportH(false)
-		.withIsSolid(false));
+		.withIsSolid(false)
+		.withBaseOffset(3)
+		.withTraits(std::make_shared<StackingTileTrait>(1, 4)));
 }
 
 }

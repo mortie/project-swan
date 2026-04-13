@@ -36,34 +36,52 @@ void FallingTileEntity::update(Swan::Ctx &ctx, float dt)
 
 	physicsBody_.standardForces();
 	physicsBody_.update(ctx, dt);
+	if (physicsBody_.onGround) {
+		place(ctx);
+	}
+}
 
-	// Decide whether we want to place the tile or not.
-	// We want to place if the physics engine thinks we're on ground,
-	// *and* the Y value is roughly tile-grid aligned.
-	// Normally, we would check onGround after collideAll
-	// and before update, to treat other entities as ground.
-	// However, here we only want to treat terrain as ground,
-	// so we let physicsBody_.update clear the onGround state
-	// from collideAll first.
-	bool place = physicsBody_.onGround;
-	if (place) {
-		float offset = std::abs(physicsBody_.body.top() - floor(physicsBody_.body.top()));
-		if (offset > 0.2) {
-			place = false;
+void FallingTileEntity::place(Swan::Ctx &ctx)
+{
+	Swan::TilePos bottomPos = {
+		(int)floor(physicsBody_.body.midX()),
+		(int)floor(physicsBody_.body.bottom()),
+	};
+	auto &selfTile = ctx.world.getTileByID(tile_);
+	auto &bottomTile = ctx.plane.tiles().get(bottomPos);
+
+	bool isSameTileClass = (
+		selfTile.id - selfTile.more->baseOffset ==
+		bottomTile.id - bottomTile.more->baseOffset);
+	if (isSameTileClass) {
+		auto *selfStack = dynamic_cast<StackingTileTrait *>(selfTile.more->traits.get());
+		auto *bottomStack = dynamic_cast<StackingTileTrait *>(bottomTile.more->traits.get());
+		bool bottomHasCapacity = (
+			selfStack && bottomStack &&
+			bottomStack->stackSize < bottomStack->stackCapacity);
+		if (bottomHasCapacity) {
+			ctx.plane.tiles().setID(bottomPos, bottomTile.id - 1);
+			if (selfStack->stackSize > 1) {
+				tile_ += 1;
+				float frac = 1.0 / selfStack->stackCapacity;
+				physicsBody_.body.size.y -= frac;
+			} else {
+				ctx.plane.entities().despawn(ctx.plane.entities().current());
+			}
+
+			return;
 		}
 	}
 
-	if (place) {
-		Swan::TilePos pos = {
-			(int)floor(physicsBody_.body.midX()),
-			(int)floor(physicsBody_.body.midY()),
-		};
+	Swan::TilePos pos = {
+		(int)floor(physicsBody_.body.midX()),
+		(int)floor(physicsBody_.body.midY()),
+	};
 
-		ctx.plane.entities().despawn(ctx.plane.entities().current());
-		breakTileAndDropItem(ctx, pos);
-		ctx.plane.placeTile(pos, tile_);
-		return;
-	}
+	ctx.plane.entities().despawn(ctx.plane.entities().current());
+	breakTileAndDropItem(ctx, pos);
+	ctx.plane.placeTile(pos, tile_);
+	return;
 }
 
 void FallingTileEntity::serialize(

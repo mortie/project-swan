@@ -29,6 +29,16 @@ void registerConnected16(Swan::Mod &mod, Swan::Tile::Builder builder);
 void registerConnected47(Swan::Mod &mod, Swan::Tile::Builder builder);
 void registerBackgroundConnected47(Swan::Mod &mod, Swan::Tile::Builder builder);
 
+struct StackingTileTrait: Swan::Tile::Traits {
+	StackingTileTrait(uint8_t size, uint8_t capacity):
+		stackSize(size),
+		stackCapacity(capacity)
+	{}
+
+	uint8_t stackSize;
+	uint8_t stackCapacity;
+};
+
 void registerShovelable(Swan::Mod &mod, Swan::Tile::Builder builder);
 
 template<int N>
