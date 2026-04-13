@@ -3,7 +3,7 @@
 #include "entities/ItemStackEntity.h"
 #include "entities/PlayerEntity.h"
 #include "entities/FallingTileEntity.h"
-#include "swan/common.h"
+#include <swan/swan.h>
 #include <utility>
 
 namespace CoreMod {
@@ -366,8 +366,13 @@ void registerBackgroundConnected47(Swan::Mod &mod, Swan::Tile::Builder builder)
 }
 
 template<bool Last = false>
-void activateShovelable(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta)
+void activateShovelable(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
 {
+	auto *item = meta.stack.item();
+	if (!item || !item->tool.contains(Swan::Tool::SHOVEL)) {
+		return;
+	}
+
 	auto &tile = ctx.plane.tiles().get(pos);
 	auto *droppedItem = tile.more->droppedItem;
 	if (droppedItem) {
