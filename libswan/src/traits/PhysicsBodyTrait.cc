@@ -151,6 +151,18 @@ void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 	Vec2 dir = dist.sign();
 	Vec2 step = dir * 0.4;
 
+	// Move out if we're in the center of something
+	while (true) {
+		auto x = (int64_t)floor(body.midX() * FLUID_RESOLUTION);
+		auto y = (int64_t)floor(body.bottom() * FLUID_RESOLUTION - 0.05);
+		if (ctx.plane.fluids().isFluidCellSolid({x, y})) {
+			body.pos.y -= 1.0 / FLUID_RESOLUTION;
+			continue;
+		}
+
+		break;
+	}
+
 	// Move in increments of at most 'step', on the Y axis
 	while (std::abs(dist.y) > std::abs(step.y)) {
 		body.pos.y += step.y;
