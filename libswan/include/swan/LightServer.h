@@ -30,6 +30,7 @@ struct LightChunk {
 	uint8_t blocksLine[CHUNK_WIDTH] = {0};
 	std::unordered_map<ChunkPos, float> lightSources;
 	std::vector<std::pair<TilePos, float>> bounces;
+	uint64_t generation;
 
 	float *lightBuffer()
 	{

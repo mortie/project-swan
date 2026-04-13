@@ -659,15 +659,6 @@ void Game::tick()
 		perf_.tickCount = 0;
 	}
 
-	if (fpsLimit_ > 0) {
-		// Allocate half a frame to a tick
-		tickDeadline_ = RTDeadline(0.5 / fpsLimit_);
-	}
-	else {
-		// If there's no FPS limit, allocate 2ms
-		tickDeadline_ = RTDeadline(2.0 / 1000.0);
-	}
-
 	tickInProgress_ = true;
 	if (world_->tick(TICK_DELTA, tickDeadline_)) {
 		tickInProgress_ = false;

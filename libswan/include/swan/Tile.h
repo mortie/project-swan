@@ -101,6 +101,8 @@ struct Tile {
 		Builder &withTemperature(float temperature);
 		Builder &withBreakableBy(ToolSet breakableBy);
 
+		Builder &withBaseOffset(Tile::Offset offset);
+
 		Builder &withStepSound(std::string stepSound);
 		Builder &withPlaceSound(std::string placeSound);
 		Builder &withBreakSound(std::string breakSound);

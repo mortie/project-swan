@@ -9,6 +9,7 @@
 #include <swan/log.h>
 #include "World.h"
 #include "Game.h"
+#include "tracy/Tracy.hpp"
 
 namespace Swan {
 
@@ -98,6 +99,7 @@ void Chunk::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 	}
 
 	if (!isRendered_) {
+		ZoneScopedN("Chunk render activate");
 		renderChunk_ = rnd.createChunk(getTileData(), getBackgroundTileData());
 		renderChunkFluid_ = rnd.createChunkFluid(getFluidData());
 		renderChunkShadow_ = rnd.createChunkShadow(getLightData());
@@ -130,22 +132,34 @@ void Chunk::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 		isFluidModified_ = false;
 	}
 
-	for (auto &change: changeList_) {
-		rnd.modifyChunk(renderChunk_, change.first, change.second);
+	{
+		ZoneScopedN("Chunk changes");
+		int count = 0;
+		while (!changeList_.empty() && count++ < 10) {
+			auto &change = changeList_.front();
+			rnd.modifyChunk(renderChunk_, change.first, change.second);
+			changeList_.pop_front();
+		}
 	}
-	changeList_.clear();
 
-	for (auto &change: backgroundChangeList_) {
-		rnd.modifyChunkBackground(renderChunk_, change.first, change.second);
+	{
+		ZoneScopedN("Chunk background changes");
+		int count = 0;
+		while (!backgroundChangeList_.empty() && count++ < 10) {
+			auto &change = backgroundChangeList_.front();
+			rnd.modifyChunkBackground(renderChunk_, change.first, change.second);
+			backgroundChangeList_.pop_front();
+		}
 	}
-	backgroundChangeList_.clear();
 
 	if (needLightRender_) {
+		ZoneScopedN("Chunk light render");
 		rnd.modifyChunkShadow(renderChunkShadow_, getLightData());
 		needLightRender_ = false;
 	}
 
 	if (isFluidModified_) {
+		ZoneScopedN("Chunk fluid render");
 		rnd.modifyChunkFluid(renderChunkFluid_, getFluidData());
 		isFluidModified_ = false;
 	}
@@ -154,8 +168,11 @@ void Chunk::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 	rnd.drawChunk({pos, renderChunk_});
 	rnd.drawChunkFluid({pos, renderChunkFluid_});
 
-	for (auto &[_, mask]: fluidMasks_) {
-		rnd.drawFluidMask(mask);
+	if (!fluidMasks_.empty()) {
+		ZoneScopedN("Chunk fluid masks");
+		for (auto &[_, mask]: fluidMasks_) {
+			rnd.drawFluidMask(mask);
+		}
 	}
 
 	if (!ctx.game.debug_.disableShadows) {

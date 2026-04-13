@@ -181,10 +181,14 @@ void WorldPlane::update(float dt)
 {
 	ZoneScopedN("WorldPlane update");
 
-	worldGen_->update(getContext(), dt);
+	{
+		ZoneScopedN("WorldGen update");
+		worldGen_->update(getContext(), dt);
+	}
 
 	// Just init one chunk per frame
 	if (chunkInitList_.size() > 0) {
+		ZoneScopedN("Chunk Init");
 		Chunk *chunk = chunkInitList_.front();
 		chunkInitList_.pop_front();
 
@@ -232,6 +236,7 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 
 	// Resume fluid processing if we're in the middle of a tick
 	if (tickProgress_ == TickProgress::FLUID_ONGOING) {
+		ZoneScopedN("Fluids (cont.)");
 		if (fluidSystem_.tick(deadline)) {
 			tickProgress_ = TickProgress::IDLE;
 			return true;
@@ -292,6 +297,7 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 			if (hasDeletedChunk) break;
 			info << "Compressing inactive modified chunk " << chunk->pos();
 			lightSystem_.removeChunk(chunk->pos());
+			chunk->lightGeneration_ = 0;
 			chunk->destroyTextures(world_->game_->renderer_);
 			chunk->compress();
 			activeChunks_[i] = activeChunks_.back();

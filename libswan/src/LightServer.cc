@@ -745,6 +745,7 @@ void LightServer::run()
 			auto ch = chunks_.find(pos);
 			if (ch != chunks_.end()) {
 				cb_.onLightChunkUpdated(ch->second, pos);
+				ch->second.generation += 1;
 			}
 		}
 	}

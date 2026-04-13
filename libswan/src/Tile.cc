@@ -74,6 +74,12 @@ Tile::Builder &Tile::Builder::withBreakableBy(ToolSet breakableBy)
 	return *this;
 }
 
+Tile::Builder &Tile::Builder::withBaseOffset(Tile::Offset offset)
+{
+	this->baseOffset = offset;
+	return *this;
+}
+
 Tile::Builder &Tile::Builder::withStepSound(std::string stepSound)
 {
 	this->stepSound = std::move(stepSound);

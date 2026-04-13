@@ -44,6 +44,7 @@ protected:
 private:
 	struct LightUpdate {
 		ChunkPos pos;
+		uint64_t generation;
 		uint8_t levels[CHUNK_WIDTH * CHUNK_HEIGHT];
 	};
 

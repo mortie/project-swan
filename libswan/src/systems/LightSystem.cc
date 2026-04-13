@@ -10,6 +10,7 @@ void LightSystemImpl::onLightChunkUpdated(const LightChunk &chunk, Vec2i pos)
 	std::lock_guard<std::mutex> lock(mut_);
 	updates_.push_back({});
 	updates_.back().pos = pos;
+	updates_.back().generation = chunk.generation;
 	memcpy(updates_.back().levels, chunk.lightLevels, CHUNK_WIDTH * CHUNK_HEIGHT);
 }
 
@@ -53,11 +54,22 @@ void LightSystemImpl::removeChunk(ChunkPos pos)
 void LightSystemImpl::flip()
 {
 	std::lock_guard lock(mut_);
-	for (auto &update: updates_) {
+	int count = 0;
+	while (!updates_.empty() && (count < 50 || updates_.size() > 500)) {
+		auto &update = updates_.back();
 		auto *chunk = plane_.subtleGetChunk(update.pos);
-		if (chunk && chunk->isActive()) {
-			chunk->setLightData(update.levels);
+		if (
+			!chunk || !chunk->isActive() ||
+			chunk->lightGeneration_ > update.generation
+		) {
+			updates_.pop_back();
+			continue;
 		}
+
+		chunk->setLightData(update.levels);
+		chunk->lightGeneration_ = update.generation;
+		updates_.pop_back();
+		count += 1;
 	}
 
 	server_.flip();

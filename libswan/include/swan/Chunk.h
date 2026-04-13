@@ -1,5 +1,6 @@
 #pragma once
 
+#include <deque>
 #include <span>
 #include <string.h>
 #include <stdint.h>
@@ -179,6 +180,7 @@ public:
 	void deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap);
 
 	std::unordered_set<EntityRef> entities_;
+	uint64_t lightGeneration_ = 0;
 
 private:
 	static constexpr float DEACTIVATE_INTERVAL = 20;
@@ -189,8 +191,8 @@ private:
 	}
 
 	std::unique_ptr<uint8_t[]> data_;
-	std::vector<std::pair<ChunkRelPos, Tile::ID>> changeList_;
-	std::vector<std::pair<ChunkRelPos, Tile::ID>> backgroundChangeList_;
+	std::deque<std::pair<ChunkRelPos, Tile::ID>> changeList_;
+	std::deque<std::pair<ChunkRelPos, Tile::ID>> backgroundChangeList_;
 
 	std::vector<std::pair<ChunkRelPos, Cygnet::Renderer::DrawMask>> fluidMasks_;
 	std::unordered_map<ChunkRelPos, size_t> fluidMaskMap_;
