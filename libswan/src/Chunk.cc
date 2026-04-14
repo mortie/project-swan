@@ -7,9 +7,9 @@
 #include <string.h>
 
 #include <swan/log.h>
+#include <swan/trace.h>
 #include "World.h"
 #include "Game.h"
-#include "tracy/Tracy.hpp"
 
 namespace Swan {
 
