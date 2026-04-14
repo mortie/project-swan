@@ -695,9 +695,10 @@ void PlayerEntity::onRightClick(Swan::Ctx &ctx)
 			.activator = ctx.plane.entities().current(),
 			.stack = stack,
 		};
-		hoveredTile.more->onActivate(ctx, breakPos_, meta);
-		interactTimer_ = 0.2;
-		return;
+		if (hoveredTile.more->onActivate(ctx, breakPos_, meta)) {
+			interactTimer_ = 0.5;
+			return;
+		}
 	}
 
 	Swan::ItemStack &stack = heldStack_.empty()

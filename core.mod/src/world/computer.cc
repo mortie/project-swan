@@ -17,9 +17,12 @@ void registerComputer(Swan::Mod &mod)
 		.onActivate = +[](Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta) {
 			auto ref = ctx.plane.entities().getTileEntity(pos);
 			auto *computer = ref.as<ComputerTileEntity>();
-			if (computer) {
-				computer->activate();
+			if (!computer) {
+				return false;
 			}
+
+			computer->activate();
+			return true;
 		},
 	});
 }

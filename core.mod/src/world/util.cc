@@ -366,11 +366,11 @@ void registerBackgroundConnected47(Swan::Mod &mod, Swan::Tile::Builder builder)
 }
 
 template<bool Last = false>
-void activateShovelable(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
+bool activateShovelable(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
 {
 	auto *item = meta.stack.item();
 	if (!item || !item->tool.contains(Swan::Tool::SHOVEL)) {
-		return;
+		return false;
 	}
 
 	auto &tile = ctx.plane.tiles().get(pos);
@@ -388,6 +388,7 @@ void activateShovelable(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateM
 	} else {
 		ctx.plane.tiles().setID(pos, tile.id + 1);
 	}
+	return true;
 }
 
 void registerShovelable(Swan::Mod &mod, Swan::Tile::Builder builder)

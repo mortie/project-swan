@@ -80,7 +80,7 @@ struct Tile {
 		bool (*onSpawn)(Ctx &ctx, TilePos pos) = nullptr;
 		void (*onBreak)(Ctx &ctx, TilePos pos) = nullptr;
 		void (*onTileUpdate)(Ctx &ctx, TilePos pos) = nullptr;
-		void (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta) = nullptr;
+		bool (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta) = nullptr;
 		void (*onWorldTick)(Ctx &ctx, TilePos pos) = nullptr;
 
 		std::shared_ptr<FluidCollision> fluidCollision = nullptr;
@@ -112,7 +112,7 @@ struct Tile {
 		Builder &withOnSpawn(bool (*onSpawn)(Ctx &, TilePos));
 		Builder &withOnBreak(void (*onBreak)(Ctx &, TilePos));
 		Builder &withOnTileUpdate(void (*onTileUpdate)(Ctx &, TilePos));
-		Builder &withOnActivate(void (*onActivate)(Ctx &, TilePos, ActivateMeta));
+		Builder &withOnActivate(bool (*onActivate)(Ctx &, TilePos, ActivateMeta));
 		Builder &withOnWorldTick(void (*onWorldTick)(Ctx &, TilePos));
 
 		Builder &withFluidCollision(std::shared_ptr<FluidCollision> fluidCollision);
@@ -137,7 +137,7 @@ struct Tile {
 		bool (*onSpawn)(Ctx &ctx, TilePos pos);
 		void (*onBreak)(Ctx &ctx, TilePos pos);
 		void (*onTileUpdate)(Ctx &ctx, TilePos pos);
-		void (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta);
+		bool (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta);
 		void (*onWorldTick)(Ctx &ctx, TilePos pos);
 
 		Tile::Offset baseOffset;

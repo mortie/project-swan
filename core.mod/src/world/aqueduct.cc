@@ -40,9 +40,10 @@ static void updateAqueduct(Swan::Ctx &ctx, Swan::TilePos pos)
 }
 
 template<Swan::FixedString newName>
-void activateAqueduct(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta)
+bool activateAqueduct(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta)
 {
 	ctx.plane.tiles().set(pos, newName);
+	return true;
 }
 
 void registerAqueduct(Swan::Mod &mod)

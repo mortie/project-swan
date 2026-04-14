@@ -51,9 +51,12 @@ void registerCrucible(Swan::Mod &mod)
 		},
 		.onActivate = +[](Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta) {
 			auto ent = ctx.plane.entities().getTileEntity(pos).as<CrucibleTileEntity>();
-			if (ent) {
-				ent->activate(ctx, meta.stack);
+			if (!ent) {
+				return false;
 			}
+
+			ent->activate(ctx, meta.stack);
+			return true;
 		},
 	});
 }

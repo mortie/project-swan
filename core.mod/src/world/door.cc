@@ -80,7 +80,7 @@ static void updateBottom(Swan::Ctx &ctx, Swan::TilePos pos)
 	breakIfFloating(ctx, pos);
 }
 
-static void activateOpenTop(
+static bool activateOpenTop(
 	Swan::Ctx &ctx,
 	Swan::TilePos pos,
 	Swan::Tile::ActivateMeta)
@@ -90,17 +90,18 @@ static void activateOpenTop(
 	prefix.remove_suffix("::open::top"sv.size());
 	setDoor(ctx, pos, prefix, "closed");
 	ctx.game.playSound(ctx.world.getSound("core::misc/lock-close"), pos);
+	return true;
 }
 
-static void activateOpenBottom(
+static bool activateOpenBottom(
 	Swan::Ctx &ctx,
 	Swan::TilePos pos,
 	Swan::Tile::ActivateMeta meta)
 {
-	activateOpenTop(ctx, pos.add(0, -1), meta);
+	return activateOpenTop(ctx, pos.add(0, -1), meta);
 }
 
-static void activateClosedTop(
+static bool activateClosedTop(
 	Swan::Ctx &ctx,
 	Swan::TilePos pos,
 	Swan::Tile::ActivateMeta)
@@ -110,14 +111,15 @@ static void activateClosedTop(
 	prefix.remove_suffix("::closed::top"sv.size());
 	setDoor(ctx, pos, prefix, "open");
 	ctx.game.playSound(ctx.world.getSound("core::misc/lock-open"), pos);
+	return true;
 }
 
-static void activateClosedBottom(
+static bool activateClosedBottom(
 	Swan::Ctx &ctx,
 	Swan::TilePos pos,
 	Swan::Tile::ActivateMeta meta)
 {
-	activateClosedTop(ctx, pos.add(0, -1), meta);
+	return activateClosedTop(ctx, pos.add(0, -1), meta);
 }
 
 void registerDoor(Swan::Mod &mod)

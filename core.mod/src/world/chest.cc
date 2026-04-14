@@ -13,39 +13,41 @@ static void closeCallback(Swan::Ctx &ctx, Swan::EntityRef ref)
 	ctx.plane.tiles().setID(pos, tiles::chest);
 }
 
-static void openChest(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
+static bool openChest(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
 {
 	auto *player = dynamic_cast<PlayerEntity *>(meta.activator.get());
 	if (!player) {
-		return;
+		return false;
 	}
 
 	auto self = ctx.plane.entities().getTileEntity(pos);
 	if (!self) {
-		return;
+		return false;
 	}
 
 	if (!player->askToOpenInventory(self, closeCallback)) {
-		return;
+		return false;
 	}
 
 	ctx.game.playSound(ctx.world.getSound("core::misc/lock-open"), pos);
 	ctx.plane.tiles().setID(pos, tiles::chest__open);
+	return true;
 }
 
-static void closeChest(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
+static bool closeChest(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta)
 {
 	auto *player = dynamic_cast<PlayerEntity *>(meta.activator.get());
 	if (!player) {
-		return;
+		return false;
 	}
 
 	auto self = ctx.plane.entities().getTileEntity(pos);
 	if (!self) {
-		return;
+		return false;
 	}
 
 	player->askToCloseInventory(ctx, self);
+	return true;
 }
 
 void registerChest(Swan::Mod &mod)

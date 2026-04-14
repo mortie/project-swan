@@ -19,6 +19,7 @@ void registerDrain(Swan::Mod &mod)
 		.droppedItem = "core::drain",
 		.onActivate = +[](Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta) {
 			ctx.plane.tiles().set(pos, "core::drain::open");
+			return true;
 		},
 		.fluidCollision = fluidCollision,
 	});
@@ -32,6 +33,7 @@ void registerDrain(Swan::Mod &mod)
 		.tileEntity = "core::tile::drain",
 		.onActivate = +[](Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta) {
 			ctx.plane.tiles().set(pos, "core::drain");
+			return true;
 		},
 		.fluidCollision = fluidCollision,
 	});

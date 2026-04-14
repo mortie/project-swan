@@ -130,7 +130,7 @@ Tile::Builder &Tile::Builder::withOnTileUpdate(
 }
 
 Tile::Builder &Tile::Builder::withOnActivate(
-	void (*onActivate)(Ctx &, TilePos, ActivateMeta))
+	bool (*onActivate)(Ctx &, TilePos, ActivateMeta))
 {
 	this->onActivate = onActivate;
 	return *this;

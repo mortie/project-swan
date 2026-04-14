@@ -6,7 +6,7 @@
 namespace CoreMod {
 
 template<int N>
-void activateClay(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta)
+bool activateClay(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta)
 {
 	if constexpr (N == 0) {
 		ctx.plane.tiles().setID(pos, Swan::World::AIR_TILE_ID);
@@ -18,6 +18,7 @@ void activateClay(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta)
 	auto item = ctx.plane.entities().spawn<ItemStackEntity>(
 		pos.as<float>().add(0.5, -0.3), &ctx.world.getItem("core::clay"));
 	item.trait<Swan::PhysicsBodyTrait>()->addVelocity({0, -3.0f});
+	return true;
 }
 
 template<int N, bool Default = true>
