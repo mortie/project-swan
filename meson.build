@@ -150,8 +150,8 @@ endif
 
 executable(
   'swan',
-  'src/build.cc',
-  'src/swan.cc',
+  'src/swan-build/build.cc',
+  'src/swan/main.cc',
   swan_proto,
   install: true,
   install_rpath: bin_rpath,
@@ -167,8 +167,8 @@ executable(
 
 executable(
   'swan-build',
-  'src/build.cc',
-  'src/swan-build.cc',
+  'src/swan-build/main.cc',
+  'src/swan-build/build.cc',
   install: true,
   install_rpath: bin_rpath,
   dependencies: [

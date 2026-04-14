@@ -24,7 +24,7 @@
 #include <swan/swan.h>
 #include <swan/assets.h>
 
-#include "build.h"
+#include "../swan-build/build.h"
 
 #define HAS_MODERN_GLFW \
 	GLFW_VERSION_MAJOR > 3 || \
