@@ -60,6 +60,7 @@ public:
 			.image = "core::tiles/sand",
 			.stepSound = "core::step/sand",
 			.breakSound = "core::step/sand2",
+			.placeSound = "core::step/sand2",
 			.droppedItem = "core::sand-pile",
 			.onTileUpdate = fallIfFloating,
 		});
@@ -120,6 +121,7 @@ public:
 			.image = "core::tiles/snow",
 			.stepSound = "core::step/sand",
 			.breakSound = "core::step/sand1",
+			.placeSound = "core::step/sand2",
 			.droppedItem = "core::snowball",
 			.onTileUpdate = fallIfFloating,
 		});
