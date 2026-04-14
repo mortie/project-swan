@@ -148,6 +148,11 @@ else
   swanbuild_args += '-DSWAN_CXX_IS_MINGW=0'
 endif
 
+swan_deps = [
+  libswan, libcygnet, common, libimgui, libgl, libglfw3, libbackwardcpp,
+  libcpptoml, libsha1, libscisasm, libscisavm, libtpl,
+] + maybe_libtracy
+
 executable(
   'swan',
   'src/swan-build/build.cc',
@@ -155,10 +160,7 @@ executable(
   swan_proto,
   install: true,
   install_rpath: bin_rpath,
-  dependencies: [
-    libswan, libcygnet, common, libimgui, libgl, libglfw3, libbackwardcpp,
-    libcpptoml, libsha1, libscisasm, libscisavm, libtpl,
-  ] + maybe_libtracy,
+  dependencies: swan_deps,
   override_options: ['b_asneeded=false'],
   cpp_args: swanbuild_args + [
     '-DSWAN_VERSION="' + swan_version + '"',
@@ -178,6 +180,14 @@ executable(
     common,
   ],
   cpp_args: swanbuild_args,
+)
+
+executable(
+  'swan-scanner',
+  'src/swan-scanner/main.cc',
+  install: false,
+  dependencies: swan_deps,
+  override_options: ['b_asneeded=false'],
 )
 
 install_subdir('assets', install_dir: '')

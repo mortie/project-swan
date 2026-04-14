@@ -73,7 +73,6 @@ public:
 	virtual void start(World &)
 	{}
 
-private:
 	const std::string name_;
 	std::vector<Tile::Builder> tiles_;
 	std::vector<Item::Builder> items_;
@@ -84,9 +83,6 @@ private:
 	std::vector<std::string> recipeKinds_;
 	std::vector<ActionSpec> actions_;
 	std::vector<CommandSpec> commands_;
-
-	friend ModWrapper;
-	friend World;
 };
 
 class ModWrapper {

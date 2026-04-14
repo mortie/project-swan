@@ -49,6 +49,13 @@ public:
 			.placeSound = "core::place/dirt",
 			.droppedItem = "core::dirt",
 		});
+		registerTile({
+			.name = "dirt2",
+			.image = "core::tiles/dirt",
+			.stepSound = "core::step/grass",
+			.placeSound = "core::place/dirt",
+			.droppedItem = "core::dirt",
+		});
 		registerBackgroundConnected47(*this, {
 			.name = "background",
 			.image = "core::tiles/background",

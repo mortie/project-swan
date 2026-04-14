@@ -46,6 +46,11 @@ pfx: build
 .PHONY: core.mod
 core.mod: pfx
 	cd $(OUT)/pfx && ./bin/swan-build $(abspath core.mod) .
+	$(OUT)/swan-scanner core.mod >core.mod/src/tiles.x.new
+	if diff core.mod/src/tiles.x core.mod/src/tiles.x.new; \
+		then rm core.mod/src/tiles.x.new; \
+		else mv core.mod/src/tiles.x.new core.mod/src/tiles.x; $(MAKE) core.mod; \
+	fi
 
 .PHONY: setup
 setup: $(OUT)/build.ninja
