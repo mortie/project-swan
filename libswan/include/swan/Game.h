@@ -125,7 +125,7 @@ public:
 	void save();
 
 	InputHandler &inputs() { return inputHandler_; }
-	Action *action(std::string_view name) { return inputs().action(name); }
+	Action action(std::string_view name) { return inputs().action(name); }
 
 	CommandSpec *matchCommand(std::span<CowStr> tokens, std::vector<CowStr> &out);
 	void runCommand(Ctx &ctx, std::string_view command, std::string &out);
@@ -163,14 +163,14 @@ public:
 	Cygnet::TextCache smallFont_{notoSans_, 60};
 	Cygnet::TextCache bigFont_{notoSans_, 200};
 
-	Action *entityDebugMenuAction_;
-	Action *debugMenuAction_;
-	Action *perfMenuAction_;
-	Action *reloadModsAction_;
-	Action *regenWorldAction_;
-	Action *uiActivateAction_;
-	Action *uiModAction_;
-	Action *uiCameraZoomAction_;
+	Action entityDebugMenuAction_;
+	Action debugMenuAction_;
+	Action perfMenuAction_;
+	Action reloadModsAction_;
+	Action regenWorldAction_;
+	Action uiActivateAction_;
+	Action uiModAction_;
+	Action uiCameraZoomAction_;
 
 	std::vector<CommandSet> commandSets_;
 

@@ -1,9 +1,7 @@
 #pragma once
 
 #include "Action.h"
-#include "swan/HashMap.h"
 
-#include <unordered_map>
 #include <memory>
 
 namespace Swan {
@@ -15,7 +13,7 @@ public:
 	InputHandler();
 	~InputHandler();
 
-	Action *action(std::string_view name);
+	Action action(std::string_view name);
 	void onKeyDown(int scancode);
 	void onKeyUp(int scancode);
 	void onMouseDown(int button);
@@ -37,8 +35,8 @@ private:
 
 	void updateGamepad(Gamepad &gamepad);
 
-	void registerInput(std::string_view input, ActionKind kind, Action *action);
-	void registerAxisInput(std::string_view input, Action *action);
+	void registerInput(std::string_view input, ActionKind kind, float *activation);
+	void registerAxisInput(std::string_view input, float *activation);
 
 	std::unique_ptr<Impl> impl_;
 

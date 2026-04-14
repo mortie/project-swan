@@ -126,44 +126,44 @@ private:
 			openConsole(ctx.game.action("core::open-console"))
 		{}
 
-		Swan::Action *cheatHeal;
-		Swan::Action *cheatHurt;
-		Swan::Action *cheatTickWorld;
-		Swan::Action *cheatGrabItem;
+		Swan::Action cheatHeal;
+		Swan::Action cheatHurt;
+		Swan::Action cheatTickWorld;
+		Swan::Action cheatGrabItem;
 
-		Swan::Action *guiShowInventory;
-		Swan::Action *guiShowCrafting;
-		Swan::Action *guiClick;
-		Swan::Action *guiModifier;
-		Swan::Action *guiLeft;
-		Swan::Action *guiRight;
-		Swan::Action *guiUp;
-		Swan::Action *guiDown;
+		Swan::Action guiShowInventory;
+		Swan::Action guiShowCrafting;
+		Swan::Action guiClick;
+		Swan::Action guiModifier;
+		Swan::Action guiLeft;
+		Swan::Action guiRight;
+		Swan::Action guiUp;
+		Swan::Action guiDown;
 
-		Swan::Action *returnHome;
-		Swan::Action *breakTile;
-		Swan::Action *activate;
-		Swan::Action *dropItem;
-		Swan::Action *selectItem;
-		Swan::Action *sprint;
-		Swan::Action *jump;
-		Swan::Action *moveX;
-		Swan::Action *moveY;
-		Swan::Action *selectX;
-		Swan::Action *selectY;
+		Swan::Action returnHome;
+		Swan::Action breakTile;
+		Swan::Action activate;
+		Swan::Action dropItem;
+		Swan::Action selectItem;
+		Swan::Action sprint;
+		Swan::Action jump;
+		Swan::Action moveX;
+		Swan::Action moveY;
+		Swan::Action selectX;
+		Swan::Action selectY;
 
-		Swan::Action *slot0;
-		Swan::Action *slot1;
-		Swan::Action *slot2;
-		Swan::Action *slot3;
-		Swan::Action *slot4;
-		Swan::Action *slot5;
-		Swan::Action *slot6;
-		Swan::Action *slot7;
-		Swan::Action *slot8;
-		Swan::Action *slot9;
+		Swan::Action slot0;
+		Swan::Action slot1;
+		Swan::Action slot2;
+		Swan::Action slot3;
+		Swan::Action slot4;
+		Swan::Action slot5;
+		Swan::Action slot6;
+		Swan::Action slot7;
+		Swan::Action slot8;
+		Swan::Action slot9;
 
-		Swan::Action *openConsole;
+		Swan::Action openConsole;
 	};
 
 	struct UI {

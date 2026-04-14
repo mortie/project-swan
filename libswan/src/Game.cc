@@ -525,7 +525,7 @@ void Game::update(float dt)
 {
 	inputHandler_.beginFrame();
 
-	if (*uiActivateAction_) {
+	if (uiActivateAction_) {
 		gui_.triggerActivate();
 	}
 
@@ -541,8 +541,8 @@ void Game::update(float dt)
 	cam_.zoom += (float)didScroll_ * 0.05f * cam_.zoom;
 
 	// Zoom using the controller
-	if (uiModAction_->direction() > 0) {
-		cam_.zoom += -uiCameraZoomAction_->activation * cam_.zoom * dt * 2;
+	if (uiModAction_.direction() > 0) {
+		cam_.zoom += -uiCameraZoomAction_.value() * cam_.zoom * dt * 2;
 	}
 
 	float zoomLim = debug_.godMode ? 0.002 : 0.0175;
@@ -558,7 +558,7 @@ void Game::update(float dt)
 		.size = {1 / cam_.zoom, 1 / cam_.zoom},
 	});
 
-	if (*entityDebugMenuAction_) {
+	if (entityDebugMenuAction_) {
 		bool found = false;
 
 		auto tile = getMouseTile();
@@ -579,11 +579,11 @@ void Game::update(float dt)
 		}
 	}
 
-	if (*debugMenuAction_) {
+	if (debugMenuAction_) {
 		debug_.show = !debug_.show;
 	}
 
-	if (*perfMenuAction_) {
+	if (perfMenuAction_) {
 		perf_.show = !perf_.show;
 	}
 
@@ -602,7 +602,7 @@ void Game::update(float dt)
 			popupMessage_ = "Reload failed!";
 			popupMessageTimer_ = 2;
 		}
-	} else if (*reloadModsAction_) {
+	} else if (reloadModsAction_) {
 		popupMessage_ = "Reloading...";
 		popupMessageTimer_ = 1;
 		triggerReload_ = 3;
@@ -610,7 +610,7 @@ void Game::update(float dt)
 		triggerReload_ -= 1;
 	}
 
-	if (*regenWorldAction_) {
+	if (regenWorldAction_) {
 		popupMessage_ = "Regenerating...";
 		popupMessageTimer_ = 0.5;
 		world_->currentPlane().regenerate();

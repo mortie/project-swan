@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -18,21 +17,28 @@ struct ActionSpec {
 	std::vector<std::string> defaultInputs;
 };
 
-struct Action {
-	float activation = 0;
+class Action {
+public:
+	Action(): activation_(&DUMMY) {}
+	Action(float *activation): activation_(activation) {}
 
 	operator bool() const { return direction() != 0; }
+	float value() const { return *activation_; }
 
 	int direction() const
 	{
-		if (activation < -0.4) {
+		if (*activation_ < -0.4) {
 			return -1;
-		} else if (activation > 0.4) {
+		} else if (*activation_ > 0.4) {
 			return 1;
 		} else {
 			return 0;
 		}
 	}
+
+private:
+	float *activation_ = 0;
+	inline static float DUMMY = 0;
 };
 
 }

@@ -33,14 +33,13 @@ struct InputHandler::Gamepad {
 };
 
 struct InputHandler::Impl {
-	std::vector<Action> actions;
-	HashMap<Action *> actionsByName;
-	Action dummyAction;
+	std::vector<float> activations;
+	HashMap<float *> activationsByName;
 
-	std::vector<Action *> oneshotActionsActivatedThisFrame;
+	std::vector<float *> oneshotActivationsActivatedThisFrame;
 
 	struct ActionWrapper {
-		Action *action;
+		float *activation;
 		ActionKind kind;
 		float multiplier = 1;
 	};
@@ -64,12 +63,12 @@ struct InputHandler::Impl {
 InputHandler::InputHandler(): impl_(std::make_unique<Impl>()) {}
 InputHandler::~InputHandler() = default;
 
-Action *InputHandler::action(std::string_view name)
+Action InputHandler::action(std::string_view name)
 {
-	auto it = impl_->actionsByName.find(name);
-	if (it == impl_->actionsByName.end()) {
+	auto it = impl_->activationsByName.find(name);
+	if (it == impl_->activationsByName.end()) {
 		warn << "Unknown action: " << name;
-		return &impl_->dummyAction;
+		return Action();
 	}
 
 	return it->second;
@@ -101,9 +100,9 @@ void InputHandler::onKeyDown(int scancode)
 	}
 
 	for (auto &w: it->second) {
-		w.action->activation += w.multiplier;
+		*w.activation += w.multiplier;
 		if (w.kind == ActionKind::ONESHOT) {
-			impl_->oneshotActionsActivatedThisFrame.push_back(w.action);
+			impl_->oneshotActivationsActivatedThisFrame.push_back(w.activation);
 		}
 	}
 }
@@ -138,9 +137,9 @@ void InputHandler::onKeyUp(int scancode)
 			continue;
 		}
 
-		w.action->activation -= w.multiplier;
-		if (std::abs(w.action->activation) < 0.01) {
-			w.action->activation = 0;
+		*w.activation -= w.multiplier;
+		if (std::abs(*w.activation) < 0.01) {
+			*w.activation = 0;
 		}
 	}
 }
@@ -172,9 +171,9 @@ void InputHandler::onMouseDown(int button)
 	}
 
 	for (auto &w: it->second) {
-		w.action->activation += w.multiplier;
+		*w.activation += w.multiplier;
 		if (w.kind == ActionKind::ONESHOT) {
-			impl_->oneshotActionsActivatedThisFrame.push_back(w.action);
+			impl_->oneshotActivationsActivatedThisFrame.push_back(w.activation);
 		}
 	}
 }
@@ -209,9 +208,9 @@ void InputHandler::onMouseUp(int button)
 			continue;
 		}
 
-		w.action->activation -= w.multiplier;
-		if (std::abs(w.action->activation) < 0.01) {
-			w.action->activation = 0;
+		*w.activation -= w.multiplier;
+		if (std::abs(*w.activation) < 0.01) {
+			*w.activation = 0;
 		}
 	}
 }
@@ -224,9 +223,9 @@ void InputHandler::onButtonDown(int button)
 	}
 
 	for (auto &w: it->second) {
-		w.action->activation += w.multiplier;
+		*w.activation += w.multiplier;
 		if (w.kind == ActionKind::ONESHOT) {
-			impl_->oneshotActionsActivatedThisFrame.push_back(w.action);
+			impl_->oneshotActivationsActivatedThisFrame.push_back(w.activation);
 		}
 	}
 }
@@ -243,9 +242,9 @@ void InputHandler::onButtonUp(int button)
 			continue;
 		}
 
-		w.action->activation -= w.multiplier;
-		if (std::abs(w.action->activation) < 0.01) {
-			w.action->activation = 0;
+		*w.activation -= w.multiplier;
+		if (std::abs(*w.activation) < 0.01) {
+			*w.activation = 0;
 		}
 	}
 }
@@ -297,23 +296,23 @@ void InputHandler::setActions(std::vector<ActionSpec> actions)
 	impl_ = std::make_unique<Impl>();
 
 	// Fill vector
-	impl_->actions.resize(actions.size());
+	impl_->activations.resize(actions.size());
 
 	// Fill actionsByName hash map
-	auto it = impl_->actions.begin();
+	auto it = impl_->activations.begin();
 	for (auto &spec: actions) {
-		impl_->actionsByName[spec.name] = &*it;
+		impl_->activationsByName[spec.name] = &*it;
 		it++;
 	}
 
 	// Fill inputs
-	it = impl_->actions.begin();
+	it = impl_->activations.begin();
 	for (auto &spec: actions) {
-		Action *action = &*it;
+		float *activation = &*it;
 		it++;
 
 		for (auto &input: spec.defaultInputs) {
-			registerInput(input, spec.kind, action);
+			registerInput(input, spec.kind, activation);
 		}
 	}
 }
@@ -354,10 +353,10 @@ void InputHandler::beginFrame()
 
 void InputHandler::endFrame()
 {
-	for (auto action: impl_->oneshotActionsActivatedThisFrame) {
-		action->activation = 0;
+	for (auto activation: impl_->oneshotActivationsActivatedThisFrame) {
+		*activation = 0;
 	}
-	impl_->oneshotActionsActivatedThisFrame.clear();
+	impl_->oneshotActivationsActivatedThisFrame.clear();
 
 	if (impl_->verbose) {
 		impl_->verbose = false;
@@ -391,9 +390,9 @@ void InputHandler::updateGamepad(Gamepad &gamepad)
 		}
 
 		for (auto &w: it->second) {
-			w.action->activation += delta * w.multiplier;
-			if (std::abs(w.action->activation) < 0.01) {
-				w.action->activation = 0;
+			*w.activation += delta * w.multiplier;
+			if (std::abs(*w.activation) < 0.01) {
+				*w.activation = 0;
 			}
 		}
 	}
@@ -417,10 +416,10 @@ void InputHandler::updateGamepad(Gamepad &gamepad)
 void InputHandler::registerInput(
 	std::string_view input,
 	ActionKind kind,
-	Action *action)
+	float *activation)
 {
 	if (kind == ActionKind::AXIS) {
-		registerAxisInput(input, action);
+		registerAxisInput(input, activation);
 		return;
 	}
 
@@ -462,12 +461,12 @@ void InputHandler::registerInput(
 	}
 
 	(*map)[code].push_back({
-		.action = action,
+		.activation = activation,
 		.kind = kind,
 	});
 }
 
-void InputHandler::registerAxisInput(std::string_view input, Action *action)
+void InputHandler::registerAxisInput(std::string_view input, float *activation)
 {
 	auto colon = input.find(':');
 	if (colon == std::string::npos) {
@@ -492,7 +491,7 @@ void InputHandler::registerAxisInput(std::string_view input, Action *action)
 		}
 
 		impl_->joystickAxes[code].push_back({
-			.action = action,
+			.activation = activation,
 			.kind = ActionKind::AXIS,
 			.multiplier = multiplier,
 		});
@@ -540,12 +539,12 @@ void InputHandler::registerAxisInput(std::string_view input, Action *action)
 	}
 
 	(*map)[neg].push_back({
-		.action = action,
+		.activation = activation,
 		.kind = ActionKind::AXIS,
 		.multiplier = -1,
 	});
 	(*map)[pos].push_back({
-		.action = action,
+		.activation = activation,
 		.kind = ActionKind::AXIS,
 		.multiplier = 1
 	});
