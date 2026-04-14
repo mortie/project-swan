@@ -258,7 +258,19 @@ void Chunk::deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap)
 		break;
 	}
 
+	// Fix up foreground tiles
 	std::span<Tile::ID> tileData(getTileData(), CHUNK_WIDTH * CHUNK_HEIGHT);
+	for (Tile::ID &tile: tileData) {
+		if (tile > tileMap.size()) {
+			tile = 0;
+		}
+		else {
+			tile = tileMap[tile];
+		}
+	}
+
+	// Fix up background tiles
+	tileData = {getBackgroundTileData(), CHUNK_WIDTH * CHUNK_HEIGHT};
 	for (Tile::ID &tile: tileData) {
 		if (tile > tileMap.size()) {
 			tile = 0;
