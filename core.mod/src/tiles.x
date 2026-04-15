@@ -1,6 +1,5 @@
 X(stone, "core::stone");
 X(dirt, "core::dirt");
-X(dirt2, "core::dirt2");
 X(background, "core::background");
 X(sand, "core::sand");
 X(sand__1, "core::sand::1");
