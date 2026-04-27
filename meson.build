@@ -185,6 +185,7 @@ executable(
 executable(
   'swan-scanner',
   'src/swan-scanner/main.cc',
+  swan_proto,
   install: false,
   dependencies: swan_deps,
   override_options: ['b_asneeded=false'],
