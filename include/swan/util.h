@@ -1,6 +1,7 @@
 #pragma once
 
 #include <charconv>
+#include <cmath>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -47,6 +48,12 @@ inline constexpr T lerp(T a, T b, U t, U max = 1)
 {
 	t /= max;
 	return (a * (1 - t)) + (b * t);
+}
+
+// Freya Holfér's framerate-independent lerp smoothing
+inline constexpr float lerpSmooth(float a, float b, float halfLife, float dt)
+{
+	return lerp(a, b, 1 - std::exp2(-dt / halfLife));
 }
 
 // Inherit from this class to make a class non-copyable

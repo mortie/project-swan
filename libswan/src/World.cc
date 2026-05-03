@@ -591,7 +591,12 @@ void World::update(float dt)
 		plane.plane->update(dt);
 	}
 
-	game_->cam_.pos = player_->pos + player_->size / 2;
+	auto camTarget = player_->pos + player_->size / 2;
+	constexpr float HALF_LIFE = 0.05;
+	game_->cam_.pos = {
+		lerpSmooth(game_->cam_.pos.x, camTarget.x, HALF_LIFE, dt),
+		lerpSmooth(game_->cam_.pos.y, camTarget.y, HALF_LIFE, dt),
+	};
 }
 
 bool World::tick(float dt, RTDeadline deadline)
@@ -678,6 +683,9 @@ void World::deserialize(proto::World::Reader r)
 		panic << "Missing player body!";
 		throw std::runtime_error("Missing player body");
 	}
+
+	// Position camera
+	game_->cam_.pos = player_->pos + player_->size / 2;
 }
 
 }
