@@ -7,6 +7,7 @@ project(
     'bindir=bin',
     'warning_level=3',
   ],
+  meson_version: '>=1.11.0',
 )
 
 swan_version = get_option('swan_version')
@@ -148,6 +149,15 @@ else
   swanbuild_args += '-DSWAN_CXX_IS_MINGW=0'
 endif
 
+# This is needed to work around Meson + GNU linker weirdness:
+# https://github.com/mesonbuild/meson/issues/6036
+# It needs to be conditional because other linkers, such as LLD,
+# do not have a --no-as-needed flag.
+swan_early_link_args = []
+if meson.get_compiler('cpp').get_linker_id() == 'ld.bfd'
+  swan_early_link_args += '-Wl,--no-as-needed'
+endif
+
 swan_deps = [
   libswan, libcygnet, common, libimgui, libgl, libglfw3, libbackwardcpp,
   libcpptoml, libsha1, libscisasm, libscisavm, libtpl,
@@ -165,6 +175,7 @@ executable(
   cpp_args: swanbuild_args + [
     '-DSWAN_VERSION="' + swan_version + '"',
   ],
+  link_early_args: swan_early_link_args,
 )
 
 executable(
@@ -189,6 +200,8 @@ executable(
   install: false,
   dependencies: swan_deps,
   override_options: ['b_asneeded=false'],
+  cpp_args: swanbuild_args,
+  link_early_args: swan_early_link_args,
 )
 
 install_subdir('assets', install_dir: '')
