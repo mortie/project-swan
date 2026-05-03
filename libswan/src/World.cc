@@ -592,11 +592,16 @@ void World::update(float dt)
 	}
 
 	auto camTarget = player_->pos + player_->size / 2;
-	constexpr float HALF_LIFE = 0.05;
-	game_->cam_.pos = {
-		lerpSmooth(game_->cam_.pos.x, camTarget.x, HALF_LIFE, dt),
-		lerpSmooth(game_->cam_.pos.y, camTarget.y, HALF_LIFE, dt),
-	};
+	auto camSqDist = (game_->cam_.pos - camTarget).squareLength();
+	if (camSqDist > 20) {
+		game_->cam_.pos = camTarget;
+	} else {
+		constexpr float HALF_LIFE = 0.05;
+		game_->cam_.pos = {
+			lerpSmooth(game_->cam_.pos.x, camTarget.x, HALF_LIFE, dt),
+			lerpSmooth(game_->cam_.pos.y, camTarget.y, HALF_LIFE, dt),
+		};
+	}
 }
 
 bool World::tick(float dt, RTDeadline deadline)
