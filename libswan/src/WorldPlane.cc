@@ -111,9 +111,11 @@ void WorldPlane::regenerate()
 	tickChunks_.clear();
 	chunkInitList_.clear();
 	chunks_.clear();
-	lightSystem_.~LightSystem();
 	entitySystem_.despawnAllTileEntities();
+	lightSystem_.~LightSystem();
 	new (&lightSystem_) LightSystem(*this);
+	fluidSystem_.~FluidSystem();
+	new (&fluidSystem_) FluidSystem(*this);
 }
 
 size_t WorldPlane::getChunkDataMemUsage()
