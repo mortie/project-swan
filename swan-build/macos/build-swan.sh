@@ -42,10 +42,10 @@ for lib in \
 	libcpptoml.dylib \
 	libcygnet.dylib \
 	libfmt.dylib \
-	libglfw.dylib \
+	libglfw.3.dylib \
 	libimgui.dylib \
 	libkj.dylib \
-	libportaudio.dylib \
+	libportaudio.2.dylib \
 	libscisasm.dylib \
 	libscisavm.dylib \
 	libsha1.dylib \
@@ -54,7 +54,7 @@ for lib in \
 	libstb_vorbis.dylib \
 	libswan.dylib \
 	libtiny_process_library.dylib \
-	libzlib_ng.dylib
+	libzlib_ng.2.dylib
 do
 	install_name_tool -id "@rpath/$lib" "$APP/Contents/lib/$lib"
 	for f in "$APP/Contents/lib"/* "$APP/Contents/bin/"*; do
