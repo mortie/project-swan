@@ -140,7 +140,7 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 
 	{
 		ZoneScopedN("Draw background");
-		worldGen_->drawBackground(ctx, rnd, pbody.pos);
+		worldGen_->drawBackground(ctx, rnd, world_->game_->cam_.pos);
 	}
 
 	ChunkPos pcpos = ChunkPos(

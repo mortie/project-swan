@@ -593,7 +593,7 @@ void World::update(float dt)
 
 	auto camTarget = player_->pos + player_->size / 2;
 	auto camSqDist = (game_->cam_.pos - camTarget).squareLength();
-	if (camSqDist > 20) {
+	if (camSqDist > 20 * 20) {
 		game_->cam_.pos = camTarget;
 	} else {
 		constexpr float HALF_LIFE = 0.05;
