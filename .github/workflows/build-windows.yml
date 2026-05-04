@@ -25,12 +25,15 @@ jobs:
           libz-dev libwayland-dev libx11-dev libxrandr-dev libxinerama-dev
           libxcursor-dev libxi-dev libxkbcommon-dev mesa-common-dev libgles-dev
           libwayland-dev cmake mingw-w64
-        version: 1.0
+        version: 2.0
 
     - name: Select MinGW flavor
       run: |
         sudo ln -sf x86_64-w64-mingw32-gcc-posix /usr/bin/x86_64-w64-mingw32-gcc
         sudo ln -sf x86_64-w64-mingw32-g++-posix /usr/bin/x86_64-w64-mingw32-g++
+
+    - name: 'Check for cmake'
+      run: echo Do I have cmake; cmake --version
 
     - name: 'Compile Project: SWAN'
       run: ./swan-build/mingw/build-swan.sh "${{steps.ghd.outputs.describe}}"
