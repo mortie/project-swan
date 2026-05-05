@@ -75,6 +75,7 @@ zlibng_opts = cmake.subproject_options()
 zlibng_opts.add_cmake_defines({
   'BUILD_SHARED_LIBS': true,
   'CMAKE_INSTALL_LIBDIR': 'lib',
+  'WITH_ALL_FALLBACKS': true,
 })
 zlibng_opts.set_override_option('warning_level', '1')
 zlibng_sub = cmake.subproject('zlib-ng', options: zlibng_opts)
