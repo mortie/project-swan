@@ -478,6 +478,11 @@ public:
 			.output = {2, "core::copper"},
 			.kind = "core::smelting",
 		});
+		registerRecipe({
+			.inputs = {{2, "core::sand-pile"}},
+			.output = {1, "core::glass"},
+			.kind = "core::smelting",
+		});
 
 		registerWorldGen<DefaultWorldGen>("default");
 
