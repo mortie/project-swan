@@ -171,6 +171,7 @@ public:
 			.lightLevel = 20 / 255.0,
 			.breakableBy = Swan::Tool::HAND,
 			.placeSound = "core::place/leaves",
+			.onTileUpdate = breakIfFloating,
 		});
 		registerTile({
 			.name = "boulder",
