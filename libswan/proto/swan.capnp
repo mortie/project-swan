@@ -86,7 +86,7 @@ struct Chunk {
 
 	enum Compression {
 		none @0;
-		gzip @1;
+		gzip @1; # Unused
 		rle @2;
 	}
 }

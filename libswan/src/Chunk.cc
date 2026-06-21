@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <optional>
 #include <vector>
-#include <zlib-ng.h>
 #include <assert.h>
 #include <bit>
 #include <string.h>
@@ -123,27 +122,6 @@ void Chunk::decompress()
 	rleDecode8(
 		{getFluidData(), FLUID_DATA_SIZE},
 		{&fluid.front(), fluid.size()});
-}
-
-void Chunk::decompressZLib()
-{
-	if (!isCompressed()) {
-		return;
-	}
-
-	auto dest = std::make_unique<uint8_t[]>(DATA_SIZE);
-	size_t destlen = PERSISTENT_DATA_SIZE;
-	int ret = zng_uncompress(
-		dest.get(), &destlen,
-		data_.get(), compressedSize_);
-
-	if (ret != Z_OK) {
-		panic << "Decompressing chunk failed: " << ret;
-		abort();
-	}
-
-	data_ = std::move(dest);
-	compressedSize_ = -1;
 }
 
 void Chunk::draw(Ctx &ctx, Cygnet::Renderer &rnd)
@@ -292,14 +270,9 @@ void Chunk::deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap)
 		break;
 
 	case proto::Chunk::Compression::GZIP:
-		data_ = std::make_unique<uint8_t[]>(data.size());
-		static_assert(std::endian::native == std::endian::little);
-		memcpy(data_.get(), &data.front(), data.size());
-		compressedSize_ = data.size();
+		warn << "Unsupported chunk compression: GZIP";
+		decompress();
 		deactivateTimer_ = DEACTIVATE_INTERVAL;
-
-		decompressZLib();
-		wasCompressed = true;
 		break;
 
 	case proto::Chunk::Compression::RLE:
