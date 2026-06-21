@@ -1,5 +1,7 @@
 #include "rle.h"
 
+#include <cstring>
+
 namespace Swan {
 
 void rleEncode8(std::vector<uint8_t> &out, std::span<const uint8_t> in)

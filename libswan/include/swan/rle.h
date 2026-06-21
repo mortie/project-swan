@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <cstdlib>
 #include <span>
-#include <sys/_types/_ssize_t.h>
 #include <vector>
 
 namespace Swan {

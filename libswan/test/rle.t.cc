@@ -5,6 +5,7 @@
 #include <iostream>
 #include <span>
 #include <vector>
+#include <cstring>
 
 using namespace Swan;
 
