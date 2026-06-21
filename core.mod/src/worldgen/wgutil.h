@@ -13,6 +13,35 @@ struct SurfaceStructureDef {
 	int probability;
 };
 
+inline void generateSmoothSurface(
+	WorldArea &area, WGContext &wg)
+{
+	if (!area.hasSurface) {
+		return;
+	}
+
+	for (int x = area.begin.x + 1; x < area.end.x - 1; ++x) {
+		int y = area.surfaceLevel(x);
+		if (y < area.begin.y || y >= area.end.y) {
+			continue;
+		}
+
+		int left = area.surfaceLevel(x - 1);
+		int right = area.surfaceLevel(x + 1);
+		if (left != y + 1 && right != y + 1) {
+			continue;
+		}
+
+		Swan::Tile::ID id = area({x, y});
+		auto &halfTile = wg.world.getTileByID(id + 2);
+		if (halfTile.id - halfTile.more->baseOffset != id) {
+			continue;
+		}
+
+		area({x, y}) = halfTile.id;
+	}
+}
+
 inline void generateSurfaceShrubs(
 	WorldArea &area, WGContext &wg, int frequency,
 	std::initializer_list<SurfaceStructureDef> defs)

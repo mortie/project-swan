@@ -6,6 +6,8 @@ namespace CoreMod::biomes {
 
 static void postProcess(WorldArea &area, WGContext &wg)
 {
+	generateSmoothSurface(area, wg);
+
 	generateSurfaceShrubs(area, wg, 16, {
 		{tiles::sand, tiles::deadShrub, 1},
 	});

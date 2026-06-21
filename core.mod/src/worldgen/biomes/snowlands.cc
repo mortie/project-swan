@@ -6,7 +6,7 @@
 namespace CoreMod::biomes {
 
 static void spawnPine(
-		Swan::TilePos pos, WorldArea &area, WGContext &wg)
+	Swan::TilePos pos, WorldArea &area, WGContext &wg)
 {
 		int height = 1 + Swan::random(Swan::random(pos.x ^ wg.seed)) % 2;
 		for (int y = 0; y < height; ++y) {
@@ -69,6 +69,8 @@ static void generatePines(
 
 static void postProcess(WorldArea &area, WGContext &wg)
 {
+	generateSmoothSurface(area, wg);
+
 	generateOutcrops(area, wg, 16, {5, 55}, {
 		{tiles::coalOutcrop, 1},
 		{tiles::sulphurOutcrop, 1},
