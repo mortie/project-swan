@@ -81,6 +81,10 @@ static void postProcess(WorldArea &area, WGContext &wg)
 
 	generatePines(area, wg);
 
+	generateSurfaceShrubs(area, wg, 8, {
+		{tiles::snow, tiles::torchblossom, 1},
+	});
+
 	for (int x = area.begin.x; x < area.end.x; ++x) {
 		if (Swan::random(x ^ 1324 ^ wg.seed) % 8 != 0) {
 			continue;

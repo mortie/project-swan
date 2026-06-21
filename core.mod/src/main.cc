@@ -165,6 +165,14 @@ public:
 			.onTileUpdate = breakIfFloating,
 		});
 		registerTile({
+			.name = "torchblossom",
+			.image = "core::tiles/flora/torchblossom",
+			.isSolid = false,
+			.lightLevel = 20 / 255.0,
+			.breakableBy = Swan::Tool::HAND,
+			.placeSound = "core::place/leaves",
+		});
+		registerTile({
 			.name = "boulder",
 			.image = "core::tiles/geo/boulder",
 			.isSolid = false,

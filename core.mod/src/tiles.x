@@ -14,6 +14,7 @@ X(snow__3, "core::snow::3");
 X(woodPole, "core::wood-pole");
 X(tallGrass, "core::tall-grass");
 X(deadShrub, "core::dead-shrub");
+X(torchblossom, "core::torchblossom");
 X(boulder, "core::boulder");
 X(water, "core::water");
 X(partialWater, "core::partial-water");
