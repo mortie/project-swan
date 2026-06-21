@@ -202,7 +202,6 @@ private:
 		return compressedSize_ != -1;
 	}
 
-	void decompressZLib();
 	std::unique_ptr<uint8_t[]> compressToBuffer(size_t &size) const;
 
 	std::unique_ptr<uint8_t[]> data_;

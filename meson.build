@@ -71,15 +71,6 @@ tpl_opts.add_cmake_defines({
 tpl_sub = cmake.subproject('tiny-process-library', options: tpl_opts)
 libtpl = tpl_sub.dependency('tiny-process-library')
 
-zlibng_opts = cmake.subproject_options()
-zlibng_opts.add_cmake_defines({
-  'BUILD_SHARED_LIBS': true,
-  'CMAKE_INSTALL_LIBDIR': 'lib',
-})
-zlibng_opts.set_override_option('warning_level', '1')
-zlibng_sub = cmake.subproject('zlib-ng', options: zlibng_opts)
-libz = zlibng_sub.dependency('zlib-ng')
-
 libffmpeg = [
   dependency('libavcodec', required: get_option('ffmpeg')),
   dependency('libavdevice', required: get_option('ffmpeg')),
