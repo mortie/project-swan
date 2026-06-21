@@ -73,6 +73,12 @@ struct WorldPlane {
 	worldGenData @4 :Data;
 }
 
+struct ChunkRLEData {
+	tiles @0 :Data;
+	background @1 :Data;
+	fluid @2 :Data;
+}
+
 struct Chunk {
 	pos @0 :Vec2i;
 	compression @1 :Compression;
@@ -80,7 +86,8 @@ struct Chunk {
 
 	enum Compression {
 		none @0;
-		gzip @1;
+		gzip @1; # Unused
+		rle @2;
 	}
 }
 

@@ -202,6 +202,8 @@ void WorldPlane::update(float dt)
 
 				if (tile->isSolid()) {
 					chunk->setFluidID({x, y}, World::SOLID_FLUID_ID);
+				} else if (tile->more->fluidCollision) {
+					chunk->setFluidSolid({x, y}, *tile->more->fluidCollision);
 				}
 
 				if (tile->more->onSpawn) {

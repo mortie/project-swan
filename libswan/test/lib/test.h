@@ -33,29 +33,29 @@ struct TestSpec {
 
 #define TEST3(name, id) name ## id
 #define TEST2(uniqid, desc) \
-		static void TEST3(_test_func_, uniqid)(); \
-		static __attribute__((unused)) testlib::TestSpec TEST3(_test_register_, uniqid)( \
-	&TEST3(_test_func_, uniqid), desc, __FILE__, __LINE__, uniqid); \
-		static void TEST3(_test_func_, uniqid)()
+	static void TEST3(_test_func_, uniqid)(); \
+	static __attribute__((unused)) testlib::TestSpec TEST3(_test_register_, uniqid)( \
+		&TEST3(_test_func_, uniqid), desc, __FILE__, __LINE__, uniqid); \
+	static void TEST3(_test_func_, uniqid)()
 #define TEST(desc) TEST2(__COUNTER__, desc)
 
 #define expect(expr) do { \
-			if (!(expr)) { \
-				throw testlib::TestFailure( \
-	"Expected '" #expr "' to be true.", __FILE__, __LINE__); \
-			} \
+	if (!(expr)) { \
+		throw testlib::TestFailure( \
+			"Expected '" #expr "' to be true.", __FILE__, __LINE__); \
+	} \
 } while (0)
 
 #define expecteq(a, b) do { \
-			if ((a) != (b)) { \
-				throw testlib::TestFailure( \
-	"Expected '" #a "' to equal '" #b "'.", __FILE__, __LINE__); \
-			} \
+	if ((a) != (b)) { \
+		throw testlib::TestFailure( \
+			"Expected '" #a "' to equal '" #b "'.", __FILE__, __LINE__); \
+	} \
 } while (0)
 
 #define expectneq(a, b) do { \
-			if ((a) == (b)) { \
-				throw testlib::TestFailure( \
-	"Expected '" #a "' to not equal '" #b "'.", __FILE__, __LINE__); \
-			} \
+	if ((a) == (b)) { \
+		throw testlib::TestFailure( \
+			"Expected '" #a "' to not equal '" #b "'.", __FILE__, __LINE__); \
+	} \
 } while (0)

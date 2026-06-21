@@ -1,17 +1,26 @@
 #include "Chunk.h"
 
-#include <zlib-ng.h>
-#include <stdint.h>
+#include <cstdint>
+#include <optional>
+#include <vector>
 #include <assert.h>
 #include <bit>
 #include <string.h>
 
 #include <swan/log.h>
 #include <swan/trace.h>
+#include "Clock.h"
 #include "World.h"
 #include "Game.h"
+#include "capnp/message.h"
+#include "capnp/serialize-packed.h"
+#include "kj/io.h"
+#include "rle.h"
+#include "swan.capnp.h"
 
 namespace Swan {
+
+static thread_local std::vector<uint8_t> scratchBuffer;
 
 Chunk::Chunk(ChunkPos pos): pos_(pos)
 {
@@ -25,36 +34,50 @@ Chunk::Chunk(ChunkPos pos): pos_(pos)
 	}
 }
 
+std::unique_ptr<uint8_t[]> Chunk::compressToBuffer(size_t &len) const
+{
+	if (isCompressed()) {
+		return nullptr;
+	}
+
+	capnp::MallocMessageBuilder mb;
+	auto root = mb.initRoot<proto::ChunkRLEData>();
+
+	scratchBuffer.clear();
+	rleEncode16SRO(scratchBuffer, {getTileData(), CHUNK_WIDTH * CHUNK_HEIGHT});
+	auto tiles = root.initTiles(scratchBuffer.size());
+	memcpy(&tiles.front(), scratchBuffer.data(), scratchBuffer.size());
+
+	scratchBuffer.clear();
+	rleEncode16SRO(scratchBuffer, {getBackgroundTileData(), CHUNK_WIDTH * CHUNK_HEIGHT});
+	auto background = root.initBackground(scratchBuffer.size());
+	memcpy(&background.front(), scratchBuffer.data(), scratchBuffer.size());
+
+	scratchBuffer.clear();
+	rleEncode8(scratchBuffer, {getFluidData(), FLUID_DATA_SIZE});
+	auto fluid = root.initFluid(scratchBuffer.size());
+	memcpy(&fluid.front(), scratchBuffer.data(), scratchBuffer.size());
+
+	kj::VectorOutputStream out;
+	capnp::writePackedMessage(out, mb);
+	auto arr = out.getArray();
+
+	auto data = std::make_unique<uint8_t[]>(arr.size());
+	len = arr.size();
+	memcpy(&data[0], &arr.front(), arr.size());
+
+	return data;
+}
+
 void Chunk::compress()
 {
 	if (isCompressed()) {
 		return;
 	}
 
-	// We only need a fixed-length temp buffer;
-	// if the compressed data gets too big, there's no point in compressing
-	uint8_t dest[PERSISTENT_DATA_SIZE];
-
-	size_t destlen = sizeof(dest);
-	int ret = zng_compress2(
-		dest, &destlen,
-		data_.get(), PERSISTENT_DATA_SIZE,
-		Z_BEST_COMPRESSION);
-
-	if (ret == Z_OK) {
-		data_.reset(new uint8_t[destlen]);
-		memcpy(data_.get(), dest, destlen);
-
-		compressedSize_ = destlen;
-	}
-	else if (ret == Z_BUF_ERROR) {
-		info
-			<< "Didn't compress chunk " << pos_ << " "
-			<< "because compressing it would've made it bigger";
-	}
-	else {
-		warn << "Chunk compression error: " << ret << " (Out of memory?)";
-	}
+	size_t len;
+	data_ = compressToBuffer(len);
+	compressedSize_ = len;
 
 	if (entities_.empty()) {
 		// Properly free entities array memory
@@ -77,19 +100,28 @@ void Chunk::decompress()
 		return;
 	}
 
-	auto dest = std::make_unique<uint8_t[]>(DATA_SIZE);
-	size_t destlen = PERSISTENT_DATA_SIZE;
-	int ret = zng_uncompress(
-		dest.get(), &destlen,
-		data_.get(), compressedSize_);
+	auto compressedData = std::move(data_);
+	size_t compressedSize = compressedSize_;
 
-	if (ret != Z_OK) {
-		panic << "Decompressing chunk failed: " << ret;
-		abort();
-	}
-
-	data_ = std::move(dest);
+	data_ = std::make_unique<uint8_t[]>(DATA_SIZE);
 	compressedSize_ = -1;
+
+	kj::ArrayInputStream stream(kj::ArrayPtr(compressedData.get(), compressedSize));
+	capnp::PackedMessageReader reader(stream);
+	auto root = reader.getRoot<proto::ChunkRLEData>();
+
+	auto tiles = root.getTiles();
+	rleDecode16SRO(
+		{getTileData(), CHUNK_WIDTH * CHUNK_HEIGHT},
+		{&tiles.front(), tiles.size()});
+	auto background = root.getBackground();
+	rleDecode16SRO(
+		{getBackgroundTileData(), CHUNK_WIDTH * CHUNK_HEIGHT},
+		{&background.front(), background.size()});
+	auto fluid = root.getFluid();
+	rleDecode8(
+		{getFluidData(), FLUID_DATA_SIZE},
+		{&fluid.front(), fluid.size()});
 }
 
 void Chunk::draw(Ctx &ctx, Cygnet::Renderer &rnd)
@@ -183,35 +215,27 @@ void Chunk::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 void Chunk::serialize(proto::Chunk::Builder w) const
 {
 	using Compression = proto::Chunk::Compression;
-	uint8_t compressionBuf[PERSISTENT_DATA_SIZE];
+	std::unique_ptr<uint8_t[]> compressionBuf;
 
-	uint8_t *dataPtr = data_.get();
-	size_t dataLen = PERSISTENT_DATA_SIZE;
+	uint8_t *dataPtr = nullptr;
+	size_t dataLen = 0;
 	Compression compression = Compression::NONE;
 
 	// If the chunk is already compressed,
 	// just re-use the buffer
 	if (isCompressed()) {
+		dataPtr = data_.get();
 		dataLen = compressedSize_;
-		compression = Compression::GZIP;
+		compression = Compression::RLE;
 	}
 
 	// If not, we try to compress it.
 	// If we don't gain anything by compressing,
 	// just use it uncompressed.
 	else {
-		size_t len = PERSISTENT_DATA_SIZE;
-		int ret = zng_compress2(
-			compressionBuf, &len,
-			data_.get(), PERSISTENT_DATA_SIZE,
-			Z_BEST_COMPRESSION);
-		if (ret == Z_OK) {
-			dataLen = len;
-			dataPtr = compressionBuf;
-			compression = Compression::GZIP;
-		} else if (ret != Z_BUF_ERROR) {
-			warn << "Chunk compression error: " << ret;
-		}
+		compressionBuf = compressToBuffer(dataLen);
+		dataPtr = compressionBuf.get();
+		compression = Compression::RLE;
 	}
 
 	auto pos = w.initPos();
@@ -219,7 +243,6 @@ void Chunk::serialize(proto::Chunk::Builder w) const
 	pos.setY(pos_.y);
 
 	w.setCompression(compression);
-	static_assert(std::endian::native == std::endian::little);
 	auto d = w.initData(dataLen);
 	memcpy(&d.front(), dataPtr, dataLen);
 }
@@ -247,8 +270,13 @@ void Chunk::deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap)
 		break;
 
 	case proto::Chunk::Compression::GZIP:
+		warn << "Unsupported chunk compression: GZIP";
+		decompress();
+		deactivateTimer_ = DEACTIVATE_INTERVAL;
+		break;
+
+	case proto::Chunk::Compression::RLE:
 		data_ = std::make_unique<uint8_t[]>(data.size());
-		static_assert(std::endian::native == std::endian::little);
 		memcpy(data_.get(), &data.front(), data.size());
 		compressedSize_ = data.size();
 		deactivateTimer_ = DEACTIVATE_INTERVAL;

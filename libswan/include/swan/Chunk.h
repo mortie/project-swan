@@ -81,7 +81,19 @@ public:
 		return (Fluid::ID *)(data_.get() + FLUID_DATA_OFFSET);
 	}
 
+	const Fluid::ID *getFluidData() const
+	{
+		assert(isActive());
+		return (Fluid::ID *)(data_.get() + FLUID_DATA_OFFSET);
+	}
+
 	uint8_t *getLightData()
+	{
+		assert(isActive());
+		return data_.get() + LIGHT_DATA_OFFSET;
+	}
+
+	const uint8_t *getLightData() const
 	{
 		assert(isActive());
 		return data_.get() + LIGHT_DATA_OFFSET;
@@ -189,6 +201,8 @@ private:
 	{
 		return compressedSize_ != -1;
 	}
+
+	std::unique_ptr<uint8_t[]> compressToBuffer(size_t &size) const;
 
 	std::unique_ptr<uint8_t[]> data_;
 	std::deque<std::pair<ChunkRelPos, Tile::ID>> changeList_;

@@ -684,7 +684,7 @@ void Game::save()
 	kj::VectorOutputStream out;
 	capnp::writePackedMessage(out, mb);
 
-	info << "Writing to " << worldPath_ << "...";
+	info << "Writing " << (out.getArray().size() / 1024) << "k to " << worldPath_ << "...";
 	auto tmpPath = cat(worldPath_, ".tmp");
 	std::ofstream f(tmpPath, std::ios::binary);
 	if (!f) {

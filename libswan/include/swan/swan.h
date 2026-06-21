@@ -21,6 +21,7 @@
 #include <swan/OS.h>
 #include <swan/Recipe.h>
 #include <swan/RingBuffer.h>
+#include <swan/rle.h>
 #include <swan/SoundPlayer.h>
 #include <swan/Tile.h>
 #include <swan/World.h>

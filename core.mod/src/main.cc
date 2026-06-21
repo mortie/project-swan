@@ -165,6 +165,15 @@ public:
 			.onTileUpdate = breakIfFloating,
 		});
 		registerTile({
+			.name = "torchblossom",
+			.image = "core::tiles/flora/torchblossom",
+			.isSolid = false,
+			.lightLevel = 20 / 255.0,
+			.breakableBy = Swan::Tool::HAND,
+			.placeSound = "core::place/leaves",
+			.onTileUpdate = breakIfFloating,
+		});
+		registerTile({
 			.name = "boulder",
 			.image = "core::tiles/geo/boulder",
 			.isSolid = false,
@@ -468,6 +477,11 @@ public:
 		registerRecipe({
 			.inputs = {{2, "core::copper-ore-chunk"}},
 			.output = {2, "core::copper"},
+			.kind = "core::smelting",
+		});
+		registerRecipe({
+			.inputs = {{2, "core::sand-pile"}},
+			.output = {1, "core::glass"},
 			.kind = "core::smelting",
 		});
 
