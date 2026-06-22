@@ -181,7 +181,7 @@ public:
 			.name = "torchblossom-flower",
 			.image = "core::tiles/flora/torchblossom-flower",
 			.isSolid = false,
-			.lightLevel = 30 / 255.0,
+			.lightLevel = 50 / 255.0,
 			.onSpawn = [](Swan::Ctx &ctx, Swan::TilePos pos) { return false; },
 		});
 		registerTile({

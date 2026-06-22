@@ -24,6 +24,7 @@ ItemStackEntity::ItemStackEntity(
 		Swan::randfloat(-2.3, -1.2),
 	};
 	item_ = item;
+	updateLight(ctx);
 }
 
 ItemStackEntity::ItemStackEntity(
@@ -33,6 +34,7 @@ ItemStackEntity::ItemStackEntity(
 	physicsBody_.body.pos = pos;
 	physicsBody_.vel += vel;
 	item_ = item;
+	updateLight(ctx);
 }
 
 void ItemStackEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
@@ -57,6 +59,18 @@ void ItemStackEntity::tick(Swan::Ctx &ctx, float dt)
 	lifetime_ += dt;
 	if (lifetime_ >= DESPAWN_TIME) {
 		ctx.plane.entities().despawn(ctx.plane.entities().current());
+		return;
+	}
+
+	if (light_) {
+		updateLight(ctx);
+	}
+}
+
+void ItemStackEntity::onDespawn(Swan::Ctx &ctx)
+{
+	if (light_) {
+		ctx.plane.lights().removeLight(light_->pos, light_->level);
 	}
 }
 
@@ -74,6 +88,34 @@ void ItemStackEntity::deserialize(
 	physicsBody_.deserialize(r.getBody());
 	lifetime_ = r.getLifetime();
 	item_ = &ctx.world.getItem(r.getItem().cStr());
+	updateLight(ctx);
+}
+
+void ItemStackEntity::updateLight(Swan::Ctx &ctx)
+{
+	if (light_ && item_->lightLevel <= 0) {
+		ctx.plane.lights().removeLight(light_->pos, light_->level);
+		light_.reset();
+		return;
+	}
+
+	Swan::TilePos pos = physicsBody_.body.center().as<int>();
+	if (!light_ && item_->lightLevel > 0) {
+		float level = item_->lightLevel / 2;
+		ctx.plane.lights().addLight(pos, level);
+		light_ = Light {
+			.pos = pos,
+			.level = level,
+		};
+		return;
+	}
+
+	if (light_ && light_->pos != pos) {
+		ctx.plane.lights().removeLight(light_->pos, light_->level);
+		ctx.plane.lights().addLight(pos, light_->level);
+		light_->pos = pos;
+		return;
+	}
 }
 
 }

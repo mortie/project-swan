@@ -28,6 +28,7 @@ public:
 	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
 	void update(Swan::Ctx &ctx, float dt) override;
 	void tick(Swan::Ctx &ctx, float dt) override;
+	void onDespawn(Swan::Ctx &ctx) override;
 
 	void serialize(Swan::Ctx &ctx, Proto::Builder w);
 	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
@@ -40,8 +41,21 @@ public:
 	float lifetime_ = 0;
 
 private:
+	struct Light {
+		Swan::TilePos pos;
+		float level;
+
+		friend bool operator==(const Light &a, const Light &b)
+		{
+			return a.pos == b.pos && a.level == b.level;
+		}
+	};
+
+	void updateLight(Swan::Ctx &ctx);
+
 	Swan::Item *item_;
 	Swan::BasicPhysicsBody physicsBody_;
+	std::optional<Light> light_;
 };
 
 }
