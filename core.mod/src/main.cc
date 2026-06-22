@@ -5,7 +5,6 @@
 #include "DefaultWorldGen.h"
 #include "tiles.h"
 #include "entities/DynamiteEntity.h"
-#include "entities/GrassSeedEntity.h"
 #include "entities/PlayerEntity.h"
 #include "entities/ItemStackEntity.h"
 #include "entities/SpiderEntity.h"
@@ -24,6 +23,7 @@
 #include "world/pipe.h"
 #include "world/platform.h"
 #include "world/potato.h"
+#include "world/seeds.h"
 #include "world/stairs.h"
 #include "world/torch.h"
 #include "world/tree.h"
@@ -146,7 +146,7 @@ public:
 			.placeSound = "core::place/leaves",
 			.onBreak = [](Swan::Ctx &ctx, Swan::TilePos pos) {
 				dropRandomItemCount<"core::fiber">(ctx, pos);
-				ctx.plane.entities().spawn<GrassSeedEntity>(pos);
+				spawnGrassSeed(ctx, pos);
 			},
 			.onTileUpdate = [](Swan::Ctx &ctx, Swan::TilePos pos) {
 				auto below = pos.add(0, 1);
@@ -171,6 +171,9 @@ public:
 			.lightLevel = 20 / 255.0,
 			.breakableBy = Swan::Tool::HAND,
 			.placeSound = "core::place/leaves",
+			.onBreak = [](Swan::Ctx &ctx, Swan::TilePos pos) {
+				spawnTorchblossomSeed(ctx, pos);
+			},
 			.onTileUpdate = breakIfFloating,
 		});
 		registerTile({
@@ -230,6 +233,7 @@ public:
 		registerGlassPipe(*this);
 		registerPlatform(*this);
 		registerPotato(*this);
+		registerSeedEntities(*this);
 		registerStairs(*this);
 		registerTorch(*this);
 		registerTree(*this);
@@ -489,7 +493,6 @@ public:
 
 		registerEntity<DynamiteEntity>("dynamite");
 		registerEntity<FallingTileEntity>("falling-tile");
-		registerEntity<GrassSeedEntity>("grass-seed");
 		registerEntity<ItemStackEntity>("item-stack");
 		registerEntity<PlayerEntity>("player");
 		registerEntity<SpiderEntity>("spider");

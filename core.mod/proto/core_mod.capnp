@@ -20,10 +20,11 @@ struct DynamiteEntity {
 	fuse @1 :Float32;
 }
 
-struct GrassSeedEntity {
+struct SeedEntity {
 	timer @0 :Float32;
 	pos @1 :Vec2i;
 	dying @2 :Float32;
+	tile @3 :Text;
 }
 
 struct FallingTileEntity {
