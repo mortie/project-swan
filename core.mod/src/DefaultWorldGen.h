@@ -30,6 +30,7 @@ public:
 	Cygnet::Color backgroundColor(Swan::Vec2 pos) override;
 	void genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk) override;
 	Swan::EntityRef spawnPlayer(Swan::Ctx &ctx) override;
+	float getAirTemperature(Swan::TilePos pos) override;
 	void update(Swan::Ctx &ctx, float dt) override;
 	void debugInfo() override;
 

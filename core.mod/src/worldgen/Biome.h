@@ -27,7 +27,7 @@ struct BiomeRange {
 		return ((val - Min) / float(Max - Min)) * 2 - 1;
 	}
 
-	constexpr float denorm() {
+	constexpr float denorm() const {
 		return ((normalizedValue + 1) / 2) * (Max - Min) + Min;
 	}
 };

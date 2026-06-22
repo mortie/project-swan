@@ -1,6 +1,7 @@
 #include "PlayerEntity.h"
 
 #include <algorithm>
+#include <cmath>
 #include <imgui/imgui.h>
 
 #include "ItemStackEntity.h"
@@ -65,6 +66,9 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	if (oxygen_ < 4) {
 		blackoutAlpha = (4 - oxygen_) / 3.5;
 	}
+	if (temperature_ < -10) {
+		blackoutAlpha = (-temperature_ - 10) / 2.0;
+	}
 
 	if (blackout_ > 0) {
 		float alpha = 1.0;
@@ -125,6 +129,9 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 		.size = {1, 1},
 	});
 
+	float barY = 0.25;
+	float nudgeY = 0.35;
+
 	// Draw health
 	rnd.uiView({}, [&] {
 		for (int i = 0; i < std::max(MAX_HEALTH, health_); ++i) {
@@ -136,7 +143,7 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 				sprite = &sprites_.heart;
 			}
 
-			float y = 0.25;
+			float y = barY;
 			if (vit_ != Vit::OK && i % 2 == 1) {
 				y += 0.05;
 			}
@@ -150,25 +157,43 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	}, Cygnet::Anchor::TOP_LEFT);
 
 	// Draw oxygen
-	rnd.uiView({}, [&] {
-		if (oxygen_ >= 11.5) {
-			return;
-		}
+	if (oxygen_ >= 1.5 && oxygen_ < 11.5) {
+		barY += nudgeY;
 
-		for (int i = 0; i < 10; ++i) {
-			if (oxygen_ < (i + 1.5)) {
-				break;
+		rnd.uiView({}, [&] {
+			for (int i = 0; i < 10; ++i) {
+				if (oxygen_ < (i + 1.5)) {
+					break;
+				}
+
+				rnd.drawUISprite({
+					.transform = Cygnet::Mat3gf{}
+						.translate({(i / 3.5f) + 0.25f, barY}),
+					.sprite = sprites_.bubble,
+				});
 			}
+		}, Cygnet::Anchor::TOP_LEFT);
+	}
 
-			float y = 0.6;
+	// Draw cold bar
+	if (temperature_ <= -2) {
+		barY += nudgeY;
 
-			rnd.drawUISprite({
-				.transform = Cygnet::Mat3gf{}
-					.translate({(i / 3.5f) + 0.25f, y}),
-				.sprite = sprites_.bubble,
-			});
-		}
-	}, Cygnet::Anchor::TOP_LEFT);
+		rnd.uiView({}, [&] {
+			float freeze = -temperature_ - 2;
+			for (int i = 0; i < 10; ++i) {
+				if (freeze < i) {
+					break;
+				}
+
+				rnd.drawUISprite({
+					.transform = Cygnet::Mat3gf{}
+						.translate({(i / 3.5f) + 0.25f, barY}),
+					.sprite = sprites_.snowflake,
+				});
+			}
+		}, Cygnet::Anchor::TOP_LEFT);
+	}
 
 	// Draw hotbar
 	ui_.hotbarRect = rnd.uiView({
@@ -335,6 +360,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 			physicsBody_.vel = {};
 			state_ = State::IDLE;
 			currentAnimation_ = &sprites_.idle;
+			temperature_ = 0;
 		}
 
 		if (blackout_ > 1.5) {
@@ -548,6 +574,62 @@ void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 		craftingInventory_.recompute(ctx, inventory_.content(), {
 			.workbench = inWorkbench_,
 		});
+	}
+
+	// Drown
+	Swan::Fluid &fluidTop = ctx.plane.fluids().getAtPos(
+		physicsBody_.body.topMid().add(0, 0.1));
+	if (fluidTop.id == Swan::World::AIR_FLUID_ID) {
+		oxygen_ += dt * 4;
+		if (oxygen_ > MAX_OXYGEN) {
+			oxygen_ = MAX_OXYGEN;
+		}
+	}
+	else if (blackout_ <= 0) {
+		oxygen_ -= dt * 0.75;
+		if (oxygen_ < 0) {
+			ctx.game.playSound(ctx.world.getSound("core::misc/hurt"), 0.4f);
+			oxygen_ = 0;
+			health_ = 0;
+			blackout_ = BLACKOUT_TIME;
+			state_ = State::IDLE;
+			currentAnimation_ = &sprites_.idle;
+		}
+	}
+
+	Swan::TilePos center = physicsBody_.body.center().as<int>();
+	float airTemp = ctx.plane.worldGen_->getAirTemperature(center);
+	for (int y = -6; y <= 6; ++y) {
+		for (int x = -6; x <= 6; ++x) {
+			int sqLength = y * y + x * x;
+			if (sqLength > 6 * 6) {
+				continue;
+			}
+
+			auto &tile = ctx.plane.tiles().get(center.add(x, y));
+			if (tile.more->temperature > 0) {
+				float temp = tile.more->temperature * 30;
+				if (temp < airTemp) {
+					continue;
+				}
+
+				float factor = (7 - std::sqrt(sqLength)) / 7;
+				airTemp += temp * factor;
+			}
+		}
+	}
+
+	if (airTemp < 5 && blackout_ <= 0) {
+		temperature_ -= dt * 0.5;
+		if (temperature_ < -12) {
+			ctx.game.playSound(ctx.world.getSound("core::misc/hurt"), 0.4f);
+			health_ = 0;
+			blackout_ = BLACKOUT_TIME;
+			state_ = State::IDLE;
+			currentAnimation_ = &sprites_.idle;
+		}
+	} else if (temperature_ < 0 && blackout_ <= 0) {
+		temperature_ += dt * 1;
 	}
 }
 
@@ -899,29 +981,8 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	};
 
 	// Figure out what fluids we're in
-	Swan::Fluid &fluidTop = ctx.plane.fluids().getAtPos(
-		physicsBody_.body.topMid().add(0, 0.1));
 	Swan::Fluid &fluidCenter = ctx.plane.fluids().getAtPos(fluidCenterPos);
 	Swan::Fluid &fluidBottom = ctx.plane.fluids().getAtPos(fluidBottomPos);
-
-	// Drown
-	if (fluidTop.id == Swan::World::AIR_FLUID_ID) {
-		oxygen_ += dt * 4;
-		if (oxygen_ > MAX_OXYGEN) {
-			oxygen_ = MAX_OXYGEN;
-		}
-	}
-	else if (blackout_ <= 0) {
-		oxygen_ -= dt * 0.75;
-		if (oxygen_ < 0) {
-			ctx.game.playSound(ctx.world.getSound("core::misc/hurt"), 0.4f);
-			oxygen_ = 0;
-			health_ = 0;
-			blackout_ = BLACKOUT_TIME;
-			state_ = State::IDLE;
-			currentAnimation_ = &sprites_.idle;
-		}
-	}
 
 	{ // Splash sound
 		bool oldInFluid = inFluid_;

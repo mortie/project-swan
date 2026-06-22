@@ -350,6 +350,35 @@ Swan::EntityRef DefaultWorldGen::spawnPlayer(Swan::Ctx &ctx)
 		Swan::Vec2{(float)x, (float)getGrassLevel(wg_.perlin, x) - 2});
 }
 
+float DefaultWorldGen::getAirTemperature(Swan::TilePos pos)
+{
+	float temperatureHighUp = -20;
+	float temperatureLowDown = 30;
+
+	if (pos.y < -100) {
+		return temperatureHighUp;
+	}
+	if (pos.y > 100) {
+		return temperatureLowDown;
+	}
+
+	const Biome &biome = getBiome(pos.x);
+	float surfaceTemp = biome.temperature.denorm();
+
+	if (pos.y < -5) {
+		return Swan::lerp(
+			surfaceTemp, temperatureHighUp,
+			(pos.y + 5) / 95.0);
+	}
+
+	if (pos.y > 5) {
+		return Swan::lerp(
+			surfaceTemp, temperatureLowDown,
+			(pos.y - 5) / 95.0);
+	}
+
+	return surfaceTemp;
+}
 
 void DefaultWorldGen::update(Swan::Ctx &ctx, float dt)
 {

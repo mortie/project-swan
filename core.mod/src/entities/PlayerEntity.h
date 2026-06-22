@@ -75,7 +75,8 @@ private:
 			landing(ctx, "core::entities/player/landing", 0.1),
 			emptyHeart(ctx.world.getSprite("core::misc/empty-heart")),
 			heart(ctx.world.getSprite("core::misc/heart")),
-			bubble(ctx.world.getSprite("core::misc/bubble"))
+			bubble(ctx.world.getSprite("core::misc/bubble")),
+			snowflake(ctx.world.getSprite("core::misc/snowflake"))
 		{}
 
 		Swan::Animation idle;
@@ -86,6 +87,7 @@ private:
 		Cygnet::RenderSprite emptyHeart;
 		Cygnet::RenderSprite heart;
 		Cygnet::RenderSprite bubble;
+		Cygnet::RenderSprite snowflake;
 	};
 
 	struct Actions {
@@ -244,6 +246,7 @@ private:
 	float invulnerable_ = 0;
 	float blackout_ = 0;
 	float oxygen_ = 0;
+	float temperature_ = 0;
 
 	int teleState_ = 0;
 	float teleportTimer_ = 0;

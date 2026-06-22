@@ -169,6 +169,7 @@ public:
 			.image = "core::tiles/flora/torchblossom",
 			.isSolid = false,
 			.lightLevel = 20 / 255.0,
+			.temperature = 0.5,
 			.breakableBy = Swan::Tool::HAND,
 			.placeSound = "core::place/leaves",
 			.onBreak = [](Swan::Ctx &ctx, Swan::TilePos pos) {
