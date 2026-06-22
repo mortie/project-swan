@@ -1,0 +1,4 @@
+[variants]
+normal = ['./normal.png']
+left = ['./wall.png']
+right = ['./wall.png', 'hflip']

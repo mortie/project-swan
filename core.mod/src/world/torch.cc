@@ -4,6 +4,7 @@
 
 namespace CoreMod {
 
+template<Swan::Tile::ID &Base>
 static bool onTorchSpawn(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	// The default torch stands on the tile below it,
@@ -13,29 +14,30 @@ static bool onTorchSpawn(Swan::Ctx &ctx, Swan::TilePos pos)
 	}
 
 	if (ctx.plane.tiles().get(pos.add(-1, 0)).isFullSupportH()) {
-		ctx.plane.tiles().setID(pos, tiles::torch__left);
+		ctx.plane.tiles().setID(pos, Base + 1);
 		return true;
 	}
 	else if (ctx.plane.tiles().get(pos.add(1, 0)).isFullSupportH()) {
-		ctx.plane.tiles().setID(pos, tiles::torch__right);
+		ctx.plane.tiles().setID(pos, Base + 2);
 		return true;
 	}
 
 	return false;
 }
 
+template<Swan::Tile::ID &Base>
 static void onTorchUpdate(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	auto id = ctx.plane.tiles().getID(pos);
 	bool isSupported;
 
-	if (id == tiles::torch) {
+	if (id == Base) {
 		isSupported = ctx.plane.tiles().get(pos.add(0, 1)).isSupportV();
 	}
-	else if (id == tiles::torch__left) {
+	else if (id == Base + 1) {
 		isSupported = ctx.plane.tiles().get(pos.add(-1, 0)).isFullSupportH();
 	}
-	else if (id == tiles::torch__right) {
+	else if (id == Base + 2) {
 		isSupported = ctx.plane.tiles().get(pos.add(1, 0)).isFullSupportH();
 	}
 	else {
@@ -51,17 +53,18 @@ static void onTorchUpdate(Swan::Ctx &ctx, Swan::TilePos pos)
 void registerTorch(Swan::Mod &mod)
 {
 	float lightLevel = 80 / 255.0;
+	float temperature = 0.7;
 
 	mod.registerTile({
 		.name = "torch",
 		.image = "core::tiles/torch::normal",
 		.isSolid = false,
 		.lightLevel = lightLevel,
-		.temperature = 0.7,
+		.temperature = temperature,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::torch",
-		.onSpawn = onTorchSpawn,
-		.onTileUpdate = onTorchUpdate,
+		.onSpawn = onTorchSpawn<tiles::torch>,
+		.onTileUpdate = onTorchUpdate<tiles::torch>,
 		.onWorldTick = breakIfInFluid,
 	});
 
@@ -70,10 +73,10 @@ void registerTorch(Swan::Mod &mod)
 		.image = "core::tiles/torch::left",
 		.isSolid = false,
 		.lightLevel = lightLevel,
-		.temperature = 0.7,
+		.temperature = temperature,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::torch",
-		.onTileUpdate = onTorchUpdate,
+		.onTileUpdate = onTorchUpdate<tiles::torch>,
 		.onWorldTick = breakIfInFluid,
 	});
 
@@ -82,11 +85,51 @@ void registerTorch(Swan::Mod &mod)
 		.image = "core::tiles/torch::right",
 		.isSolid = false,
 		.lightLevel = lightLevel,
-		.temperature = 0.7,
+		.temperature = temperature,
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::torch",
-		.onTileUpdate = onTorchUpdate,
+		.onTileUpdate = onTorchUpdate<tiles::torch>,
 		.onWorldTick = breakIfInFluid,
+	});
+}
+
+void registerTorchblossomTorch(Swan::Mod &mod)
+{
+	float lightLevel = 100 / 255.0;
+	float temperature = 0.9;
+
+	mod.registerTile({
+		.name = "torchblossom-torch",
+		.image = "core::tiles/torchblossom-torch::normal",
+		.isSolid = false,
+		.lightLevel = lightLevel,
+		.temperature = temperature,
+		.breakableBy = Swan::Tool::HAND,
+		.droppedItem = "core::torchblossom-torch",
+		.onSpawn = onTorchSpawn<tiles::torchblossomTorch>,
+		.onTileUpdate = onTorchUpdate<tiles::torchblossomTorch>,
+	});
+
+	mod.registerTile({
+		.name = "torchblossom-torch::left",
+		.image = "core::tiles/torchblossom-torch::left",
+		.isSolid = false,
+		.lightLevel = lightLevel,
+		.temperature = temperature,
+		.breakableBy = Swan::Tool::HAND,
+		.droppedItem = "core::torchblossom-torch",
+		.onTileUpdate = onTorchUpdate<tiles::torchblossomTorch>,
+	});
+
+	mod.registerTile({
+		.name = "torchblossom-torch::right",
+		.image = "core::tiles/torchblossom-torch::right",
+		.isSolid = false,
+		.lightLevel = lightLevel,
+		.temperature = temperature,
+		.breakableBy = Swan::Tool::HAND,
+		.droppedItem = "core::torchblossom-torch",
+		.onTileUpdate = onTorchUpdate<tiles::torchblossomTorch>,
 	});
 }
 

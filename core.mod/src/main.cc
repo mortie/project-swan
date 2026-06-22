@@ -172,9 +172,17 @@ public:
 			.breakableBy = Swan::Tool::HAND,
 			.placeSound = "core::place/leaves",
 			.onBreak = [](Swan::Ctx &ctx, Swan::TilePos pos) {
+				dropItem(ctx, pos, "core::torchblossom-flower");
 				spawnTorchblossomSeed(ctx, pos);
 			},
 			.onTileUpdate = breakIfFloating,
+		});
+		registerTile({
+			.name = "torchblossom-flower",
+			.image = "core::tiles/flora/torchblossom-flower",
+			.isSolid = false,
+			.lightLevel = 30 / 255.0,
+			.onSpawn = [](Swan::Ctx &ctx, Swan::TilePos pos) { return false; },
 		});
 		registerTile({
 			.name = "boulder",
@@ -236,6 +244,7 @@ public:
 		registerSeedEntities(*this);
 		registerStairs(*this);
 		registerTorch(*this);
+		registerTorchblossomTorch(*this);
 		registerTree(*this);
 		registerWorkbench(*this);
 
@@ -369,6 +378,11 @@ public:
 		registerRecipe({
 			.inputs = {{1, "core::stick"}, {1, "core::coal"}},
 			.output = {2, "core::torch"},
+			.kind = "core::crafting",
+		});
+		registerRecipe({
+			.inputs = {{1, "core::stick"}, {1, "core::torchblossom-flower"}},
+			.output = {1, "core::torchblossom-torch"},
 			.kind = "core::crafting",
 		});
 		registerRecipe({
