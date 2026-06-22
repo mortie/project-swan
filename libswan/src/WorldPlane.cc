@@ -42,6 +42,7 @@ Chunk &WorldPlane::getChunk(ChunkPos pos)
 	// First, look through all chunks which have been in use this tick
 	for (auto [chpos, chunk]: tickChunks_) {
 		if (chpos == pos) {
+			chunk->keepActive();
 			return *chunk;
 		}
 	}
