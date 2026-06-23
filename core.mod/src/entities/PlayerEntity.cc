@@ -63,11 +63,13 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	}
 
 	float blackoutAlpha = 0;
+	Cygnet::Color blackoutColor = {0, 0, 0};
 	if (oxygen_ < 4) {
 		blackoutAlpha = (4 - oxygen_) / 3.5;
 	}
-	if (temperature_ < -10) {
-		blackoutAlpha = (-temperature_ - 10) / 2.0;
+	if (temperature_ < -4) {
+		blackoutAlpha = pow(2, (-temperature_ - 4) / 7.0) - 1;
+		blackoutColor = {0.6, 0.9, 1.0};
 	}
 
 	if (blackout_ > 0) {
@@ -88,10 +90,11 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	}
 
 	if (blackoutAlpha > 0) {
+		blackoutColor.a = blackoutAlpha;
 		rnd.drawUIRect({
 			.pos = {},
 			.size = {100, 100},
-			.fill = {0, 0, 0, blackoutAlpha},
+			.fill = blackoutColor,
 		});
 	}
 
