@@ -109,7 +109,6 @@ static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
 		config.SizePixels = 13 * pixelRatio;
 		imguiIo->Fonts->AddFontDefault(&config);
 		imguiIo->Fonts->Build();
-		ImGui_ImplOpenGL3_CreateFontsTexture();
 	}
 }
 

@@ -34,7 +34,6 @@ static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
 		imguiIo->Fonts->AddFontFromFileTTF(
 			"assets/NotoSans-Regular.ttf", 17 * pixelRatio);
 		imguiIo->Fonts->Build();
-		ImGui_ImplOpenGL3_CreateFontsTexture();
 	}
 
 	mainWindow.setSize(width, height);
