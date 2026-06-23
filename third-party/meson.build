@@ -1,16 +1,5 @@
 subdir('capnp')
 
-libfmt = declare_dependency(
-  include_directories: 'fmt/include',
-  link_with: shared_library('fmt',
-    'fmt/src/format.cc',
-    'fmt/src/os.cc',
-    include_directories: 'fmt/include',
-    install: true,
-    install_rpath: origin_rpath,
-  ),
-)
-
 libglad = declare_dependency(
   include_directories: 'glad/include',
   link_with: shared_library(

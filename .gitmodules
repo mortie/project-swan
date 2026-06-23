@@ -10,9 +10,6 @@
 [submodule "third-party/imgui_sdl"]
 	path = third-party/imgui_sdl
 	url = https://github.com/mortie/imgui_sdl
-[submodule "third-party/fmt"]
-	path = third-party/fmt
-	url = https://github.com/fmtlib/fmt.git
 [submodule "third-party/tracy"]
 	path = subprojects/tracy
 	url = https://github.com/wolfpld/tracy.git
