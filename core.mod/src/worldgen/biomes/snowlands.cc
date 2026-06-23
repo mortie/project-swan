@@ -57,7 +57,7 @@ static void generatePines(
 			continue;
 		}
 
-		for (int y = area.begin.y; y < area.end.y; ++y) {
+		for (int y = area.end.y; y >= area.begin.y; y -= 1) {
 			Swan::Tile::ID tile = area({x, y});
 			Swan::Tile::ID tileBelow = area({x, y + 1});
 			if (tileBelow == tiles::snow && tile == Swan::World::AIR_TILE_ID) {
