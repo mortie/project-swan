@@ -93,43 +93,43 @@ void registerTorch(Swan::Mod &mod)
 	});
 }
 
-void registerTorchblossomTorch(Swan::Mod &mod)
+void registerScorchbloomTorch(Swan::Mod &mod)
 {
 	float lightLevel = 100 / 255.0;
 	float temperature = 0.9;
 
 	mod.registerTile({
-		.name = "torchblossom-torch",
-		.image = "core::tiles/torchblossom-torch::normal",
+		.name = "scorchbloom-torch",
+		.image = "core::tiles/scorchbloom-torch::normal",
 		.isSolid = false,
 		.lightLevel = lightLevel,
 		.temperature = temperature,
 		.breakableBy = Swan::Tool::HAND,
-		.droppedItem = "core::torchblossom-torch",
-		.onSpawn = onTorchSpawn<tiles::torchblossomTorch>,
-		.onTileUpdate = onTorchUpdate<tiles::torchblossomTorch>,
+		.droppedItem = "core::scorchbloom-torch",
+		.onSpawn = onTorchSpawn<tiles::scorchbloomTorch>,
+		.onTileUpdate = onTorchUpdate<tiles::scorchbloomTorch>,
 	});
 
 	mod.registerTile({
-		.name = "torchblossom-torch::left",
-		.image = "core::tiles/torchblossom-torch::left",
+		.name = "scorchbloom-torch::left",
+		.image = "core::tiles/scorchbloom-torch::left",
 		.isSolid = false,
 		.lightLevel = lightLevel,
 		.temperature = temperature,
 		.breakableBy = Swan::Tool::HAND,
-		.droppedItem = "core::torchblossom-torch",
-		.onTileUpdate = onTorchUpdate<tiles::torchblossomTorch>,
+		.droppedItem = "core::scorchbloom-torch",
+		.onTileUpdate = onTorchUpdate<tiles::scorchbloomTorch>,
 	});
 
 	mod.registerTile({
-		.name = "torchblossom-torch::right",
-		.image = "core::tiles/torchblossom-torch::right",
+		.name = "scorchbloom-torch::right",
+		.image = "core::tiles/scorchbloom-torch::right",
 		.isSolid = false,
 		.lightLevel = lightLevel,
 		.temperature = temperature,
 		.breakableBy = Swan::Tool::HAND,
-		.droppedItem = "core::torchblossom-torch",
-		.onTileUpdate = onTorchUpdate<tiles::torchblossomTorch>,
+		.droppedItem = "core::scorchbloom-torch",
+		.onTileUpdate = onTorchUpdate<tiles::scorchbloomTorch>,
 	});
 }
 

@@ -84,7 +84,7 @@ static void postProcess(WorldArea &area, WGContext &wg)
 	generatePines(area, wg);
 
 	generateSurfaceShrubs(area, wg, 8, {
-		{tiles::snow, tiles::torchblossom, 1},
+		{tiles::snow, tiles::scorchbloom, 1},
 	});
 
 	for (int x = area.begin.x; x < area.end.x; ++x) {

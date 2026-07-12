@@ -165,22 +165,22 @@ public:
 			.onTileUpdate = breakIfFloating,
 		});
 		registerTile({
-			.name = "torchblossom",
-			.image = "core::tiles/flora/torchblossom",
+			.name = "scorchbloom",
+			.image = "core::tiles/flora/scorchbloom",
 			.isSolid = false,
 			.lightLevel = 20 / 255.0,
 			.temperature = 0.5,
 			.breakableBy = Swan::Tool::HAND,
 			.placeSound = "core::place/leaves",
 			.onBreak = [](Swan::Ctx &ctx, Swan::TilePos pos) {
-				dropItem(ctx, pos, "core::torchblossom-flower");
-				spawnTorchblossomSeed(ctx, pos);
+				dropItem(ctx, pos, "core::scorchbloom-flower");
+				spawnScorchbloomSeed(ctx, pos);
 			},
 			.onTileUpdate = breakIfFloating,
 		});
 		registerTile({
-			.name = "torchblossom-flower",
-			.image = "core::tiles/flora/torchblossom-flower",
+			.name = "scorchbloom-flower",
+			.image = "core::tiles/flora/scorchbloom-flower",
 			.isSolid = false,
 			.lightLevel = 50 / 255.0,
 			.onSpawn = [](Swan::Ctx &ctx, Swan::TilePos pos) { return false; },
@@ -245,7 +245,7 @@ public:
 		registerSeedEntities(*this);
 		registerStairs(*this);
 		registerTorch(*this);
-		registerTorchblossomTorch(*this);
+		registerScorchbloomTorch(*this);
 		registerTree(*this);
 		registerWorkbench(*this);
 
@@ -382,8 +382,8 @@ public:
 			.kind = "core::crafting",
 		});
 		registerRecipe({
-			.inputs = {{1, "core::stick"}, {1, "core::torchblossom-flower"}},
-			.output = {1, "core::torchblossom-torch"},
+			.inputs = {{1, "core::stick"}, {1, "core::scorchbloom-flower"}},
+			.output = {1, "core::scorchbloom-torch"},
 			.kind = "core::crafting",
 		});
 		registerRecipe({

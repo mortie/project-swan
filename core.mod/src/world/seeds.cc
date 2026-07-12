@@ -111,17 +111,18 @@ struct GrassSeedEntitySpec {
 };
 using GrassSeedEntity = SeedEntity<GrassSeedEntitySpec>;
 
-struct TorchblossomSeedEntitySpec {
-	static constexpr Swan::Tile::ID &spawn = tiles::torchblossom;
+struct ScorchbloomSeedEntitySpec {
+	static constexpr Swan::Tile::ID &spawn = tiles::scorchbloom;
 	static constexpr std::array<std::reference_wrapper<Swan::Tile::ID>, 1> floor = {
 		tiles::snow,
 	};
 };
-using TorchblossomSeedEntity = SeedEntity<TorchblossomSeedEntitySpec>;
+using scorchbloomSeedEntity = SeedEntity<ScorchbloomSeedEntitySpec>;
 
 void registerSeedEntities(Swan::Mod &mod)
 {
-	mod.registerEntity<SeedEntity<GrassSeedEntitySpec>>("grass-seed");
+	mod.registerEntity<GrassSeedEntity>("grass-seed");
+	mod.registerEntity<scorchbloomSeedEntity>("scorchbloom-seed");
 }
 
 void spawnGrassSeed(Swan::Ctx &ctx, Swan::TilePos pos)
@@ -129,9 +130,9 @@ void spawnGrassSeed(Swan::Ctx &ctx, Swan::TilePos pos)
 	ctx.plane.entities().spawn<GrassSeedEntity>(pos);
 }
 
-void spawnTorchblossomSeed(Swan::Ctx &ctx, Swan::TilePos pos)
+void spawnScorchbloomSeed(Swan::Ctx &ctx, Swan::TilePos pos)
 {
-	ctx.plane.entities().spawn<TorchblossomSeedEntity>(pos);
+	ctx.plane.entities().spawn<scorchbloomSeedEntity>(pos);
 }
 
 }
