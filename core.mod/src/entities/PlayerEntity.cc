@@ -1259,8 +1259,9 @@ void PlayerEntity::handleInventoryClick(Swan::Ctx &ctx)
 		int index = ui_.hoveredAuxInventorySlot;
 		if (ui_.showInventory) {
 			auxInventory_->set(index, inventory_.insert(auxInventory_->take(index), 10));
+		} else {
+			auxInventory_->set(index, inventory_.insert(auxInventory_->take(index)));
 		}
-		auxInventory_->set(index, inventory_.insert(auxInventory_->take(index)));
 		ctx.game.playSound(sounds_.snap);
 		return;
 	}
