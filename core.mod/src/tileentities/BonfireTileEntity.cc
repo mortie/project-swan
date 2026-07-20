@@ -1,7 +1,23 @@
 #include "BonfireTileEntity.h"
 #include "entities/ItemStackEntity.h"
+#include "swan/traits/PhysicsBodyTrait.h"
 
 namespace CoreMod {
+
+void BonfireTileEntity::update(Swan::Ctx &ctx, float dt)
+{
+	for (auto &found: ctx.plane.entities().getInTile(tileEntity_.pos)) {
+		auto stack = dynamic_cast<ItemStackEntity *>(found.ref.get());
+		if (!stack) {
+			continue;
+		}
+
+		auto &body = stack->get(Swan::PhysicsBodyTrait::Tag{});
+		auto vel = body.velocity();
+		vel.y *= 0.5;
+		body.applyForce(vel * -500);
+	}
+}
 
 void BonfireTileEntity::tick(Swan::Ctx &ctx, float dt)
 {

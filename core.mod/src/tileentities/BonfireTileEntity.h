@@ -19,6 +19,7 @@ public:
 		return tileEntity_;
 	}
 
+	void update(Swan::Ctx &ctx, float dt) override;
 	void tick(Swan::Ctx &ctx, float dt) override;
 
 	void serialize(Swan::Ctx &ctx, Proto::Builder w);
