@@ -41,7 +41,6 @@ for lib in \
 	libcapnpc.dylib \
 	libcpptoml.dylib \
 	libcygnet.dylib \
-	libfmt.dylib \
 	libglfw.3.dylib \
 	libimgui.dylib \
 	libkj.dylib \
@@ -53,8 +52,7 @@ for lib in \
 	libstb_truetype.dylib \
 	libstb_vorbis.dylib \
 	libswan.dylib \
-	libtiny_process_library.dylib \
-	libzlib_ng.2.dylib
+	libtiny_process_library.dylib
 do
 	install_name_tool -id "@rpath/$lib" "$APP/Contents/lib/$lib"
 	for f in "$APP/Contents/lib"/* "$APP/Contents/bin/"*; do
