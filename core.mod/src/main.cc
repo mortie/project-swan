@@ -25,6 +25,7 @@
 #include "world/potato.h"
 #include "world/seeds.h"
 #include "world/stairs.h"
+#include "world/terrain.h"
 #include "world/torch.h"
 #include "world/tree.h"
 #include "world/util.h"
@@ -36,47 +37,11 @@ class CoreMod: public Swan::Mod {
 public:
 	CoreMod(): Swan::Mod("core")
 	{
-		auto slabFluidCollision = std::make_shared<Swan::FluidCollision>(0b1111'1111'0000'0000);
+		// Put this first,
+		// so that everything that's part of the terrain
+		// ends up with low tile IDs
+		registerTerrain(*this);
 
-		registerTile({
-			.name = "stone",
-			.image = "core::tiles/stone",
-			.stepSound = "core::step/stone",
-			.droppedItem = "core::stone",
-		});
-		registerTile({
-			.name = "dirt",
-			.image = "core::tiles/dirt",
-			.stepSound = "core::step/grass",
-			.placeSound = "core::place/dirt",
-			.droppedItem = "core::dirt",
-		});
-		registerTile({
-			.name = "dirt-slab",
-			.image = "core::tiles/dirt-slab",
-			.isSolid = false,
-			.isSupportV = false,
-			.isSupportH = false,
-			.stepSound = "core::step/grass",
-			.placeSound = "core::place/dirt",
-			.droppedItem = "core::dirt",
-			.fluidCollision = slabFluidCollision,
-		});
-		registerBackgroundConnected47(*this, {
-			.name = "background",
-			.image = "core::tiles/background",
-			.isSolid = false,
-			.isOpaque = false,
-		});
-		registerShovelable(*this, {
-			.name = "sand",
-			.image = "core::tiles/sand",
-			.stepSound = "core::step/sand",
-			.placeSound = "core::step/sand2",
-			.breakSound = "core::step/sand2",
-			.droppedItem = "core::sand-pile",
-			.onTileUpdate = fallIfFloating,
-		});
 		registerConnected16(*this, {
 			.name = "glass",
 			.image = "core::tiles/glass",
@@ -84,75 +49,6 @@ public:
 			.breakableBy = Swan::Tool::HAND,
 			.stepSound = "core::step/glass",
 			.breakSound = "core::break/glass",
-		});
-		registerTile({
-			.name = "grass",
-			.image = "core::tiles/grass",
-			.stepSound = "core::step/grass",
-			.placeSound = "core::place/dirt",
-			.droppedItem = "core::dirt",
-			.onTileUpdate = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
-				if (ctx.plane.tiles().get(pos.add(0, -1)).isOpaque()) {
-					ctx.plane.tiles().setID(pos, tiles::dirt);
-				}
-			},
-			.onWorldTick = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
-				// Convert self into dirt if there's fluid
-				auto fluid = ctx.plane.fluids().getAtPos(pos.as<float>().add(0.5, -0.2));
-				if (fluid.density > 0) {
-					ctx.plane.tiles().setID(pos, tiles::dirt);
-					return;
-				}
-
-				auto neighbours = {
-					pos.add(-1, 0),
-					pos.add(1, 0),
-					pos.add(-1, -1),
-					pos.add(1, -1),
-					pos.add(-1, 1),
-					pos.add(1, 1),
-				};
-
-				// Convert nearby dirt into grass
-				for (auto pos: neighbours) {
-					if (ctx.plane.tiles().getID(pos) != tiles::dirt) {
-						continue;
-					}
-
-					auto &above = ctx.plane.tiles().get(pos.add(0, -1));
-					if (
-						above.isSolid() ||
-						above.id == tiles::grassSlab ||
-						above.id == tiles::dirtSlab)
-					{
-						continue;
-					}
-
-					ctx.plane.tiles().setID(pos, tiles::grass);
-					return;
-				}
-			},
-		});
-		registerTile({
-			.name = "grass-slab",
-			.image = "core::tiles/grass-slab",
-			.isSolid = false,
-			.isSupportV = false,
-			.isSupportH = false,
-			.stepSound = "core::step/grass",
-			.placeSound = "core::place/dirt",
-			.droppedItem = "core::dirt",
-			.fluidCollision = slabFluidCollision,
-		});
-
-		registerShovelable(*this, {
-			.name = "snow",
-			.image = "core::tiles/snow",
-			.stepSound = "core::step/sand",
-			.placeSound = "core::step/sand2",
-			.breakSound = "core::step/sand1",
-			.droppedItem = "core::snowball",
-			.onTileUpdate = fallIfFloating,
 		});
 
 		registerTile({
@@ -184,6 +80,7 @@ public:
 				}
 			},
 		});
+
 		registerTile({
 			.name = "dead-shrub",
 			.image = "core::tiles/flora/dead-shrub",
@@ -193,6 +90,16 @@ public:
 			.onBreak = dropRandomItemCount<"core::stick">,
 			.onTileUpdate = breakIfFloating,
 		});
+
+		registerTile({
+			.name = "boulder",
+			.image = "core::tiles/geo/boulder",
+			.isSolid = false,
+			.breakableBy = Swan::Tool::HAND,
+			.onBreak = dropRandomItemCount<"core::rock", 5>,
+			.onTileUpdate = breakIfFloating,
+		});
+
 		registerTile({
 			.name = "scorchbloom",
 			.image = "core::tiles/flora/scorchbloom",
@@ -207,20 +114,13 @@ public:
 			},
 			.onTileUpdate = breakIfFloating,
 		});
+
 		registerTile({
 			.name = "scorchbloom-flower",
 			.image = "core::tiles/flora/scorchbloom-flower",
 			.isSolid = false,
 			.lightLevel = 50 / 255.0,
 			.onSpawn = [](Swan::Ctx &ctx, Swan::TilePos pos) { return false; },
-		});
-		registerTile({
-			.name = "boulder",
-			.image = "core::tiles/geo/boulder",
-			.isSolid = false,
-			.breakableBy = Swan::Tool::HAND,
-			.onBreak = dropRandomItemCount<"core::rock", 5>,
-			.onTileUpdate = breakIfFloating,
 		});
 
 		registerTile({
@@ -243,6 +143,7 @@ public:
 				return true;
 			},
 		});
+
 		registerTile({
 			.name = "oil",
 			.image = "@::invalid",
