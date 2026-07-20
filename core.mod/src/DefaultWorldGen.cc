@@ -29,6 +29,34 @@ static int getPlayerX(const siv::PerlinNoise &perlin)
 	return 0;
 }
 
+static void generateSmoothSurface(
+	WorldArea &area, WGContext &wg, Swan::Tile::ID surface, Swan::Tile::ID smooth)
+{
+	if (!area.hasSurface) {
+		return;
+	}
+
+	for (int x = area.begin.x + 1; x < area.end.x - 1; ++x) {
+		int y = area.surfaceLevel(x);
+		if (y < area.begin.y || y >= area.end.y) {
+			continue;
+		}
+
+		int left = area.surfaceLevel(x - 1);
+		int right = area.surfaceLevel(x + 1);
+		if (left != y + 1 && right != y + 1) {
+			continue;
+		}
+
+		Swan::Tile::ID id = area({x, y});
+		if (id != surface) {
+			continue;
+		}
+
+		area({x, y}) = smooth;
+	}
+}
+
 void DefaultWorldGen::drawBackground(
 	Swan::Ctx &ctx, Cygnet::Renderer &rnd, Swan::Vec2 pos)
 {
