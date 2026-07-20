@@ -69,8 +69,6 @@ static void generatePines(
 
 static void postProcess(WorldArea &area, WGContext &wg)
 {
-	generateSmoothSurface(area, wg);
-
 	generateOutcrops(area, wg, 16, {5, 55}, {
 		{tiles::coalOutcrop, 1},
 		{tiles::sulphurOutcrop, 1},
@@ -106,6 +104,7 @@ Biome snowlands = {
 	.temperature = -5,
 
 	.surfaceTile = tiles::snow,
+	.halfSurfaceTile = tiles::snow__2,
 	.soilTile = tiles::snow,
 
 	.postProcess = postProcess,

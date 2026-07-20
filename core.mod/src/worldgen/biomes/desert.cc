@@ -6,8 +6,6 @@ namespace CoreMod::biomes {
 
 static void postProcess(WorldArea &area, WGContext &wg)
 {
-	generateSmoothSurface(area, wg);
-
 	generateSurfaceShrubs(area, wg, 16, {
 		{tiles::sand, tiles::deadShrub, 1},
 	});
@@ -31,6 +29,7 @@ Biome desert = {
 	.steepness = 0.2,
 
 	.surfaceTile = tiles::sand,
+	.halfSurfaceTile = tiles::sand__2,
 	.soilTile = tiles::sand,
 
 	.postProcess = postProcess,

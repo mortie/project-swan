@@ -52,6 +52,7 @@ struct Biome {
 	Steepness steepness;
 
 	Swan::Tile::ID &surfaceTile = tiles::grass;
+	Swan::Tile::ID &halfSurfaceTile = tiles::grassSlab;
 	Swan::Tile::ID &soilTile = tiles::dirt;
 
 	void (*postProcess)(WorldArea &area, WGContext &wg) = nullptr;

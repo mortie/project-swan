@@ -193,6 +193,7 @@ Biome grasslands = {
 	.name = "grasslands",
 
 	.surfaceTile = tiles::grass,
+	.halfSurfaceTile = tiles::grassSlab,
 	.soilTile = tiles::dirt,
 
 	.postProcess = postProcess,

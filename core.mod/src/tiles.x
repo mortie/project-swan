@@ -1,5 +1,6 @@
 X(stone, "core::stone");
 X(dirt, "core::dirt");
+X(dirtSlab, "core::dirt-slab");
 X(background, "core::background");
 X(sand, "core::sand");
 X(sand__1, "core::sand::1");
@@ -7,6 +8,7 @@ X(sand__2, "core::sand::2");
 X(sand__3, "core::sand::3");
 X(glass, "core::glass");
 X(grass, "core::grass");
+X(grassSlab, "core::grass-slab");
 X(snow, "core::snow");
 X(snow__1, "core::snow::1");
 X(snow__2, "core::snow::2");

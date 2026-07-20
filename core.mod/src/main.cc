@@ -36,6 +36,8 @@ class CoreMod: public Swan::Mod {
 public:
 	CoreMod(): Swan::Mod("core")
 	{
+		auto slabFluidCollision = std::make_shared<Swan::FluidCollision>(0b1111'1111'0000'0000);
+
 		registerTile({
 			.name = "stone",
 			.image = "core::tiles/stone",
@@ -48,6 +50,17 @@ public:
 			.stepSound = "core::step/grass",
 			.placeSound = "core::place/dirt",
 			.droppedItem = "core::dirt",
+		});
+		registerTile({
+			.name = "dirt-slab",
+			.image = "core::tiles/dirt-slab",
+			.isSolid = false,
+			.isSupportV = false,
+			.isSupportH = false,
+			.stepSound = "core::step/grass",
+			.placeSound = "core::place/dirt",
+			.droppedItem = "core::dirt",
+			.fluidCollision = slabFluidCollision,
 		});
 		registerBackgroundConnected47(*this, {
 			.name = "background",
@@ -106,7 +119,12 @@ public:
 						continue;
 					}
 
-					if (ctx.plane.tiles().get(pos.add(0, -1)).isSolid()) {
+					auto &above = ctx.plane.tiles().get(pos.add(0, -1));
+					if (
+						above.isSolid() ||
+						above.id == tiles::grassSlab ||
+						above.id == tiles::dirtSlab)
+					{
 						continue;
 					}
 
@@ -114,6 +132,17 @@ public:
 					return;
 				}
 			},
+		});
+		registerTile({
+			.name = "grass-slab",
+			.image = "core::tiles/grass-slab",
+			.isSolid = false,
+			.isSupportV = false,
+			.isSupportH = false,
+			.stepSound = "core::step/grass",
+			.placeSound = "core::place/dirt",
+			.droppedItem = "core::dirt",
+			.fluidCollision = slabFluidCollision,
 		});
 
 		registerShovelable(*this, {

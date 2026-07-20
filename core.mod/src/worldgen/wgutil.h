@@ -14,7 +14,7 @@ struct SurfaceStructureDef {
 };
 
 inline void generateSmoothSurface(
-	WorldArea &area, WGContext &wg)
+	WorldArea &area, WGContext &wg, Swan::Tile::ID surface, Swan::Tile::ID smooth)
 {
 	if (!area.hasSurface) {
 		return;
@@ -33,12 +33,11 @@ inline void generateSmoothSurface(
 		}
 
 		Swan::Tile::ID id = area({x, y});
-		auto &halfTile = wg.world.getTileByID(id + 2);
-		if (halfTile.id - halfTile.more->baseOffset != id) {
+		if (id != surface) {
 			continue;
 		}
 
-		area({x, y}) = halfTile.id;
+		area({x, y}) = smooth;
 	}
 }
 

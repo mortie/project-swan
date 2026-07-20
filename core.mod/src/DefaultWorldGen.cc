@@ -6,6 +6,7 @@
 #include "swan/util.h"
 #include "tiles.h"
 #include "worldgen/biomes/biomes.h"
+#include "worldgen/wgutil.h"
 #include <cmath>
 #include <limits>
 
@@ -321,6 +322,9 @@ void DefaultWorldGen::genChunk(Swan::WorldPlane &plane, Swan::Chunk &chunk)
 			area.background({x, y}) = gen.background;
 		}
 	}
+
+	// Smooth out the surface
+	generateSmoothSurface(area, wg_, biome.surfaceTile, biome.halfSurfaceTile);
 
 	// Process biome
 	biome.postProcess(area, wg_);
