@@ -155,13 +155,22 @@ void generateTallGrass(WorldArea &area, WGContext &wg)
 			continue;
 		}
 
-		for (int y = area.begin.y; y < area.end.y; ++y) {
-			Swan::Tile::ID tile = area({x, y});
-			Swan::Tile::ID tileBelow = area({x, y + 1});
-			if (tileBelow == tiles::grass && tile == Swan::World::AIR_TILE_ID) {
-				area({x, y}) = tiles::tallGrass;
+		int y = area.surfaceLevel(x) - 1;
+
+		bool ok = true;
+		for (int rel = -1; rel <= 1; ++rel) {
+			Swan::Tile &tile = wg.world.getTileByID(area({x + rel, y + 1}));
+			if (!tile.isSolid()) {
+				ok = false;
+				break;
 			}
 		}
+
+		if (!ok) {
+			continue;
+		}
+
+		area({x, y}) = tiles::tallGrass;
 	}
 }
 
