@@ -32,7 +32,7 @@ public:
 	Swan::EntityRef spawnPlayer(Swan::Ctx &ctx) override;
 	float getAirTemperature(Swan::TilePos pos) override;
 	void update(Swan::Ctx &ctx, float dt) override;
-	void debugInfo() override;
+	void debugInfo(Swan::Ctx &ctx) override;
 
 	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
 	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;

@@ -600,27 +600,7 @@ void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 		}
 	}
 
-	Swan::TilePos center = physicsBody_.body.center().as<int>();
-	float airTemp = ctx.plane.worldGen_->getAirTemperature(center);
-	for (int y = -6; y <= 6; ++y) {
-		for (int x = -6; x <= 6; ++x) {
-			int sqLength = y * y + x * x;
-			if (sqLength > 6 * 6) {
-				continue;
-			}
-
-			auto &tile = ctx.plane.tiles().get(center.add(x, y));
-			if (tile.more->temperature > 0) {
-				float temp = tile.more->temperature * 30;
-				if (temp < airTemp) {
-					continue;
-				}
-
-				float factor = (7 - std::sqrt(sqLength)) / 7;
-				airTemp += temp * factor;
-			}
-		}
-	}
+	float airTemp = computeAirTemperature(ctx);
 
 	if (airTemp < 5 && blackout_ <= 0) {
 		temperature_ -= dt * 0.5;
@@ -634,6 +614,11 @@ void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 	} else if (temperature_ < 0 && blackout_ <= 0) {
 		temperature_ += dt * 1;
 	}
+}
+
+void PlayerEntity::drawDebug(Swan::Ctx &ctx)
+{
+	ImGui::Text("Temperature: %.01f", computeAirTemperature(ctx));
 }
 
 void PlayerEntity::serialize(
@@ -1434,6 +1419,33 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 			});
 		}
 	}
+}
+
+float PlayerEntity::computeAirTemperature(Swan::Ctx &ctx)
+{
+	Swan::TilePos center = physicsBody_.body.center().as<int>();
+	float airTemp = ctx.plane.worldGen_->getAirTemperature(center);
+	for (int y = -6; y <= 6; ++y) {
+		for (int x = -6; x <= 6; ++x) {
+			int sqLength = y * y + x * x;
+			if (sqLength > 6 * 6) {
+				continue;
+			}
+
+			auto &tile = ctx.plane.tiles().get(center.add(x, y));
+			if (tile.more->temperature > 0) {
+				float temp = tile.more->temperature * 30;
+				if (temp < airTemp) {
+					continue;
+				}
+
+				float factor = (7 - std::sqrt(sqLength)) / 7;
+				airTemp += temp * factor;
+			}
+		}
+	}
+
+	return airTemp;
 }
 
 }

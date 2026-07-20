@@ -31,7 +31,7 @@ public:
 	virtual float getAirTemperature(Swan::TilePos pos) = 0;
 
 	virtual void update(Ctx &ctx, float dt) {}
-	virtual void debugInfo() {}
+	virtual void debugInfo(Ctx &ctx) {}
 
 	virtual void serialize(Ctx &ctx, capnp::MessageBuilder &mb) {}
 	virtual void deserialize(Ctx &ctx, capnp::MessageReader &mr) {}

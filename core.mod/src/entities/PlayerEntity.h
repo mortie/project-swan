@@ -35,6 +35,7 @@ public:
 	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
 	void update(Swan::Ctx &ctx, float dt) override;
 	void tick(Swan::Ctx &ctx, float dt) override;
+	void drawDebug(Swan::Ctx &ctx) override;
 
 	void serialize(Swan::Ctx &ctx, Proto::Builder w);
 	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
@@ -214,6 +215,8 @@ private:
 
 	void drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd);
 	void drawConsole(Swan::Ctx &ctx);
+
+	float computeAirTemperature(Swan::Ctx &ctx);
 
 	State state_ = State::IDLE;
 	Vit vit_ = Vit::OK;

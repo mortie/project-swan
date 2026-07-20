@@ -221,6 +221,10 @@ DefaultWorldGen::GeneratedTile DefaultWorldGen::genTile(
 
 const Biome &DefaultWorldGen::getBiome(int x)
 {
+	// Find the center of the chunk,
+	// since biomes only change on chunk boundaries
+	x = (x / Swan::CHUNK_WIDTH) * Swan::CHUNK_WIDTH + Swan::CHUNK_WIDTH / 2;
+
 	float humidity = wg_.perlin.noise1D(x / 223.6) * 2;
 	float temperature = wg_.perlin.noise1D(x / 197.6213);
 	float elevation = 0;
@@ -416,18 +420,23 @@ void DefaultWorldGen::update(Swan::Ctx &ctx, float dt)
 	level = (level * 0.99) + 0.01;
 
 	if (level != sunlightLevel_) {
-		if (level == 1 || std::abs(level- sunlightLevel_) > 0.005) {
+		if (level == 1 || std::abs(level - sunlightLevel_) > 0.005) {
 			sunlightLevel_ = level;
 			ctx.plane.lights().setSunlightLevel(sunlightLevel_);
 		}
 	}
 }
 
-void DefaultWorldGen::debugInfo()
+void DefaultWorldGen::debugInfo(Swan::Ctx &ctx)
 {
 	ImGui::Text(
 		"Time of day: %d%%, sunlight: %d%%",
 		int(timeOfDay_ * 100), int(sunlightLevel_ * 100));
+
+	auto &player = *ctx.world.player_;
+	Swan::TilePos playerPos = player.center().as<int>();
+	const Biome &biome = getBiome(playerPos.x);
+	ImGui::Text("Biome: %s", biome.name);
 }
 
 void DefaultWorldGen::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)

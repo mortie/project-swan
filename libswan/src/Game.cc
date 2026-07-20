@@ -144,7 +144,9 @@ void Game::drawDebugMenu()
 
 	ImGui::Text("World seed: %u", world_->seed());
 
-	world_->currentPlane().worldGen_->debugInfo();
+	Swan::Ctx &ctx = world_->currentPlane().getContext();
+	world_->currentPlane().worldGen_->debugInfo(ctx);
+	world_->playerRef_->drawDebug(ctx);
 
 	ImGui::Checkbox("Draw collision boxes", &debug_.drawCollisionBoxes);
 	ImGui::Checkbox("Draw chunk boundaries", &debug_.drawChunkBoundaries);
@@ -373,11 +375,17 @@ void Game::draw()
 		}
 
 		ImGui::Begin(
-			cat("Entity debug window [", i, "]").c_str(), nullptr,
+			cat("Entity debug [", i, "]").c_str(), nullptr,
 			ImGuiWindowFlags_AlwaysAutoResize);
 		ImGui::Text(
 			"Debug for %s %" PRIu64,
 			ref.collection()->name().c_str(), ref.id());
+
+		if (auto body = ent->trait<BodyTrait>(); body) {
+			auto center = body->center();
+			ImGui::Text("x=%.01f y=%.01f w=%.01f, h=%.01f", center.x, center.y, body->size.x, body->size.y);
+		}
+
 		ent->drawDebug(world_->currentPlane().getContext());
 		ImGui::End();
 	}
