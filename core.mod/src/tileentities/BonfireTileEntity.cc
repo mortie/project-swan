@@ -12,6 +12,10 @@ void BonfireTileEntity::update(Swan::Ctx &ctx, float dt)
 			continue;
 		}
 
+		if (stack->lifetime_ < 0.1) {
+			continue;
+		}
+
 		auto &body = stack->get(Swan::PhysicsBodyTrait::Tag{});
 		auto vel = body.velocity();
 		vel.y *= 0.5;
