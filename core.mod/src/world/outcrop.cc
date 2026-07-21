@@ -60,7 +60,8 @@ void registerOutcrop(Swan::Mod &mod, Swan::Tile::Builder builder)
 		.withIsSupportH(false)
 		.withIsSupportV(false)
 		.withBreakableBy(Swan::Tool::HAND)
-		.withOnTileUpdate(onOutcropUpdate);
+		.withOnTileUpdate(onOutcropUpdate)
+		.withIsOpaque(false);
 
 	mod.registerTile(builder
 		.clone()
