@@ -124,6 +124,16 @@ void registerTerrain(Swan::Mod &mod)
 		.onTileUpdate = fallIfFloating,
 	});
 
+	registerShovelable(mod, {
+		.name = "silt",
+		.image = "core::tiles/silt",
+		.stepSound = "core::step/sand",
+		.placeSound = "core::step/sand2",
+		.breakSound = "core::step/sand2",
+		.droppedItem = "core::silt-pile",
+		.onTileUpdate = fallIfFloating,
+	});
+
 	registerOutcrop(mod, {
 		.name = "coal-outcrop",
 		.image = "core::tiles/geo/coal-outcrop",

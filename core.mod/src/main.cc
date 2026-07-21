@@ -213,6 +213,10 @@ public:
 			.image = "core::items/sand-pile",
 		});
 		registerItem({
+			.name = "silt-pile",
+			.image = "core::items/silt-pile",
+		});
+		registerItem({
 			.name = "coal",
 			.image = "core::items/coal",
 		});
