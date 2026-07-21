@@ -357,6 +357,29 @@ void Game::draw()
 		fpsUpdateTime_ += 1;
 	}
 
+	if (paused_) {
+		ImGui::Begin(
+			"Pause Menu", nullptr,
+			ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing);
+		ImGui::SetWindowPos(
+			ImVec2(
+				ImGui::GetIO().DisplaySize.x / 2 - ImGui::GetWindowWidth() / 2,
+				ImGui::GetIO().DisplaySize.y / 2 - ImGui::GetWindowHeight() / 2),
+			ImGuiCond_Always);
+
+		if (ImGui::Button("Resume")) {
+			paused_ = false;
+		}
+
+		if (ImGui::Button("Save and Quit")) {
+			// The main function will automatically save
+			shouldQuit_ = true;
+		}
+
+		ImGui::End();
+	}
+
 	if (debug_.show) {
 		ImGui::Begin(
 			"Debug Menu", &debug_.show,
@@ -532,6 +555,15 @@ void Game::update(float dt)
 {
 	inputHandler_.beginFrame();
 
+	if (pauseAction_) {
+		paused_ = !paused_;
+	}
+
+	if (paused_) {
+		inputHandler_.endFrame();
+		return;
+	}
+
 	if (uiActivateAction_) {
 		gui_.triggerActivate();
 	}
@@ -651,6 +683,10 @@ void Game::update(float dt)
 
 void Game::tick()
 {
+	if (paused_) {
+		return;
+	}
+
 	tickCount_ += 1;
 
 	if (triggerSave_) {
@@ -805,6 +841,12 @@ void Game::initInputHandler()
 	auto actions = std::move(world_->actions_);
 
 	actions.push_back({
+		.name = "@::pause",
+		.kind = ActionKind::ONESHOT,
+		.defaultInputs = {"key:ESCAPE"},
+	});
+
+	actions.push_back({
 		.name = "@::entity-debug-menu",
 		.kind = ActionKind::ONESHOT,
 		.defaultInputs = {"key:F1"},
@@ -853,6 +895,7 @@ void Game::initInputHandler()
 	});
 
 	inputHandler_.setActions(std::move(actions));
+	pauseAction_ = inputHandler_.action("@::pause");
 	entityDebugMenuAction_ = inputHandler_.action("@::entity-debug-menu");
 	debugMenuAction_ = inputHandler_.action("@::debug-menu");
 	perfMenuAction_ = inputHandler_.action("@::perf-menu");

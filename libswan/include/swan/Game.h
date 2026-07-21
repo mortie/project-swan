@@ -150,6 +150,9 @@ public:
 	Perf perf_;
 	std::vector<EntityRef> debugEntities_;
 
+	bool paused_ = false;
+	bool shouldQuit_ = false;
+
 	bool tickInProgress_ = false;
 	RTDeadline tickDeadline_{2.0 / 1000};
 	double fpsUpdateTime_ = std::chrono::duration<double>(
@@ -163,6 +166,7 @@ public:
 	Cygnet::TextCache smallFont_{notoSans_, 60};
 	Cygnet::TextCache bigFont_{notoSans_, 200};
 
+	Action pauseAction_;
 	Action entityDebugMenuAction_;
 	Action debugMenuAction_;
 	Action perfMenuAction_;

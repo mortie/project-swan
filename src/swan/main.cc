@@ -328,7 +328,7 @@ int main(int argc, char **argv)
 	auto prevTime = std::chrono::steady_clock::now();
 
 	int slowFrames = 0;
-	while (!glfwWindowShouldClose(window)) {
+	while (!glfwWindowShouldClose(window) && !game.shouldQuit_) {
 		ZoneScopedN("game loop");
 
 		glfwPollEvents();
