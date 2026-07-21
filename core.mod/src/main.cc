@@ -165,10 +165,6 @@ public:
 		registerDrain(*this);
 		registerItemFan(*this);
 		registerRopeLadder(*this);
-		registerOutcrop(*this, "coal");
-		registerOutcrop(*this, "iron", "iron-ore-chunk");
-		registerOutcrop(*this, "copper", "copper-ore-chunk");
-		registerOutcrop(*this, "sulphur");
 		registerGlassPipe(*this);
 		registerPlatform(*this);
 		registerPotato(*this);

@@ -2,6 +2,6 @@
 
 namespace CoreMod {
 
-void registerOutcrop(Swan::Mod &mod, const char *name, const char *item = nullptr);
+void registerOutcrop(Swan::Mod &mod, Swan::Tile::Builder builder);
 
 }

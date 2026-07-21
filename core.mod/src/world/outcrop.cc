@@ -53,48 +53,34 @@ static void onOutcropUpdate(Swan::Ctx &ctx, Swan::TilePos pos)
 	}
 }
 
-void registerOutcrop(Swan::Mod &mod, const char *name, const char *item)
+void registerOutcrop(Swan::Mod &mod, Swan::Tile::Builder builder)
 {
-	if (item == nullptr) {
-		item = name;
-	}
+	builder
+		.withIsSolid(false)
+		.withIsSupportH(false)
+		.withIsSupportV(false)
+		.withBreakableBy(Swan::Tool::HAND)
+		.withOnTileUpdate(onOutcropUpdate);
 
-	mod.registerTile({
-		.name = Swan::cat(name, "-outcrop"),
-		.image = Swan::cat("core::tiles/geo/", name, "-outcrop::normal"),
-		.isSolid = false,
-		.breakableBy = Swan::Tool::HAND,
-		.droppedItem = Swan::cat("core::", item),
-		.onSpawn = onOutcropSpawn,
-		.onTileUpdate = onOutcropUpdate,
-	});
+	mod.registerTile(builder
+		.clone()
+		.withImage(Swan::cat(builder.image, "::normal"))
+		.withOnSpawn(onOutcropSpawn));
 
-	mod.registerTile({
-		.name = Swan::cat(name, "-outcrop::hanging"),
-		.image = Swan::cat("core::tiles/geo/", name, "-outcrop::hanging"),
-		.isSolid = false,
-		.breakableBy = Swan::Tool::HAND,
-		.droppedItem = Swan::cat("core::", item),
-		.onTileUpdate = onOutcropUpdate,
-	});
+	mod.registerTile(builder
+		.clone()
+		.withName(Swan::cat(builder.name, "::hanging"))
+		.withImage(Swan::cat(builder.image, "::hanging")));
 
-	mod.registerTile({
-		.name = Swan::cat(name, "-outcrop::left"),
-		.image = Swan::cat("core::tiles/geo/", name, "-outcrop::left"),
-		.isSolid = false,
-		.breakableBy = Swan::Tool::HAND,
-		.droppedItem = Swan::cat("core::", item),
-		.onTileUpdate = onOutcropUpdate,
-	});
+	mod.registerTile(builder
+		.clone()
+		.withName(Swan::cat(builder.name, "::left"))
+		.withImage(Swan::cat(builder.image, "::left")));
 
-	mod.registerTile({
-		.name = Swan::cat(name, "-outcrop::right"),
-		.image = Swan::cat("core::tiles/geo/", name, "-outcrop::right"),
-		.isSolid = false,
-		.breakableBy = Swan::Tool::HAND,
-		.droppedItem = Swan::cat("core::", item),
-		.onTileUpdate = onOutcropUpdate,
-	});
+	mod.registerTile(builder
+		.clone()
+		.withName(Swan::cat(builder.name, "::right"))
+		.withImage(Swan::cat(builder.image, "::right")));
 }
 
 }

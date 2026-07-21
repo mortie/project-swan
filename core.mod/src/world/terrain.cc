@@ -1,5 +1,6 @@
 #include "terrain.h"
 #include "tiles.h"
+#include "outcrop.h"
 #include "world/util.h"
 
 namespace CoreMod {
@@ -123,6 +124,29 @@ void registerTerrain(Swan::Mod &mod)
 		.onTileUpdate = fallIfFloating,
 	});
 
+	registerOutcrop(mod, {
+		.name = "coal-outcrop",
+		.image = "core::tiles/geo/coal-outcrop",
+		.onBreak = dropRandomItemCount<"core::coal">,
+	});
+
+	registerOutcrop(mod, {
+		.name = "iron-outcrop",
+		.image = "core::tiles/geo/iron-outcrop",
+		.droppedItem = "core::iron-ore-chunk",
+	});
+
+	registerOutcrop(mod, {
+		.name = "copper-outcrop",
+		.image = "core::tiles/geo/copper-outcrop",
+		.droppedItem = "core::copper-ore-chunk",
+	});
+
+	registerOutcrop(mod, {
+		.name = "sulphur-outcrop",
+		.image = "core::tiles/geo/sulphur-outcrop",
+		.droppedItem = "core::sulphur",
+	});
 }
 
 }
