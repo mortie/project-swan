@@ -105,9 +105,8 @@ static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
 		imguiIo->FontGlobalScale = 1.0 / pixelRatio;
 		imguiIo->Fonts->Clear();
 
-		struct ImFontConfig config;
-		config.SizePixels = 13 * pixelRatio;
-		imguiIo->Fonts->AddFontDefault(&config);
+		imguiIo->Fonts->AddFontFromFileTTF(
+			"assets/NotoSans-Regular.ttf", 17 * pixelRatio);
 		imguiIo->Fonts->Build();
 	}
 }
