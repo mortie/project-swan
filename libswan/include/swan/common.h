@@ -2,6 +2,7 @@
 
 // IWYU pragma: begin_exports
 #include <bitset>
+#include <cmath>
 #include <swan/trace.h>
 #include <swan/Vector2.h>
 #include <swan/HashMap.h>
@@ -24,13 +25,33 @@ class Gui;
 
 namespace Swan {
 
-using TilePos = Vec2i;
-using FluidPos = Vector2<int64_t>;
-using ChunkPos = Vec2i;
-using ChunkRelPos = Vec2i;
+/// The world position of a tile.
+struct TilePos: Vec2i {
+	using Vec2i::Vec2i;
+	constexpr TilePos(Vec2i vec): Vec2i(vec) {}
+};
+
+// The world position of a fluid tile.
+struct FluidPos: Vec2i64  {
+	using Vec2i64::Vec2i64;
+	constexpr FluidPos(Vec2i64 vec): Vec2i64(vec) {}
+};
+
+/// The position of a chunk.
+struct ChunkPos: Vec2i {
+	using Vec2i::Vec2i;
+	constexpr ChunkPos(Vec2i vec): Vec2i(vec) {}
+};
+
+/// The relative position of a tile within a chunk.
+struct ChunkRelPos: Vec2i {
+	using Vec2i::Vec2i;
+	constexpr ChunkRelPos(Vec2i vec): Vec2i(vec) {}
+};
+
 using FluidCollision = std::bitset<FLUID_RESOLUTION * FLUID_RESOLUTION>;
 
-inline ChunkPos tilePosToChunkPos(TilePos pos)
+inline constexpr ChunkPos chunkPos(TilePos pos)
 {
 	// This might look weird, but it reduces an otherwise complex series of operations
 	// including conditional branches into like four x64 instructions.
@@ -44,13 +65,29 @@ inline ChunkPos tilePosToChunkPos(TilePos pos)
 		((long long)pos.y + (LLONG_MAX / 2) + 1) / CHUNK_HEIGHT - ((LLONG_MAX / 2) / CHUNK_HEIGHT) - 1);
 }
 
-inline ChunkRelPos tilePosToChunkRelPos(TilePos pos)
+inline constexpr ChunkRelPos chunkRelPos(TilePos pos)
 {
 	// This uses a similar trick to chunkPos to turn a mess of conditional moves
 	// and math instructions into literally one movabs and one 'and'
 	return ChunkRelPos(
 		(pos.x + (long long)CHUNK_WIDTH * ((LLONG_MAX / 2) / CHUNK_WIDTH)) % CHUNK_WIDTH,
 		(pos.y + (long long)CHUNK_HEIGHT * ((LLONG_MAX / 2) / CHUNK_HEIGHT)) % CHUNK_HEIGHT);
+}
+
+inline constexpr TilePos tilePos(Vec2 pos)
+{
+	return {
+		(int32_t)round(pos.x),
+		(int32_t)round(pos.y),
+	};
+}
+
+inline constexpr Vec2 tileCenter(TilePos pos)
+{
+	return {
+		float(pos.x) + 0.5f,
+		float(pos.y) + 0.5f,
+	};
 }
 
 class Game;

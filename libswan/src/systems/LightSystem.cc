@@ -5,7 +5,7 @@
 
 namespace Swan {
 
-void LightSystemImpl::onLightChunkUpdated(const LightChunk &chunk, Vec2i pos)
+void LightSystemImpl::onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos)
 {
 	std::lock_guard<std::mutex> lock(mut_);
 	updates_.push_back({});
@@ -16,13 +16,13 @@ void LightSystemImpl::onLightChunkUpdated(const LightChunk &chunk, Vec2i pos)
 
 void LightSystemImpl::addLight(TilePos pos, float level)
 {
-	plane_.getChunk(tilePosToChunkPos(pos));
+	plane_.getChunk(chunkPos(pos));
 	server_.onLightAdded(pos, level);
 }
 
 void LightSystemImpl::removeLight(TilePos pos, float level)
 {
-	plane_.getChunk(tilePosToChunkPos(pos));
+	plane_.getChunk(chunkPos(pos));
 	server_.onLightRemoved(pos, level);
 }
 

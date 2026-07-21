@@ -39,7 +39,7 @@ protected:
 	// LightCallback implementation
 	// TODO: Go away from a callback-based interface,
 	// let the LightSystem ask the server for changed chunks instead
-	void onLightChunkUpdated(const LightChunk &chunk, Vec2i pos) final;
+	void onLightChunkUpdated(const LightChunk &chunk, ChunkPos pos) final;
 
 private:
 	struct LightUpdate {

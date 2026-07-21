@@ -53,8 +53,8 @@ std::span<FoundEntity> EntitySystemImpl::getColliding(
 	auto topLeftTile = TilePos{(int)floor(topLeft.x), (int)floor(topLeft.y)};
 	auto bottomRightTile = TilePos{(int)ceil(bottomRight.x), (int)ceil(bottomRight.y)};
 
-	auto topLeftChunk = tilePosToChunkPos(topLeftTile);
-	auto bottomRightChunk = tilePosToChunkPos(bottomRightTile);
+	auto topLeftChunk = chunkPos(topLeftTile);
+	auto bottomRightChunk = chunkPos(bottomRightTile);
 	auto bottomLeftChunk = ChunkPos{topLeftChunk.x, bottomRightChunk.y};
 	auto topRightChunk = ChunkPos{bottomRightChunk.x, topLeftChunk.y};
 
@@ -105,7 +105,7 @@ std::span<FoundEntity> EntitySystemImpl::getInTile(
 	BodyTrait::Body body = {
 		.pos = pos,
 		.size = {1, 1},
-		.chunkPos = tilePosToChunkPos(pos),
+		.chunkPos = chunkPos(pos),
 	};
 
 	return getColliding(body);
@@ -117,7 +117,7 @@ std::span<FoundEntity> EntitySystemImpl::getInArea(
 	BodyTrait::Body body = {
 		.pos = pos,
 		.size = size,
-		.chunkPos = tilePosToChunkPos(pos.as<int>()),
+		.chunkPos = chunkPos(tilePos(pos)),
 	};
 
 	return getColliding(body);

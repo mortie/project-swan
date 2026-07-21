@@ -138,7 +138,7 @@ inline void LightServer::onLightRemoved(TilePos pos, float level)
 	buffers_[buffer_].push_back({Event::Tag::LIGHT_REMOVED, pos, {.f = level}});
 }
 
-inline void LightServer::onChunkAdded(Vec2i pos, NewLightChunk &&chunk)
+inline void LightServer::onChunkAdded(ChunkPos pos, NewLightChunk &&chunk)
 {
 	std::lock_guard<std::mutex> lock(mut_);
 
@@ -148,7 +148,7 @@ inline void LightServer::onChunkAdded(Vec2i pos, NewLightChunk &&chunk)
 	newChunkBuffers_[buffer_].push_back(std::move(chunk));
 }
 
-inline void LightServer::onChunkRemoved(Vec2i pos)
+inline void LightServer::onChunkRemoved(ChunkPos pos)
 {
 	std::lock_guard<std::mutex> lock(mut_);
 

@@ -2,7 +2,7 @@
 
 namespace CoreMod {
 
-void WorldArea::place(const Prefab &prefab, Swan::Vec2i pos)
+void WorldArea::place(const Prefab &prefab, Swan::TilePos pos)
 {
 	for (int y = 0; y < prefab.height; ++y) {
 		const Swan::Tile::ID *const *row = &prefab.tiles[y * prefab.width];

@@ -162,9 +162,8 @@ void FluidSystemImpl::triggerUpdateInTile(TilePos tpos)
 
 void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 {
-	auto chunkPos = tilePosToChunkPos(pos);
-	auto relPos = tilePosToChunkRelPos(pos);
-	auto &chunk = plane_.getChunk(chunkPos);
+	auto &chunk = plane_.getChunk(chunkPos(pos));
+	auto relPos = chunkRelPos(pos);
 
 	uint8_t *data = chunk.getFluidData();
 	for (size_t y = 0; y < FLUID_RESOLUTION; ++y) {
@@ -197,9 +196,8 @@ void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 
 void FluidSystemImpl::setPartialInTile(TilePos pos, Fluid::ID fluid)
 {
-	auto chunkPos = tilePosToChunkPos(pos);
-	auto relPos = tilePosToChunkRelPos(pos);
-	auto &chunk = plane_.getChunk(chunkPos);
+	auto &chunk = plane_.getChunk(chunkPos(pos));
+	auto relPos = chunkRelPos(pos);
 	auto *data = chunk.getFluidData();
 
 	for (size_t y = FLUID_RESOLUTION / 2; y < FLUID_RESOLUTION; ++y) {
@@ -213,9 +211,8 @@ void FluidSystemImpl::setPartialInTile(TilePos pos, Fluid::ID fluid)
 
 void FluidSystemImpl::replaceInTile(TilePos pos, Fluid::ID fluid)
 {
-	auto chunkPos = tilePosToChunkPos(pos);
-	auto relPos = tilePosToChunkRelPos(pos);
-	auto &chunk = plane_.getChunk(chunkPos);
+	auto &chunk = plane_.getChunk(chunkPos(pos));
+	auto relPos = chunkRelPos(pos);
 
 	chunk.setFluidID(relPos, fluid);
 	triggerUpdateInTile(pos);
@@ -223,9 +220,8 @@ void FluidSystemImpl::replaceInTile(TilePos pos, Fluid::ID fluid)
 
 void FluidSystemImpl::setSolid(TilePos pos, const FluidCollision &set)
 {
-	auto chunkPos = tilePosToChunkPos(pos);
-	auto relPos = tilePosToChunkRelPos(pos);
-	auto &chunk = plane_.getChunk(chunkPos);
+	auto &chunk = plane_.getChunk(chunkPos(pos));
+	auto relPos = chunkRelPos(pos);
 
 	uint8_t *data = chunk.getFluidData();
 	for (size_t y = 0; y < FLUID_RESOLUTION; ++y) {
@@ -262,9 +258,8 @@ void FluidSystemImpl::setSolid(TilePos pos, const FluidCollision &set)
 
 void FluidSystemImpl::clearSolid(TilePos pos)
 {
-	auto chunkPos = tilePosToChunkPos(pos);
-	auto relPos = tilePosToChunkRelPos(pos);
-	auto &chunk = plane_.getChunk(chunkPos);
+	auto &chunk = plane_.getChunk(chunkPos(pos));
+	auto relPos = chunkRelPos(pos);
 	chunk.clearFluidSolid(relPos);
 	triggerUpdateInTile(pos);
 }

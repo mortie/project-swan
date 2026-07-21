@@ -32,8 +32,8 @@ void TileSystemImpl::setID(TilePos pos, Tile::ID id)
 
 bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 {
-	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
-	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+	Chunk &chunk = plane_.getChunk(chunkPos(pos));
+	ChunkRelPos rp = chunkRelPos(pos);
 
 	Tile::ID old = chunk.getTileID(rp);
 
@@ -122,8 +122,8 @@ void TileSystemImpl::setBackgroundID(TilePos pos, Tile::ID id)
 
 bool TileSystemImpl::setBackgroundIDWithoutUpdate(TilePos pos, Tile::ID id)
 {
-	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
-	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+	Chunk &chunk = plane_.getChunk(chunkPos(pos));
+	ChunkRelPos rp = chunkRelPos(pos);
 
 	Tile::ID old = chunk.getBackgroundTileID(rp);
 
@@ -149,19 +149,19 @@ Tile &TileSystemImpl::get(TilePos pos)
 
 Tile *TileSystemImpl::maybeGet(TilePos pos)
 {
-	Chunk *chunk = plane_.subtleGetChunk(tilePosToChunkPos(pos));
+	Chunk *chunk = plane_.subtleGetChunk(chunkPos(pos));
 	if (!chunk || !chunk->isActive()) {
 		return nullptr;
 	}
 
-	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+	ChunkRelPos rp = chunkRelPos(pos);
 	return &plane_.world_->getTileByID(chunk->getTileID(rp));
 }
 
 Tile::ID TileSystemImpl::getID(TilePos pos)
 {
-	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
-	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+	Chunk &chunk = plane_.getChunk(chunkPos(pos));
+	ChunkRelPos rp = chunkRelPos(pos);
 	return chunk.getTileID(rp);
 }
 
@@ -172,26 +172,26 @@ Tile &TileSystemImpl::getBackground(TilePos pos)
 
 Tile *TileSystemImpl::maybeGetBackground(TilePos pos)
 {
-	Chunk *chunk = plane_.subtleGetChunk(tilePosToChunkPos(pos));
+	Chunk *chunk = plane_.subtleGetChunk(chunkPos(pos));
 	if (!chunk || !chunk->isActive()) {
 		return nullptr;
 	}
 
-	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+	ChunkRelPos rp = chunkRelPos(pos);
 	return &plane_.world_->getTileByID(chunk->getBackgroundTileID(rp));
 }
 
 Tile::ID TileSystemImpl::getBackgroundID(TilePos pos)
 {
-	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
-	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+	Chunk &chunk = plane_.getChunk(chunkPos(pos));
+	ChunkRelPos rp = chunkRelPos(pos);
 	return chunk.getBackgroundTileID(rp);
 }
 
 uint8_t TileSystemImpl::getLightLevel(TilePos pos)
 {
-	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
-	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+	Chunk &chunk = plane_.getChunk(chunkPos(pos));
+	ChunkRelPos rp = chunkRelPos(pos);
 	return chunk.getLightLevel(rp);
 }
 
@@ -237,8 +237,8 @@ bool TileSystemImpl::breakTileSilently(TilePos pos)
 
 bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 {
-	Chunk &chunk = plane_.getChunk(tilePosToChunkPos(pos));
-	ChunkRelPos rp = tilePosToChunkRelPos(pos);
+	Chunk &chunk = plane_.getChunk(chunkPos(pos));
+	ChunkRelPos rp = chunkRelPos(pos);
 
 	auto &newTileBeforeSpawn = plane_.world_->getTileByID(id);
 	if (newTileBeforeSpawn.isBackground()) {

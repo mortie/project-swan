@@ -1,5 +1,7 @@
 #pragma once
 
+#include <concepts>
+#include <cstdint>
 #include <ostream>
 #include <cmath>
 #include <type_traits>
@@ -186,7 +188,8 @@ std::ostream &operator<<(std::ostream &os, const Vector2<T> &vec)
 }
 
 using Vec2 = Vector2<float>;
-using Vec2i = Vector2<int>;
+using Vec2i = Vector2<int32_t>;
+using Vec2i64 = Vector2<int64_t>;
 
 }
 
@@ -198,6 +201,33 @@ struct hash<Swan::Vector2<T>> {
 	{
 		std::size_t x = vec.x, y = vec.y;
 		return std::hash<std::size_t>{}(((x + y) * (x + y + 1) / 2) + y);
+	}
+};
+
+template<std::derived_from<Swan::Vec2> T>
+struct std::hash<T>
+{
+	std::size_t operator()(const T& d) const noexcept
+	{
+		return std::hash<Swan::Vec2>{}(d);
+	}
+};
+
+template<std::derived_from<Swan::Vec2i> T>
+struct std::hash<T>
+{
+	std::size_t operator()(const T& d) const noexcept
+	{
+		return std::hash<Swan::Vec2i>{}(d);
+	}
+};
+
+template<std::derived_from<Swan::Vec2i64> T>
+struct std::hash<T>
+{
+	std::size_t operator()(const T& d) const noexcept
+	{
+		return std::hash<Swan::Vec2i64>{}(d);
 	}
 };
 

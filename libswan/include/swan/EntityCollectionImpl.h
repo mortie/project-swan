@@ -181,7 +181,7 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(Ctx &ctx, Args &&... args)
 	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 		BodyTrait::Body &body = w.ent.get(BodyTrait::Tag{});
 		body.pos -= body.size / 2;
-		body.chunkPos = tilePosToChunkPos({(int)body.pos.x, (int)body.pos.y});
+		body.chunkPos = chunkPos({tilePos(body.pos)});
 		auto &chunk = ctx.plane.getChunk(body.chunkPos);
 		chunk.entities_.insert({this, id});
 	}
@@ -281,7 +281,7 @@ inline void EntityCollectionImpl<Ent>::tick(Ctx &ctx, float dt)
 
 		if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 			BodyTrait::Body &body = w.ent.get(BodyTrait::Tag{});
-			auto newChunkPos = tilePosToChunkPos({(int)body.pos.x, (int)body.pos.y});
+			auto newChunkPos = chunkPos(tilePos(body.pos));
 			if (hasTicked_ && newChunkPos == body.chunkPos) {
 				continue;
 			}
