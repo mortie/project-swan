@@ -19,6 +19,7 @@ void registerTerrain(Swan::Mod &mod)
 	mod.registerTile({
 		.name = "stone",
 		.image = "core::tiles/stone",
+		.explosionResistance = 0.37,
 		.stepSound = "core::step/stone",
 		.droppedItem = "core::stone",
 	});

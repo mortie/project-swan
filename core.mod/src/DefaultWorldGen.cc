@@ -234,7 +234,17 @@ DefaultWorldGen::GeneratedTile DefaultWorldGen::genTile(
 	}
 
 	if (pos.y > stoneLevel) {
-		return {tiles::stone, background};
+		float variation = wg_.perlin.noise2D(pos.x / 23.29, pos.y / 19.423);
+		Swan::Tile::ID tile;
+		if (variation < -0.5) {
+			tile = tiles::silt;
+		} else if (variation > 0.6) {
+			tile = tiles::dirt;
+		} else {
+			tile = tiles::stone;
+		}
+
+		return {tile, background};
 	}
 	if (pos.y > grassLevel) {
 		return {biome.soilTile, background};

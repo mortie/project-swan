@@ -68,6 +68,12 @@ Tile::Builder &Tile::Builder::withTemperature(float temperature)
 	return *this;
 }
 
+Tile::Builder &Tile::Builder::withExplosionResistance(float explosionResistance)
+{
+	this->explosionResistance = std::move(explosionResistance);
+	return *this;
+}
+
 Tile::Builder &Tile::Builder::withBreakableBy(ToolSet breakableBy)
 {
 	this->breakableBy = std::move(breakableBy);

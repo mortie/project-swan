@@ -13,13 +13,10 @@ static constexpr Swan::BasicPhysicsBody::Props PROPS = {
 	.isSolid = false,
 };
 static constexpr float FUSE_TIME = 4;
+static constexpr int RADIUS = 10;
 
 static void explode(Swan::Ctx &ctx, Swan::Vec2 pos)
 {
-	constexpr float R1 = 2;
-	constexpr float R2 = 3;
-	constexpr float R3 = 6;
-
 	for (int i = 0; i < 60; ++i) {
 		ctx.game.spawnParticle({
 			.pos = pos + Swan::Vec2{
@@ -36,33 +33,53 @@ static void explode(Swan::Ctx &ctx, Swan::Vec2 pos)
 		});
 	}
 
-	for (int y = -R2; y <= R2; ++y) {
-		for (int x = -R2; x <= R2; ++x) {
-			Swan::TilePos tp = {(int)round(pos.x + x - 0.5), (int)round(pos.y + y - 0.5)};
-			float squareDist = y * y + (x * x * 0.5);
+	Swan::TilePos base = {(int)round(pos.x), (int)round(pos.y)};
+	auto consider = [&](Swan::Vec2i offset) {
+		Swan::TilePos pos = base + offset;
+		float dist = offset.as<float>().scale(0.75, 1.0).length();
+		if (dist > RADIUS) {
+			return;
+		}
 
-			if (squareDist <= R1 * R1) {
-				ctx.plane.tiles().setID(tp, Swan::World::AIR_TILE_ID);
-			}
-			else if (squareDist <= R2 * R2) {
-				auto &tile = ctx.plane.tiles().get(tp);
-				if (tile.breakableBy.contains(Swan::Tool::HAND)) {
-					breakTileAndDropItem(ctx, tp);
-				}
-			}
+		auto &tile = ctx.plane.tiles().get(pos);
+		float explosionForce = 1.0 / (dist + 1);
+		if (explosionForce < tile.more->explosionResistance) {
+			return;
+		}
+
+		auto dir = base - pos;
+		auto cast = ctx.plane.tiles().raycast(pos.as<float>().add(0.5, 0.5), dir, dist);
+		if (cast.hit) {
+			return;
+		}
+
+		if (tile.breakableBy.contains(Swan::Tool::HAND)) {
+			breakTileAndDropItem(ctx, pos);
+		} else {
+			ctx.plane.tiles().setID(pos, Swan::World::AIR_TILE_ID);
+		}
+	};
+
+	consider({0, 0});
+	for (int r = 1; r <= RADIUS; ++r) {
+		for (int x = -r; x <= r; ++x) {
+			consider({x, -r});
+			consider({x, r});
+		}
+
+		for (int y = -r; y <= r; ++y) {
+			consider({-r, y});
+			consider({r, y});
 		}
 	}
 
 	Swan::BodyTrait::Body body = {
-		.pos = pos.add(-R3, -R3),
-		.size = {R3 * 2, R3 * 2},
+		.pos = pos.add(-RADIUS, -RADIUS),
+		.size = {RADIUS * 2 + 1, RADIUS * 2 + 1},
 	};
 
 	for (auto &collision: ctx.plane.entities().getColliding(body)) {
 		auto delta = collision.body.center() - pos;
-		if (delta.squareLength() > R3 * R3) {
-			continue;
-		}
 
 		Swan::Vec2 vel = delta.norm() * (20.0 / std::max(delta.length(), 1.0f));
 		collision.ref.traitThen<Swan::PhysicsBodyTrait>([&](auto &body) {

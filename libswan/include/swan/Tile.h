@@ -66,6 +66,7 @@ struct Tile {
 		float lightLevel = 0;
 		float temperature = 0;
 		ToolSet breakableBy = Tool::NONE;
+		float explosionResistance = breakableBy.contains(Tool::HAND) ? 0.23 : 0.31;
 
 		// Some tiles are part of a collection of tiles (e.g connected tiles, direction variations, etc).
 		// The 'baseOffset' represents the offset from the first tile in the collection.
@@ -99,6 +100,7 @@ struct Tile {
 		Builder &withIsReplacable(bool isReplacable);
 		Builder &withLightLevel(float lightLevel);
 		Builder &withTemperature(float temperature);
+		Builder &withExplosionResistance(float explosionResistance);
 		Builder &withBreakableBy(ToolSet breakableBy);
 
 		Builder &withBaseOffset(Tile::Offset offset);
@@ -131,7 +133,8 @@ struct Tile {
 			traits(builder.traits),
 			tileEntity(builder.tileEntity),
 			lightLevel(builder.lightLevel),
-			temperature(builder.temperature)
+			temperature(builder.temperature),
+			explosionResistance(builder.explosionResistance)
 		{}
 
 		bool (*onSpawn)(Ctx &ctx, TilePos pos);
@@ -155,6 +158,7 @@ struct Tile {
 
 		float lightLevel;
 		float temperature;
+		float explosionResistance;
 	};
 
 	ID id;

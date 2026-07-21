@@ -393,6 +393,7 @@ bool activateShovelable(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateM
 
 void registerShovelable(Swan::Mod &mod, Swan::Tile::Builder builder)
 {
+	builder.withExplosionResistance(0.19);
 	mod.registerTile(builder.clone()
 		.withOnActivate(activateShovelable)
 		.withImage(Swan::cat(builder.image, "@0"))
