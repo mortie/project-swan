@@ -360,19 +360,21 @@ void Game::draw()
 	if (paused_) {
 		ImGui::Begin(
 			"Pause Menu", nullptr,
-			ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoMove |
 			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing);
 		ImGui::SetWindowPos(
 			ImVec2(
 				ImGui::GetIO().DisplaySize.x / 2 - ImGui::GetWindowWidth() / 2,
 				ImGui::GetIO().DisplaySize.y / 2 - ImGui::GetWindowHeight() / 2),
 			ImGuiCond_Always);
+		ImGui::SetWindowSize(ImVec2(200, 0));
 
-		if (ImGui::Button("Resume")) {
+		auto size = ImVec2(ImGui::GetContentRegionAvail().x, 0);
+		if (ImGui::Button("Resume", size)) {
 			paused_ = false;
 		}
 
-		if (ImGui::Button("Save and Quit")) {
+		if (ImGui::Button("Save and Quit", size)) {
 			// The main function will automatically save
 			shouldQuit_ = true;
 		}
