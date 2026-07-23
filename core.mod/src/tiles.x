@@ -49,6 +49,7 @@ X(aqueduct__right, "core::aqueduct::right");
 X(aqueduct__mouth__left, "core::aqueduct::mouth::left");
 X(aqueduct__mouth__right, "core::aqueduct::mouth::right");
 X(bonfire, "core::bonfire");
+X(bonfire__lit, "core::bonfire::lit");
 X(chest, "core::chest");
 X(chest__open, "core::chest::open");
 X(clayTile, "core::clay-tile");
