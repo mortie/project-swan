@@ -46,7 +46,7 @@ void registerBonfire(Swan::Mod &mod)
 
 			meta.stack.remove(1);
 			ctx.plane.tiles().setID(pos, tiles::bonfire__crucibled);
-			ctx.game.playSound(ctx.world.getSound("core::misc/snap"));
+			ctx.game.playSound(ctx.world.getSound("@::thud"));
 			return true;
 		},
 		.onWorldTick = breakIfInFluid,
@@ -67,7 +67,7 @@ void registerBonfire(Swan::Mod &mod)
 		.onTileUpdate = fallIfFloating,
 		.onActivate = [](Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMeta meta) {
 			if (meta.stack.empty()) {
-				ctx.game.playSound(ctx.world.getSound("core::misc/snap"));
+				ctx.game.playSound(ctx.world.getSound("@::thud"));
 				ctx.plane.tiles().setID(pos, tiles::bonfire__lit);
 				auto ent = ctx.plane.entities().getTileEntity(pos).as<BonfireTileEntity>();
 				if (ent) {
