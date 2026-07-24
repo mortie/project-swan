@@ -41,6 +41,14 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 		return false;
 	}
 
+	// 	If we're currently running onSpawn,
+	// then do literally nothing other than setting the tile ID in the chunk.
+	// The code which called onSpawn will handle the rest.
+	if (placingTile_) {
+		chunk.setTileID(rp, id);
+		return true;
+	}
+
 	Tile &newTile = plane_.world_->getTileByID(id);
 	Tile &oldTile = plane_.world_->getTileByID(old);
 
@@ -268,17 +276,17 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 	// Try to run the onSpawn immediately,
 	// and revert if it returns false
 	chunk.setTileID(rp, id);
-	if (
-		newTileBeforeSpawn.more->onSpawn &&
-		!newTileBeforeSpawn.more->onSpawn(plane_.getContext(), pos)) {
-		chunk.setTileID(rp, old);
-		return false;
-	}
+	if (newTileBeforeSpawn.more->onSpawn) {
+		placingTile_ = true;
+		bool ok = newTileBeforeSpawn.more->onSpawn(plane_.getContext(), pos);
+		placingTile_ = false;
+		if (!ok) {
+			chunk.setTileID(rp, old);
+			return false;
+		}
 
-	// The ID might've been changed after onSpawn
-	Tile::ID idAfterSpawn = chunk.getTileID(rp);
-	if (idAfterSpawn != id || idAfterSpawn == old) {
-		return true;
+		// The ID might've been changed after onSpawn
+		id = chunk.getTileID(rp);
 	}
 
 	auto &newTile = plane_.world_->getTileByID(id);

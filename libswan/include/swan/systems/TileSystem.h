@@ -93,6 +93,10 @@ private:
 	std::vector<TilePos> scheduledBackgroundUpdatesA_;
 	std::vector<TilePos> scheduledBackgroundUpdatesB_;
 
+	// Keep track of whether we're currently running an onSpawn in placeTile.
+	// Helps to avoid recursive tile ID setting issues.
+	bool placingTile_ = false;
+
 	friend WorldPlane;
 };
 
