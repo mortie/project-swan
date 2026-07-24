@@ -1,6 +1,7 @@
 #include "systems/EntitySystem.h"
 
 #include "WorldPlane.h"
+#include "swan/log.h"
 #include "traits/TileEntityTrait.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
 
@@ -40,6 +41,11 @@ EntityRef EntitySystemImpl::spawn(std::string_view name, capnp::Data::Reader dat
 
 void EntitySystemImpl::despawn(EntityRef ref)
 {
+	if (!ref) {
+		warn << "Asked to despawn null entity";
+		return;
+	}
+
 	despawnListA_.push_back(ref);
 }
 
@@ -144,8 +150,8 @@ EntityRef EntitySystemImpl::current()
 
 void EntitySystemImpl::spawnTileEntity(TilePos pos, std::string_view name)
 {
-	if (tileEntities_.contains(pos)) {
-		warn << "Tile entity already exists in " << pos;
+	if (auto it = tileEntities_.find(pos); it != tileEntities_.end()) {
+		warn << "Tile entity already exists in " << pos << ": " << it->second.collection()->name();
 		return;
 	}
 
@@ -262,6 +268,11 @@ void EntitySystemImpl::serialize(proto::EntitySystem::Builder w)
 	auto tileEntities = w.initTileEntities(tileEntities_.size());
 	size_t index = 0;
 	for (auto &[pos, ref]: tileEntities_) {
+		if (!ref) {
+			Swan::warn << "Invalid tile entity ref at " << pos;
+			continue;
+		}
+
 		auto entW = tileEntities[index++];
 		auto posW = entW.initPos();
 		posW.setX(pos.x);
@@ -295,6 +306,12 @@ void EntitySystemImpl::deserialize(proto::EntitySystem::Reader r)
 
 		auto &ref = tileEntities_[pos];
 		ref.deserialize(ctx, tileEnt.getRef());
+		if (!ref) {
+			warn << "Deserialized bad tile entity ref at " << pos;
+			tileEntities_.erase(pos);
+			continue;
+		}
+
 		ref.traitThen<TileEntityTrait>([&](TileEntityTrait::TileEntity &ent) {
 			ent.pos = pos;
 		});

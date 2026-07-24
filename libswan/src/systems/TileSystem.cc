@@ -46,8 +46,9 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 
 	bool keepTileEntity = false;
 	if (
-			oldTile.more->tileEntity &&
-			oldTile.more->tileEntity == newTile.more->tileEntity) {
+		oldTile.more->tileEntity &&
+		oldTile.more->tileEntity == newTile.more->tileEntity)
+	{
 		auto te = plane_.entities().getTileEntity(pos);
 		if (te) {
 			keepTileEntity = te.trait<TileEntityTrait>()->keep;
@@ -86,10 +87,6 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 		plane_.fluids().setSolid(pos, *newTile.more->fluidCollision);
 	}
 
-	if (newTile.more->onSpawn) {
-		newTile.more->onSpawn(plane_.getContext(), pos);
-	}
-
 	if (newTile.more->tileEntity && !keepTileEntity) {
 		plane_.entities().spawnTileEntity(pos, newTile.more->tileEntity);
 	}
@@ -98,6 +95,12 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 		chunk.clearFluidMask(rp);
 	} else if (newTile.more->fluidMask) {
 		chunk.setFluidMask(rp, newTile.more->fluidMask);
+	}
+
+	// Actually run onSpawn as the last thing we do.
+	// That way, onSpawn can replace the tile and we don't get confused.
+	if (newTile.more->onSpawn) {
+		newTile.more->onSpawn(plane_.getContext(), pos);
 	}
 
 	return true;
@@ -273,7 +276,11 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 	}
 
 	// The ID might've been changed after onSpawn
-	id = chunk.getTileID(rp);
+	Tile::ID idAfterSpawn = chunk.getTileID(rp);
+	if (idAfterSpawn != id || idAfterSpawn == old) {
+		return true;
+	}
+
 	auto &newTile = plane_.world_->getTileByID(id);
 
 	plane_.world_->game_->playSound(oldTile.more->breakSound, pos);
