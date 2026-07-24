@@ -14,7 +14,6 @@
 #include "world/chest.h"
 #include "world/clay.h"
 #include "world/computer.h"
-#include "world/crucible.h"
 #include "world/door.h"
 #include "world/drain.h"
 #include "world/item-fan.h"
@@ -160,7 +159,6 @@ public:
 		registerChest(*this);
 		registerClay(*this);
 		registerComputer(*this);
-		registerCrucible(*this);
 		registerDoor(*this);
 		registerDrain(*this);
 		registerItemFan(*this);
@@ -255,6 +253,10 @@ public:
 		registerItem({
 			.name = "unfired-crucible",
 			.image = "core::items/unfired-crucible",
+		});
+		registerItem({
+			.name = "crucible",
+			.image = "core::items/crucible",
 		});
 
 		registerItem({

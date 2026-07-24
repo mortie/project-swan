@@ -1,3 +1,4 @@
 [variants]
 lit = ["./lit.png"]
 unlit = ["./unlit.png"]
+crucibled = ["./crucibled.png"]

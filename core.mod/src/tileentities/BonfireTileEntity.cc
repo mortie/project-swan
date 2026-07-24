@@ -1,6 +1,7 @@
 #include "BonfireTileEntity.h"
 #include "entities/ItemStackEntity.h"
 #include "swan/traits/PhysicsBodyTrait.h"
+#include "world/util.h"
 
 namespace CoreMod {
 
@@ -24,6 +25,12 @@ void BonfireTileEntity::update(Swan::Ctx &ctx, float dt)
 }
 
 void BonfireTileEntity::tick(Swan::Ctx &ctx, float dt)
+{
+	tickBonfire(ctx, dt);
+	tickCrucible(ctx, dt);
+}
+
+void BonfireTileEntity::tickBonfire(Swan::Ctx &ctx, float dt)
 {
 	Swan::Vec2 tileCenter = {tileEntity_.pos.x + 0.5f, tileEntity_.pos.y + 0.5f};
 
@@ -167,6 +174,48 @@ void BonfireTileEntity::tick(Swan::Ctx &ctx, float dt)
 	}
 }
 
+void BonfireTileEntity::tickCrucible(Swan::Ctx &ctx, float dt)
+{
+	if (!crucible_.progress) {
+		return;
+	}
+
+	constexpr float temperature = 1;
+	Swan::Vec2 center = Swan::tileCenter(tileEntity_.pos).add(0, -0.05);
+	float particleCount = temperature * Swan::randfloat() * 2;
+	for (int i = 0; i < particleCount; ++i) {
+		float r = 0.5f + (Swan::randfloat() * 0.4f);
+		float g = std::min(0.1f + (Swan::randfloat() * 0.8f), r);
+		ctx.game.spawnParticle({
+			.pos = center.add(
+				-0.5f / 16 + (Swan::randfloat() - 0.5) * 0.5 * temperature, -0.2f),
+			.vel = {
+				(Swan::randfloat() - 0.5f) * 2,
+				-(Swan::randfloat() * 0.5f + temperature),
+			},
+			.size = {1.0f / 16, 1.0f / 16},
+			.color = {r, g, 0},
+			.lifetime = (0.2f + Swan::randfloat() * 0.3f) * temperature,
+			.weight = 0.3,
+		});
+	}
+
+	crucible_.progress->timer -= dt * temperature;
+	if (crucible_.progress->timer <= 0) {
+		float dir = Swan::randfloat() > 0.5 ? 1 : -1;
+		for (int i = 0; i < crucible_.progress->output.count(); ++i) {
+			ctx.plane.entities().spawn<ItemStackEntity>(
+				center,
+				Swan::Vec2{(Swan::randfloat() * 2 + 1) * dir, -7},
+				crucible_.progress->output.item());
+			dir *= -1;
+		}
+		crucible_.items.clear();
+		crucible_.itemCounts.clear();
+		crucible_.progress.reset();
+	}
+}
+
 void BonfireTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 {
 	tileEntity_.serialize(w.initTileEntity());
@@ -210,6 +259,72 @@ void BonfireTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
 			burn.inputs.back().deserialize(ctx, input);
 		}
 	}
+}
+
+void BonfireTileEntity::activateCrucible(Swan::Ctx &ctx, Swan::ItemStack &stack)
+{
+	if (crucible_.progress) {
+		return;
+	}
+
+	if (stack.empty()) {
+		evacuateCrucible(ctx);
+		return;
+	}
+
+	bool compatible = false;
+	for (auto &recipe: ctx.world.getRecipes("core::smelting")) {
+		bool complete = true;
+		for (auto &input: recipe.inputs) {
+			int count = 0;
+			if (input.item() == stack.item()) {
+				count += 1;
+			}
+			auto it = crucible_.itemCounts.find(input.item());
+			if (it != crucible_.itemCounts.end()) {
+				count += it->second;
+			}
+
+			if (input.item() == stack.item() && count <= input.count()) {
+				compatible = true;
+			}
+
+			if (count < input.count()) {
+				complete = false;
+			}
+		}
+
+		if (complete) {
+			ctx.game.playSound(ctx.world.getSound("core::misc/snap"));
+			auto it = stack.remove(1);
+			crucible_.items.push_back(it.item());
+			crucible_.progress = Crucible::Progress {
+				.timer = 4,
+				.output = recipe.output,
+			};
+			return;
+		}
+	}
+
+	if (!compatible) {
+		return;
+	}
+
+	ctx.game.playSound(ctx.world.getSound("core::misc/snap"));
+	auto it = stack.remove(1);
+	crucible_.items.push_back(it.item());
+	crucible_.itemCounts[it.item()] += 1;
+}
+
+void BonfireTileEntity::evacuateCrucible(Swan::Ctx &ctx)
+{
+	for (auto &item: crucible_.items) {
+		dropItem(ctx, tileEntity_.pos, *item);
+	}
+
+	crucible_.items.clear();
+	crucible_.itemCounts.clear();
+	crucible_.progress.reset();
 }
 
 }
