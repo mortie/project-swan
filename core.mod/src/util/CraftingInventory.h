@@ -7,7 +7,7 @@
 
 namespace CoreMod {
 
-class CraftingInventory final: public Swan::InventoryTrait::Inventory {
+class CraftingInventory final: public Swan::Inventory {
 public:
 	CraftingInventory(Swan::EntityRef ref): ref_(ref)
 	{}

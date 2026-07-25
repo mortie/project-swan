@@ -8,7 +8,8 @@
 namespace CoreMod {
 
 class PlayerEntity final: public Swan::Entity,
-	public Swan::PhysicsBodyTrait, public Swan::InventoryTrait {
+	public Swan::PhysicsBodyTrait,
+	public Swan::InventoryTrait {
 public:
 	using Proto = proto::PlayerEntity;
 
@@ -17,17 +18,17 @@ public:
 	PlayerEntity(Swan::Ctx &ctx);
 	PlayerEntity(Swan::Ctx &ctx, Swan::Vec2 pos);
 
-	Body &get(BodyTrait::Tag) override
+	Swan::Body &get(BodyTrait::Tag) override
 	{
 		return physicsBody_.body;
 	}
 
-	PhysicsBody &get(PhysicsBodyTrait::Tag) override
+	Swan::PhysicsBody &get(PhysicsBodyTrait::Tag) override
 	{
 		return physicsBody_;
 	}
 
-	Inventory &get(InventoryTrait::Tag) override
+	Swan::Inventory &get(InventoryTrait::Tag) override
 	{
 		return inventory_;
 	}
@@ -230,7 +231,7 @@ private:
 
 	UI ui_;
 
-	Swan::InventoryTrait::Inventory *auxInventory_ = nullptr;
+	Swan::Inventory *auxInventory_ = nullptr;
 	Swan::EntityRef auxInventoryEntity_;
 	CloseInventoryCallback *closeInventoryCallback_ = nullptr;
 

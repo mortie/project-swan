@@ -12,7 +12,7 @@ public:
 	DrainTileEntity(Swan::Ctx &ctx)
 	{}
 
-	TileEntity &get(TileEntityTrait::Tag) override
+	Swan::TileEntity &get(TileEntityTrait::Tag) override
 	{
 		return tileEntity_;
 	}
@@ -23,7 +23,7 @@ public:
 	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
 
 private:
-	TileEntity tileEntity_;
+	Swan::TileEntity tileEntity_;
 	int counter_ = 0;
 };
 

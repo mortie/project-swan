@@ -49,8 +49,7 @@ void EntitySystemImpl::despawn(EntityRef ref)
 	despawnListA_.push_back(ref);
 }
 
-std::span<FoundEntity> EntitySystemImpl::getColliding(
-	BodyTrait::Body &body)
+std::span<FoundEntity> EntitySystemImpl::getColliding(Body &body)
 {
 	constexpr float PADDING = 10;
 	auto topLeft = body.topLeft() - Vec2{PADDING, PADDING};
@@ -73,7 +72,7 @@ std::span<FoundEntity> EntitySystemImpl::getColliding(
 			// The entities_ array in a chunk should always be kept updated
 			assert(candidateRef);
 
-			BodyTrait::Body *candidateBody = candidateRef.getBody();
+			Body *candidateBody = candidateRef.getBody();
 			if (!candidateBody || candidateBody == &body) {
 				continue;
 			}
@@ -108,7 +107,7 @@ std::span<FoundEntity> EntitySystemImpl::getColliding(
 std::span<FoundEntity> EntitySystemImpl::getInTile(
 	TilePos pos)
 {
-	BodyTrait::Body body = {
+	Body body = {
 		.pos = pos,
 		.size = {1, 1},
 		.chunkPos = chunkPos(pos),
@@ -120,7 +119,7 @@ std::span<FoundEntity> EntitySystemImpl::getInTile(
 std::span<FoundEntity> EntitySystemImpl::getInArea(
 	Vec2 pos, Vec2 size)
 {
-	BodyTrait::Body body = {
+	Body body = {
 		.pos = pos,
 		.size = size,
 		.chunkPos = chunkPos(tilePos(pos)),
@@ -312,7 +311,7 @@ void EntitySystemImpl::deserialize(proto::EntitySystem::Reader r)
 			continue;
 		}
 
-		ref.traitThen<TileEntityTrait>([&](TileEntityTrait::TileEntity &ent) {
+		ref.traitThen<TileEntityTrait>([&](TileEntity &ent) {
 			ent.pos = pos;
 		});
 	}

@@ -15,12 +15,12 @@ public:
 	DynamiteEntity(
 		Swan::Ctx &ctx, Swan::Vec2 pos, Swan::Vec2 vel = {0, 0});
 
-	Body &get(BodyTrait::Tag) override
+	Swan::Body &get(BodyTrait::Tag) override
 	{
 		return physicsBody_.body;
 	}
 
-	PhysicsBody &get(PhysicsBodyTrait::Tag) override
+	Swan::PhysicsBody &get(PhysicsBodyTrait::Tag) override
 	{
 		return physicsBody_;
 	}

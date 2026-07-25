@@ -73,7 +73,7 @@ static void explode(Swan::Ctx &ctx, Swan::Vec2 pos)
 		}
 	}
 
-	Swan::BodyTrait::Body body = {
+	Swan::Body body = {
 		.pos = pos.add(-RADIUS, -RADIUS),
 		.size = {RADIUS * 2 + 1, RADIUS * 2 + 1},
 	};

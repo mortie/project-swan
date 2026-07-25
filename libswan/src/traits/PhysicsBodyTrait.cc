@@ -99,7 +99,7 @@ static void collideY(BasicPhysicsBody &phys, WorldPlane &plane)
 	}
 }
 
-void BasicPhysicsBody::collideWith(BodyTrait::Body &other)
+void BasicPhysicsBody::collideWith(Body &other)
 {
 	if (body.bottom() < other.top() + 0.2) {
 		float delta = body.bottom() - other.top();

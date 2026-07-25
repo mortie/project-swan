@@ -22,7 +22,7 @@ class TileSystemImpl;
 
 struct FoundEntity {
 	EntityRef ref;
-	BodyTrait::Body &body;
+	Body &body;
 };
 
 class EntitySystemImpl {
@@ -58,7 +58,7 @@ public:
 
 	void despawn(EntityRef ref);
 
-	std::span<FoundEntity> getColliding(BodyTrait::Body &body);
+	std::span<FoundEntity> getColliding(Body &body);
 	std::span<FoundEntity> getInTile(TilePos pos);
 	std::span<FoundEntity> getInArea(Vec2 pos, Vec2 size);
 

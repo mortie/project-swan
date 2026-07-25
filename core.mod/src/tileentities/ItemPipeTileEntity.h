@@ -15,12 +15,12 @@ public:
 	ItemPipeTileEntity(Swan::Ctx &ctx)
 	{}
 
-	TileEntity &get(TileEntityTrait::Tag) override
+	Swan::TileEntity &get(TileEntityTrait::Tag) override
 	{
 		return tileEntity_;
 	}
 
-	Inventory &get(InventoryTrait::Tag) override
+	Swan::Inventory &get(InventoryTrait::Tag) override
 	{
 		return inbox_;
 	}
@@ -47,7 +47,7 @@ private:
 		Swan::Direction from;
 	};
 
-	class Inbox final: public Swan::InventoryTrait::Inventory {
+	class Inbox final: public Swan::Inventory {
 	public:
 		Swan::ItemStack take(int slot) override
 		{
@@ -73,7 +73,7 @@ private:
 
 	void moveItemOut(Swan::Ctx &ctx, size_t index);
 
-	TileEntity tileEntity_;
+	Swan::TileEntity tileEntity_;
 	Inbox inbox_;
 	std::vector<MovingItem> content_;
 };

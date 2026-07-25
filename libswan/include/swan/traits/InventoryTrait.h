@@ -13,60 +13,60 @@ namespace Swan {
 struct InventorySlot;
 struct Context;
 
+struct Inventory {
+	int size()
+	{
+		return content().size();
+	}
+
+	ItemStack get(int slot)
+	{
+		auto c = content();
+		if (slot < 0 || slot >= int(c.size())) {
+			return {};
+		}
+
+		return c[slot];
+	}
+
+	virtual ItemStack take(int slot) = 0;
+	virtual ItemStack set(int slot, ItemStack stack) = 0;
+	virtual ItemStack insertInto(ItemStack stack, int from, int to) = 0;
+
+	virtual ItemStack insertSided(Direction dir, ItemStack stack)
+	{
+		return insert(stack);
+	}
+
+	InventorySlot slot(int slot);
+
+	virtual std::span<const ItemStack> content() const = 0;
+
+	ItemStack insert(ItemStack stack, int from = 0)
+	{
+		return insertInto(stack, from, size());
+	}
+
+	ItemStack insert(ItemStack stack, int from, int to)
+	{
+		return insertInto(stack, from, to);
+	}
+
+	ItemStack insert(Direction dir, ItemStack stack)
+	{
+		return insertSided(dir, stack);
+	}
+
+	virtual void renderTooltip(
+		Ctx &ctx, Cygnet::Renderer &rnd,
+		Vec2 pos, int slot);
+
+protected:
+	~Inventory() = default;
+};
+
 struct InventoryTrait {
 	struct Tag {};
-
-	struct Inventory {
-		int size()
-		{
-			return content().size();
-		}
-
-		ItemStack get(int slot)
-		{
-			auto c = content();
-			if (slot < 0 || slot >= int(c.size())) {
-				return {};
-			}
-
-			return c[slot];
-		}
-
-		virtual ItemStack take(int slot) = 0;
-		virtual ItemStack set(int slot, ItemStack stack) = 0;
-		virtual ItemStack insertInto(ItemStack stack, int from, int to) = 0;
-
-		virtual ItemStack insertSided(Direction dir, ItemStack stack)
-		{
-			return insert(stack);
-		}
-
-		InventorySlot slot(int slot);
-
-		virtual std::span<const ItemStack> content() const = 0;
-
-		ItemStack insert(ItemStack stack, int from = 0)
-		{
-			return insertInto(stack, from, size());
-		}
-
-		ItemStack insert(ItemStack stack, int from, int to)
-		{
-			return insertInto(stack, from, to);
-		}
-
-		ItemStack insert(Direction dir, ItemStack stack)
-		{
-			return insertSided(dir, stack);
-		}
-
-		virtual void renderTooltip(
-			Ctx &ctx, Cygnet::Renderer &rnd,
-			Vec2 pos, int slot);
-
-	protected:
-		~Inventory() = default;
-	};
 
 	virtual Inventory &get(Tag) = 0;
 
@@ -75,7 +75,7 @@ protected:
 };
 
 struct InventorySlot {
-	InventoryTrait::Inventory *inventory;
+	Inventory *inventory;
 	const int slot;
 
 	ItemStack get()
@@ -107,7 +107,7 @@ struct InventorySlot {
 	}
 };
 
-class BasicInventory final: public InventoryTrait::Inventory {
+class BasicInventory final: public Inventory {
 public:
 	BasicInventory(int size): content_(size)
 	{}
@@ -127,7 +127,7 @@ public:
 	std::vector<ItemStack> content_;
 };
 
-inline InventorySlot InventoryTrait::Inventory::slot(int slot)
+inline InventorySlot Inventory::slot(int slot)
 {
 	return {this, slot};
 }

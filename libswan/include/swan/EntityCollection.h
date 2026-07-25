@@ -62,7 +62,7 @@ public:
 
 	bool exists();
 	Entity *get();
-	BodyTrait::Body *getBody();
+	Body *getBody();
 
 	template<typename T>
 	T *as()
@@ -116,7 +116,7 @@ public:
 
 	virtual size_t size() = 0;
 	virtual Entity *get(uint64_t id) = 0;
-	virtual BodyTrait::Body *getBody(uint64_t id) = 0;
+	virtual Body *getBody(uint64_t id) = 0;
 
 	virtual EntityRef spawn(Ctx &ctx) = 0;
 	virtual EntityRef spawn(Ctx &ctx, capnp::Data::Reader data) = 0;

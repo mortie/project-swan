@@ -14,7 +14,7 @@ public:
 	ItemFanTileEntity(Swan::Ctx &ctx)
 	{}
 
-	TileEntity &get(TileEntityTrait::Tag) override
+	Swan::TileEntity &get(TileEntityTrait::Tag) override
 	{
 		return tileEntity_;
 	}
@@ -32,7 +32,7 @@ public:
 
 private:
 	Swan::Direction dir_;
-	TileEntity tileEntity_;
+	Swan::TileEntity tileEntity_;
 
 	Swan::EntityRef pickup_;
 };

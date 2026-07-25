@@ -6,17 +6,18 @@
 
 namespace Swan {
 
+class PhysicsBody {
+public:
+	virtual void applyForce(Vec2 force) = 0;
+	virtual void addVelocity(Vec2 vel) = 0;
+	virtual Vec2 velocity() = 0;
+
+protected:
+	~PhysicsBody() = default;
+};
+
 struct PhysicsBodyTrait: public BodyTrait {
 	struct Tag {};
-
-	struct PhysicsBody {
-		virtual void applyForce(Vec2 force) = 0;
-		virtual void addVelocity(Vec2 vel) = 0;
-		virtual Vec2 velocity() = 0;
-
-	protected:
-		~PhysicsBody() = default;
-	};
 
 	using BodyTrait::get;
 	virtual PhysicsBody &get(Tag) = 0;
@@ -25,7 +26,7 @@ protected:
 	~PhysicsBodyTrait() = default;
 };
 
-struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
+struct BasicPhysicsBody final: public PhysicsBody {
 	static constexpr float GRAVITY = 20;
 
 	struct Props {
@@ -45,7 +46,7 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 		stepHeight(props.stepHeight)
 	{}
 
-	BodyTrait::Body body;
+	Body body;
 	float mass;
 	float bounciness;
 	float mushyness;
@@ -74,7 +75,7 @@ struct BasicPhysicsBody final: public PhysicsBodyTrait::PhysicsBody {
 		return vel;
 	}
 
-	void collideWith(BodyTrait::Body &otehr);
+	void collideWith(Body &otehr);
 	void collideAll(WorldPlane &plane);
 
 	void update(Ctx &ctx, float dt);

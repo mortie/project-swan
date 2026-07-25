@@ -4,7 +4,7 @@
 
 namespace Swan {
 
-void InventoryTrait::Inventory::renderTooltip(
+void Inventory::renderTooltip(
 	Ctx &ctx, Cygnet::Renderer &rnd,
 	Vec2 pos, int slot)
 {

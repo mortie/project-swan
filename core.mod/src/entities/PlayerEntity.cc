@@ -889,7 +889,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 		}
 
 		// Get damaged if it's something which deals contact damage
-		auto *damage = entity->trait<Swan::ContactDamageTrait>();
+		auto damage = entity->trait<Swan::ContactDamageTrait>();
 		bool damaged = false;
 		if (damage && invincibleTimer_ <= 0) {
 			Swan::Vec2 direction;
@@ -1202,7 +1202,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 
 void PlayerEntity::handleInventoryClick(Swan::Ctx &ctx)
 {
-	auto clickInventory = [&](Swan::InventoryTrait::Inventory &inv, int index) {
+	auto clickInventory = [&](Swan::Inventory &inv, int index) {
 		auto slot = inv.get(index);
 		if (slot.empty() && heldStack_.empty()) {
 			return;

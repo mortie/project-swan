@@ -16,7 +16,7 @@ public:
 	ComputerTileEntity(Swan::Ctx &)
 	{}
 
-	TileEntity &get(TileEntityTrait::Tag) override
+	Swan::TileEntity &get(TileEntityTrait::Tag) override
 	{
 		return tileEntity_;
 	}
@@ -40,7 +40,7 @@ private:
 
 	void assemble();
 
-	TileEntity tileEntity_;
+	Swan::TileEntity tileEntity_;
 	bool running_ = false;
 	bool showGUI_ = false;
 	std::string asmError_;

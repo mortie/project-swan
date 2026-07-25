@@ -36,14 +36,36 @@ public:
 	{}
 
 	template<typename T>
-	auto trait()
+	using TraitType = decltype(((T *)nullptr)->get(typename T::Tag{}));
+
+	// Most traits let you retrieve a reference to something within the entity.
+	// For these, return a nullable pointer.
+	template<typename T>
+	std::remove_reference_t<TraitType<T>> *trait()
+		requires(std::is_reference_v<TraitType<T>>)
 	{
 		using Tag = typename T::Tag;
 		T *t = dynamic_cast<T *>(this);
-		if (!t) {
-			return (decltype(&t->get(Tag{}))) nullptr;
+		if (t) {
+			return &t->get(Tag{});
+		} else {
+			return (std::remove_reference_t<TraitType<T>> *)nullptr;
 		}
-		return &t->get(Tag{});
+	}
+
+	// Some traits let you retrieve an actual object.
+	// For these, return an optional.
+	template<typename T>
+	std::optional<TraitType<T>> trait()
+		requires(!std::is_reference_v<TraitType<T>>)
+	{
+		using Tag = typename T::Tag;
+		T *t = dynamic_cast<T *>(this);
+		if (t) {
+			return std::optional(t->get(Tag{}));
+		} else {
+			return std::optional<TraitType<T>>(std::nullopt);
+		}
 	}
 };
 

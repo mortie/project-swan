@@ -171,7 +171,7 @@ public:
 	int resourceTickCounter_ = 0;
 
 	EntityRef playerRef_;
-	BodyTrait::Body *player_;
+	Body *player_;
 
 private:
 	class ChunkRenderer {

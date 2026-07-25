@@ -14,7 +14,7 @@ public:
 	BonfireTileEntity(Swan::Ctx &)
 	{}
 
-	TileEntity &get(TileEntityTrait::Tag) override
+	Swan::TileEntity &get(TileEntityTrait::Tag) override
 	{
 		return tileEntity_;
 	}
@@ -51,7 +51,7 @@ private:
 		std::optional<Progress> progress;
 	};
 
-	TileEntity tileEntity_ = {
+	Swan::TileEntity tileEntity_ = {
 		.keep = true,
 	};
 	std::vector<OngoingBurn> ongoing_;

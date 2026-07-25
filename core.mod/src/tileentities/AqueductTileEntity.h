@@ -14,7 +14,7 @@ public:
 	AqueductTileEntity(Swan::Ctx &)
 	{}
 
-	TileEntity &get(TileEntityTrait::Tag) override
+	Swan::TileEntity &get(TileEntityTrait::Tag) override
 	{
 		return tileEntity_;
 	}
@@ -40,7 +40,7 @@ private:
 		Swan::Fluid *fluid = nullptr;
 	};
 
-	TileEntity tileEntity_{
+	Swan::TileEntity tileEntity_{
 		.keep = true,
 	};
 

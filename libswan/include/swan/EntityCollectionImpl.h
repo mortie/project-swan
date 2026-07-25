@@ -51,7 +51,7 @@ public:
 	}
 
 	Entity *get(uint64_t id) override;
-	BodyTrait::Body *getBody(uint64_t id) override;
+	Body *getBody(uint64_t id) override;
 
 	const std::string &name() override
 	{
@@ -107,7 +107,7 @@ inline Entity *EntityRef::get()
 	return coll_->get(id_);
 }
 
-inline BodyTrait::Body *EntityRef::getBody()
+inline Body *EntityRef::getBody()
 {
 	if (!coll_) {
 		return nullptr;
@@ -179,7 +179,7 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(Ctx &ctx, Args &&... args)
 	w.id = id;
 
 	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
-		BodyTrait::Body &body = w.ent.get(BodyTrait::Tag{});
+		Body &body = w.ent.get(BodyTrait::Tag{});
 		body.pos -= body.size / 2;
 		body.chunkPos = chunkPos({tilePos(body.pos)});
 		auto &chunk = ctx.plane.getChunk(body.chunkPos);
@@ -244,7 +244,7 @@ inline Entity *EntityCollectionImpl<Ent>::get(uint64_t id)
 }
 
 template<typename Ent>
-inline BodyTrait::Body *EntityCollectionImpl<Ent>::getBody(uint64_t id)
+inline Body *EntityCollectionImpl<Ent>::getBody(uint64_t id)
 {
 	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 		auto indexIt = idToIndex_.find(id);
@@ -280,7 +280,7 @@ inline void EntityCollectionImpl<Ent>::tick(Ctx &ctx, float dt)
 		w.ent.tick(ctx, dt);
 
 		if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
-			BodyTrait::Body &body = w.ent.get(BodyTrait::Tag{});
+			Body &body = w.ent.get(BodyTrait::Tag{});
 			auto newChunkPos = chunkPos(tilePos(body.pos));
 			if (hasTicked_ && newChunkPos == body.chunkPos) {
 				continue;
@@ -346,7 +346,7 @@ inline void EntityCollectionImpl<Ent>::erase(Ctx &ctx, uint64_t id)
 
 	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 		auto &w = entities_[index];
-		BodyTrait::Body &body = w.ent.get(BodyTrait::Tag{});
+		Body &body = w.ent.get(BodyTrait::Tag{});
 		ctx.plane.getChunk(body.chunkPos).entities_.erase({this, w.id});
 	}
 

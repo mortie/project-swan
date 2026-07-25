@@ -14,12 +14,12 @@ public:
 	FallingTileEntity(Swan::Ctx &ctx);
 	FallingTileEntity(Swan::Ctx &ctx, Swan::Vec2 pos, Swan::Tile::ID tile);
 
-	Body &get(BodyTrait::Tag) override
+	Swan::Body &get(BodyTrait::Tag) override
 	{
 		return physicsBody_.body;
 	}
 
-	PhysicsBody &get(PhysicsBodyTrait::Tag) override
+	Swan::PhysicsBody &get(PhysicsBodyTrait::Tag) override
 	{
 		return physicsBody_;
 	}

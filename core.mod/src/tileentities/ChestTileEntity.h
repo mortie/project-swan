@@ -15,12 +15,12 @@ public:
 	ChestTileEntity(Swan::Ctx &ctx)
 	{}
 
-	TileEntity &get(TileEntityTrait::Tag) override
+	Swan::TileEntity &get(TileEntityTrait::Tag) override
 	{
 		return tileEntity_;
 	}
 
-	Inventory &get(InventoryTrait::Tag) override
+	Swan::Inventory &get(InventoryTrait::Tag) override
 	{
 		return inventory_;
 	}
@@ -31,7 +31,7 @@ public:
 	void onDespawn(Swan::Ctx &ctx) override;
 
 private:
-	TileEntity tileEntity_{
+	Swan::TileEntity tileEntity_{
 		.keep = true,
 	};
 	Swan::BasicInventory inventory_{30};
