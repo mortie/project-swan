@@ -205,7 +205,7 @@ struct hash<Swan::Vector2<T>> {
 };
 
 template<std::derived_from<Swan::Vec2> T>
-struct std::hash<T>
+struct hash<T>
 {
 	std::size_t operator()(const T& d) const noexcept
 	{
@@ -214,7 +214,7 @@ struct std::hash<T>
 };
 
 template<std::derived_from<Swan::Vec2i> T>
-struct std::hash<T>
+struct hash<T>
 {
 	std::size_t operator()(const T& d) const noexcept
 	{
@@ -223,7 +223,7 @@ struct std::hash<T>
 };
 
 template<std::derived_from<Swan::Vec2i64> T>
-struct std::hash<T>
+struct hash<T>
 {
 	std::size_t operator()(const T& d) const noexcept
 	{

@@ -36,7 +36,7 @@ public:
 	{}
 
 	template<typename T>
-	using TraitType = decltype(((T *)nullptr)->get(typename T::Tag{}));
+	using TraitType = decltype(std::declval<T>().get(typename T::Tag{}));
 
 	// Most traits let you retrieve a reference to something within the entity.
 	// For these, return a nullable pointer.
