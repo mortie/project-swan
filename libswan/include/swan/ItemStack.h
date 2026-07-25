@@ -47,6 +47,11 @@ public:
 	void serialize(proto::ItemStack::Builder w);
 	void deserialize(const Context &ctx, proto::ItemStack::Reader r);
 
+	operator bool() const
+	{
+		return !empty();
+	}
+
 	friend bool operator==(const ItemStack &a, const ItemStack &b)
 	{
 		if (a.empty() && b.empty()) {
