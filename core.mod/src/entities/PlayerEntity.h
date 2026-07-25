@@ -43,6 +43,7 @@ public:
 
 	bool askToOpenInventory(Swan::EntityRef ent, CloseInventoryCallback cb);
 	void askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent);
+	Swan::EntityRef currentInventoryEntity() { return auxInventoryEntity_; }
 
 	void hurt(Swan::Ctx &ctx, int n);
 	bool heal(Swan::Ctx &, int n);

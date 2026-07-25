@@ -15,6 +15,10 @@ struct CraftingInventory {
 	discoveredRecipes @0 :List(Text);
 }
 
+struct PowerBuffer {
+	charge @0 :Float32;
+}
+
 struct DynamiteEntity {
 	body @0 :BasicPhysicsBody;
 	fuse @1 :Float32;
@@ -80,6 +84,13 @@ struct CrucibleTileEntity {
 struct ChestTileEntity {
 	tileEntity @0 :TileEntity;
 	inventory @1 :BasicInventory;
+}
+
+struct BurnerGeneratorTileEntity {
+	tileEntity @0 :TileEntity;
+	powerBuffer @1 :PowerBuffer;
+	content @2 :ItemStack;
+	burnTime @3 :Float32;
 }
 
 struct ComputerTileEntity {

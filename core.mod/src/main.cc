@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <memory>
 #include <string>
 #include <swan/swan.h>
 
@@ -9,8 +10,10 @@
 #include "entities/ItemStackEntity.h"
 #include "entities/SpiderEntity.h"
 #include "entities/FallingTileEntity.h"
+#include "traits/items.h"
 #include "world/aqueduct.h"
 #include "world/bonfire.h"
+#include "world/burner-generator.h"
 #include "world/chest.h"
 #include "world/clay.h"
 #include "world/computer.h"
@@ -156,6 +159,7 @@ public:
 
 		registerAqueduct(*this);
 		registerBonfire(*this);
+		registerBurnerGenerator(*this);
 		registerChest(*this);
 		registerClay(*this);
 		registerComputer(*this);
@@ -217,6 +221,7 @@ public:
 		registerItem({
 			.name = "coal",
 			.image = "core::items/coal",
+			.traits = std::make_shared<BurnableItemTrait>(),
 		});
 		registerItem({
 			.name = "pig-iron",

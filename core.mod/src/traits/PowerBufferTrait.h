@@ -1,6 +1,9 @@
 #pragma once
 
-#include "swan/constants.h"
+#include <swan/swan.h>
+
+#include "core_mod.capnp.h"
+
 namespace CoreMod {
 
 /// An ampere represents a current.
@@ -40,26 +43,7 @@ public:
 	/// with the number of joules.
 	/// This function is assumed to be called every tick that you draw current;
 	/// as a result, amps are converted into coulombs by a 1/20 factor.
-	Joule consume(Ampere current)
-	{
-		Coulomb delta = current / Swan::TICK_RATE;
-
-		// Only allow drawing up to 1/10 of the buffer at a time.
-		// This represents ESR I guess?
-		// It also makes tick order less obviously significant
-		// if multiple things consume from the same power buffer at a time.
-		if (delta > charge_ / 10) {
-			delta = charge_ / 10;
-		}
-
-		// Consume the charge,
-		// and use the average voltage of before and after
-		// to compute the joules
-		Volt before = voltage();
-		charge_ -= delta;
-		Volt after = voltage();
-		return delta * ((before + after) / 2);
-	}
+	Joule consume(Ampere current);
 
 	/// Charge up the capacitor with a given target voltage and current.
 	/// Returns a scalar representing how much of the available energy
@@ -67,24 +51,10 @@ public:
 	/// 1 if the capacitor was so discharged that everything made its way in,
 	/// 0 if the capacitor was alreday at the target voltage,
 	/// and anything in between.
-	float chargeUp(Ampere current, Volt voltage)
-	{
-		Coulomb delta = current / Swan::TICK_RATE;
+	float chargeUp(Ampere current, Volt voltage);
 
-		Coulomb maxDelta = voltage * capacitance_ - charge_;
-		if (maxDelta <= 0) {
-			return 0;
-		}
-
-		float fraction = 1.0;
-		if (delta > maxDelta) {
-			fraction = maxDelta / delta;
-			delta = maxDelta;
-		}
-
-		charge_ += delta;
-		return fraction;
-	}
+	void serialize(proto::PowerBuffer::Builder w);
+	void deserialize(proto::PowerBuffer::Reader r);
 
 private:
 	Farad capacitance_ = 1;
@@ -92,6 +62,7 @@ private:
 };
 
 class PowerBufferTrait {
+public:
 	struct Tag {};
 
 	virtual PowerBuffer &get(Tag) = 0;
