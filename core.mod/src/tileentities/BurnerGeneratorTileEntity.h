@@ -29,6 +29,7 @@ public:
 
 	void tick(Swan::Ctx &ctx, float dt) override;
 	void drawDebug(Swan::Ctx &ctx) override;
+	void onDespawn(Swan::Ctx &ctx) override;
 
 	void serialize(Swan::Ctx &ctx, Proto::Builder w);
 	void deserialize(Swan::Ctx &ctx, Proto::Reader r);

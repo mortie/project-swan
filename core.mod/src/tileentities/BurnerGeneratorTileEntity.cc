@@ -1,11 +1,12 @@
 #include "BurnerGeneratorTileEntity.h"
 #include "swan/ItemStack.h"
 #include "traits/items.h"
+#include "world/util.h"
 #include <sys/resource.h>
 
 namespace CoreMod {
 
-static constexpr Ampere POWER_AMPERE = 0.5;
+static constexpr Ampere POWER_AMPERE = 1;
 static constexpr Volt POWER_VOLTAGE = 12;
 
 void BurnerGeneratorTileEntity::tick(Swan::Ctx &ctx, float dt)
@@ -27,7 +28,7 @@ void BurnerGeneratorTileEntity::tick(Swan::Ctx &ctx, float dt)
 		currentBurnTime_ = burnable->burnTime;
 	}
 
-	float frac = power_.chargeUp(POWER_AMPERE, POWER_VOLTAGE);
+	float frac = power_.chargeUp(POWER_AMPERE, POWER_VOLTAGE, dt);
 	burnRate_ = (frac + 0.2) / 1.2;
 	currentBurnTime_ -= dt * burnRate_;
 
@@ -48,8 +49,17 @@ void BurnerGeneratorTileEntity::drawDebug(Swan::Ctx &ctx)
 {
 	ImGui::Text("Burning: %d", currentBurnTime_ > 0);
 	ImGui::Text("Voltage: %f", power_.voltage());
+	ImGui::Text("Charge: %f", power_.charge());
+	ImGui::Text("Capacitance: %f", power_.capacitance());
 	ImGui::Text("Burn rate: %f", burnRate_);
 	ImGui::Text("Burn time: %f", currentBurnTime_);
+}
+
+void BurnerGeneratorTileEntity::onDespawn(Swan::Ctx &ctx)
+{
+	for (int i = 0; i < inventory_.stack_.count(); ++i) {
+		dropItem(ctx, tileEntity_.pos, *inventory_.stack_.item());
+	}
 }
 
 void BurnerGeneratorTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
