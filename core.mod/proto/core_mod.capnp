@@ -98,6 +98,11 @@ struct ComputerTileEntity {
 	assembly @1 :Text;
 }
 
+struct IncandescentLampTileEntity {
+	tileEntity @0 :TileEntity;
+	powerSource @1 :EntityRef;
+}
+
 struct ItemFanTileEntity {
 	tileEntity @0 :TileEntity;
 	direction @1 :Direction;

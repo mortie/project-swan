@@ -21,6 +21,7 @@
 #include "world/drain.h"
 #include "world/item-fan.h"
 #include "world/ladder.h"
+#include "world/lamps.h"
 #include "world/outcrop.h"
 #include "world/pipe.h"
 #include "world/platform.h"
@@ -166,6 +167,7 @@ public:
 		registerDoor(*this);
 		registerDrain(*this);
 		registerItemFan(*this);
+		registerIncandescentLamp(*this);
 		registerRopeLadder(*this);
 		registerGlassPipe(*this);
 		registerPlatform(*this);
