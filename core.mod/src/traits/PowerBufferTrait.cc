@@ -2,9 +2,9 @@
 
 namespace CoreMod {
 
-Joule PowerBuffer::consume(Ampere current)
+Joule PowerBuffer::consume(Ampere current, float dt)
 {
-	Coulomb delta = current / Swan::TICK_RATE;
+	Coulomb delta = current * dt;
 
 	// Only allow drawing up to 1/10 of the buffer at a time.
 	// This represents ESR I guess?
@@ -23,9 +23,9 @@ Joule PowerBuffer::consume(Ampere current)
 	return delta * ((before + after) / 2);
 }
 
-float PowerBuffer::chargeUp(Ampere current, Volt voltage)
+float PowerBuffer::chargeUp(Ampere current, Volt voltage, float dt)
 {
-	Coulomb delta = current / Swan::TICK_RATE;
+	Coulomb delta = current * dt;
 
 	Coulomb maxDelta = voltage * capacitance_ - charge_;
 	if (maxDelta <= 0) {
