@@ -101,7 +101,6 @@ void IncandescentLampTileEntity::tick(Swan::Ctx &ctx, float dt)
 			ctx.plane.lights().addLight(tileEntity_.pos, light);
 		}
 
-		Swan::info << "Light: " << light_ << " -> " << light;
 		light_ = light;
 	}
 }
@@ -129,7 +128,6 @@ void IncandescentLampTileEntity::onDespawn(Swan::Ctx &ctx)
 {
 	if (light_ > 0) {
 		ctx.plane.lights().removeLight(tileEntity_.pos, light_);
-		Swan::info << "Light: " << light_ << " -> 0; despawning";
 	}
 }
 
