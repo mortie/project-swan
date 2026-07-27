@@ -1,4 +1,5 @@
 #include "IncandescentLampTileEntity.h"
+#include "cygnet/util.h"
 #include "traits/PowerBufferTrait.h"
 #include <cstdlib>
 #include <limits>
@@ -103,6 +104,25 @@ void IncandescentLampTileEntity::tick(Swan::Ctx &ctx, float dt)
 		Swan::info << "Light: " << light_ << " -> " << light;
 		light_ = light;
 	}
+}
+
+void IncandescentLampTileEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
+{
+	if (light_ <= 0) {
+		return;
+	}
+
+	rnd.drawTileSprite({
+		.transform = Cygnet::Mat3gf{}.translate(tileEntity_.pos),
+		.sprite = glowRedSprite_,
+		.opacity = light_ * 2,
+	});
+
+	rnd.drawTileSprite({
+		.transform = Cygnet::Mat3gf{}.translate(tileEntity_.pos),
+		.sprite = glowSprite_,
+		.opacity = (light_ - 1) / 2.8f,
+	});
 }
 
 void IncandescentLampTileEntity::onDespawn(Swan::Ctx &ctx)
