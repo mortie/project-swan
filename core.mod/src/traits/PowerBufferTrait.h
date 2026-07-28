@@ -39,6 +39,9 @@ using Watt = float;
 /// A power buffer is pretty much a capacitor.
 class PowerBuffer {
 public:
+	PowerBuffer(Farad capacitance): capacitance_(capacitance)
+	{}
+
 	/// Compute the current voltage of the power buffer.
 	/// A full power buffer will have a voltage equal to its nominal voltage.
 	Volt voltage() { return voltage(charge_, capacitance_); }
@@ -80,7 +83,7 @@ public:
 	void drawDebug();
 
 private:
-	Farad capacitance_ = 0.2;
+	Farad capacitance_ = 0;
 	Coulomb charge_ = 0;
 	Coulomb chargeConsumedThisTick_ = 0;
 	Ampere currentDraw_ = 0;

@@ -15,8 +15,7 @@ class BurnerGeneratorTileEntity final: public Swan::Entity,
 public:
 	using Proto = proto::BurnerGeneratorTileEntity;
 
-	BurnerGeneratorTileEntity(Swan::Ctx &)
-	{}
+	BurnerGeneratorTileEntity(Swan::Ctx &);
 
 	Swan::TileEntity &get(Swan::TileEntityTrait::Tag) override
 	{ return tileEntity_; }

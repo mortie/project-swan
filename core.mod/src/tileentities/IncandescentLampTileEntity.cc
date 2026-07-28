@@ -13,8 +13,8 @@ static constexpr float FILAMENT_DENSITY = 19254; // kg per m^3
 static constexpr float FILAMENT_EMISSIVITY = 0.45; // Roughly
 
 // Tweakable values for our specific filament
-static constexpr float FILAMENT_LENGTH = 25e-3; // m
-static constexpr float FILAMENT_DIAMETER = 50e-6; // m
+static constexpr float FILAMENT_LENGTH = 0.35; // m
+static constexpr float FILAMENT_DIAMETER = 27e-6; // m
 
 // Current limit,
 // helps avoid extreme behavior during inrush
@@ -56,22 +56,21 @@ void IncandescentLampTileEntity::tick(Swan::Ctx &ctx, float dt)
 	auto source = powerSource_->trait<PowerBufferTrait>();
 	float temp = kelvin();
 
-	Joule energyConsumed = 0;
-	if (source) {
-		Ampere amps = source->voltage() / filamentResistance(temp);
-		if (amps > FILAMENT_CURRENT_LIMIT) {
-			amps = FILAMENT_CURRENT_LIMIT;
-		}
-
-		energyConsumed = source->consume(amps, dt);
-	}
-
 	// We need more temporal resolution for Stefan-Boltzmann stuff
-	constexpr int N = 4;
+	constexpr int N = 1000;
 	dt /= N;
-	energyConsumed /= N;
 	Joule totalEnergyEmitted = 0;
 	for (int i = 0; i < N; ++i) {
+		Joule energyConsumed = 0;
+		if (source) {
+			Ampere amps = source->voltage() / filamentResistance(temp);
+			if (amps > FILAMENT_CURRENT_LIMIT) {
+				amps = FILAMENT_CURRENT_LIMIT;
+			}
+
+			energyConsumed = source->consume(amps, dt);
+		}
+
 		temperature_ += energyConsumed / FILAMENT_HEAT_CAPACITY;
 
 		constexpr float STEFAN_BOLTZMANN_CONSTANT = 5.670374419e-8;
@@ -93,7 +92,7 @@ void IncandescentLampTileEntity::tick(Swan::Ctx &ctx, float dt)
 		temp = kelvin();
 	}
 
-	float light = totalEnergyEmitted * 10;
+	float light = totalEnergyEmitted * 1.5;
 	if (light > 10) {
 		light = 10;
 	}

@@ -6,8 +6,13 @@
 
 namespace CoreMod {
 
-static constexpr Ampere POWER_AMPERE = 1;
-static constexpr Volt POWER_VOLTAGE = 12;
+static constexpr Ampere POWER_AMPERE = 0.4;
+static constexpr Volt POWER_VOLTAGE = 230;
+static constexpr Farad CAPACITANCE = 5e-3;
+
+BurnerGeneratorTileEntity::BurnerGeneratorTileEntity(Swan::Ctx &ctx)
+	: power_(CAPACITANCE)
+{}
 
 void BurnerGeneratorTileEntity::tick2(Swan::Ctx &ctx, float dt)
 {
