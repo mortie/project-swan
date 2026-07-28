@@ -1,4 +1,5 @@
 #include "terrain.h"
+#include "swan/common.h"
 #include "tiles.h"
 #include "outcrop.h"
 #include "world/util.h"
@@ -22,6 +23,7 @@ void registerTerrain(Swan::Mod &mod)
 		.explosionResistance = 0.37,
 		.stepSound = "core::step/stone",
 		.droppedItem = "core::stone",
+		.onExplode = dropRandomItemCount<"core::rock">,
 	});
 
 	mod.registerTile({

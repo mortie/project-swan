@@ -56,6 +56,10 @@ static void explode(Swan::Ctx &ctx, Swan::Vec2 pos)
 		if (tile.breakableBy.contains(Swan::Tool::HAND)) {
 			breakTileAndDropItem(ctx, pos);
 		} else {
+			if (tile.more->onExplode) {
+				tile.more->onExplode(ctx, pos);
+			}
+
 			ctx.plane.tiles().setID(pos, Swan::World::AIR_TILE_ID);
 		}
 	};

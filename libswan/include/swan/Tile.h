@@ -80,6 +80,7 @@ struct Tile {
 
 		bool (*onSpawn)(Ctx &ctx, TilePos pos) = nullptr;
 		void (*onBreak)(Ctx &ctx, TilePos pos) = nullptr;
+		void (*onExplode)(Ctx &ctx, TilePos pos) = nullptr;
 		void (*onTileUpdate)(Ctx &ctx, TilePos pos) = nullptr;
 		bool (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta) = nullptr;
 		void (*onWorldTick)(Ctx &ctx, TilePos pos) = nullptr;
@@ -113,6 +114,7 @@ struct Tile {
 
 		Builder &withOnSpawn(bool (*onSpawn)(Ctx &, TilePos));
 		Builder &withOnBreak(void (*onBreak)(Ctx &, TilePos));
+		Builder &withOnExplode(void (*onExplode)(Ctx &, TilePos));
 		Builder &withOnTileUpdate(void (*onTileUpdate)(Ctx &, TilePos));
 		Builder &withOnActivate(bool (*onActivate)(Ctx &, TilePos, ActivateMeta));
 		Builder &withOnWorldTick(void (*onWorldTick)(Ctx &, TilePos));
@@ -125,6 +127,7 @@ struct Tile {
 		More(const Builder &builder):
 			onSpawn(builder.onSpawn),
 			onBreak(builder.onBreak),
+			onExplode(builder.onExplode),
 			onTileUpdate(builder.onTileUpdate),
 			onActivate(builder.onActivate),
 			onWorldTick(builder.onWorldTick),
@@ -139,6 +142,7 @@ struct Tile {
 
 		bool (*onSpawn)(Ctx &ctx, TilePos pos);
 		void (*onBreak)(Ctx &ctx, TilePos pos);
+		void (*onExplode)(Ctx &ctx, TilePos pos);
 		void (*onTileUpdate)(Ctx &ctx, TilePos pos);
 		bool (*onActivate)(Ctx &ctx, TilePos pos, ActivateMeta meta);
 		void (*onWorldTick)(Ctx &ctx, TilePos pos);

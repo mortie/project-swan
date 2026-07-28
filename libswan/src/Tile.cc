@@ -128,6 +128,12 @@ Tile::Builder &Tile::Builder::withOnBreak(void (*onBreak)(Ctx &, TilePos))
 	return *this;
 }
 
+Tile::Builder &Tile::Builder::withOnExplode(void (*onExplode)(Ctx &, TilePos))
+{
+	this->onExplode = onExplode;
+	return *this;
+}
+
 Tile::Builder &Tile::Builder::withOnTileUpdate(
 	void (*onTileUpdate)(Ctx &, TilePos))
 {
