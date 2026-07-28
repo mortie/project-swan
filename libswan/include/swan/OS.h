@@ -9,6 +9,7 @@ namespace OS {
 
 class Dynlib: NonCopyable {
 public:
+	Dynlib() = default;
 	Dynlib(const std::string &path);
 	Dynlib(Dynlib &&dl) noexcept;
 	~Dynlib();
@@ -23,7 +24,7 @@ public:
 	void *getVoid(const std::string &name);
 
 private:
-	void *handle_;
+	void *handle_ = nullptr;
 };
 
 }

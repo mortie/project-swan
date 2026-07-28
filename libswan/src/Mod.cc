@@ -7,14 +7,28 @@
 
 namespace Swan {
 
-ModWrapper::ModWrapper(std::unique_ptr<Mod> mod, std::string path, OS::Dynlib lib):
-	mod_(std::move(mod)), path_(std::move(path)), dynlib_(std::move(lib))
+std::shared_ptr<cpptomlng::table> Mod::loadToml(std::string_view name)
 {
-	lang_ = cpptoml::make_table();
-	loadLang("en");
+	std::string path = cat(wrapper_.path_, "/assets/resources/", name, ".toml");
+
+	std::ifstream langFile(path);
+	if (!langFile) {
+		warn << "Failed to open toml: " << path;
+		return cpptomlng::make_table();
+	}
+
+	cpptoml::parser parser(langFile);
+	try {
+		return parser.parse();
+	} catch (cpptoml::parse_exception &exc) {
+		warn << "Failed to parse " << path << ": " << exc.what();
+		return cpptomlng::make_table();
+	}
 }
 
-ModWrapper::ModWrapper(ModWrapper &&other) noexcept = default;
+ModWrapper::ModWrapper():
+	lang_(cpptoml::make_table())
+{}
 
 ModWrapper::~ModWrapper()
 {

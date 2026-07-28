@@ -14,6 +14,11 @@
 #include "OS.h"
 #include "Command.h"
 
+/// Always use this macro to define a mod's entry point.
+#define SWAN_MOD_ENTRY_POINT(name) \
+extern "C" Swan::Mod *mod_create(Swan::ModWrapper &w) \
+{ return new name(w); }
+
 namespace cpptomlng {
 class table;
 }
@@ -25,7 +30,9 @@ class ModWrapper;
 
 class Mod {
 public:
-	Mod(std::string name): name_(std::move(name))
+	Mod(std::string name, ModWrapper &wrapper):
+		name_(std::move(name)),
+		wrapper_(wrapper)
 	{}
 	virtual ~Mod() = default;
 
@@ -73,7 +80,10 @@ public:
 	virtual void start(World &)
 	{}
 
+	std::shared_ptr<cpptomlng::table> loadToml(std::string_view name);
+
 	const std::string name_;
+	ModWrapper &wrapper_;
 	std::vector<Tile::Builder> tiles_;
 	std::vector<Item::Builder> items_;
 	std::vector<Fluid::Builder> fluids_;
@@ -85,10 +95,12 @@ public:
 	std::vector<CommandSpec> commands_;
 };
 
+using ModCreateFn = Mod *(*)(ModWrapper &);
+
 class ModWrapper {
 public:
-	ModWrapper(std::unique_ptr<Mod> mod, std::string path, OS::Dynlib lib);
-	ModWrapper(ModWrapper &&other) noexcept;
+	ModWrapper();
+	ModWrapper(ModWrapper &&other) = delete;
 	~ModWrapper();
 
 	std::string_view name() { return mod_->name_; }

@@ -1,0 +1,116 @@
+[["core::crafting"]]
+inputs = [[1, "core::stick"]]
+output = [1, "core::wood-pole"]
+
+[["core::crafting"]]
+inputs = [[1, "core::wood"]]
+output = [8, "core::stick"]
+
+[["core::crafting"]]
+inputs = [
+	[1, "core::stick"],
+	[1, "core::coal"],
+]
+output = [2, "core::torch"]
+
+[["core::crafting"]]
+inputs = [
+	[1, "core::stick"],
+	[1, "core::scorchbloom-flower"],
+]
+output = [1, "core::scorchbloom-torch"]
+
+[["core::crafting"]]
+inputs = [[2, "core::fiber"]]
+output = [1, "core::rope"]
+
+[["core::crafting"]]
+inputs = [
+	[1, "core::rope"],
+	[2, "core::stick"],
+	[2, "core::rock"],
+]
+output = [1, "core::axe"]
+
+[["core::crafting"]]
+inputs = [
+	[1, "core::rope"],
+	[3, "core::stick"],
+	[3, "core::rock"],
+]
+output = [1, "core::shovel"]
+
+[["core::crafting"]]
+inputs = [[1, "core::sulphur"]]
+output = [1, "core::dynamite"]
+
+[["core::crafting"]]
+inputs = [
+	[3, "core::rock"],
+	[4, "core::stick"],
+	[2, "core::fiber"],
+]
+output = [1, "core::bonfire"]
+
+[["core::crafting"]]
+inputs = [[3, "core::clay"]]
+output = [1, "core::unfired-crucible"]
+
+[["core::crafting"]]
+inputs = [[4, "core::wood"]]
+output = [1, "core::workbench"]
+
+[["core::workbench"]]
+inputs = [[1, "core::wood"]]
+output = [2, "core::platform"]
+
+[["core::workbench"]]
+inputs = [[2, "core::wood"]]
+output = [1, "core::door"]
+
+[["core::workbench"]]
+inputs = [
+	[2, "core::rope"],
+	[2, "core::stick"],
+]
+output = [1, "core::rope-ladder"]
+
+[["core::workbench"]]
+inputs = [
+	[4, "core::wood"],
+	[2, "core::rock"],
+	[1, "core::rope"],
+]
+output = [1, "core::chest"]
+
+[["core::burning"]]
+inputs = [[1, "core::stick"]]
+output = [0, ""]
+
+[["core::burning"]]
+inputs = [[1, "core::unfired-crucible"]]
+output = [1, "core::crucible"]
+
+[["core::burning"]]
+inputs = [[1, "core::potato"]]
+output = [1, "core::cooked-potato"]
+
+[["core::burning"]]
+inputs = [[1, "core::cooked-potato"]]
+output = [1, "core::burned-food"]
+
+[["core::burning"]]
+inputs = [[1, "core::burned-food"]]
+output = [0, ""]
+
+[["core::smelting"]]
+inputs = [[2, "core::iron-ore-chunk"]]
+output = [2, "core::pig-iron"]
+
+[["core::smelting"]]
+inputs = [[2, "core::copper-ore-chunk"]]
+output = [2, "core::copper"]
+
+[["core::smelting"]]
+inputs = [[2, "core::sand-pile"]]
+output = [1, "core::glass"]

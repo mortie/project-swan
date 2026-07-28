@@ -11,13 +11,15 @@ int main(int argc, char **argv)
 	std::string dlpath = Swan::cat(argv[1], "/.swanbuild/mod");
 
 	Swan::OS::Dynlib dl(dlpath);
-	auto create = dl.get<Swan::Mod *(*)()>("mod_create");
+	auto create = dl.get<Swan::ModCreateFn>("mod_create");
 	if (!create) {
 		std::cerr << argv[1] << ": No 'mod_create' function!";
 		return 1;
 	}
 
-	std::unique_ptr<Swan::Mod> mod(create());
+	Swan::ModWrapper wrapper;
+	wrapper.path_ = argv[1];
+	std::unique_ptr<Swan::Mod> mod(create(wrapper));
 
 	std::string varName;
 	for (auto &tile: mod->tiles_) {

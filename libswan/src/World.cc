@@ -24,20 +24,23 @@ std::vector<ModWrapper> World::loadMods(std::span<const std::string> paths)
 {
 	ScopedTimer timer("load mods");
 
-	std::vector<ModWrapper> mods;
+	std::vector<ModWrapper> mods(paths.size());
 
-	mods.reserve(paths.size());
-
+	size_t i = 0;
 	for (auto &path: paths) {
 		OS::Dynlib dl(path + "/.swanbuild/mod");
-		auto create = dl.get<Mod *(*)()>("mod_create");
+		auto create = dl.get<ModCreateFn>("mod_create");
 		if (create == NULL) {
 			warn << path << ": No 'mod_create' function!";
-			continue;
+			mods.pop_back();
 		}
 
-		std::unique_ptr<Mod> mod(create());
-		mods.push_back(ModWrapper(std::move(mod), path, std::move(dl)));
+		auto &w = mods[i++];
+		w.path_ = std::move(path);
+		w.dynlib_ = std::move(dl);
+		std::unique_ptr<Mod> mod(create(w));
+		w.mod_ = std::move(mod);
+		w.loadLang("en");
 	}
 
 	return mods;

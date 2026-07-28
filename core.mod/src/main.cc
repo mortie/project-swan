@@ -1,6 +1,8 @@
 #include <cstdlib>
+#include <exception>
 #include <memory>
 #include <string>
+#include <cpptoml.h>
 #include <swan/swan.h>
 
 #include "DefaultWorldGen.h"
@@ -38,7 +40,7 @@ namespace CoreMod {
 
 class CoreMod: public Swan::Mod {
 public:
-	CoreMod(): Swan::Mod("core")
+	CoreMod(Swan::ModWrapper &w): Swan::Mod("core", w)
 	{
 		// Put this first,
 		// so that everything that's part of the terrain
@@ -305,143 +307,76 @@ public:
 		});
 
 		registerRecipeKind("crafting");
-		registerRecipe({
-			.inputs = {{1, "core::stick"}},
-			.output = {1, "core::wood-pole"},
-			.kind = "core::crafting",
-		});
-		registerRecipe({
-			.inputs = {{1, "core::wood"}},
-			.output = {8, "core::stick"},
-			.kind = "core::crafting",
-		});
-		registerRecipe({
-			.inputs = {{1, "core::stick"}, {1, "core::coal"}},
-			.output = {2, "core::torch"},
-			.kind = "core::crafting",
-		});
-		registerRecipe({
-			.inputs = {{1, "core::stick"}, {1, "core::scorchbloom-flower"}},
-			.output = {1, "core::scorchbloom-torch"},
-			.kind = "core::crafting",
-		});
-		registerRecipe({
-			.inputs = {{2, "core::fiber"}},
-			.output = {1, "core::rope"},
-			.kind = "core::crafting",
-		});
-		registerRecipe({
-			.inputs = {
-				{1, "core::rope"},
-				{2, "core::stick"},
-				{2, "core::rock"},
-			},
-			.output = {1, "core::axe"},
-			.kind = "core::crafting",
-		});
-		registerRecipe({
-			.inputs = {
-				{1, "core::rope"},
-				{3, "core::stick"},
-				{3, "core::rock"},
-			},
-			.output = {1, "core::shovel"},
-			.kind = "core::crafting",
-		});
-		registerRecipe({
-			.inputs = {{1, "core::sulphur"}},
-			.output = {1, "core::dynamite"},
-			.kind = "core::crafting",
-		});
-		registerRecipe({
-			.inputs = {
-				{3, "core::rock"},
-				{4, "core::stick"},
-				{2, "core::fiber"},
-			},
-			.output = {1, "core::bonfire"},
-			.kind = "core::crafting",
-		});
-		registerRecipe({
-			.inputs = {{3, "core::clay"}},
-			.output = {1, "core::unfired-crucible"},
-			.kind = "core::crafting",
-		});
-		registerRecipe({
-			.inputs = {{4, "core::wood"}},
-			.output = {1, "core::workbench"},
-			.kind = "core::crafting",
-		});
-
 		registerRecipeKind("workbench");
-		registerRecipe({
-			.inputs = {{1, "core::wood"}},
-			.output = {2, "core::platform"},
-			.kind = "core::workbench",
-		});
-		registerRecipe({
-			.inputs = {{2, "core::wood"}},
-			.output = {1, "core::door"},
-			.kind = "core::workbench",
-		});
-		registerRecipe({
-			.inputs = {{2, "core::rope"}, {2, "core::stick"}},
-			.output = {1, "core::rope-ladder"},
-			.kind = "core::workbench",
-		});
-		registerRecipe({
-			.inputs = {
-				{4, "core::wood"},
-				{2, "core::rock"},
-				{1, "core::rope"},
-			},
-			.output = {1, "core::chest"},
-			.kind = "core::workbench",
-		});
-
 		registerRecipeKind("burning");
-		registerRecipe({
-			.inputs = {{1, "core::stick"}},
-			.output = {},
-			.kind = "core::burning",
-		});
-		registerRecipe({
-			.inputs = {{1, "core::unfired-crucible"}},
-			.output = {1, "core::crucible"},
-			.kind = "core::burning",
-		});
-		registerRecipe({
-			.inputs = {{1, "core::potato"}},
-			.output = {1, "core::cooked-potato"},
-			.kind = "core::burning",
-		});
-		registerRecipe({
-			.inputs = {{1, "core::cooked-potato"}},
-			.output = {1, "core::burned-food"},
-			.kind = "core::burning",
-		});
-		registerRecipe({
-			.inputs = {{1, "core::burned-food"}},
-			.output = {},
-			.kind = "core::burning",
-		});
-
 		registerRecipeKind("smelting");
-		registerRecipe({
-			.inputs = {{2, "core::iron-ore-chunk"}},
-			.output = {2, "core::pig-iron"},
-			.kind = "core::smelting",
-		});
-		registerRecipe({
-			.inputs = {{2, "core::copper-ore-chunk"}},
-			.output = {2, "core::copper"},
-			.kind = "core::smelting",
-		});
-		registerRecipe({
-			.inputs = {{2, "core::sand-pile"}},
-			.output = {1, "core::glass"},
-			.kind = "core::smelting",
-		});
+
+		// Load recipes from toml
+		auto recipes = loadToml("recipes");
+		for (auto &[kind, v]: *recipes) {
+			auto array = v->as_table_array();
+			if (!array) {
+				Swan::warn << "Expected table array for " << kind;
+				continue;
+			}
+
+			// Define this outside, so that we can use it for debug info
+			// in the exception handler
+			Swan::Recipe::Builder builder;
+			builder.kind = kind;
+
+			for (auto &recipe: *array) try {
+				builder = {};
+				builder.kind = kind;
+
+				// Find the recipe output
+				auto output = recipe->get("output")->as_array();
+				auto outputItem = output->at(1)->as<std::string>();
+				if (!outputItem) {
+					throw std::runtime_error("Output is missing its item");
+				}
+				builder.output.item = std::move(outputItem->get());
+
+				auto outputCount = output->at(0)->as<int64_t>();
+				if (!outputCount) {
+					throw std::runtime_error("Output is missing its count");
+				}
+				builder.output.count = int(outputCount->get());
+
+				// Find the recipe inputs
+				auto inputs = recipe->get("inputs")->as_array();
+				for (auto &inputBase: *inputs) {
+					auto input = inputBase->as_array();
+					if (!input) {
+						throw std::runtime_error("Input is not an array");
+					}
+
+					auto item = input->at(1)->as<std::string>();
+					if (!item) {
+						throw std::runtime_error("Input is missing its item");
+					}
+
+					auto count = input->at(0)->as<int64_t>();
+					if (!count) {
+						throw std::runtime_error("Input is missing its count");
+					}
+					builder.inputs.push_back({
+						.count = int(count->get()),
+						.item = std::move(item->get()),
+					});
+				}
+
+				// Finally, register the recipe
+				registerRecipe(std::move(builder));
+			} catch (std::exception &ex) {
+				if (!builder.output.item.empty()) {
+					Swan::warn << "Bad " << kind << " recipe for " << builder.output.item;
+				} else {
+					Swan::warn << "Bad " << kind << " recipe";
+				}
+			}
+		}
+		recipes.reset();
 
 		registerWorldGen<DefaultWorldGen>("default");
 
@@ -691,7 +626,4 @@ public:
 
 }
 
-extern "C" Swan::Mod *mod_create()
-{
-	return new CoreMod::CoreMod();
-}
+SWAN_MOD_ENTRY_POINT(CoreMod::CoreMod)
