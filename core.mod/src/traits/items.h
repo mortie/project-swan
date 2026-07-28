@@ -5,7 +5,7 @@
 namespace CoreMod {
 
 struct BurnableItemTrait: public Swan::Item::Traits {
-	float burnTime = 8;
+	float burnTime = 60;
 };
 
 }
