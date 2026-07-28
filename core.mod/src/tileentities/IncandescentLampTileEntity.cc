@@ -152,10 +152,10 @@ void IncandescentLampTileEntity::drawDebug(Swan::Ctx &ctx)
 	Ohm resistance = filamentResistance(kelvin());
 	Ampere amps = voltage / resistance;
 
-	ImGui::Text("Temperature: %.1fk", temperature_ + 300);
-	ImGui::Text("Source voltage: %.1fV", voltage);
-	ImGui::Text("Resistance: %.1f Ohm", resistance);
-	ImGui::Text("Power: %.1fW", amps * voltage);
+	ImGui::Text("Temperature: %.0f K", kelvin());
+	ImGui::Text("Source voltage: %s", Swan::siPrefix(voltage, "V"));
+	ImGui::Text("Resistance: %s", Swan::siPrefix(resistance, "Ω"));
+	ImGui::Text("Power: %s", Swan::siPrefix(amps * voltage, "W"));
 	ImGui::Text("Light: %.1f", light_);
 }
 

@@ -68,10 +68,10 @@ void PowerBuffer::deserialize(proto::PowerBuffer::Reader r)
 
 void PowerBuffer::drawDebug()
 {
-	ImGui::Text("Voltage: %.1fV", voltage());
-	ImGui::Text("Charge: %.1fC", charge_);
-	ImGui::Text("Capacitance: %.1fF", capacitance_);
-	ImGui::Text("Current draw: %.2fA", currentDraw_);
+	ImGui::Text("Voltage: %s", Swan::siPrefix(voltage(), "V"));
+	ImGui::Text("Charge: %s", Swan::siPrefix(charge_, "C"));
+	ImGui::Text("Capacitance: %s", Swan::siPrefix(capacitance_, "F"));
+	ImGui::Text("Current draw: %s", Swan::siPrefix(currentDraw_, "A"));
 }
 
 }
