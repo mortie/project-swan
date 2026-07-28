@@ -57,7 +57,7 @@ void IncandescentLampTileEntity::tick(Swan::Ctx &ctx, float dt)
 	float temp = kelvin();
 
 	// We need more temporal resolution for Stefan-Boltzmann stuff
-	constexpr int N = 1000;
+	constexpr int N = 10;
 	dt /= N;
 	Joule totalEnergyEmitted = 0;
 	for (int i = 0; i < N; ++i) {
@@ -124,13 +124,13 @@ void IncandescentLampTileEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	rnd.drawTileSprite({
 		.transform = Cygnet::Mat3gf{}.translate(tileEntity_.pos),
 		.sprite = glowRedSprite_,
-		.opacity = light_ * 2,
+		.opacity = std::min(light_ * 2.f, 3.f),
 	});
 
 	rnd.drawTileSprite({
 		.transform = Cygnet::Mat3gf{}.translate(tileEntity_.pos),
 		.sprite = glowSprite_,
-		.opacity = (light_ - 1) / 2.8f,
+		.opacity = std::min((light_ - 1) / 2.8f, 3.f),
 	});
 }
 
