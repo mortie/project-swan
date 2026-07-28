@@ -41,7 +41,11 @@ class PowerBuffer {
 public:
 	/// Compute the current voltage of the power buffer.
 	/// A full power buffer will have a voltage equal to its nominal voltage.
-	Volt voltage() { return charge_ / capacitance_; }
+	Volt voltage() { return voltage(charge_, capacitance_); }
+
+	// Compute voltage based on a different charge level.
+	static Volt voltage(Coulomb charge, Farad capacitance)
+	{ return charge / capacitance; }
 
 	Coulomb charge() { return charge_; }
 	Farad capacitance() { return capacitance_; }
@@ -63,12 +67,23 @@ public:
 	/// and anything in between.
 	float chargeUp(Ampere current, Volt voltage, float dt);
 
+	/// The power source accumulates charge consumption throughout the tick,
+	/// and reconsiliates during the tick2 phase.
+	/// This function *must* be called in the owning entity's tick2 function.
+	/// In general, power draw should happen during tick(),
+	/// and power generation should happen during tick2().
+	void tick2();
+
 	void serialize(proto::PowerBuffer::Builder w);
 	void deserialize(proto::PowerBuffer::Reader r);
+
+	void drawDebug();
 
 private:
 	Farad capacitance_ = 0.2;
 	Coulomb charge_ = 0;
+	Coulomb chargeConsumedThisTick_ = 0;
+	Ampere currentDraw_ = 0;
 };
 
 class PowerBufferTrait {

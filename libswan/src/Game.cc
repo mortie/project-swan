@@ -403,7 +403,7 @@ void Game::draw()
 			cat("Entity debug [", i, "]").c_str(), nullptr,
 			ImGuiWindowFlags_AlwaysAutoResize);
 		ImGui::Text(
-			"Debug for %s %" PRIu64,
+			"Debug for %s #%" PRIu64,
 			ref.collection()->name().c_str(), ref.id());
 
 		if (auto body = ent->trait<BodyTrait>(); body) {

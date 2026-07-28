@@ -9,8 +9,10 @@ namespace CoreMod {
 static constexpr Ampere POWER_AMPERE = 1;
 static constexpr Volt POWER_VOLTAGE = 12;
 
-void BurnerGeneratorTileEntity::tick(Swan::Ctx &ctx, float dt)
+void BurnerGeneratorTileEntity::tick2(Swan::Ctx &ctx, float dt)
 {
+	power_.tick2();
+
 	if (currentBurnTime_ <= 0) {
 		burnRate_ = 0;
 
@@ -47,12 +49,9 @@ void BurnerGeneratorTileEntity::tick(Swan::Ctx &ctx, float dt)
 
 void BurnerGeneratorTileEntity::drawDebug(Swan::Ctx &ctx)
 {
-	ImGui::Text("Burning: %d", currentBurnTime_ > 0);
-	ImGui::Text("Voltage: %f", power_.voltage());
-	ImGui::Text("Charge: %f", power_.charge());
-	ImGui::Text("Capacitance: %f", power_.capacitance());
-	ImGui::Text("Burn rate: %f", burnRate_);
-	ImGui::Text("Burn time: %f", currentBurnTime_);
+	power_.drawDebug();
+	ImGui::Text("Burn rate: %.1fx", burnRate_);
+	ImGui::Text("Burn time: %.1fs", currentBurnTime_);
 }
 
 void BurnerGeneratorTileEntity::onDespawn(Swan::Ctx &ctx)

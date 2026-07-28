@@ -104,7 +104,7 @@ void IncandescentLampTileEntity::tick(Swan::Ctx &ctx, float dt)
 		light = 0;
 	}
 
-	if (std::abs(light - light_) >= 0.1 || (light == 0 && light_ != 0)) {
+	if (std::abs(light - light_) >= 0.05 || (light == 0 && light_ != 0)) {
 		if (light_ > 0) {
 			ctx.plane.lights().removeLight(tileEntity_.pos, light_);
 		}

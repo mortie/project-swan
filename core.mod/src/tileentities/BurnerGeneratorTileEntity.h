@@ -27,7 +27,8 @@ public:
 	PowerBuffer &get(PowerBufferTrait::Tag) override
 	{ return power_; }
 
-	void tick(Swan::Ctx &ctx, float dt) override;
+	void tick2(Swan::Ctx &ctx, float dt) override;
+
 	void drawDebug(Swan::Ctx &ctx) override;
 	void onDespawn(Swan::Ctx &ctx) override;
 

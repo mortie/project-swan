@@ -14,12 +14,19 @@ Joule PowerBuffer::consume(Ampere current, float dt)
 		delta = charge_ / 10;
 	}
 
+	// As a special case, only allow 'charge_ - chargeConsumedThisTick_'
+	// to become 0, never negative.
+	// This violates fairness but avoids breaking the capacitor :)
+	if (charge_ - chargeConsumedThisTick_ - delta < 0) {
+		delta = charge_ - chargeConsumedThisTick_;
+	}
+
 	// Consume the charge,
 	// and use the average voltage of before and after
 	// to compute the joules
-	Volt before = voltage();
-	charge_ -= delta;
-	Volt after = voltage();
+	Volt before = voltage(charge_, capacitance_);
+	chargeConsumedThisTick_ += delta;
+	Volt after = voltage(charge_ - delta, capacitance_);
 	return delta * ((before + after) / 2);
 }
 
@@ -42,6 +49,13 @@ float PowerBuffer::chargeUp(Ampere current, Volt voltage, float dt)
 	return fraction;
 }
 
+void PowerBuffer::tick2()
+{
+	charge_ -= chargeConsumedThisTick_;
+	currentDraw_ = chargeConsumedThisTick_ * Swan::TICK_RATE;
+	chargeConsumedThisTick_ = 0;
+}
+
 void PowerBuffer::serialize(proto::PowerBuffer::Builder w)
 {
 	w.setCharge(charge_);
@@ -50,6 +64,14 @@ void PowerBuffer::serialize(proto::PowerBuffer::Builder w)
 void PowerBuffer::deserialize(proto::PowerBuffer::Reader r)
 {
 	charge_ = r.getCharge();
+}
+
+void PowerBuffer::drawDebug()
+{
+	ImGui::Text("Voltage: %.1fV", voltage());
+	ImGui::Text("Charge: %.1fC", charge_);
+	ImGui::Text("Capacitance: %.1fF", capacitance_);
+	ImGui::Text("Current draw: %.2fA", currentDraw_);
 }
 
 }
