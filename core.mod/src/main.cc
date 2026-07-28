@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <memory>
 #include <string>
 #include <swan/swan.h>
 
@@ -9,8 +10,10 @@
 #include "entities/ItemStackEntity.h"
 #include "entities/SpiderEntity.h"
 #include "entities/FallingTileEntity.h"
+#include "traits/items.h"
 #include "world/aqueduct.h"
 #include "world/bonfire.h"
+#include "world/burner-generator.h"
 #include "world/chest.h"
 #include "world/clay.h"
 #include "world/computer.h"
@@ -18,6 +21,7 @@
 #include "world/drain.h"
 #include "world/item-fan.h"
 #include "world/ladder.h"
+#include "world/lamps.h"
 #include "world/outcrop.h"
 #include "world/pipe.h"
 #include "world/platform.h"
@@ -156,12 +160,14 @@ public:
 
 		registerAqueduct(*this);
 		registerBonfire(*this);
+		registerBurnerGenerator(*this);
 		registerChest(*this);
 		registerClay(*this);
 		registerComputer(*this);
 		registerDoor(*this);
 		registerDrain(*this);
 		registerItemFan(*this);
+		registerIncandescentLamp(*this);
 		registerRopeLadder(*this);
 		registerGlassPipe(*this);
 		registerPlatform(*this);
@@ -217,6 +223,7 @@ public:
 		registerItem({
 			.name = "coal",
 			.image = "core::items/coal",
+			.traits = std::make_shared<BurnableItemTrait>(),
 		});
 		registerItem({
 			.name = "pig-iron",

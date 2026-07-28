@@ -29,6 +29,8 @@ struct Item {
 		float lightLevel = 0;
 
 		void (*onActivate)(Ctx &ctx, ActivateMeta meta) = nullptr;
+
+		std::shared_ptr<Traits> traits = nullptr;
 	};
 
 	Tile::ID id;
@@ -44,13 +46,15 @@ struct Item {
 
 	void (*onActivate)(Ctx &ctx, ActivateMeta meta) = nullptr;
 
+	std::shared_ptr<Traits> traits = nullptr;
+
 	Item() = default;
 	Item(const Item &) = delete;
 	Item(Item &&) = default;
 	Item(Tile::ID id, std::string name, const Builder &builder):
 		id(id), name(name), maxStack(builder.maxStack), tile(nullptr),
 		tool(builder.tool), lightLevel(builder.lightLevel),
-		onActivate(builder.onActivate)
+		onActivate(builder.onActivate), traits(std::move(builder.traits))
 	{}
 
 	Item &operator=(Item &&) = default;
