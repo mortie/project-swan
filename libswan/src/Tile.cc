@@ -50,6 +50,12 @@ Tile::Builder &Tile::Builder::withIsPlatform(bool isPlatform)
 	return *this;
 }
 
+Tile::Builder &Tile::Builder::withIsFullSupportH(bool isFullSupportH)
+{
+	this->isFullSupportH = std::move(isFullSupportH);
+	return *this;
+}
+
 Tile::Builder &Tile::Builder::withIsReplacable(bool isReplacable)
 {
 	this->isReplacable = std::move(isReplacable);

@@ -98,6 +98,7 @@ struct Tile {
 		Builder &withIsSupportV(bool isSupportV);
 		Builder &withIsSupportH(bool isSupportH);
 		Builder &withIsPlatform(bool isPlatform);
+		Builder &withIsFullSupportH(bool isFullSupportH);
 		Builder &withIsReplacable(bool isReplacable);
 		Builder &withLightLevel(float lightLevel);
 		Builder &withTemperature(float temperature);

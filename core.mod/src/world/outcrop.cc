@@ -59,6 +59,7 @@ void registerOutcrop(Swan::Mod &mod, Swan::Tile::Builder builder)
 		.withIsSolid(false)
 		.withIsSupportH(false)
 		.withIsSupportV(false)
+		.withIsFullSupportH(false)
 		.withBreakableBy(Swan::Tool::HAND)
 		.withOnTileUpdate(onOutcropUpdate)
 		.withIsOpaque(false);
