@@ -16,6 +16,10 @@ static constexpr float FILAMENT_EMISSIVITY = 0.45; // Roughly
 static constexpr float FILAMENT_LENGTH = 25e-3; // m
 static constexpr float FILAMENT_DIAMETER = 50e-6; // m
 
+// Current limit,
+// helps avoid extreme behavior during inrush
+static constexpr Ampere FILAMENT_CURRENT_LIMIT = 1;
+
 // Useful computed properties
 static constexpr float FILAMENT_RADIUS = FILAMENT_DIAMETER / 2; // m
 static constexpr float FILAMENT_CROSS_SECTION = ( // m^2
@@ -42,6 +46,9 @@ static constexpr float filamentResistance(float kelvin)
 void IncandescentLampTileEntity::onSpawn(Swan::Ctx &ctx)
 {
 	powerSource_ = ctx.plane.entities().getTileEntity(tileEntity_.pos.add(1, 0));
+	if (!powerSource_) {
+		powerSource_ = ctx.plane.entities().getTileEntity(tileEntity_.pos.add(-1, 0));
+	}
 }
 
 void IncandescentLampTileEntity::tick(Swan::Ctx &ctx, float dt)
@@ -52,6 +59,10 @@ void IncandescentLampTileEntity::tick(Swan::Ctx &ctx, float dt)
 	Joule energyConsumed = 0;
 	if (source) {
 		Ampere amps = source->voltage() / filamentResistance(temp);
+		if (amps > FILAMENT_CURRENT_LIMIT) {
+			amps = FILAMENT_CURRENT_LIMIT;
+		}
+
 		energyConsumed = source->consume(amps, dt);
 	}
 
