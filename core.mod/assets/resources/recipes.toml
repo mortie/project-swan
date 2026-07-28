@@ -83,6 +83,21 @@ inputs = [
 ]
 output = [1, "core::chest"]
 
+[["core::workbench"]]
+inputs = [
+	[1, "core::glass"],
+	[1, "core::pig-iron"],
+	[2, "core::copper"],
+]
+output = [1, "core::incandescent-lamp"]
+
+[["core::workbench"]]
+inputs = [
+	[4, "core::rock"],
+	[2, "core::copper"],
+]
+output = [1, "core::burner-generator"]
+
 [["core::burning"]]
 inputs = [[1, "core::stick"]]
 output = [0, ""]
