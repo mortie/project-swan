@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <variant>
 #include <unordered_map>
@@ -423,6 +424,57 @@ inline Result<long> parseInt(std::string_view str)
 	}
 
 	return {Ok, negative ? -val : val};
+}
+
+/// Produce a string with an SI prefix.
+/// For example, 'siPrefix(500000, "V")'
+/// will return the string: "50 MV".
+/// The string is a static thread local buffer,
+/// so it does not have to be freed, but will be overwritten
+/// by the next call to 'siPrefix' from the same thread.
+/// This allows it to be passed directly to e.g ImGui::Text functions
+/// and prevents unnecessary memory allocations.
+template<typename T>
+inline const char *siPrefix(T val, const char *unit, const char *format = nullptr)
+{
+	static thread_local char buf[128];
+
+	if (format == nullptr) {
+		if constexpr (std::is_floating_point_v<T>) {
+			format = "%.1f";
+		} else {
+			format = "%d";
+		}
+	}
+
+	char fmt[32];
+	if (val < 1e-9) {
+		// Really really small units should just show up as "0 <unit>"
+		snprintf(fmt, sizeof(fmt), "%s %%s", format);
+	} else if (val < 1e-6) {
+		snprintf(fmt, sizeof(fmt), "%s n%%s", format);
+		val *= 1e9;
+	} else if (val < 1e-3) {
+		snprintf(fmt, sizeof(fmt), "%s μ%%s", format);
+		val *= 1e6;
+	} else if (val < 1) {
+		snprintf(fmt, sizeof(fmt), "%s m%%s", format);
+		val *= 1e3;
+	} else if (val < 1e3) {
+		snprintf(fmt, sizeof(fmt), "%s %%s", format);
+	} else if (val < 1e6) {
+		snprintf(fmt, sizeof(fmt), "%s k%%s", format);
+		val /= 1e3;
+	} else if (val < 1e9) {
+		snprintf(fmt, sizeof(fmt), "%s M%%s", format);
+		val /= 1e6;
+	} else {
+		snprintf(fmt, sizeof(fmt), "%s G%%s", format);
+		val /= 1e9;
+	}
+
+	snprintf(buf, sizeof(buf), (const char *)fmt, val, unit);
+	return buf;
 }
 
 template<typename A, typename B>
