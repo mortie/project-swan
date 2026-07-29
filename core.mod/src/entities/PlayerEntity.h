@@ -1,9 +1,11 @@
 #pragma once
 
+#include <memory>
 #include <swan/swan.h>
 
 #include "core_mod.capnp.h"
 #include "util/CraftingInventory.h"
+#include "util/InteractionManager.h"
 
 namespace CoreMod {
 
@@ -44,6 +46,9 @@ public:
 	bool askToOpenInventory(Swan::EntityRef ent, CloseInventoryCallback cb);
 	void askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent);
 	Swan::EntityRef currentInventoryEntity() { return auxInventoryEntity_; }
+
+	void registerInteractionManager(std::unique_ptr<InteractionManager> manager)
+	{ interactionManager_ = std::move(manager); }
 
 	void hurt(Swan::Ctx &ctx, int n);
 	bool heal(Swan::Ctx &, int n);
@@ -252,6 +257,8 @@ private:
 	float blackout_ = 0;
 	float oxygen_ = 0;
 	float temperature_ = 0;
+
+	std::unique_ptr<InteractionManager> interactionManager_;
 
 	int teleState_ = 0;
 	float teleportTimer_ = 0;

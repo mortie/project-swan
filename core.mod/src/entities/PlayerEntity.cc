@@ -289,6 +289,11 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	if (consoleVisible_) {
 		drawConsole(ctx);
 	}
+
+	// Draw interaction manager, if there is one
+	if (interactionManager_) {
+		interactionManager_->draw(ctx, rnd);
+	}
 }
 
 void PlayerEntity::drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
@@ -412,12 +417,31 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 		lookVector_ = lookVector_.norm() * 6;
 	}
 
-	auto raycast = ctx.plane.tiles().raycast(
+	auto cursorRaycast = ctx.plane.tiles().raycast(
 		facePos, lookVector_, std::min(lookVector_.length(), 5.9f));
-	breakPos_ = raycast.pos;
-	placePos_ = raycast.pos + raycast.face;
+	breakPos_ = cursorRaycast.pos;
+	placePos_ = cursorRaycast.pos + cursorRaycast.face;
+
+	// Compute a world position which represents where the user "looks",
+	// or as close we can get without passing through solid tiles.
+	// Used as the 'lookPos' property for interaction managers.
+	Swan::Vec2 lookPos;
+	if (cursorRaycast.hit) {
+		lookPos = Swan::tileCenter(placePos_);
+	} else {
+		lookPos = facePos + lookVector_;
+	}
 
 	jumpTimer_.tick(dt);
+
+	// Update the interaction manager
+	if (interactionManager_) {
+		interactionManager_->update(ctx, {
+			.lookPos = lookPos,
+			.breakPos = breakPos_,
+			.placePos = placePos_,
+		});
+	}
 
 	// Handle teleporting back to spawn point + animation
 	if (teleState_ == 1) {
@@ -489,7 +513,15 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 
 	// Place block, or activate tile or item
 	if (actions_.activate) {
-		onRightClick(ctx);
+		if (interactionManager_) {
+			interactionManager_->activate(ctx, {
+				.lookPos = lookPos,
+				.breakPos = breakPos_,
+				.placePos = placePos_,
+			});
+		} else {
+			onRightClick(ctx);
+		}
 	}
 
 	// Drop item
