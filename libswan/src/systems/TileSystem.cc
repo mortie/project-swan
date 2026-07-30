@@ -419,7 +419,7 @@ Raycast TileSystemImpl::raycast(
 		}
 
 		return {
-			.hit = false,
+			.hit = true,
 			.tile = *tile,
 			.pos = tp,
 			.face = face,
