@@ -47,8 +47,11 @@ public:
 	void askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent);
 	Swan::EntityRef currentInventoryEntity() { return auxInventoryEntity_; }
 
-	void registerInteractionManager(std::unique_ptr<InteractionManager> manager)
-	{ interactionManager_ = std::move(manager); }
+	void registerInteractionManager(
+		Swan::Ctx &ctx,
+		std::unique_ptr<InteractionManager> manager);
+	void clearInteractionManager(Swan::Ctx &ctx)
+	{ registerInteractionManager(ctx, nullptr); }
 
 	void hurt(Swan::Ctx &ctx, int n);
 	bool heal(Swan::Ctx &, int n);

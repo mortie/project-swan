@@ -19,6 +19,7 @@
 #include "world/chest.h"
 #include "world/clay.h"
 #include "world/computer.h"
+#include "world/copper-wire.h"
 #include "world/door.h"
 #include "world/drain.h"
 #include "world/item-fan.h"
@@ -166,6 +167,7 @@ public:
 		registerChest(*this);
 		registerClay(*this);
 		registerComputer(*this);
+		registerCopperWire(*this);
 		registerDoor(*this);
 		registerDrain(*this);
 		registerItemFan(*this);

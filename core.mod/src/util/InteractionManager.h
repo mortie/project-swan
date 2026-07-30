@@ -24,6 +24,9 @@ public:
 	virtual void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	{}
 
+	virtual void destroy(Swan::Ctx &ctx)
+	{}
+
 	bool done()
 	{ return done_; }
 

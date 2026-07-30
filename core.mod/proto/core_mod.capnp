@@ -10,6 +10,7 @@ using import "/swan.capnp".ItemStack;
 using import "/swan.capnp".Direction;
 using import "/swan.capnp".EntityRef;
 using import "/swan.capnp".Vec2i;
+using import "/swan.capnp".Vec2;
 
 struct CraftingInventory {
 	discoveredRecipes @0 :List(Text);
@@ -17,6 +18,18 @@ struct CraftingInventory {
 
 struct PowerBuffer {
 	charge @0 :Float32;
+}
+
+struct CopperWireEntity {
+	startPoint @0 :Vec2;
+	endPoint @1 :Vec2;
+	finalPoint @2 :Vec2;
+	segments @3 :List(Segment);
+
+	struct Segment {
+		start @0 :Vec2;
+		end @1 :Vec2;
+	}
 }
 
 struct DynamiteEntity {

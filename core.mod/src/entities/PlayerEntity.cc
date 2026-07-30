@@ -718,6 +718,17 @@ void PlayerEntity::askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent)
 	}
 }
 
+void PlayerEntity::registerInteractionManager(
+	Swan::Ctx &ctx,
+	std::unique_ptr<InteractionManager> manager)
+{
+	if (interactionManager_) {
+		interactionManager_->destroy(ctx);
+	}
+
+	interactionManager_ = std::move(manager);
+}
+
 void PlayerEntity::hurt(Swan::Ctx &ctx, int n)
 {
 	if (invulnerable_ > 0) {
