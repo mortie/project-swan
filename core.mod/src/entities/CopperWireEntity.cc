@@ -5,13 +5,13 @@
 
 namespace CoreMod {
 
-static constexpr int RESOLUTION = 2; // Segments per meter
+static constexpr float MAX_LENGTH = 25;
+static constexpr int RESOLUTION = 5; // Segments per meter
 static constexpr float SEGMENT_LENGTH = 1.0f / float(RESOLUTION);
-static constexpr float SEGMENT_TENSION = 0.25;
-static constexpr float SPRING_COEF = 500;
+static constexpr float SPRING_COEF = 1500;
 static constexpr float GRAVITY = 4;
 
-static constexpr float TICK_HZ = 500;
+static constexpr float TICK_HZ = 1500;
 
 void CopperWireEntity::setEndPoint(Swan::Vec2 endPoint)
 {
@@ -19,6 +19,10 @@ void CopperWireEntity::setEndPoint(Swan::Vec2 endPoint)
 
 	auto pointer = endPoint - points_.front();
 	float length = pointer.length();
+	if (length > MAX_LENGTH) {
+		endPoint = points_.front() + pointer.norm() * MAX_LENGTH;
+		length = MAX_LENGTH;
+	}
 
 	int numSegments = std::max(int(length * RESOLUTION), 1);
 	int numPoints = numSegments + 1; // Fencepost
@@ -53,13 +57,28 @@ void CopperWireEntity::update(Swan::Ctx &ctx, float dt)
 
 void CopperWireEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
-	for (auto point: points_) {
-		rnd.drawRect({
-			.pos = point.add(-0.05, -0.05),
-			.size = {0.1, 0.1},
-			.fill = {0.46, 0.84, 0.17},
-		});
+	for (size_t i = 0; i < points_.size() - 1; ++i) {
+		auto a = points_[i];
+		auto b = points_[i + 1];
+		for (int i = 0; i < 10; ++i) {
+			Swan::Vec2 pos = {
+				Swan::lerp(a.x, b.x, i / 10.0),
+				Swan::lerp(a.y, b.y, i / 10.0),
+			};
+			rnd.drawRect({
+				.pos = pos.add(-0.05, -0.05),
+				.size = {0.1, 0.1},
+				.outline = {0, 0, 0, 0},
+				.fill = {0.96, 0.54, 0.17},
+			});
+		}
 	}
+	rnd.drawRect({
+		.pos = points_.back().add(-0.05, -0.05),
+		.size = {0.1, 0.1},
+		.outline = {0, 0, 0, 0},
+		.fill = {0.96, 0.54, 0.17},
+	});
 }
 
 void CopperWireEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
@@ -98,8 +117,11 @@ void CopperWireEntity::simulatePhysicsStep(Swan::Ctx &ctx, float dt)
 		// Compute the error values for left and right segments:
 		// a negative error means too short, a positive error means too long.
 		// Divide by two because the point on the other side makes the same computation.
-		float leftError = (leftLength - SEGMENT_LENGTH * SEGMENT_TENSION) / 2;
-		float rightError = (rightLength - SEGMENT_LENGTH * SEGMENT_TENSION) / 2;
+		// Note: this used to use the desired segment length,
+		// but it turns out that just taking the desired length of a segment to be 0
+		// works pretty well.
+		float leftError = leftLength / 2;
+		float rightError = rightLength / 2;
 
 		// Compute force: move towards points which are too long,
 		// and away from points which are too short
