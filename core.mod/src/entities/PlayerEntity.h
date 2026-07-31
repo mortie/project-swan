@@ -47,11 +47,10 @@ public:
 	void askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent);
 	Swan::EntityRef currentInventoryEntity() { return auxInventoryEntity_; }
 
-	void registerInteractionManager(
-		Swan::Ctx &ctx,
-		std::unique_ptr<InteractionManager> manager);
-	void clearInteractionManager(Swan::Ctx &ctx)
-	{ registerInteractionManager(ctx, nullptr); }
+	void registerInteractionManager(std::unique_ptr<InteractionManager> manager)
+	{ interactionManager_ = std::move(manager); }
+	void clearInteractionManager()
+	{ interactionManager_.reset(); }
 
 	void hurt(Swan::Ctx &ctx, int n);
 	bool heal(Swan::Ctx &, int n);
@@ -214,7 +213,7 @@ private:
 		LETHARGIC,
 	};
 
-	void onRightClick(Swan::Ctx &ctx);
+	void onRightClick(Swan::Ctx &ctx, Swan::Vec2 lookPos);
 	void onLeftClick(Swan::Ctx &ctx);
 	void dropItem(Swan::Ctx &ctx);
 

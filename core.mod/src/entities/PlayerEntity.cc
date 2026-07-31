@@ -436,7 +436,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 
 	// Update the interaction manager
 	if (interactionManager_) {
-		interactionManager_->update(ctx, {
+		interactionManager_->update(ctx, dt, {
 			.lookPos = lookPos,
 			.breakPos = breakPos_,
 			.placePos = placePos_,
@@ -513,15 +513,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 
 	// Place block, or activate tile or item
 	if (actions_.activate) {
-		if (interactionManager_) {
-			interactionManager_->activate(ctx, {
-				.lookPos = lookPos,
-				.breakPos = breakPos_,
-				.placePos = placePos_,
-			});
-		} else {
-			onRightClick(ctx);
-		}
+		onRightClick(ctx, lookPos);
 	}
 
 	// Drop item
@@ -718,17 +710,6 @@ void PlayerEntity::askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent)
 	}
 }
 
-void PlayerEntity::registerInteractionManager(
-	Swan::Ctx &ctx,
-	std::unique_ptr<InteractionManager> manager)
-{
-	if (interactionManager_) {
-		interactionManager_->destroy(ctx);
-	}
-
-	interactionManager_ = std::move(manager);
-}
-
 void PlayerEntity::hurt(Swan::Ctx &ctx, int n)
 {
 	if (invulnerable_ > 0) {
@@ -788,9 +769,19 @@ void PlayerEntity::onLeftClick(Swan::Ctx &ctx)
 	interactTimer_ = 0.2;
 }
 
-void PlayerEntity::onRightClick(Swan::Ctx &ctx)
+void PlayerEntity::onRightClick(Swan::Ctx &ctx, Swan::Vec2 lookPos)
 {
 	if (interactTimer_ > 0) {
+		return;
+	}
+
+	if (interactionManager_) {
+		interactionManager_->activate(ctx, {
+			.lookPos = lookPos,
+			.breakPos = breakPos_,
+			.placePos = placePos_,
+		});
+		interactTimer_ = 0.5;
 		return;
 	}
 

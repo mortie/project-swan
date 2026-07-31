@@ -8,28 +8,31 @@ namespace CoreMod {
 
 class CopperWireInteractionManager: public InteractionManager {
 public:
-	CopperWireInteractionManager(Swan::EntityRef player, Swan::EntityRef wire):
+	CopperWireInteractionManager(Swan::Ctx &ctx, Swan::EntityRef player, Swan::Vec2 startPoint):
 		player_(player),
-		wire_(wire)
+		wire_(ctx, startPoint)
 	{}
 
-	void update(Swan::Ctx &ctx, const Info &info) override
+	void update(Swan::Ctx &ctx, float dt, const Info &info) override
 	{
-		if (auto wire = wire_.as<CopperWireEntity>()) {
-			wire->setEndPoint(info.lookPos);
-		} else if (auto player = player_.as<PlayerEntity>()) {
-			player->clearInteractionManager(ctx);
-		}
+		wire_.setEndPoint(info.lookPos);
+		wire_.update(ctx, dt);
 	}
 
-	void destroy(Swan::Ctx &ctx) override
+	void activate(Swan::Ctx &ctx, const Info &info) override
 	{
-		ctx.plane.entities().despawn(wire_);
+		// TODO: do something more appropriate here
+		player_.as<PlayerEntity>()->clearInteractionManager();
+	}
+
+	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override
+	{
+		wire_.draw(ctx, rnd);
 	}
 
 private:
 	Swan::EntityRef player_;
-	Swan::EntityRef wire_;
+	CopperWireEntity wire_;
 };
 
 static void onActivate(Swan::Ctx &ctx, Swan::Item::ActivateMeta meta)
@@ -41,11 +44,9 @@ static void onActivate(Swan::Ctx &ctx, Swan::Item::ActivateMeta meta)
 		return;
 	}
 
-	Swan::info << "Spawning copper wire with start pos: " << Swan::tileCenter(meta.cursor);
-	auto wire = ctx.plane.entities().spawn<CopperWireEntity>(
-		Swan::tileCenter(meta.cursor));
-	auto manager = std::make_unique<CopperWireInteractionManager>(meta.activator, wire);
-	player->registerInteractionManager(ctx, std::move(manager));
+	auto manager = std::make_unique<CopperWireInteractionManager>(
+		ctx, meta.activator, Swan::tileCenter(meta.cursor));
+	player->registerInteractionManager(std::move(manager));
 }
 
 void registerCopperWire(Swan::Mod &mod)

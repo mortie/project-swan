@@ -15,16 +15,13 @@ public:
 		Swan::TilePos placePos;
 	};
 
-	virtual void update(Swan::Ctx &ctx, const Info &info)
+	virtual void update(Swan::Ctx &ctx, float dt, const Info &info)
 	{}
 
 	virtual void activate(Swan::Ctx &ctx, const Info &info)
 	{}
 
 	virtual void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
-	{}
-
-	virtual void destroy(Swan::Ctx &ctx)
 	{}
 
 	bool done()
