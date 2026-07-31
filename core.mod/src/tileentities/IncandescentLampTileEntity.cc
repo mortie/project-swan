@@ -43,17 +43,9 @@ static constexpr float filamentResistance(float kelvin)
 	return (resistivity * FILAMENT_LENGTH) / FILAMENT_CROSS_SECTION;
 }
 
-void IncandescentLampTileEntity::onSpawn(Swan::Ctx &ctx)
-{
-	powerSource_ = ctx.plane.entities().getTileEntity(tileEntity_.pos.add(1, 0));
-	if (!powerSource_) {
-		powerSource_ = ctx.plane.entities().getTileEntity(tileEntity_.pos.add(-1, 0));
-	}
-}
-
 void IncandescentLampTileEntity::tick(Swan::Ctx &ctx, float dt)
 {
-	auto source = powerSource_.trait<PowerBufferTrait>();
+	auto source = powerNode_.powerSource().trait<PowerBufferTrait>();
 	float temp = kelvin();
 
 	// We need more temporal resolution for Stefan-Boltzmann stuff
@@ -146,31 +138,36 @@ void IncandescentLampTileEntity::onDespawn(Swan::Ctx &ctx)
 void IncandescentLampTileEntity::drawDebug(Swan::Ctx &ctx)
 {
 	float voltage = std::numeric_limits<float>::quiet_NaN();
-	auto source = powerSource_->trait<PowerBufferTrait>();
-	if (source) {
-		voltage = source->voltage();
-	}
+	auto source = powerNode_.powerSource().trait<PowerBufferTrait>();
 
 	Ohm resistance = filamentResistance(kelvin());
-	Ampere amps = voltage / resistance;
 
 	ImGui::Text("Temperature: %.0f K", kelvin());
-	ImGui::Text("Source voltage: %s", Swan::siPrefix(voltage, "V"));
+	if (source) {
+		voltage = source->voltage();
+		Ampere amps = voltage / resistance;
+		ImGui::Text("Source voltage: %s", Swan::siPrefix(voltage, "V"));
+		ImGui::Text("Power: %s", Swan::siPrefix(amps * voltage, "W"));
+	} else {
+		ImGui::Text("Source voltage: N/A");
+		ImGui::Text("Source Power: N/A");
+	}
 	ImGui::Text("Resistance: %s", Swan::siPrefix(resistance, "Ω"));
-	ImGui::Text("Power: %s", Swan::siPrefix(amps * voltage, "W"));
 	ImGui::Text("Light: %.1f", light_);
 }
 
 void IncandescentLampTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 {
 	tileEntity_.serialize(w.initTileEntity());
-	powerSource_.serialize(w.initPowerSource());
+	// TODO
+	// powerNode_.serialize(w.initPowerNode())
 }
 
 void IncandescentLampTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
 {
 	tileEntity_.deserialize(r.getTileEntity());
-	powerSource_.deserialize(ctx, r.getPowerSource());
+	// TODO
+	// powerNode_.deserialize(ctx, w.getPowerNode())
 }
 
 }

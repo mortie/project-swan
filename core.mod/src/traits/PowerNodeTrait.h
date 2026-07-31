@@ -1,5 +1,6 @@
 #pragma once
 
+#include "entities/CopperWireEntity.h"
 #include "swan/EntityCollection.h"
 #include <swan/swan.h>
 
@@ -23,6 +24,19 @@ public:
 
 	void attach(Swan::EntityRef wire)
 	{ wires_.push_back(wire); }
+
+	Swan::EntityRef powerSource()
+	{
+		for (auto &wire: wires_) {
+			if (auto w = wire.as<CopperWireEntity>()) {
+				if (auto buf = w->powerSource()) {
+					return buf;
+				}
+			}
+		}
+
+		return {};
+	}
 
 private:
 	Swan::Vec2 anchorPoint_;

@@ -25,7 +25,6 @@ public:
 	PowerNode &get(PowerNodeTrait::Tag) override
 	{ return powerNode_; }
 
-	void onSpawn(Swan::Ctx &ctx) override;
 	void tick(Swan::Ctx &ctx, float dt) override;
 	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
 	void onDespawn(Swan::Ctx &ctx) override;
@@ -39,7 +38,6 @@ private:
 
 	Swan::TileEntity tileEntity_;
 	PowerNode powerNode_{{24.5/32, 29.5/32}};
-	Swan::EntityRef powerSource_;
 
 	// Temperature, represented as "degrees kelvin over ambient".
 	// "Ambient" is assumed to be 300k (~27C).

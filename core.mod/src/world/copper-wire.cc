@@ -2,6 +2,7 @@
 #include "entities/CopperWireEntity.h"
 #include "entities/PlayerEntity.h"
 #include "swan/traits/InventoryTrait.h"
+#include "traits/PowerBufferTrait.h"
 #include "traits/PowerNodeTrait.h"
 #include "util/InteractionManager.h"
 #include <memory>
@@ -19,7 +20,11 @@ public:
 		player_(player),
 		startEntity_(startEntity),
 		wire_(ctx, startPoint)
-	{}
+	{
+		if (startEntity.trait<PowerBufferTrait>()) {
+			wire_.setPowerSource(startEntity);
+		}
+	}
 
 	int playerCopperSlot()
 	{
@@ -55,11 +60,21 @@ public:
 		auto ent = ctx.plane.entities().getTileEntity(info.placePos);
 		auto startPowerNode = startEntity_.trait<PowerNodeTrait>();
 		auto endPowerNode = ent.trait<PowerNodeTrait>();
+		auto endPowerBuffer = ent.trait<PowerBufferTrait>();
 		int copperSlot = playerCopperSlot();
 
-		if (!startPowerNode || !endPowerNode || copperSlot < 0) {
+		bool ok = (
+			startPowerNode &&
+			endPowerNode &&
+			copperSlot >= 0 &&
+			(!endPowerBuffer || !wire_.powerSource()));
+		if (!ok) {
 			player_.as<PlayerEntity>()->clearInteractionManager();
 			return;
+		}
+
+		if (endPowerBuffer) {
+			wire_.setPowerSource(ent);
 		}
 
 		// Consume a piece of copper
