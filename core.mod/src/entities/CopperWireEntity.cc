@@ -92,8 +92,31 @@ void CopperWireEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 
 void CopperWireEntity::onDespawn(Swan::Ctx &ctx)
 {
-	if (points_.size() > 0) {
-		dropItem(ctx, Swan::tilePos(points_[0]), "core::copper-wire");
+	if (points_.empty()) {
+		return;
+	}
+
+	dropItem(ctx, Swan::tilePos(points_[0]), "core::copper-wire");
+	for (size_t i = 0; i < points_.size() - 1; ++i) {
+		auto a = points_[i];
+		auto b = points_[i + 1];
+		for (int i = 0; i < 10; ++i) {
+			Swan::Vec2 pos = {
+				Swan::lerp(a.x, b.x, i / 10.0),
+				Swan::lerp(a.y, b.y, i / 10.0),
+			};
+			ctx.game.spawnParticle({
+				.pos = pos.add(-0.025, -0.025),
+				.vel = {
+					Swan::randfloat() - 0.5f,
+					0.0,
+				},
+				.size = {0.05, 0.05},
+				.color = {0.96, 0.54, 0.17},
+				.lifetime = Swan::randfloat() * 0.2f + 0.05f,
+				.weight = 0.4,
+			});
+		}
 	}
 }
 
