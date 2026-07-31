@@ -3,7 +3,6 @@
 #include <string>
 
 #include "Tile.h"
-#include "traits/InventoryTrait.h"
 #include "Tool.h"
 
 namespace Swan {
@@ -28,7 +27,7 @@ struct Item {
 		ToolSet tool = Tool::NONE;
 		float lightLevel = 0;
 
-		void (*onActivate)(Ctx &ctx, ActivateMeta meta) = nullptr;
+		bool (*onActivate)(Ctx &ctx, ActivateMeta meta) = nullptr;
 
 		std::shared_ptr<Traits> traits = nullptr;
 	};
@@ -44,7 +43,7 @@ struct Item {
 	bool hidden = true;
 	float yOffset = 0;
 
-	void (*onActivate)(Ctx &ctx, ActivateMeta meta) = nullptr;
+	bool (*onActivate)(Ctx &ctx, ActivateMeta meta) = nullptr;
 
 	std::shared_ptr<Traits> traits = nullptr;
 

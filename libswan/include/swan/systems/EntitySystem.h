@@ -50,10 +50,29 @@ public:
 		auto coll = it->second;
 		auto *prevCurrentColl = currentCollection_;
 		currentCollection_ = coll;
-		auto ent = it->second->spawn<Ent, Args...>(ctx, std::forward<Args>(args)...);
-		ent->onSpawn(ctx);
+		auto ref = it->second->spawn<Ent, Args...>(ctx, std::forward<Args>(args)...);
+		ref->onSpawn(ctx);
 		currentCollection_ = prevCurrentColl;
-		return ent;
+		return ref;
+	}
+
+	template<typename Ent>
+	EntityRef spawnMove(Ent &&ent)
+	{
+		auto it = collectionsByType_.find(typeid(Ent));
+		if (it == collectionsByType_.end()) {
+			warn << "Attempt to spawn unregistered entity: " << typeid(Ent).name();
+			return {};
+		}
+
+		auto ctx = getContext();
+		auto coll = it->second;
+		auto *prevCurrentColl = currentCollection_;
+		currentCollection_ = coll;
+		auto ref = it->second->spawnMove(ctx, std::move(ent));
+		ref->onSpawn(ctx);
+		currentCollection_ = prevCurrentColl;
+		return ref;
 	}
 
 	void despawn(EntityRef ref);
@@ -107,6 +126,7 @@ public:
 	using EntitySystemImpl::EntitySystemImpl;
 
 	using EntitySystemImpl::spawn;
+	using EntitySystemImpl::spawnMove;
 	using EntitySystemImpl::despawn;
 	using EntitySystemImpl::getColliding;
 	using EntitySystemImpl::getInTile;

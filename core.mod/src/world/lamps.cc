@@ -1,5 +1,6 @@
 #include "lamps.h"
 #include "tileentities/IncandescentLampTileEntity.h"
+#include "world/util.h"
 
 namespace CoreMod {
 
@@ -15,6 +16,8 @@ void registerIncandescentLamp(Swan::Mod &mod)
 		.breakSound = "core::break/glass",
 		.droppedItem = "core::incandescent-lamp",
 		.tileEntity = "core::tile::incandescent-lamp",
+		.onSpawn = denyIfFloating,
+		.onTileUpdate = breakIfFloating,
 	});
 }
 

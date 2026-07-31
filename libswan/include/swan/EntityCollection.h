@@ -108,6 +108,8 @@ public:
 
 	template<typename Ent, typename ... Args>
 	EntityRef spawn(Ctx &ctx, Args && ... args);
+	template<typename Ent>
+	EntityRef spawnMove(Ctx &ctx, Ent &&ent);
 
 	EntityRef currentEntity();
 

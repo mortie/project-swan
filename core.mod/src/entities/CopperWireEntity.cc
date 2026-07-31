@@ -2,6 +2,7 @@
 #include "cygnet/Renderer.h"
 #include "swan/common.h"
 #include "swan/constants.h"
+#include "world/util.h"
 
 namespace CoreMod {
 
@@ -15,7 +16,7 @@ static constexpr float TICK_HZ = 1500;
 
 void CopperWireEntity::setEndPoint(Swan::Vec2 endPoint)
 {
-	assert(points_.size() > 0);
+	assert(points_.size() >= 1);
 
 	auto pointer = endPoint - points_.front();
 	float length = pointer.length();
@@ -46,6 +47,14 @@ void CopperWireEntity::setEndPoint(Swan::Vec2 endPoint)
 
 void CopperWireEntity::update(Swan::Ctx &ctx, float dt)
 {
+	if (points_.size() < 2) {
+		Swan::warn << "Invalid copper wire entity with 0 points! Despawning.";
+		ctx.plane.entities().despawn(ctx.plane.entities().current());
+		return;
+	}
+
+	assert(points_.size() >= 2);
+
 	timer_ += dt;
 	while (timer_ > 0) {
 		simulatePhysicsStep(ctx, 1.0 / TICK_HZ);
@@ -79,6 +88,13 @@ void CopperWireEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 		.outline = {0, 0, 0, 0},
 		.fill = {0.96, 0.54, 0.17},
 	});
+}
+
+void CopperWireEntity::onDespawn(Swan::Ctx &ctx)
+{
+	if (points_.size() > 0) {
+		dropItem(ctx, Swan::tilePos(points_[0]), "core::copper-wire");
+	}
 }
 
 void CopperWireEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)

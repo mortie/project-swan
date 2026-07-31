@@ -64,6 +64,8 @@ void BurnerGeneratorTileEntity::onDespawn(Swan::Ctx &ctx)
 	for (int i = 0; i < inventory_.stack_.count(); ++i) {
 		dropItem(ctx, tileEntity_.pos, *inventory_.stack_.item());
 	}
+
+	powerNode_.onDespawn(ctx);
 }
 
 void BurnerGeneratorTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)

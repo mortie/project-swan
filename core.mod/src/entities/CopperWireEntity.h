@@ -3,6 +3,7 @@
 #include <swan/swan.h>
 
 #include "core_mod.capnp.h"
+#include "swan/EntityCollection.h"
 
 namespace CoreMod {
 
@@ -21,9 +22,12 @@ public:
 
 	void update(Swan::Ctx &ctx, float dt) override;
 	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
+	void onDespawn(Swan::Ctx &ctx) override;
 
 	void serialize(Swan::Ctx &ctx, Proto::Builder w);
 	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+
+	Swan::EntityRef powerBuffer() { return powerBuffer_; }
 
 private:
 	void simulatePhysicsStep(Swan::Ctx &ctx, float dt);
@@ -32,6 +36,9 @@ private:
 	// Store all points, including the fixed (start and end) points
 	std::vector<Swan::Vec2> points_;
 	float timer_ = 0;
+
+	// If this wire is connected to a power buffer, store it
+	Swan::EntityRef powerBuffer_;
 };
 
 }

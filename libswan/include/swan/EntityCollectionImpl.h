@@ -41,6 +41,7 @@ public:
 
 	template<typename ... Args>
 	EntityRef spawn(Ctx &ctx, Args && ... args);
+	EntityRef spawnMove(Ctx &ctx, Ent &&ent);
 
 	EntityRef spawn(Ctx &ctx) override;
 	EntityRef spawn(Ctx &ctx, capnp::Data::Reader data) override;
@@ -151,8 +152,14 @@ template<typename Ent, typename ... Args>
 inline EntityRef EntityCollection::spawn(Ctx &ctx, Args &&...args)
 {
 	auto *impl = (EntityCollectionImpl<Ent> *)this;
-
 	return impl->spawn(ctx, std::forward<Args>(args)...);
+}
+
+template<typename Ent>
+inline EntityRef EntityCollection::spawnMove(Ctx &ctx, Ent &&ent)
+{
+	auto *impl = (EntityCollectionImpl<Ent> *)this;
+	return impl->spawnMove(ctx, std::move(ent));
 }
 
 inline EntityRef EntityCollection::currentEntity()
@@ -174,6 +181,31 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(Ctx &ctx, Args &&... args)
 
 	size_t index = entities_.size();
 	auto &w = entities_.emplace_back(ctx, std::forward<Args>(args)...);
+
+	idToIndex_[id] = index;
+	w.id = id;
+
+	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
+		Body &body = w.ent.get(BodyTrait::Tag{});
+		body.pos -= body.size / 2;
+		body.chunkPos = chunkPos({tilePos(body.pos)});
+		auto &chunk = ctx.plane.getChunk(body.chunkPos);
+		chunk.entities_.insert({this, id});
+	}
+
+	currentId_ = prevCurrentId;
+	return {this, id};
+}
+
+template<typename Ent>
+inline EntityRef EntityCollectionImpl<Ent>::spawnMove(Ctx &ctx, Ent &&ent)
+{
+	uint64_t id = nextId_++;
+	auto prevCurrentId = currentId_;
+	currentId_ = id;
+
+	size_t index = entities_.size();
+	auto &w = entities_.emplace_back(std::move(ent));
 
 	idToIndex_[id] = index;
 	w.id = id;

@@ -785,7 +785,29 @@ void PlayerEntity::onRightClick(Swan::Ctx &ctx, Swan::Vec2 lookPos)
 		return;
 	}
 
-	// First priority: activate the hovered tile if it can be activated
+	Swan::ItemStack &stack = heldStack_.empty()
+		? inventory_.content_[ui_.selectedInventorySlot]
+		: heldStack_;
+
+	// First priority: activate the item if possible
+	if (!stack.empty()) {
+		Swan::Item &item = *stack.item();
+
+		if (item.onActivate) {
+			Swan::Item::ActivateMeta meta = {
+				.activator = ctx.plane.entities().current(),
+				.stack = stack,
+				.direction = lookVector_.norm(),
+				.cursor = breakPos_,
+			};
+			if (item.onActivate(ctx, meta)) {
+				interactTimer_ = 0.5;
+				return;
+			}
+		}
+	}
+
+	// Second priority: activate the hovered tile
 	Swan::Tile &hoveredTile = ctx.plane.tiles().get(breakPos_);
 	if (hoveredTile.more->onActivate) {
 		auto &stack = [&]() -> Swan::ItemStack & {
@@ -805,28 +827,11 @@ void PlayerEntity::onRightClick(Swan::Ctx &ctx, Swan::Vec2 lookPos)
 		}
 	}
 
-	Swan::ItemStack &stack = heldStack_.empty()
-		? inventory_.content_[ui_.selectedInventorySlot]
-		: heldStack_;
-
 	if (stack.empty()) {
 		return;
 	}
 
-	Swan::Item &item = *stack.item();
-
-	if (item.onActivate) {
-		Swan::Item::ActivateMeta meta = {
-			.activator = ctx.plane.entities().current(),
-			.stack = stack,
-			.direction = lookVector_.norm(),
-			.cursor = breakPos_,
-		};
-		item.onActivate(ctx, meta);
-		interactTimer_ = 0.5;
-		return;
-	}
-
+	auto &item = *stack.item();
 	if (!item.tile) {
 		return;
 	}

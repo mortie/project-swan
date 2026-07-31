@@ -4,11 +4,13 @@
 
 #include "core_mod.capnp.h"
 #include "swan/EntityCollection.h"
+#include "traits/PowerNodeTrait.h"
 
 namespace CoreMod {
 
 class IncandescentLampTileEntity final: public Swan::Entity,
-	public Swan::TileEntityTrait {
+	public Swan::TileEntityTrait,
+	public PowerNodeTrait {
 public:
 	using Proto = proto::IncandescentLampTileEntity;
 
@@ -19,6 +21,9 @@ public:
 
 	Swan::TileEntity &get(Swan::TileEntityTrait::Tag) override
 	{ return tileEntity_; }
+
+	PowerNode &get(PowerNodeTrait::Tag) override
+	{ return powerNode_; }
 
 	void onSpawn(Swan::Ctx &ctx) override;
 	void tick(Swan::Ctx &ctx, float dt) override;
@@ -33,6 +38,7 @@ private:
 	float kelvin() { return temperature_ + 300; }
 
 	Swan::TileEntity tileEntity_;
+	PowerNode powerNode_{{24.5/32, 29.5/32}};
 	Swan::EntityRef powerSource_;
 
 	// Temperature, represented as "degrees kelvin over ambient".

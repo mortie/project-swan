@@ -53,7 +53,7 @@ void IncandescentLampTileEntity::onSpawn(Swan::Ctx &ctx)
 
 void IncandescentLampTileEntity::tick(Swan::Ctx &ctx, float dt)
 {
-	auto source = powerSource_->trait<PowerBufferTrait>();
+	auto source = powerSource_.trait<PowerBufferTrait>();
 	float temp = kelvin();
 
 	// We need more temporal resolution for Stefan-Boltzmann stuff
@@ -139,6 +139,8 @@ void IncandescentLampTileEntity::onDespawn(Swan::Ctx &ctx)
 	if (light_ > 0) {
 		ctx.plane.lights().removeLight(tileEntity_.pos, light_);
 	}
+
+	powerNode_.onDespawn(ctx);
 }
 
 void IncandescentLampTileEntity::drawDebug(Swan::Ctx &ctx)

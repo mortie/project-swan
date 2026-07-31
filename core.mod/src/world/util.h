@@ -42,11 +42,13 @@ struct StackingTileTrait: Swan::Tile::Traits {
 void registerShovelable(Swan::Mod &mod, Swan::Tile::Builder builder);
 
 template<int N>
-void foodItem(Swan::Ctx &ctx, Swan::Item::ActivateMeta meta)
+bool foodItem(Swan::Ctx &ctx, Swan::Item::ActivateMeta meta)
 {
 	if (healPlayer(ctx, meta.activator, N)) {
 		meta.stack.remove(1);
+		return true;
 	}
+	return false;
 }
 
 template<Swan::FixedString NAME, int MAX = 3, int NUM = 1, int DEN = 4>

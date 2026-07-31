@@ -201,6 +201,7 @@ public:
 				auto pos = meta.activator.getBody()->topMid();
 				auto vel = meta.direction * 15;
 				ctx.plane.entities().spawn<DynamiteEntity>(pos, vel);
+				return true;
 			},
 		});
 
@@ -286,7 +287,9 @@ public:
 				if (plantPotato) {
 					ctx.plane.tiles().setID(above, tiles::potatoBush__0);
 					meta.stack.remove(1);
+					return true;
 				}
+				return false;
 			},
 		});
 		registerItem({
