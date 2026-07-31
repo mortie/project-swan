@@ -55,7 +55,7 @@ public:
 		wire_.update(ctx, dt);
 	}
 
-	void activate(Swan::Ctx &ctx, const Info &info) override
+	bool activate(Swan::Ctx &ctx, const Info &info) override
 	{
 		auto ent = ctx.plane.entities().getTileEntity(info.placePos);
 		auto startPowerNode = startEntity_.trait<PowerNodeTrait>();
@@ -69,8 +69,7 @@ public:
 			copperSlot >= 0 &&
 			(!endPowerBuffer || !wire_.powerSource()));
 		if (!ok) {
-			player_.as<PlayerEntity>()->clearInteractionManager();
-			return;
+			return false;
 		}
 
 		if (endPowerBuffer) {
@@ -94,6 +93,7 @@ public:
 		endPowerNode->attach(ref);
 
 		player_.as<PlayerEntity>()->clearInteractionManager();
+		return true;
 	}
 
 	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override
@@ -109,10 +109,8 @@ private:
 
 static bool onActivate(Swan::Ctx &ctx, Swan::Item::ActivateMeta meta)
 {
-	Swan::info << "Activate copper wire";
 	auto player = meta.activator.as<PlayerEntity>();
 	if (!player) {
-		Swan::warn << "No player!!!";
 		return false;
 	}
 

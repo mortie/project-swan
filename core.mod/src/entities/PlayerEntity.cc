@@ -776,13 +776,15 @@ void PlayerEntity::onRightClick(Swan::Ctx &ctx, Swan::Vec2 lookPos)
 	}
 
 	if (interactionManager_) {
-		interactionManager_->activate(ctx, {
+		bool activated = interactionManager_->activate(ctx, {
 			.lookPos = lookPos,
 			.breakPos = breakPos_,
 			.placePos = placePos_,
 		});
-		interactTimer_ = 0.5;
-		return;
+		if (activated) {
+			interactTimer_ = 0.5;
+			return;
+		}
 	}
 
 	Swan::ItemStack &stack = heldStack_.empty()
@@ -827,36 +829,43 @@ void PlayerEntity::onRightClick(Swan::Ctx &ctx, Swan::Vec2 lookPos)
 		}
 	}
 
-	if (stack.empty()) {
-		return;
-	}
+	bool placed = ([&] {
+		if (stack.empty()) {
+			return false;
+		}
 
-	auto &item = *stack.item();
-	if (!item.tile) {
-		return;
-	}
+		auto &item = *stack.item();
+		if (!item.tile) {
+			return false;
+		}
 
-	if (
-		item.tile->isSolid() &&
-		!ctx.plane.entities().getInTile(placePos_).empty()) {
-		return;
-	}
+		if (
+			item.tile->isSolid() &&
+			!ctx.plane.entities().getInTile(placePos_).empty()) {
+			return false;
+		}
 
-	if (!ctx.plane.placeTile(placePos_, item.tile->id)) {
-		return;
-	}
+		if (!ctx.plane.placeTile(placePos_, item.tile->id)) {
+			return false;
+		}
 
-	// If we were holding a light emitting item,
-	// and that stack is now empty,
-	// remove the light from the held item
-	if (heldStack_.count() == 1 && heldLight_) {
-		ctx.plane.lights().removeLight(heldLight_->pos, heldLight_->level);
-		heldLight_ = std::nullopt;
-	}
+		// If we were holding a light emitting item,
+		// and that stack is now empty,
+		// remove the light from the held item
+		if (heldStack_.count() == 1 && heldLight_) {
+			ctx.plane.lights().removeLight(heldLight_->pos, heldLight_->level);
+			heldLight_ = std::nullopt;
+		}
 
-	interactTimer_ = 0.2;
-	if (!ctx.game.debug_.infiniteItems) {
-		stack.remove(1);
+		interactTimer_ = 0.2;
+		if (!ctx.game.debug_.infiniteItems) {
+			stack.remove(1);
+		}
+		return true;
+	})();
+
+	if (!placed) {
+		clearInteractionManager();
 	}
 }
 

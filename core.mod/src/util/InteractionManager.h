@@ -18,8 +18,8 @@ public:
 	virtual void update(Swan::Ctx &ctx, float dt, const Info &info)
 	{}
 
-	virtual void activate(Swan::Ctx &ctx, const Info &info)
-	{}
+	virtual bool activate(Swan::Ctx &ctx, const Info &info)
+	{ return false; }
 
 	virtual void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	{}

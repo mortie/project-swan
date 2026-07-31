@@ -3,7 +3,6 @@
 #include <swan/swan.h>
 
 #include "core_mod.capnp.h"
-#include "swan/EntityCollection.h"
 #include "traits/PowerNodeTrait.h"
 
 namespace CoreMod {
