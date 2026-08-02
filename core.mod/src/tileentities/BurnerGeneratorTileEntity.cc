@@ -52,13 +52,6 @@ void BurnerGeneratorTileEntity::tick2(Swan::Ctx &ctx, float dt)
 	}
 }
 
-void BurnerGeneratorTileEntity::drawDebug(Swan::Ctx &ctx)
-{
-	power_.drawDebug();
-	ImGui::Text("Burn rate: %.1fx", burnRate_);
-	ImGui::Text("Burn time: %.1fs", currentBurnTime_);
-}
-
 void BurnerGeneratorTileEntity::onDespawn(Swan::Ctx &ctx)
 {
 	for (int i = 0; i < inventory_.stack_.count(); ++i) {
@@ -66,6 +59,13 @@ void BurnerGeneratorTileEntity::onDespawn(Swan::Ctx &ctx)
 	}
 
 	powerNode_.onDespawn(ctx);
+}
+
+void BurnerGeneratorTileEntity::drawDebug(Swan::Ctx &ctx)
+{
+	power_.drawDebug();
+	ImGui::Text("Burn rate: %.1fx", burnRate_);
+	ImGui::Text("Burn time: %.1fs", currentBurnTime_);
 }
 
 void BurnerGeneratorTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)

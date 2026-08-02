@@ -1,6 +1,7 @@
 #include "copper-wire.h"
 #include "entities/CopperWireEntity.h"
 #include "entities/PlayerEntity.h"
+#include "swan/EntityCollection.h"
 #include "swan/traits/InventoryTrait.h"
 #include "traits/PowerBufferTrait.h"
 #include "traits/PowerNodeTrait.h"
@@ -21,9 +22,8 @@ public:
 		startEntity_(startEntity),
 		wire_(ctx, startPoint)
 	{
-		if (startEntity.trait<PowerBufferTrait>()) {
-			wire_.setPowerSource(startEntity);
-		}
+		Swan::info << "Copper wire interaction manager, player: " << player << ", start entity: " << startEntity;
+		wire_.begin_ = startEntity;
 	}
 
 	int playerCopperSlot()
@@ -60,21 +60,17 @@ public:
 		auto ent = ctx.plane.entities().getTileEntity(info.placePos);
 		auto startPowerNode = startEntity_.trait<PowerNodeTrait>();
 		auto endPowerNode = ent.trait<PowerNodeTrait>();
-		auto endPowerBuffer = ent.trait<PowerBufferTrait>();
 		int copperSlot = playerCopperSlot();
 
 		bool ok = (
 			startPowerNode &&
 			endPowerNode &&
-			copperSlot >= 0 &&
-			(!endPowerBuffer || !wire_.powerSource()));
+			copperSlot >= 0);
 		if (!ok) {
 			return false;
 		}
 
-		if (endPowerBuffer) {
-			wire_.setPowerSource(ent);
-		}
+		wire_.end_ = ent;
 
 		// Consume a piece of copper
 		auto player = player_.as<PlayerEntity>();
@@ -91,6 +87,7 @@ public:
 		auto ref = ctx.plane.entities().spawnMove(std::move(wire_));
 		startPowerNode->attach(ref);
 		endPowerNode->attach(ref);
+		endPowerNode->invalidateNetwork();
 
 		player_.as<PlayerEntity>()->clearInteractionManager();
 		return true;

@@ -32,9 +32,9 @@ public:
 	{ return powerNode_; }
 
 	void tick2(Swan::Ctx &ctx, float dt) override;
+	void onDespawn(Swan::Ctx &ctx) override;
 
 	void drawDebug(Swan::Ctx &ctx) override;
-	void onDespawn(Swan::Ctx &ctx) override;
 
 	void serialize(Swan::Ctx &ctx, Proto::Builder w);
 	void deserialize(Swan::Ctx &ctx, Proto::Reader r);

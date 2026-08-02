@@ -1,8 +1,13 @@
 #pragma once
 
 #include "entities/CopperWireEntity.h"
+#include "swan/Entity.h"
 #include "swan/EntityCollection.h"
+#include <optional>
 #include <swan/swan.h>
+#include <type_traits>
+#include <vector>
+#include <unordered_set>
 
 namespace CoreMod {
 
@@ -15,32 +20,24 @@ public:
 	Swan::Vec2 anchorPoint()
 	{ return anchorPoint_; }
 
-	void onDespawn(Swan::Ctx &ctx)
-	{
-		for (auto &wire: wires_) {
-			ctx.plane.entities().despawn(wire);
-		}
-	}
+	void onDespawn(Swan::Ctx &ctx);
+	void attach(Swan::EntityRef wire);
 
-	void attach(Swan::EntityRef wire)
-	{ wires_.push_back(wire); }
-
-	Swan::EntityRef powerSource()
-	{
-		for (auto &wire: wires_) {
-			if (auto w = wire.as<CopperWireEntity>()) {
-				if (auto buf = w->powerSource()) {
-					return buf;
-				}
-			}
-		}
-
-		return {};
-	}
+	Swan::EntityRef powerSource();
+	void invalidateNetwork();
 
 private:
+	Swan::EntityRef findPowerSource(std::unordered_set<PowerNode *> &seen);
+	void invalidateNetwork(std::unordered_set<PowerNode *> &seen);
+
 	Swan::Vec2 anchorPoint_;
 	std::vector<Swan::EntityRef> wires_;
+
+	// For performance reasons, we cache the power source
+	// so that we don't have to search for it more than necessary.
+	// Here, nullopt means that we need to re-check,
+	// a null entity means that we know that there's no power source.
+	std::optional<Swan::EntityRef> powerSource_;
 };
 
 class PowerNodeTrait {
