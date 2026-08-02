@@ -33,7 +33,9 @@ EntityRef EntitySystemImpl::spawn(std::string_view name, capnp::Data::Reader dat
 	currentCollection_ = coll;
 
 	auto ent = it->second->spawn(ctx, data);
+	currentEntityStack_.push_back(ent);
 	ent->onSpawn(ctx);
+	currentEntityStack_.pop_back();
 
 	currentCollection_ = prevCurrentColl;
 	return ent;
@@ -140,6 +142,10 @@ EntityRef EntitySystemImpl::getTileEntity(TilePos pos)
 
 EntityRef EntitySystemImpl::current()
 {
+	if (!currentEntityStack_.empty()) {
+		return currentEntityStack_.back();
+	}
+
 	if (!currentCollection_) {
 		return {};
 	}
@@ -167,7 +173,9 @@ void EntitySystemImpl::spawnTileEntity(TilePos pos, std::string_view name)
 	}
 
 	tileEntities_[pos] = ent;
+	currentEntityStack_.push_back(ent);
 	ent->onSpawn(getContext());
+	currentEntityStack_.pop_back();
 }
 
 void EntitySystemImpl::despawnTileEntity(TilePos pos)

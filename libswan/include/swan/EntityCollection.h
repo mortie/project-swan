@@ -60,8 +60,9 @@ public:
 	template<typename Func>
 	EntityRef &then(Func func);
 
-	bool exists();
+	bool exists() const;
 	Entity *get();
+	const Entity *get() const;
 	Body *getBody();
 
 	template<typename T>
@@ -88,6 +89,8 @@ public:
 
 	void serialize(proto::EntityRef::Builder w);
 	void deserialize(Ctx &ctx, proto::EntityRef::Reader r);
+
+	friend std::ostream &operator<<(std::ostream &os, const EntityRef &ref);
 
 private:
 	EntityCollection *coll_;

@@ -108,6 +108,15 @@ inline Entity *EntityRef::get()
 	return coll_->get(id_);
 }
 
+inline const Entity *EntityRef::get() const
+{
+	if (!coll_) {
+		return nullptr;
+	}
+
+	return coll_->get(id_);
+}
+
 inline Body *EntityRef::getBody()
 {
 	if (!coll_) {
@@ -139,9 +148,20 @@ inline void EntityRef::traitThen(Func func)
 	}
 }
 
-inline bool EntityRef::exists()
+inline bool EntityRef::exists() const
 {
 	return get() != nullptr;
+}
+
+
+inline std::ostream &operator<<(std::ostream &os, const EntityRef &ref)
+{
+	if (ref.exists()) {
+		os << "(EntityRef " << ref.collection()->name() << " #" << ref.id() << ')';
+	} else {
+		os << "(EntityRef nil)";
+	}
+	return os;
 }
 
 /*

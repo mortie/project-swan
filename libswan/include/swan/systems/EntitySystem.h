@@ -114,6 +114,7 @@ private:
 	std::unordered_map<std::type_index, EntityCollection *> collectionsByType_;
 	HashMap<EntityCollection *> collectionsByName_;
 	EntityCollection *currentCollection_ = nullptr;
+	std::vector<EntityRef> currentEntityStack_;
 
 	std::unordered_map<TilePos, EntityRef> tileEntities_;
 
