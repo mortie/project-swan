@@ -1,6 +1,6 @@
 #include "IncandescentLampTileEntity.h"
 #include "cygnet/util.h"
-#include "traits/PowerBufferTrait.h"
+#include "traits/PowerSourceTrait.h"
 #include <cstdlib>
 #include <limits>
 #include <numbers>
@@ -45,7 +45,7 @@ static constexpr float filamentResistance(float kelvin)
 
 void IncandescentLampTileEntity::tick(Swan::Ctx &ctx, float dt)
 {
-	auto source = powerNode_.powerSource().trait<PowerBufferTrait>();
+	auto source = powerNode_.powerSource().trait<PowerSourceTrait>();
 	float temp = kelvin();
 
 	// We need more temporal resolution for Stefan-Boltzmann stuff
@@ -138,7 +138,7 @@ void IncandescentLampTileEntity::onDespawn(Swan::Ctx &ctx)
 void IncandescentLampTileEntity::drawDebug(Swan::Ctx &ctx)
 {
 	float voltage = std::numeric_limits<float>::quiet_NaN();
-	auto source = powerNode_.powerSource().trait<PowerBufferTrait>();
+	auto source = powerNode_.powerSource().trait<PowerSourceTrait>();
 
 	Ohm resistance = filamentResistance(kelvin());
 

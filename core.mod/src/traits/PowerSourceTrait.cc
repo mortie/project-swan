@@ -1,8 +1,8 @@
-#include "PowerBufferTrait.h"
+#include "PowerSourceTrait.h"
 
 namespace CoreMod {
 
-Joule PowerBuffer::consume(Ampere current, float dt)
+Joule PowerSource::consume(Ampere current, float dt)
 {
 	Coulomb delta = current * dt;
 
@@ -30,7 +30,7 @@ Joule PowerBuffer::consume(Ampere current, float dt)
 	return delta * ((before + after) / 2);
 }
 
-float PowerBuffer::chargeUp(Ampere current, Volt voltage, float dt)
+float PowerSource::chargeUp(Ampere current, Volt voltage, float dt)
 {
 	Coulomb delta = current * dt;
 
@@ -49,24 +49,24 @@ float PowerBuffer::chargeUp(Ampere current, Volt voltage, float dt)
 	return fraction;
 }
 
-void PowerBuffer::tick2()
+void PowerSource::tick2()
 {
 	charge_ -= chargeConsumedThisTick_;
 	currentDraw_ = chargeConsumedThisTick_ * Swan::TICK_RATE;
 	chargeConsumedThisTick_ = 0;
 }
 
-void PowerBuffer::serialize(proto::PowerBuffer::Builder w)
+void PowerSource::serialize(proto::PowerSource::Builder w)
 {
 	w.setCharge(charge_);
 }
 
-void PowerBuffer::deserialize(proto::PowerBuffer::Reader r)
+void PowerSource::deserialize(proto::PowerSource::Reader r)
 {
 	charge_ = r.getCharge();
 }
 
-void PowerBuffer::drawDebug()
+void PowerSource::drawDebug()
 {
 	ImGui::Text("Voltage: %s", Swan::siPrefix(voltage(), "V"));
 	ImGui::Text("Charge: %s", Swan::siPrefix(charge_, "C"));

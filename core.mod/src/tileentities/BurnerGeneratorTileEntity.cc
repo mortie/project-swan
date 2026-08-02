@@ -71,7 +71,7 @@ void BurnerGeneratorTileEntity::drawDebug(Swan::Ctx &ctx)
 void BurnerGeneratorTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 {
 	tileEntity_.serialize(w.initTileEntity());
-	power_.serialize(w.initPowerBuffer());
+	power_.serialize(w.initPowerSource());
 	inventory_.stack_.serialize(w.initContent());
 	w.setBurnTime(currentBurnTime_);
 }
@@ -79,7 +79,7 @@ void BurnerGeneratorTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 void BurnerGeneratorTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
 {
 	tileEntity_.deserialize(r.getTileEntity());
-	power_.deserialize(r.getPowerBuffer());
+	power_.deserialize(r.getPowerSource());
 	inventory_.stack_.deserialize(ctx, r.getContent());
 	currentBurnTime_ = r.getBurnTime();
 }

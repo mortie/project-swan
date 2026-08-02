@@ -37,9 +37,9 @@ using Ohm = float;
 using Watt = float;
 
 /// A power buffer is pretty much a capacitor.
-class PowerBuffer {
+class PowerSource {
 public:
-	PowerBuffer(Farad capacitance): capacitance_(capacitance)
+	PowerSource(Farad capacitance): capacitance_(capacitance)
 	{}
 
 	/// Compute the current voltage of the power buffer.
@@ -77,8 +77,8 @@ public:
 	/// and power generation should happen during tick2().
 	void tick2();
 
-	void serialize(proto::PowerBuffer::Builder w);
-	void deserialize(proto::PowerBuffer::Reader r);
+	void serialize(proto::PowerSource::Builder w);
+	void deserialize(proto::PowerSource::Reader r);
 
 	void drawDebug();
 
@@ -89,14 +89,14 @@ private:
 	Ampere currentDraw_ = 0;
 };
 
-class PowerBufferTrait {
+class PowerSourceTrait {
 public:
 	struct Tag {};
 
-	virtual PowerBuffer &get(Tag) = 0;
+	virtual PowerSource &get(Tag) = 0;
 
 protected:
-	~PowerBufferTrait() = default;
+	~PowerSourceTrait() = default;
 };
 
 }

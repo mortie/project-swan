@@ -1,5 +1,5 @@
 #include "PowerNodeTrait.h"
-#include "traits/PowerBufferTrait.h"
+#include "traits/PowerSourceTrait.h"
 
 namespace CoreMod {
 
@@ -48,7 +48,7 @@ Swan::EntityRef PowerNode::findPowerSource(std::unordered_set<PowerNode *> &seen
 		i += 1;
 
 		 for (auto ref: {wire->begin_, wire->end_}) {
-			if (ref.trait<PowerBufferTrait>()) {
+			if (ref.as<PowerSourceTrait>()) {
 				return ref;
 			}
 

@@ -4,7 +4,7 @@
 
 #include "core_mod.capnp.h"
 #include "swan/ItemStack.h"
-#include "traits/PowerBufferTrait.h"
+#include "traits/PowerSourceTrait.h"
 #include "traits/PowerNodeTrait.h"
 
 namespace CoreMod {
@@ -12,7 +12,7 @@ namespace CoreMod {
 class BurnerGeneratorTileEntity final: public Swan::Entity,
 	public Swan::TileEntityTrait,
 	public Swan::InventoryTrait,
-	public PowerBufferTrait,
+	public PowerSourceTrait,
 	public PowerNodeTrait {
 public:
 	using Proto = proto::BurnerGeneratorTileEntity;
@@ -25,7 +25,7 @@ public:
 	Swan::Inventory &get(Swan::InventoryTrait::Tag) override
 	{ return inventory_; }
 
-	PowerBuffer &get(PowerBufferTrait::Tag) override
+	PowerSource &get(PowerSourceTrait::Tag) override
 	{ return power_; }
 
 	PowerNode &get(PowerNodeTrait::Tag) override
@@ -54,7 +54,7 @@ private:
 
 	Swan::TileEntity tileEntity_;
 	Inventory inventory_;
-	PowerBuffer power_;
+	PowerSource power_;
 	PowerNode powerNode_{{4.5/32, 27.5/32}};
 
 	float currentBurnTime_ = 0;

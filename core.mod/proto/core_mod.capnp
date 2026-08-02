@@ -16,7 +16,7 @@ struct CraftingInventory {
 	discoveredRecipes @0 :List(Text);
 }
 
-struct PowerBuffer {
+struct PowerSource {
 	charge @0 :Float32;
 }
 
@@ -101,7 +101,7 @@ struct ChestTileEntity {
 
 struct BurnerGeneratorTileEntity {
 	tileEntity @0 :TileEntity;
-	powerBuffer @1 :PowerBuffer;
+	powerSource @1 :PowerSource;
 	content @2 :ItemStack;
 	burnTime @3 :Float32;
 }
