@@ -74,6 +74,7 @@ void BurnerGeneratorTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 	power_.serialize(w.initPowerSource());
 	inventory_.stack_.serialize(w.initContent());
 	w.setBurnTime(currentBurnTime_);
+	powerNode_.serialize(w.initPowerNode());
 }
 
 void BurnerGeneratorTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
@@ -82,6 +83,7 @@ void BurnerGeneratorTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
 	power_.deserialize(r.getPowerSource());
 	inventory_.stack_.deserialize(ctx, r.getContent());
 	currentBurnTime_ = r.getBurnTime();
+	powerNode_.deserialize(ctx, r.getPowerNode());
 }
 
 Swan::ItemStack BurnerGeneratorTileEntity::Inventory::take(int slot)

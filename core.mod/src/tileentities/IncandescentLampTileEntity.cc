@@ -159,15 +159,13 @@ void IncandescentLampTileEntity::drawDebug(Swan::Ctx &ctx)
 void IncandescentLampTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 {
 	tileEntity_.serialize(w.initTileEntity());
-	// TODO
-	// powerNode_.serialize(w.initPowerNode())
+	powerNode_.serialize(w.initPowerNode());
 }
 
 void IncandescentLampTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
 {
 	tileEntity_.deserialize(r.getTileEntity());
-	// TODO
-	// powerNode_.deserialize(ctx, w.getPowerNode())
+	powerNode_.deserialize(ctx, r.getPowerNode());
 }
 
 }

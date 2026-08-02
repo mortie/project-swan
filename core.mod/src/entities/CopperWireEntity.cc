@@ -122,12 +122,27 @@ void CopperWireEntity::onDespawn(Swan::Ctx &ctx)
 
 void CopperWireEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 {
-	// TODO
+	begin_.serialize(w.initBegin());
+	end_.serialize(w.initEnd());
+
+	auto points = w.initPoints(points_.size());
+	for (size_t i = 0; i < points_.size(); ++i) {
+		points[i].setX(points_[i].x);
+		points[i].setY(points_[i].y);
+	}
 }
 
 void CopperWireEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
 {
-	// TODO
+	begin_.deserialize(ctx, r.getBegin());
+	end_.deserialize(ctx, r.getEnd());
+
+	auto points = r.getPoints();
+	points_.resize(points.size());
+	for (size_t i = 0; i < points.size(); ++i) {
+		points_[i].x = points[i].getX();
+		points_[i].y = points[i].getY();
+	}
 }
 
 void CopperWireEntity::simulatePhysicsStep(Swan::Ctx &ctx, float dt)

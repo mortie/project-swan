@@ -18,6 +18,24 @@ void PowerNode::attach(Swan::EntityRef wire)
 	wires_.push_back(wire);
 }
 
+void PowerNode::serialize(proto::PowerNode::Builder w)
+{
+	auto wires = w.initWires(wires_.size());
+	for (size_t i = 0; i < wires_.size(); ++i) {
+		wires_[i].serialize(wires[i]);
+	}
+}
+
+void PowerNode::deserialize(Swan::Ctx &ctx, proto::PowerNode::Reader r)
+{
+	powerSource_.reset();
+	auto wires = r.getWires();
+	wires_.resize(wires.size());
+	for (size_t i = 0; i < wires.size(); ++i) {
+		wires_[i].deserialize(ctx, wires[i]);
+	}
+}
+
 Swan::EntityRef PowerNode::powerSource()
 {
 	if (powerSource_.has_value()) {

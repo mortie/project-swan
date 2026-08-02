@@ -22,7 +22,6 @@ public:
 		startEntity_(startEntity),
 		wire_(ctx, startPoint)
 	{
-		Swan::info << "Copper wire interaction manager, player: " << player << ", start entity: " << startEntity;
 		wire_.begin_ = startEntity;
 	}
 

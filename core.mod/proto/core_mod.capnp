@@ -16,20 +16,18 @@ struct CraftingInventory {
 	discoveredRecipes @0 :List(Text);
 }
 
+struct PowerNode {
+	wires @0 :List(EntityRef);
+}
+
 struct PowerSource {
 	charge @0 :Float32;
 }
 
 struct CopperWireEntity {
-	startPoint @0 :Vec2;
-	endPoint @1 :Vec2;
-	finalPoint @2 :Vec2;
-	segments @3 :List(Segment);
-
-	struct Segment {
-		start @0 :Vec2;
-		end @1 :Vec2;
-	}
+	begin @0 :EntityRef;
+	end @1 :EntityRef;
+	points @2 :List(Vec2);
 }
 
 struct DynamiteEntity {
@@ -104,6 +102,7 @@ struct BurnerGeneratorTileEntity {
 	powerSource @1 :PowerSource;
 	content @2 :ItemStack;
 	burnTime @3 :Float32;
+	powerNode @4 :PowerNode;
 }
 
 struct ComputerTileEntity {
@@ -113,7 +112,7 @@ struct ComputerTileEntity {
 
 struct IncandescentLampTileEntity {
 	tileEntity @0 :TileEntity;
-	powerSource @1 :EntityRef;
+	powerNode @1 :PowerNode;
 }
 
 struct ItemFanTileEntity {

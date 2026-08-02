@@ -23,6 +23,9 @@ public:
 	void onDespawn(Swan::Ctx &ctx);
 	void attach(Swan::EntityRef wire);
 
+	void serialize(proto::PowerNode::Builder w);
+	void deserialize(Swan::Ctx &ctx, proto::PowerNode::Reader r);
+
 	Swan::EntityRef powerSource();
 	void invalidateNetwork();
 
