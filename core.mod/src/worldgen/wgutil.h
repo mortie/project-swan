@@ -2,7 +2,7 @@
 
 #include "worldgen/WGContext.h"
 #include "worldgen/WorldArea.h"
-#include "tiles.h"
+#include "data/tiles.h"
 #include <swan/swan.h>
 
 namespace CoreMod {

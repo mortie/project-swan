@@ -398,14 +398,6 @@ void World::buildResources()
 		}
 	}
 
-	// Load actions.
-	for (auto &mod: mods_) {
-		for (auto action: mod.mod_->actions_) {
-			action.name = cat(mod.name(), "::", action.name);
-			actions_.push_back(std::move(action));
-		}
-	}
-
 	invalidItem_ = &items_[INVALID_TILE_ID];
 	resources_ = Cygnet::ResourceManager(std::move(builder));
 }

@@ -3,7 +3,6 @@
 #include "entities/ItemStackEntity.h"
 #include "entities/PlayerEntity.h"
 #include "entities/FallingTileEntity.h"
-#include <swan/swan.h>
 #include <utility>
 
 namespace CoreMod {

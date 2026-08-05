@@ -2,7 +2,7 @@
 #include <swan/swan.h>
 
 #include "core_mod.capnp.h"
-#include "tiles.h"
+#include "data/tiles.h"
 
 namespace CoreMod {
 

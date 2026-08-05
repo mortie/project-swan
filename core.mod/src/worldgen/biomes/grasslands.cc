@@ -1,4 +1,4 @@
-#include "tiles.h"
+#include "data/tiles.h"
 #include "biomes.h"
 #include "swan/common.h"
 #include "worldgen/prefabs/TreeCrown.h"

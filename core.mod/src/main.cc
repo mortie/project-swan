@@ -6,7 +6,9 @@
 #include <swan/swan.h>
 
 #include "DefaultWorldGen.h"
-#include "tiles.h"
+#include "data/actions.h"
+#include "data/sprites.h"
+#include "data/tiles.h"
 #include "entities/DynamiteEntity.h"
 #include "entities/PlayerEntity.h"
 #include "entities/ItemStackEntity.h"
@@ -623,8 +625,10 @@ public:
 		});
 	}
 
-	void start(Swan::World &world)
+	void start(Swan::World &world) override
 	{
+		actions::init(world);
+		sprites::init(world);
 		tiles::init(world);
 	}
 };

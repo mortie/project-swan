@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "util.h"
-#include "tiles.h"
+#include "data/tiles.h"
 
 namespace CoreMod {
 

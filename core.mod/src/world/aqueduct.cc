@@ -1,7 +1,6 @@
 #include "aqueduct.h"
-#include "swan/util.h"
 #include "tileentities/AqueductTileEntity.h"
-#include "tiles.h"
+#include "data/tiles.h"
 
 namespace CoreMod {
 

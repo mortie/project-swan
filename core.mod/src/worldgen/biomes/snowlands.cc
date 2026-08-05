@@ -1,5 +1,5 @@
 #include "biomes.h"
-#include "tiles.h"
+#include "data/tiles.h"
 #include "worldgen/wgutil.h"
 #include "worldgen/prefabs/PineCrown.h"
 

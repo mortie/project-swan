@@ -57,12 +57,12 @@ void Game::createWorld(
 	ScopedTimer timer("create world");
 
 	world_ = std::make_unique<World>(this, seed, modPaths);
+	initInputHandler();
+	initCommandHandler();
+
 	for (auto &mod: world_->mods_) {
 		mod.mod_->start(*world_);
 	}
-
-	initInputHandler();
-	initCommandHandler();
 
 	world_->setWorldGen(worldgen);
 	world_->setCurrentPlane(world_->addPlane());
@@ -95,12 +95,12 @@ void Game::loadWorld(
 	capnp::PackedMessageReader reader(stream);
 
 	world_ = std::make_unique<World>(this, 0, modPaths);
+	initInputHandler();
+	initCommandHandler();
+
 	for (auto &mod: world_->mods_) {
 		mod.mod_->start(*world_);
 	}
-
-	initInputHandler();
-	initCommandHandler();
 
 	auto world = reader.getRoot<proto::World>();
 	world_->deserialize(world);
@@ -840,7 +840,7 @@ bool Game::reload()
 
 void Game::initInputHandler()
 {
-	auto actions = std::move(world_->actions_);
+	std::vector<ActionSpec> actions;
 
 	actions.push_back({
 		.name = "@::pause",
@@ -895,6 +895,13 @@ void Game::initInputHandler()
 		.kind = ActionKind::AXIS,
 		.defaultInputs = {"axis:RIGHT_Y"},
 	});
+
+	for (auto &mod: world_->mods_) {
+		for (auto action: mod.mod_->actions_) {
+			action.name = cat(mod.name(), "::", action.name);
+			actions.push_back(std::move(action));
+		}
+	}
 
 	inputHandler_.setActions(std::move(actions));
 	pauseAction_ = inputHandler_.action("@::pause");

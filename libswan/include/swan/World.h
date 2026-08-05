@@ -160,7 +160,6 @@ public:
 	HashMap<WorldGen::Factory> worldGenFactories_;
 	HashMap<EntityCollection::Factory> entCollFactories_;
 	HashMap<Cygnet::RenderSprite> sprites_;
-	std::vector<ActionSpec> actions_;
 
 	Game *game_;
 

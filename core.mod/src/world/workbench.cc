@@ -1,5 +1,5 @@
 #include "workbench.h"
-#include "tiles.h"
+#include "data/tiles.h"
 #include "world/util.h"
 
 using namespace std::literals;

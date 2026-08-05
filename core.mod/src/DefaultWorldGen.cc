@@ -2,9 +2,7 @@
 
 #include "core_mod.capnp.h"
 #include "entities/PlayerEntity.h"
-#include "swan/constants.h"
-#include "swan/util.h"
-#include "tiles.h"
+#include "data/tiles.h"
 #include "worldgen/biomes/biomes.h"
 #include "worldgen/wgutil.h"
 #include <cmath>

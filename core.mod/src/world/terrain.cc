@@ -1,6 +1,5 @@
 #include "terrain.h"
-#include "swan/common.h"
-#include "tiles.h"
+#include "data/tiles.h"
 #include "outcrop.h"
 #include "world/util.h"
 

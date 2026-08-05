@@ -1,6 +1,5 @@
 #pragma once
 
-#include "swan/Tile.h"
 #include <stdexcept>
 #include <swan/swan.h>
 #include <initializer_list>

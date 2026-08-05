@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Prefab.h"
-#include "tiles.h"
+#include "data/tiles.h"
 #include <array>
 
 namespace CoreMod::TreeCrown {

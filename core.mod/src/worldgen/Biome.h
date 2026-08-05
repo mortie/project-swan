@@ -4,7 +4,7 @@
 #include "PerlinNoise.hpp"
 #include "worldgen/WGContext.h"
 #include "worldgen/WorldArea.h"
-#include "tiles.h"
+#include "data/tiles.h"
 
 namespace CoreMod {
 

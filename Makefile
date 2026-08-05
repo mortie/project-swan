@@ -1,6 +1,9 @@
 OUT ?= ./build
 MESON ?= ./meson/meson.py
 
+define scanner-gen-data-file
+endef
+
 .PHONY: all
 all: build
 
@@ -46,11 +49,16 @@ pfx: build
 .PHONY: core.mod
 core.mod: pfx
 	cd $(OUT)/pfx && ./bin/swan-build $(abspath core.mod) .
-	$(OUT)/swan-scanner core.mod >core.mod/src/tiles.x.new
-	if diff core.mod/src/tiles.x core.mod/src/tiles.x.new; \
-		then rm core.mod/src/tiles.x.new; \
-		else mv core.mod/src/tiles.x.new core.mod/src/tiles.x; $(MAKE) core.mod; \
-	fi
+	$(OUT)/swan-scanner actions core.mod >core.mod/src/data/actions.x.new
+	$(OUT)/swan-scanner sprites core.mod >core.mod/src/data/sprites.x.new
+	$(OUT)/swan-scanner tiles core.mod >core.mod/src/data/tiles.x.new
+	changed=0; for it in actions sprites tiles; do \
+		if diff core.mod/src/data/$$it.x core.mod/src/data/$$it.x.new; \
+			then rm core.mod/src/data/$$it.x.new; \
+			else mv core.mod/src/data/$$it.x.new core.mod/src/data/$$it.x; changed=1; \
+		fi \
+	done; \
+	if [ $$changed = 1 ]; then $(MAKE) core.mod; fi
 
 .PHONY: setup
 setup: $(OUT)/build.ninja
