@@ -8,6 +8,8 @@
 #include "world/util.h"
 #include "world/ladder.h"
 #include "world/workbench.h"
+#include "data/actions.h"
+#include "data/sprites.h"
 
 namespace CoreMod {
 
@@ -32,12 +34,18 @@ static constexpr int MAX_HEALTH = 10;
 static constexpr float BLACKOUT_TIME = 5;
 static constexpr float MAX_OXYGEN = 12;
 
+struct AnimationSpec {
+	Cygnet::RenderSprite &sprite;
+	float interval;
+
+	operator Swan::Animation() const
+	{
+		return {sprite, interval};
+	}
+};
+
 PlayerEntity::PlayerEntity(Swan::Ctx &ctx):
-	sprites_(ctx),
-	actions_(ctx),
 	sounds_(ctx),
-	inventorySprite_(ctx.world.getSprite("core::ui/inventory")),
-	selectedSlotSprite_(ctx.world.getSprite("core::ui/selected-slot")),
 	health_(MAX_HEALTH),
 	oxygen_(MAX_OXYGEN),
 	inventory_(INVENTORY_SIZE),
@@ -121,7 +129,7 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	// Position
 	mat.translate(physicsBody_.body.pos - Swan::Vec2{0.6, 0.5});
 
-	currentAnimation_->draw(rnd, mat);
+	currentAnimation_.draw(rnd, mat);
 
 	rnd.drawRect(Cygnet::RenderLayer::FOREGROUND, {
 		.pos = Swan::Vec2(placePos_).add(0.1, 0.1),
@@ -140,10 +148,10 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 		for (int i = 0; i < std::max(MAX_HEALTH, health_); ++i) {
 			Cygnet::RenderSprite *sprite;
 			if (i >= health_) {
-				sprite = &sprites_.emptyHeart;
+				sprite = &sprites::misc__emptyHeart;
 			}
 			else {
-				sprite = &sprites_.heart;
+				sprite = &sprites::misc__heart;
 			}
 
 			float y = barY;
@@ -172,7 +180,7 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 				rnd.drawUISprite({
 					.transform = Cygnet::Mat3gf{}
 						.translate({(i / 3.5f) + 0.25f, barY}),
-					.sprite = sprites_.bubble,
+					.sprite = sprites::misc__bubble,
 				});
 			}
 		}, Cygnet::Anchor::TOP_LEFT);
@@ -192,7 +200,7 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 				rnd.drawUISprite({
 					.transform = Cygnet::Mat3gf{}
 						.translate({(i / 3.5f) + 0.25f, barY}),
-					.sprite = sprites_.snowflake,
+					.sprite = sprites::misc__snowflake,
 				});
 			}
 		}, Cygnet::Anchor::TOP_LEFT);
@@ -204,15 +212,15 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	}, [&] {
 		// Hotbar content
 		Swan::UI::inventory(
-			ctx, rnd, {10, 1}, inventorySprite_, inventory_.content_,
-			ui_.hoveredInventorySlot);
+			ctx, rnd, {10, 1}, sprites::ui__inventory,
+			inventory_.content_, ui_.hoveredInventorySlot);
 
 		// Selection
 		if (ui_.selectedInventorySlot < 10) {
 			rnd.drawUISprite({
 				.transform = Cygnet::Mat3gf{}.translate(
 					{float(ui_.selectedInventorySlot), 0}),
-				.sprite = selectedSlotSprite_,
+				.sprite = sprites::ui__selectedSlot,
 			}, Cygnet::Anchor::TOP_LEFT);
 		}
 	}, Cygnet::Anchor::BOTTOM);
@@ -236,7 +244,7 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 			.size = size.add(2, 2),
 		}, [&] {
 			Swan::UI::inventory(
-				ctx, rnd, size, inventorySprite_, content,
+				ctx, rnd, size, sprites::ui__inventory, content,
 				ui_.hoveredAuxInventorySlot);
 		}, Cygnet::Anchor::TOP);
 	}
@@ -304,7 +312,7 @@ void PlayerEntity::drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	}, [&] {
 		// Inventory content
 		Swan::UI::inventory(
-			ctx, rnd, {10, 3}, inventorySprite_,
+			ctx, rnd, {10, 3}, sprites::ui__inventory,
 			{inventory_.content_.begin() + 10, inventory_.content_.end()},
 			ui_.hoveredInventorySlot - 10);
 
@@ -316,7 +324,7 @@ void PlayerEntity::drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 			rnd.drawUISprite({
 				.transform = Cygnet::Mat3gf{}.translate(
 					{float(x), float(y)}),
-				.sprite = selectedSlotSprite_,
+				.sprite = sprites::ui__selectedSlot,
 			}, Cygnet::Anchor::TOP_LEFT);
 		}
 	}, Cygnet::Anchor::BOTTOM);
@@ -367,7 +375,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 			physicsBody_.body.pos = spawnPoint_;
 			physicsBody_.vel = {};
 			state_ = State::IDLE;
-			currentAnimation_ = &sprites_.idle;
+			currentAnimation_ = idleAnimation();
 			temperature_ = 0;
 		}
 
@@ -393,7 +401,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 	// Select between mouse mode and controller mode
 	if (ctx.game.hasMouseMoved()) {
 		mouseMode_ = true;
-	} else if (actions_.selectX || actions_.selectY) {
+	} else if (actions::selectX || actions::selectY) {
 		mouseMode_ = false;
 	}
 
@@ -403,8 +411,8 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 		lookVector_ = mousePos - facePos;
 	} else {
 		lookVector_ = {
-			actions_.selectX.value() * 6,
-			actions_.selectY.value() * 6,
+			actions::selectX.value() * 6,
+			actions::selectY.value() * 6,
 		};
 
 		if (lookVector_ == Swan::Vec2::ZERO) {
@@ -458,7 +466,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 			teleState_ = 0;
 		}
 	}
-	else if (actions_.returnHome) {
+	else if (actions::returnHome) {
 		ctx.game.playSound(sounds_.teleport);
 		teleportTimer_ = 0.2;
 		teleState_ = 1;
@@ -468,23 +476,23 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 	handleInventoryHover(ctx);
 
 	// Cheats
-	if (actions_.cheatHeal) {
+	if (actions::cheatHeal) {
 		health_ += 1;
 	}
-	else if (actions_.cheatHurt) {
+	else if (actions::cheatHurt) {
 		hurt(ctx, 1);
 	}
-	else if (actions_.cheatTickWorld) {
+	else if (actions::cheatTickWorld) {
 		auto &tile = ctx.plane.tiles().get(breakPos_);
 		if (tile.more->onWorldTick) {
 			Swan::info << "World ticking " << tile.name << " at " << breakPos_;
 			tile.more->onWorldTick(ctx, breakPos_);
 		}
 	}
-	else if (actions_.cheatGrabItem) {
+	else if (actions::cheatGrabItem) {
 		auto &tile = ctx.plane.tiles().get(breakPos_);
 		int count = 1;
-		if (actions_.sprint) {
+		if (actions::sprint) {
 			count = 16;
 		}
 		Swan::ItemStack stack(&ctx.world.getItem(tile.name), count);
@@ -492,32 +500,32 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 	}
 
 	// Console
-	if (actions_.openConsole) {
+	if (actions::openConsole) {
 		consoleVisible_ = true;
 		consoleFirstFrame_ = true;
 	}
 
 	// Break block, or click UI
-	if (actions_.guiClick) {
+	if (actions::guiClick) {
 		if (ui_.hoveredInventorySlot >= 0 || ui_.hoveredAuxInventorySlot >= 0) {
 			handleInventoryClick(ctx);
 		} else {
 			onLeftClick(ctx);
 		}
 	}
-	else if (actions_.breakTile) {
+	else if (actions::breakTile) {
 		if (ui_.hoveredInventorySlot < 0 && ui_.hoveredAuxInventorySlot < 0) {
 			onLeftClick(ctx);
 		}
 	}
 
 	// Place block, or activate tile or item
-	if (actions_.activate) {
+	if (actions::activate) {
 		onRightClick(ctx, lookPos);
 	}
 
 	// Drop item
-	if (actions_.dropItem) {
+	if (actions::dropItem) {
 		dropItem(ctx);
 	}
 
@@ -527,8 +535,8 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 		physicsBody_.friction();
 
 		physicsBody_.force += {
-			actions_.moveX.value() * MOVE_FORCE_GROUND,
-			actions_.moveY.value() * MOVE_FORCE_GROUND,
+			actions::moveX.value() * MOVE_FORCE_GROUND,
+			actions::moveY.value() * MOVE_FORCE_GROUND,
 		};
 
 		physicsBody_.updateNoclip(ctx, dt);
@@ -620,7 +628,7 @@ void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 			health_ = 0;
 			blackout_ = BLACKOUT_TIME;
 			state_ = State::IDLE;
-			currentAnimation_ = &sprites_.idle;
+			currentAnimation_ = idleAnimation();
 		}
 	}
 
@@ -633,7 +641,7 @@ void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 			health_ = 0;
 			blackout_ = BLACKOUT_TIME;
 			state_ = State::IDLE;
-			currentAnimation_ = &sprites_.idle;
+			currentAnimation_ = idleAnimation();
 		}
 	} else if (temperature_ < 0 && blackout_ <= 0) {
 		temperature_ += dt * 1;
@@ -722,7 +730,7 @@ void PlayerEntity::hurt(Swan::Ctx &ctx, int n)
 		health_ = 0;
 		blackout_ = BLACKOUT_TIME;
 		state_ = State::IDLE;
-		currentAnimation_ = &sprites_.idle;
+		currentAnimation_ = idleAnimation();
 	}
 
 	invulnerable_ = 0.3;
@@ -768,6 +776,44 @@ void PlayerEntity::onLeftClick(Swan::Ctx &ctx)
 	breakTileAndDropItem(ctx, pos);
 	interactTimer_ = 0.2;
 }
+
+Swan::Animation PlayerEntity::idleAnimation()
+{
+	float interval;
+	switch (vit_) {
+	case Vit::OK:
+		interval = 0.2;
+		break;
+	case Vit::WINDED:
+		interval = 0.25;
+		break;
+	case Vit::LETHARGIC:
+		interval = 0.4;
+		break;
+	}
+
+	return Swan::Animation(sprites::entities__player__idle, interval);
+}
+
+Swan::Animation PlayerEntity::runningAnimation()
+{
+	float interval = sprinting_ ? 0.07 : 0.1;
+	if (vit_ == Vit::LETHARGIC) {
+		interval /= 0.7;
+	}
+
+	return Swan::Animation(sprites::entities__player__running, interval);
+}
+
+Swan::Animation PlayerEntity::fallingAnimation()
+{ return Swan::Animation(sprites::entities__player__falling, 0.1); }
+
+Swan::Animation PlayerEntity::jumpingAnimation()
+{ return Swan::Animation(sprites::entities__player__jumping, 0.1); }
+
+Swan::Animation PlayerEntity::landingAnimation()
+{ return Swan::Animation(sprites::entities__player__landing, 0.1); }
+
 
 void PlayerEntity::onRightClick(Swan::Ctx &ctx, Swan::Vec2 lookPos)
 {
@@ -959,7 +1005,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	}
 
 	// Fall through platforms
-	if (actions_.moveY.value() > 0.4) {
+	if (actions::moveY.value() > 0.4) {
 		platformCollisionTimer_ = 0.2;
 		physicsBody_.platformCollision = false;
 	} else if (platformCollisionTimer_ > 0) {
@@ -986,16 +1032,8 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 
 	// Find a speed multiplier based on vitality
 	float speedMult = 1;
-	switch (vit_) {
-	case Vit::OK:
-		sprites_.idle.setInterval(0.2);
-		break;
-	case Vit::WINDED:
-		sprites_.idle.setInterval(0.25);
-	case Vit::LETHARGIC:
-		sprites_.idle.setInterval(0.4);
+	if (vit_ == Vit::LETHARGIC) {
 		speedMult = 0.7;
-		break;
 	}
 
 	inLadder_ =
@@ -1067,7 +1105,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	}
 
 	// Handle sprint press
-	if (actions_.sprint) {
+	if (actions::sprint) {
 		sprinting_ = true;
 	}
 	if (vit_ == Vit::LETHARGIC) {
@@ -1076,10 +1114,10 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 
 	// Handle left/right key press
 	int runDirection = 0;
-	if (actions_.moveX.value() < 0) {
+	if (actions::moveX.value() < 0) {
 		runDirection -= 1;
 	}
-	else if (actions_.moveX.value() > 0) {
+	else if (actions::moveX.value() > 0) {
 		runDirection += 1;
 	}
 
@@ -1087,7 +1125,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	if (inLadder_) {
 		physicsBody_.force += {
 			0,
-			actions_.moveY.value() * LADDER_CLIMB_FORCE,
+			actions::moveY.value() * LADDER_CLIMB_FORCE,
 		};
 
 		if (physicsBody_.vel.y > LADDER_MAX_VEL) {
@@ -1129,20 +1167,17 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 		sprinting_ = false;
 	}
 
-	// Adjust running speed based on sprinting
-	sprites_.running.setInterval((sprinting_ ? 0.07 : 0.1) / speedMult);
-
 	// If we hit the ground, override the desired state to be landing
 	if (physicsBody_.onGround && (oldState == State::FALLING || oldState == State::JUMPING)) {
 		state_ = State::LANDING;
 	}
 
 	// Don't switch away from landing unless it's done!
-	if (oldState == State::LANDING && !sprites_.landing.done()) {
+	if (oldState == State::LANDING && !currentAnimation_.done()) {
 		state_ = State::LANDING;
 	}
 
-	bool jumpPressed = actions_.jump;
+	bool jumpPressed = actions::jump;
 
 	// Jump
 	if (physicsBody_.onGround && jumpPressed && jumpTimer_.periodic(0.5)) {
@@ -1173,28 +1208,27 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 	if (state_ != oldState) {
 		switch (state_) {
 		case State::IDLE:
-			currentAnimation_ = &sprites_.idle;
+			currentAnimation_ = idleAnimation();
 			break;
 
 		case State::RUNNING:
-			currentAnimation_ = &sprites_.running;
+			currentAnimation_ = runningAnimation();
 			break;
 
 		case State::FALLING:
-			currentAnimation_ = &sprites_.falling;
+			currentAnimation_ = fallingAnimation();
 			break;
 
 		case State::JUMPING:
-			currentAnimation_ = &sprites_.jumping;
+			currentAnimation_ = jumpingAnimation();
 			break;
 
 		case State::LANDING:
-			currentAnimation_ = &sprites_.landing;
+			currentAnimation_ = landingAnimation();
 			break;
 		}
-		currentAnimation_->reset();
 	}
-	currentAnimation_->tick(dt);
+	currentAnimation_.tick(dt);
 
 	if (invincibleTimer_ >= 0) {
 		invincibleTimer_ -= dt;
@@ -1219,7 +1253,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 		stepTimer_ = 0.15;
 	}
 
-	if (inLadder_ && actions_.sprint) {
+	if (inLadder_ && actions::sprint) {
 		physicsBody_.friction({1000, 1000});
 	}
 	else {
@@ -1235,11 +1269,11 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 			physicsBody_.force.y -= gForce * bottomDensity * 0.8;
 			physicsBody_.force -= Swan::Vec2{0, SWIM_FORCE_UP * bottomDensity};
 		}
-		else if (actions_.moveY.value() > 0) {
+		else if (actions::moveY.value() > 0) {
 			physicsBody_.force.y -= gForce * centerDensity * 0.8;
 			physicsBody_.force += Swan::Vec2{
 				0,
-				SWIM_FORCE_DOWN * centerDensity * actions_.moveY.value(),
+				SWIM_FORCE_DOWN * centerDensity * actions::moveY.value(),
 			};
 		}
 		else {
@@ -1283,7 +1317,7 @@ void PlayerEntity::handleInventoryClick(Swan::Ctx &ctx)
 		return;
 	}
 
-	bool shift = actions_.guiModifier;
+	bool shift = actions::guiModifier;
 
 	// Non-shift click on the player inventory
 	if (!shift && ui_.hoveredInventorySlot >= 0) {
@@ -1344,53 +1378,53 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 		int delta = slot - (ui_.selectedInventorySlot % 10);
 		ui_.selectedInventorySlot += delta;
 	};
-	if (actions_.slot0) {
+	if (actions::selectSlot0) {
 		selectSlot(0);
 	}
-	else if (actions_.slot1) {
+	else if (actions::selectSlot1) {
 		selectSlot(1);
 	}
-	else if (actions_.slot2) {
+	else if (actions::selectSlot2) {
 		selectSlot(2);
 	}
-	else if (actions_.slot3) {
+	else if (actions::selectSlot3) {
 		selectSlot(3);
 	}
-	else if (actions_.slot4) {
+	else if (actions::selectSlot4) {
 		selectSlot(4);
 	}
-	else if (actions_.slot5) {
+	else if (actions::selectSlot5) {
 		selectSlot(5);
 	}
-	else if (actions_.slot6) {
+	else if (actions::selectSlot6) {
 		selectSlot(6);
 	}
-	else if (actions_.slot7) {
+	else if (actions::selectSlot7) {
 		selectSlot(7);
 	}
-	else if (actions_.slot8) {
+	else if (actions::selectSlot8) {
 		selectSlot(8);
 	}
-	else if (actions_.slot9) {
+	else if (actions::selectSlot9) {
 		selectSlot(9);
 	}
 
 	// Navigate left/right/up/down
-	if (actions_.guiLeft) {
+	if (actions::guiLeft) {
 		if (ui_.selectedInventorySlot % 10 == 0) {
 			ui_.selectedInventorySlot += 9;
 		} else {
 			ui_.selectedInventorySlot -= 1;
 		}
 	}
-	else if (actions_.guiRight) {
+	else if (actions::guiRight) {
 		if (ui_.selectedInventorySlot % 10 == 9) {
 			ui_.selectedInventorySlot -= 9;
 		} else {
 			ui_.selectedInventorySlot += 1;
 		}
 	}
-	else if (ui_.showInventory && actions_.guiUp) {
+	else if (ui_.showInventory && actions::guiUp) {
 		if (ui_.selectedInventorySlot < 10) {
 			ui_.selectedInventorySlot += INVENTORY_SIZE - 10;
 		} else {
@@ -1400,7 +1434,7 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 			ui_.selectedInventorySlot += 10;
 		}
 	}
-	else if (ui_.showInventory && actions_.guiDown) {
+	else if (ui_.showInventory && actions::guiDown) {
 		if (ui_.selectedInventorySlot >= INVENTORY_SIZE - 10) {
 			ui_.selectedInventorySlot -= INVENTORY_SIZE - 10;
 		} else {
@@ -1412,7 +1446,7 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 	}
 
 	// Handle held items
-	if (actions_.selectItem) {
+	if (actions::selectItem) {
 		Swan::ItemStack &slot = inventory_.content_[ui_.selectedInventorySlot];
 		if (heldStack_.empty() && !slot.empty()) {
 			ctx.game.playSound(sounds_.snap);
@@ -1431,7 +1465,7 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 	}
 
 	// Toggle inventory
-	if (actions_.guiShowInventory) {
+	if (actions::guiShowInventory) {
 		if (ui_.showInventory) {
 			ctx.game.playSound(sounds_.inventoryClose, 0.2);
 			ui_.showInventory = false;
@@ -1452,7 +1486,7 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 	}
 
 	// Toggle crafting menu
-	if (actions_.guiShowCrafting) {
+	if (actions::guiShowCrafting) {
 		if (auxInventory_ == &craftingInventory_) {
 			auxInventory_ = nullptr;
 		}

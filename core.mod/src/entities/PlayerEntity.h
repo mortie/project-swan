@@ -76,108 +76,6 @@ private:
 		Swan::SoundAsset *crafting;
 	};
 
-	struct Sprites {
-		Sprites(Swan::Ctx &ctx):
-			idle(ctx, "core::entities/player/idle", 0.2),
-			running(ctx, "core::entities/player/running", 0),
-			falling(ctx, "core::entities/player/falling", 0.1),
-			jumping(ctx, "core::entities/player/jumping", 0.1),
-			landing(ctx, "core::entities/player/landing", 0.1),
-			emptyHeart(ctx.world.getSprite("core::misc/empty-heart")),
-			heart(ctx.world.getSprite("core::misc/heart")),
-			bubble(ctx.world.getSprite("core::misc/bubble")),
-			snowflake(ctx.world.getSprite("core::misc/snowflake"))
-		{}
-
-		Swan::Animation idle;
-		Swan::Animation running;
-		Swan::Animation falling;
-		Swan::Animation jumping;
-		Swan::Animation landing;
-		Cygnet::RenderSprite emptyHeart;
-		Cygnet::RenderSprite heart;
-		Cygnet::RenderSprite bubble;
-		Cygnet::RenderSprite snowflake;
-	};
-
-	struct Actions {
-		Actions(Swan::Ctx &ctx):
-			cheatHeal(ctx.game.action("core::cheat-heal")),
-			cheatHurt(ctx.game.action("core::cheat-hurt")),
-			cheatTickWorld(ctx.game.action("core::cheat-tick-world")),
-			cheatGrabItem(ctx.game.action("core::cheat-grab-item")),
-			guiShowInventory(ctx.game.action("core::gui-show-inventory")),
-			guiShowCrafting(ctx.game.action("core::gui-show-crafting")),
-			guiClick(ctx.game.action("core::gui-click")),
-			guiModifier(ctx.game.action("core::gui-modifier")),
-			guiLeft(ctx.game.action("core::gui-left")),
-			guiRight(ctx.game.action("core::gui-right")),
-			guiUp(ctx.game.action("core::gui-up")),
-			guiDown(ctx.game.action("core::gui-down")),
-			returnHome(ctx.game.action("core::return-home")),
-			breakTile(ctx.game.action("core::break-tile")),
-			activate(ctx.game.action("core::activate")),
-			dropItem(ctx.game.action("core::drop-item")),
-			selectItem(ctx.game.action("core::select-item")),
-			sprint(ctx.game.action("core::sprint")),
-			jump(ctx.game.action("core::jump")),
-			moveX(ctx.game.action("core::move-x")),
-			moveY(ctx.game.action("core::move-y")),
-			selectX(ctx.game.action("core::select-x")),
-			selectY(ctx.game.action("core::select-y")),
-			slot0(ctx.game.action("core::select-slot-0")),
-			slot1(ctx.game.action("core::select-slot-1")),
-			slot2(ctx.game.action("core::select-slot-2")),
-			slot3(ctx.game.action("core::select-slot-3")),
-			slot4(ctx.game.action("core::select-slot-4")),
-			slot5(ctx.game.action("core::select-slot-5")),
-			slot6(ctx.game.action("core::select-slot-6")),
-			slot7(ctx.game.action("core::select-slot-7")),
-			slot8(ctx.game.action("core::select-slot-8")),
-			slot9(ctx.game.action("core::select-slot-9")),
-			openConsole(ctx.game.action("core::open-console"))
-		{}
-
-		Swan::Action cheatHeal;
-		Swan::Action cheatHurt;
-		Swan::Action cheatTickWorld;
-		Swan::Action cheatGrabItem;
-
-		Swan::Action guiShowInventory;
-		Swan::Action guiShowCrafting;
-		Swan::Action guiClick;
-		Swan::Action guiModifier;
-		Swan::Action guiLeft;
-		Swan::Action guiRight;
-		Swan::Action guiUp;
-		Swan::Action guiDown;
-
-		Swan::Action returnHome;
-		Swan::Action breakTile;
-		Swan::Action activate;
-		Swan::Action dropItem;
-		Swan::Action selectItem;
-		Swan::Action sprint;
-		Swan::Action jump;
-		Swan::Action moveX;
-		Swan::Action moveY;
-		Swan::Action selectX;
-		Swan::Action selectY;
-
-		Swan::Action slot0;
-		Swan::Action slot1;
-		Swan::Action slot2;
-		Swan::Action slot3;
-		Swan::Action slot4;
-		Swan::Action slot5;
-		Swan::Action slot6;
-		Swan::Action slot7;
-		Swan::Action slot8;
-		Swan::Action slot9;
-
-		Swan::Action openConsole;
-	};
-
 	struct UI {
 		int selectedInventorySlot = 0;
 		int hoveredInventorySlot = -1;
@@ -213,6 +111,12 @@ private:
 		LETHARGIC,
 	};
 
+	Swan::Animation idleAnimation();
+	Swan::Animation runningAnimation();
+	Swan::Animation fallingAnimation();
+	Swan::Animation jumpingAnimation();
+	Swan::Animation landingAnimation();
+
 	void onRightClick(Swan::Ctx &ctx, Swan::Vec2 lookPos);
 	void onLeftClick(Swan::Ctx &ctx);
 	void dropItem(Swan::Ctx &ctx);
@@ -229,13 +133,9 @@ private:
 
 	State state_ = State::IDLE;
 	Vit vit_ = Vit::OK;
-	Sprites sprites_;
-	Actions actions_;
-	Swan::Animation *currentAnimation_ = &sprites_.idle;
+	Swan::Animation currentAnimation_ = idleAnimation();
 
 	Sounds sounds_;
-	Cygnet::RenderSprite inventorySprite_;
-	Cygnet::RenderSprite selectedSlotSprite_;
 
 	UI ui_;
 
