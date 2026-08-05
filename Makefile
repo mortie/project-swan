@@ -50,9 +50,10 @@ pfx: build
 core.mod: pfx
 	cd $(OUT)/pfx && ./bin/swan-build $(abspath core.mod) .
 	$(OUT)/swan-scanner actions core.mod >core.mod/src/data/actions.x.new
+	$(OUT)/swan-scanner sounds core.mod >core.mod/src/data/sounds.x.new
 	$(OUT)/swan-scanner sprites core.mod >core.mod/src/data/sprites.x.new
 	$(OUT)/swan-scanner tiles core.mod >core.mod/src/data/tiles.x.new
-	changed=0; for it in actions sprites tiles; do \
+	changed=0; for it in actions sounds sprites tiles; do \
 		if diff core.mod/src/data/$$it.x core.mod/src/data/$$it.x.new; \
 			then rm core.mod/src/data/$$it.x.new; \
 			else mv core.mod/src/data/$$it.x.new core.mod/src/data/$$it.x; changed=1; \

@@ -56,26 +56,6 @@ public:
 	bool heal(Swan::Ctx &, int n);
 
 private:
-	struct Sounds {
-		Sounds(Swan::Ctx &ctx):
-			snap(ctx.world.getSound("core::misc/snap")),
-			splash(ctx.world.getSound("core::misc/splash")),
-			shortSplash(ctx.world.getSound("core::misc/splash-short")),
-			teleport(ctx.world.getSound("core::misc/teleport")),
-			inventoryOpen(ctx.world.getSound("core::ui/inventory-open")),
-			inventoryClose(ctx.world.getSound("core::ui/inventory-close")),
-			crafting(ctx.world.getSound("core::ui/crafting"))
-		{}
-
-		Swan::SoundAsset *snap;
-		Swan::SoundAsset *splash;
-		Swan::SoundAsset *shortSplash;
-		Swan::SoundAsset *teleport;
-		Swan::SoundAsset *inventoryOpen;
-		Swan::SoundAsset *inventoryClose;
-		Swan::SoundAsset *crafting;
-	};
-
 	struct UI {
 		int selectedInventorySlot = 0;
 		int hoveredInventorySlot = -1;
@@ -134,8 +114,6 @@ private:
 	State state_ = State::IDLE;
 	Vit vit_ = Vit::OK;
 	Swan::Animation currentAnimation_ = idleAnimation();
-
-	Sounds sounds_;
 
 	UI ui_;
 

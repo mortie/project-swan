@@ -10,6 +10,7 @@
 #include "world/workbench.h"
 #include "data/actions.h"
 #include "data/sprites.h"
+#include "data/sounds.h"
 
 namespace CoreMod {
 
@@ -45,7 +46,6 @@ struct AnimationSpec {
 };
 
 PlayerEntity::PlayerEntity(Swan::Ctx &ctx):
-	sounds_(ctx),
 	health_(MAX_HEALTH),
 	oxygen_(MAX_OXYGEN),
 	inventory_(INVENTORY_SIZE),
@@ -371,7 +371,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 		float prevBlackout = blackout_;
 		blackout_ -= dt;
 		if (prevBlackout > 1.5 && blackout_ <= 1.5) {
-			ctx.game.playSound(sounds_.teleport);
+			ctx.game.playSound(sounds::misc__teleport);
 			physicsBody_.body.pos = spawnPoint_;
 			physicsBody_.vel = {};
 			state_ = State::IDLE;
@@ -467,7 +467,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 		}
 	}
 	else if (actions::returnHome) {
-		ctx.game.playSound(sounds_.teleport);
+		ctx.game.playSound(sounds::misc__teleport);
 		teleportTimer_ = 0.2;
 		teleState_ = 1;
 	}
@@ -623,7 +623,7 @@ void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 	else if (blackout_ <= 0) {
 		oxygen_ -= dt * 0.75;
 		if (oxygen_ < 0) {
-			ctx.game.playSound(ctx.world.getSound("core::misc/hurt"), 0.4f);
+			ctx.game.playSound(sounds::misc__hurt, 0.4f);
 			oxygen_ = 0;
 			health_ = 0;
 			blackout_ = BLACKOUT_TIME;
@@ -637,7 +637,7 @@ void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 	if (airTemp < 5 && blackout_ <= 0) {
 		temperature_ -= dt * 0.5;
 		if (temperature_ < -12) {
-			ctx.game.playSound(ctx.world.getSound("core::misc/hurt"), 0.4f);
+			ctx.game.playSound(sounds::misc__hurt, 0.4f);
 			health_ = 0;
 			blackout_ = BLACKOUT_TIME;
 			state_ = State::IDLE;
@@ -724,7 +724,7 @@ void PlayerEntity::hurt(Swan::Ctx &ctx, int n)
 		return;
 	}
 
-	ctx.game.playSound(ctx.world.getSound("core::misc/hurt"), 0.2f * n);
+	ctx.game.playSound(sounds::misc__hurt, 0.2f * n);
 	health_ -= n;
 	if (health_ <= 0) {
 		health_ = 0;
@@ -972,7 +972,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 			stack = inventory_.insert(stack);
 			if (stack.empty()) {
 				ctx.plane.entities().despawn(c.ref);
-				ctx.game.playSound(sounds_.snap);
+				ctx.game.playSound(sounds::misc__snap);
 				pickedUpItem = true;
 			}
 			continue;
@@ -1069,7 +1069,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 		}
 
 		if (inFluid_ && !oldInFluid) {
-			ctx.game.playSound(sounds_.splash);
+			ctx.game.playSound(sounds::misc__splash);
 			for (int i = 0; i < 60; ++i) {
 				ctx.game.spawnParticle({
 					.pos = fluidCenterPos + Swan::Vec2{
@@ -1086,7 +1086,7 @@ void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 			}
 		}
 		else if (!inFluid_ && oldInFluid) {
-			ctx.game.playSound(sounds_.shortSplash);
+			ctx.game.playSound(sounds::misc__splashShort);
 			for (int i = 0; i < 40; ++i) {
 				ctx.game.spawnParticle({
 					.pos = fluidBottomPos + Swan::Vec2{
@@ -1322,7 +1322,7 @@ void PlayerEntity::handleInventoryClick(Swan::Ctx &ctx)
 	// Non-shift click on the player inventory
 	if (!shift && ui_.hoveredInventorySlot >= 0) {
 		clickInventory(inventory_, ui_.hoveredInventorySlot);
-		ctx.game.playSound(sounds_.snap);
+		ctx.game.playSound(sounds::misc__snap);
 		return;
 	}
 
@@ -1332,7 +1332,7 @@ void PlayerEntity::handleInventoryClick(Swan::Ctx &ctx)
 			auxInventory_ != &craftingInventory_) {
 		int index = ui_.hoveredInventorySlot;
 		inventory_.set(index, auxInventory_->insert(inventory_.get(index)));
-		ctx.game.playSound(sounds_.snap);
+		ctx.game.playSound(sounds::misc__snap);
 		return;
 	}
 
@@ -1344,7 +1344,7 @@ void PlayerEntity::handleInventoryClick(Swan::Ctx &ctx)
 		} else {
 			auxInventory_->set(index, inventory_.insert(auxInventory_->take(index)));
 		}
-		ctx.game.playSound(sounds_.snap);
+		ctx.game.playSound(sounds::misc__snap);
 		return;
 	}
 
@@ -1359,14 +1359,14 @@ void PlayerEntity::handleInventoryClick(Swan::Ctx &ctx)
 			leftover = inventory_.insert(stack, 0, 10);
 		}
 		inventory_.insert(leftover);
-		ctx.game.playSound(sounds_.snap);
+		ctx.game.playSound(sounds::misc__snap);
 		return;
 	}
 
 	// Non-shift click on the open inventory
 	if (!shift && auxInventory_ && ui_.hoveredAuxInventorySlot >= 0) {
 		clickInventory(*auxInventory_, ui_.hoveredAuxInventorySlot);
-		ctx.game.playSound(sounds_.snap);
+		ctx.game.playSound(sounds::misc__snap);
 		return;
 	}
 }
@@ -1449,12 +1449,12 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 	if (actions::selectItem) {
 		Swan::ItemStack &slot = inventory_.content_[ui_.selectedInventorySlot];
 		if (heldStack_.empty() && !slot.empty()) {
-			ctx.game.playSound(sounds_.snap);
+			ctx.game.playSound(sounds::misc__snap);
 			heldStack_ = slot;
 			slot = {};
 		}
 		else if (!heldStack_.empty()) {
-			ctx.game.playSound(sounds_.snap);
+			ctx.game.playSound(sounds::misc__snap);
 			auto tmp = heldStack_;
 			heldStack_ = slot.insert(heldStack_);
 			if (heldStack_ == tmp) {
@@ -1467,7 +1467,7 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 	// Toggle inventory
 	if (actions::guiShowInventory) {
 		if (ui_.showInventory) {
-			ctx.game.playSound(sounds_.inventoryClose, 0.2);
+			ctx.game.playSound(sounds::ui__inventoryClose, 0.2);
 			ui_.showInventory = false;
 			ui_.selectedInventorySlot %= 10;
 			if (auxInventory_ && auxInventory_ != &craftingInventory_) {
@@ -1480,7 +1480,7 @@ void PlayerEntity::handleInventorySelection(Swan::Ctx &ctx)
 			}
 		}
 		else {
-			ctx.game.playSound(sounds_.inventoryOpen);
+			ctx.game.playSound(sounds::ui__inventoryOpen);
 			ui_.showInventory = true;
 		}
 	}

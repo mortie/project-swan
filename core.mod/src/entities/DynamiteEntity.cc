@@ -2,8 +2,8 @@
 
 #include <cmath>
 
-#include "swan/common.h"
 #include "world/util.h"
+#include "data/sounds.h"
 
 namespace CoreMod {
 
@@ -106,7 +106,7 @@ DynamiteEntity::DynamiteEntity(
 	physicsBody_.vel = vel;
 	fuseSound_ = Swan::SoundHandle::make();
 	ctx.game.playSound(
-		ctx.world.getSound("core::misc/fuse"),
+		sounds::misc__fuse,
 		physicsBody_.body.center(), fuseSound_);
 
 }
@@ -130,7 +130,7 @@ void DynamiteEntity::update(Swan::Ctx &ctx, float dt)
 	fuse_ -= dt;
 	if (fuse_ <= 0) {
 		ctx.game.playSound(
-			ctx.world.getSound("core::misc/explosion"),
+			sounds::misc__explosion,
 			physicsBody_.body.center());
 		fuseSound_.stop();
 		ctx.plane.entities().despawn(ctx.plane.entities().current());

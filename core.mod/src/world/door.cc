@@ -1,5 +1,6 @@
 #include "door.h"
 #include "world/util.h"
+#include "data/sounds.h"
 
 using namespace std::literals;
 
@@ -89,7 +90,7 @@ static bool activateOpenTop(
 	auto prefix = self.name.str();
 	prefix.remove_suffix("::open::top"sv.size());
 	setDoor(ctx, pos, prefix, "closed");
-	ctx.game.playSound(ctx.world.getSound("core::misc/lock-close"), pos);
+	ctx.game.playSound(sounds::misc__lockClose, pos);
 	return true;
 }
 
@@ -110,7 +111,7 @@ static bool activateClosedTop(
 	auto prefix = self.name.str();
 	prefix.remove_suffix("::closed::top"sv.size());
 	setDoor(ctx, pos, prefix, "open");
-	ctx.game.playSound(ctx.world.getSound("core::misc/lock-open"), pos);
+	ctx.game.playSound(sounds::misc__lockOpen, pos);
 	return true;
 }
 

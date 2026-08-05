@@ -1,7 +1,7 @@
 #include "BonfireTileEntity.h"
 #include "entities/ItemStackEntity.h"
-#include "swan/traits/PhysicsBodyTrait.h"
 #include "world/util.h"
+#include "data/sounds.h"
 
 namespace CoreMod {
 
@@ -295,7 +295,7 @@ void BonfireTileEntity::activateCrucible(Swan::Ctx &ctx, Swan::ItemStack &stack)
 		}
 
 		if (complete) {
-			ctx.game.playSound(ctx.world.getSound("core::misc/snap"));
+			ctx.game.playSound(sounds::misc__snap);
 			auto it = stack.remove(1);
 			crucible_.items.push_back(it.item());
 			crucible_.progress = Crucible::Progress {
@@ -310,7 +310,7 @@ void BonfireTileEntity::activateCrucible(Swan::Ctx &ctx, Swan::ItemStack &stack)
 		return;
 	}
 
-	ctx.game.playSound(ctx.world.getSound("core::misc/snap"));
+	ctx.game.playSound(sounds::misc__snap);
 	auto it = stack.remove(1);
 	crucible_.items.push_back(it.item());
 	crucible_.itemCounts[it.item()] += 1;

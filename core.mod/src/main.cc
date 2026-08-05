@@ -8,6 +8,7 @@
 #include "DefaultWorldGen.h"
 #include "data/actions.h"
 #include "data/sprites.h"
+#include "data/sounds.h"
 #include "data/tiles.h"
 #include "entities/DynamiteEntity.h"
 #include "entities/PlayerEntity.h"
@@ -628,6 +629,7 @@ public:
 	void start(Swan::World &world) override
 	{
 		actions::init(world);
+		sounds::init(world);
 		sprites::init(world);
 		tiles::init(world);
 	}

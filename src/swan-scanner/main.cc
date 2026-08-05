@@ -50,6 +50,33 @@ void enumerateSprites(std::string_view mod, std::string base, std::string path)
 	}
 }
 
+void enumerateSounds(std::string_view mod, std::string base, std::string path)
+{
+	if (!std::filesystem::exists(path)) {
+		return;
+	}
+
+	for (auto &it: std::filesystem::directory_iterator(path)) {
+		if (it.is_directory()) {
+			std::string newPath = Swan::cat(path, "/", it.path().filename());
+			std::string newBase = Swan::cat(base, it.path().filename(), "/");
+			enumerateSounds(mod, std::move(newBase), std::move(newPath));
+			continue;
+		}
+
+		auto ext = it.path().filename().extension();
+		if (ext == ".txt") {
+			continue;
+		} else if (ext != ".ogg") {
+			Swan::warn << it.path() << ": Unknown extension " << ext;
+			continue;
+		}
+
+		std::string name = Swan::cat(base, it.path().filename().stem());
+		std::cout << "X(" << varify(name) << ", \"" << mod << "::" << name << "\");\n";
+	}
+}
+
 int main(int argc, char **argv)
 {
 	if (argc != 3) {
@@ -89,6 +116,8 @@ int main(int argc, char **argv)
 		}
 	} else if (category == "sprites") {
 		enumerateSprites(mod->name_, "", Swan::cat(modPath, "/assets/sprites"));
+	} else if (category == "sounds") {
+		enumerateSounds(mod->name_, "", Swan::cat(modPath, "/assets/sounds"));
 	} else {
 		std::cerr << "Unknown category: " << category << '\n';
 		return 1;

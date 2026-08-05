@@ -3,13 +3,14 @@
 #include "tileentities/ChestTileEntity.h"
 #include "entities/PlayerEntity.h"
 #include "data/tiles.h"
+#include "data/sounds.h"
 
 namespace CoreMod {
 
 static void closeCallback(Swan::Ctx &ctx, Swan::EntityRef ref)
 {
 	auto pos = ref->trait<Swan::TileEntityTrait>()->pos;
-	ctx.game.playSound(ctx.world.getSound("core::misc/lock-close"), pos);
+	ctx.game.playSound(sounds::misc__lockClose, pos);
 	ctx.plane.tiles().setID(pos, tiles::chest);
 }
 
@@ -29,7 +30,7 @@ static bool openChest(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateMet
 		return false;
 	}
 
-	ctx.game.playSound(ctx.world.getSound("core::misc/lock-open"), pos);
+	ctx.game.playSound(sounds::misc__lockOpen, pos);
 	ctx.plane.tiles().setID(pos, tiles::chest__open);
 	return true;
 }
