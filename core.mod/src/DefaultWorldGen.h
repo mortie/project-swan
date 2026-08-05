@@ -5,6 +5,7 @@
 
 #include "worldgen/Biome.h"
 #include "worldgen/WGContext.h"
+#include "data/sprites.h"
 
 namespace CoreMod {
 
@@ -13,11 +14,11 @@ public:
 	static constexpr float DAY_LENGTH = 15 * 60;
 
 	DefaultWorldGen(Swan::World &world, uint32_t seed):
-		bgCave_(world.getSprite("core::misc/background-cave")),
+		bgCave_(sprites::misc__backgroundCave),
 		clouds_{
-			world.getSprite("core::misc/cloud-1"),
-			world.getSprite("core::misc/cloud-2"),
-			world.getSprite("core::misc/cloud-3"),
+			sprites::misc__cloud1,
+			sprites::misc__cloud2,
+			sprites::misc__cloud3,
 		},
 		wg_(seed, world)
 	{}

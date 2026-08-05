@@ -1,9 +1,9 @@
 #include "IncandescentLampTileEntity.h"
-#include "cygnet/util.h"
-#include "traits/PowerSourceTrait.h"
 #include <cstdlib>
 #include <limits>
 #include <numbers>
+#include "traits/PowerSourceTrait.h"
+#include "data/sprites.h"
 
 namespace CoreMod {
 
@@ -115,13 +115,13 @@ void IncandescentLampTileEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 
 	rnd.drawTileSprite({
 		.transform = Cygnet::Mat3gf{}.translate(tileEntity_.pos),
-		.sprite = glowRedSprite_,
+		.sprite = sprites::misc__incandescentLampGlow,
 		.opacity = std::min(light_ * 2.f, 3.f),
 	});
 
 	rnd.drawTileSprite({
 		.transform = Cygnet::Mat3gf{}.translate(tileEntity_.pos),
-		.sprite = glowSprite_,
+		.sprite = sprites::misc__incandescentLampGlowRed,
 		.opacity = std::min((light_ - 1) / 2.8f, 3.f),
 	});
 }

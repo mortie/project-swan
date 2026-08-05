@@ -13,9 +13,7 @@ class IncandescentLampTileEntity final: public Swan::Entity,
 public:
 	using Proto = proto::IncandescentLampTileEntity;
 
-	IncandescentLampTileEntity(Swan::Ctx &ctx):
-		glowSprite_(ctx.world.getSprite("core::misc/incandescent-lamp-glow")),
-		glowRedSprite_(ctx.world.getSprite("core::misc/incandescent-lamp-glow-red"))
+	IncandescentLampTileEntity(Swan::Ctx &ctx)
 	{}
 
 	Swan::TileEntity &get(Swan::TileEntityTrait::Tag) override
@@ -46,8 +44,6 @@ private:
 	float temperature_ = 0;
 
 	float light_ = 0;
-	Cygnet::RenderSprite glowSprite_;
-	Cygnet::RenderSprite glowRedSprite_;
 };
 
 }
