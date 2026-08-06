@@ -69,6 +69,14 @@ public:
 			return false;
 		}
 
+		// Try to set end point, aborting if it's too far
+		auto endPoint = info.placePos.as<float>() + endPowerNode->anchorPoint();
+		ok = wire_.setEndPoint(endPoint);
+		if (!ok) {
+			wire_.setEndPoint(info.lookPos);
+			return true;
+		}
+
 		wire_.end_ = ent;
 
 		// Consume a piece of copper
@@ -77,10 +85,6 @@ public:
 		auto stack = inventory.take(copperSlot);
 		stack.remove(1);
 		inventory.set(copperSlot, stack);
-
-		// Set end point
-		auto endPoint = info.placePos.as<float>() + endPowerNode->anchorPoint();
-		wire_.setEndPoint(endPoint);
 
 		// Spawn the wire entity properly, then attach it to the power nodes
 		auto ref = ctx.plane.entities().spawnMove(std::move(wire_));

@@ -14,15 +14,17 @@ static constexpr float GRAVITY = 4;
 
 static constexpr float TICK_HZ = 1500;
 
-void CopperWireEntity::setEndPoint(Swan::Vec2 endPoint)
+bool CopperWireEntity::setEndPoint(Swan::Vec2 endPoint)
 {
 	assert(points_.size() >= 1);
 
 	auto pointer = endPoint - points_.front();
 	float length = pointer.length();
+	bool ok = true;
 	if (length > MAX_LENGTH) {
 		endPoint = points_.front() + pointer.norm() * MAX_LENGTH;
 		length = MAX_LENGTH;
+		ok = false;
 	}
 
 	int numSegments = std::max(int(length * RESOLUTION), 1);
@@ -43,6 +45,7 @@ void CopperWireEntity::setEndPoint(Swan::Vec2 endPoint)
 
 	// Always fix the last point to the end
 	points_.back() = endPoint;
+	return ok;
 }
 
 void CopperWireEntity::update(Swan::Ctx &ctx, float dt)

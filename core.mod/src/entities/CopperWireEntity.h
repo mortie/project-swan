@@ -18,7 +18,7 @@ public:
 
 	using Proto = proto::CopperWireEntity;
 
-	void setEndPoint(Swan::Vec2 endPoint);
+	bool setEndPoint(Swan::Vec2 endPoint);
 
 	void update(Swan::Ctx &ctx, float dt) override;
 	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
