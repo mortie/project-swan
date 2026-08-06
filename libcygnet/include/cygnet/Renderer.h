@@ -185,6 +185,18 @@ public:
 		Color fill = {0.0, 0.0, 0.0, 0.0};
 	};
 
+	struct DrawTriangleStrip {
+		std::span<Swan::Vec2> points;
+		Color fill = {0.0, 0.0, 0.0, 1.0};
+	};
+
+	struct DrawPolyLine {
+		std::span<Swan::Vec2> points;
+		float width = 1;
+		float padding = 0;
+		Color fill = {0.0, 0.0, 0.0, 1.0};
+	};
+
 	struct DrawText {
 		TextCache &textCache;
 		Swan::Vec2 pos;
@@ -197,6 +209,12 @@ public:
 		DrawText drawText;
 		TextAtlas &atlas;
 		Swan::Vec2 size;
+		size_t start;
+		size_t end;
+	};
+
+	struct TriangleStripSegment {
+		Color fill;
 		size_t start;
 		size_t end;
 	};
@@ -291,6 +309,30 @@ public:
 	void drawRect(DrawRect dr)
 	{
 		drawRect(RenderLayer::NORMAL, dr);
+	}
+
+	void drawTriangleStrip(RenderLayer layer, DrawTriangleStrip dts)
+	{
+		size_t offset = vertexBuffer_.size();
+		vertexBuffer_.resize(offset + dts.points.size());
+		memcpy(
+			&vertexBuffer_[offset], dts.points.data(),
+			dts.points.size() * sizeof(dts.points[0]));
+		baseLayers_[int(layer)].drawTriangleStrip.push_back({
+			.fill = dts.fill,
+			.start = offset,
+			.end = offset + dts.points.size(),
+		});
+	}
+	void drawTriangleStrip(DrawTriangleStrip dts)
+	{
+		drawTriangleStrip(RenderLayer::NORMAL, dts);
+	}
+
+	void drawPolyLine(RenderLayer layer, DrawPolyLine dpl);
+	void drawPolyLine(DrawPolyLine dpl)
+	{
+		drawPolyLine(RenderLayer::NORMAL, dpl);
 	}
 
 	TextSegment &drawText(RenderLayer layer, DrawText drawText)
@@ -462,8 +504,8 @@ public:
 		return false;
 	}
 
-
 private:
+
 	void renderLayer(RenderLayer layer, Mat3gf camMat);
 	void renderUILayer(Mat3gf camMat);
 	void applyAnchor(Anchor anchor, Mat3gf &mat, Swan::Vec2 size);
@@ -491,11 +533,13 @@ private:
 		std::vector<DrawSprite> drawSprite;
 		std::vector<DrawParticle> drawParticle;
 		std::vector<DrawRect> drawRect;
+		std::vector<TriangleStripSegment> drawTriangleStrip;
 		std::vector<TextSegment> drawText;
 	};
 
 	Layer baseLayers_[LAYER_COUNT];
 	std::vector<TextCache::RenderedCodepoint> textBuffer_;
+	std::vector<Swan::Vec2> vertexBuffer_;
 
 	using UIElement = std::variant<
 		DrawGrid,

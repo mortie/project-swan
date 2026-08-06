@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <numbers>
 #include <stdio.h>
 #include <swan/constants.h>
 #include <string.h>
@@ -17,6 +18,7 @@
 #include "glsl/GammaBlend.h"
 #include "glsl/Mask.h"
 #include "glsl/Particle.h"
+#include "glsl/Polygon.h"
 #include "glsl/Rect.h"
 #include "glsl/Sprite.h"
 #include "glsl/Text.h"
@@ -37,10 +39,14 @@ struct RendererState {
 	GammaBlendProg gammaBlendProg{};
 	MaskProg maskProg{};
 	ParticleProg particleProg{};
+	PolygonProg polygonProg{};
 	RectProg rectProg{};
 	SpriteProg spriteProg{};
 	TextProg textProg{};
 	TileProg tileProg{};
+
+	// Generic vao
+	GLuint vbo = 0;
 
 	Swan::Vec2i screenSize;
 	GLuint tileAtlasTex = 0;
@@ -57,6 +63,9 @@ struct RendererState {
 
 Renderer::Renderer(): state_(std::make_unique<RendererState>())
 {
+	glGenBuffers(1, &state_->vbo);
+	glCheck();
+
 	glGenTextures(1, &state_->tileAtlasTex);
 	glCheck();
 
@@ -69,6 +78,7 @@ Renderer::Renderer(): state_(std::make_unique<RendererState>())
 
 Renderer::~Renderer()
 {
+	glDeleteBuffers(1, &state_->vbo);
 	glDeleteTextures(1, &state_->tileAtlasTex);
 	glDeleteTextures(1, &state_->tileMapTex);
 	glDeleteTextures(1, &state_->fluidAtlasTex);
@@ -108,6 +118,7 @@ void Renderer::clear()
 		baseLayers_[idx].drawSprite.clear();
 		baseLayers_[idx].drawParticle.clear();
 		baseLayers_[idx].drawRect.clear();
+		baseLayers_[idx].drawTriangleStrip.clear();
 		baseLayers_[idx].drawText.clear();
 	}
 
@@ -119,6 +130,7 @@ void Renderer::clear()
 	drawTileParticles_.clear();
 	drawFluidMasks_.clear();
 	textBuffer_.clear();
+	vertexBuffer_.clear();
 	textUIBuffer_.clear();
 	drawUIElements_.clear();
 }
@@ -233,6 +245,11 @@ void Renderer::renderLayer(RenderLayer layer, Mat3gf camMat)
 	state_->tileProg.draw(
 		baseLayers_[idx].drawTile, camMat, state_->tileAtlasTex, state_->tileAtlasTexSize,
 		state_->tileMapTex, state_->tileMapTexSize);
+
+	state_->polygonProg.drawTriangleStrip(
+		baseLayers_[idx].drawTriangleStrip, vertexBuffer_,
+		state_->vbo, camMat);
+
 	state_->spriteProg.draw(baseLayers_[idx].drawSprite, camMat);
 	glEnable(GL_STENCIL_TEST);
 	state_->particleProg.draw(baseLayers_[idx].drawParticle, camMat);
@@ -397,6 +414,62 @@ void Renderer::applyAnchor(Anchor anchor, Swan::Vec2 &pos, Swan::Vec2 size)
 		break;
 	}
 };
+
+void Renderer::drawPolyLine(RenderLayer layer, DrawPolyLine dpl)
+{
+	if (dpl.points.size() < 2) {
+		return;
+	}
+
+	size_t offset = vertexBuffer_.size();
+	vertexBuffer_.reserve(offset + dpl.points.size() * 2);
+
+	float k = dpl.width / 2;
+
+	auto norm = [](Swan::Vec2 left, Swan::Vec2 right) {
+		return (right - left).norm().rotate(std::numbers::pi / 2);
+	};
+	Swan::Vec2 vec, point;
+
+	vec = norm(dpl.points[0], dpl.points[1]);
+	point = dpl.points[0];
+	if (dpl.padding > 0) {
+		point += vec.rotate(std::numbers::pi / 2) * dpl.padding;
+	}
+
+	// First point
+	vec *= k;
+	vertexBuffer_.push_back(point + vec);
+	vertexBuffer_.push_back(point - vec);
+
+	// Middle points
+	for (size_t i = 1; i < dpl.points.size() - 1; ++i) {
+		point = dpl.points[i];
+		auto left = dpl.points[i - 1];
+		auto right = dpl.points[i + 1];
+		vec = norm(left, right) * k;
+		vertexBuffer_.push_back(point + vec);
+		vertexBuffer_.push_back(point - vec);
+	}
+
+	vec = norm(dpl.points[dpl.points.size() - 2], dpl.points[dpl.points.size() - 1]);
+	point = dpl.points[dpl.points.size() - 1];
+	if (dpl.padding > 0) {
+		point += vec.rotate(-std::numbers::pi / 2) * dpl.padding;
+	}
+
+	// Last point
+	vec *= k;
+	vertexBuffer_.push_back(point + vec);
+	vertexBuffer_.push_back(point - vec);
+
+	// Push the strip segment description
+	baseLayers_[int(layer)].drawTriangleStrip.push_back({
+		.fill = dpl.fill,
+		.start = offset,
+		.end = offset + dpl.points.size() * 2,
+	});
+}
 
 Rect Renderer::pushUIView(Rect rect, Anchor anchor)
 {

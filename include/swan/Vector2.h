@@ -171,6 +171,17 @@ struct Vector2 {
 		return *this;
 	}
 
+	constexpr Vector2<T> rotate(T rad)
+		requires(std::is_floating_point_v<T>)
+	{
+		auto c = std::cos(rad);
+		auto s = std::sin(rad);
+		return {
+			x * c - y * s,
+			x * s + y * c,
+		};
+	}
+
 	static const Vector2<T> ZERO;
 
 	template<typename U>

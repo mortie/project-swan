@@ -66,27 +66,21 @@ void CopperWireEntity::update(Swan::Ctx &ctx, float dt)
 
 void CopperWireEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
-	for (size_t i = 0; i < points_.size() - 1; ++i) {
-		auto a = points_[i];
-		auto b = points_[i + 1];
-		for (int i = 0; i < 10; ++i) {
-			Swan::Vec2 pos = {
-				Swan::lerp(a.x, b.x, i / 10.0),
-				Swan::lerp(a.y, b.y, i / 10.0),
-			};
-			rnd.drawRect({
-				.pos = pos.add(-0.05, -0.05),
-				.size = {0.1, 0.1},
-				.outline = {0, 0, 0, 0},
-				.fill = {0.96, 0.54, 0.17},
-			});
-		}
-	}
-	rnd.drawRect({
-		.pos = points_.back().add(-0.05, -0.05),
-		.size = {0.1, 0.1},
-		.outline = {0, 0, 0, 0},
+	rnd.drawPolyLine({
+		.points = points_,
+		.width = 0.05,
+		.padding = 0.025,
 		.fill = {0.96, 0.54, 0.17},
+	});
+
+	if (points_.size() < 3) {
+		return;
+	}
+
+	rnd.drawPolyLine({
+		.points = std::span(points_.data() + 1, points_.size() - 2),
+		.width = 0.1,
+		.fill = {0.1, 0.1, 0.1},
 	});
 }
 
@@ -100,6 +94,14 @@ void CopperWireEntity::onDespawn(Swan::Ctx &ctx)
 	for (size_t i = 0; i < points_.size() - 1; ++i) {
 		auto a = points_[i];
 		auto b = points_[i + 1];
+
+		Cygnet::Color color;
+		if (i == 0 || i == points_.size() - 2) {
+			color = {0.96, 0.54, 0.17};
+		} else {
+			color = {0.1, 0.1, 0.1};
+		}
+
 		for (int i = 0; i < 10; ++i) {
 			Swan::Vec2 pos = {
 				Swan::lerp(a.x, b.x, i / 10.0),
@@ -112,7 +114,7 @@ void CopperWireEntity::onDespawn(Swan::Ctx &ctx)
 					0.0,
 				},
 				.size = {0.05, 0.05},
-				.color = {0.96, 0.54, 0.17},
+				.color = color,
 				.lifetime = Swan::randfloat() * 0.2f + 0.05f,
 				.weight = 0.4,
 			});
