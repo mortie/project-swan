@@ -234,8 +234,8 @@ public:
 			.traits = std::make_shared<BurnableItemTrait>(),
 		});
 		registerItem({
-			.name = "pig-iron",
-			.image = "core::items/pig-iron",
+			.name = "iron",
+			.image = "core::items/iron",
 		});
 		registerItem({
 			.name = "iron-ore-chunk",

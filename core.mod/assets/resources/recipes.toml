@@ -86,7 +86,7 @@ output = [1, "core::chest"]
 [["core::workbench"]]
 inputs = [
 	[1, "core::glass"],
-	[1, "core::pig-iron"],
+	[1, "core::iron"],
 	[2, "core::copper"],
 ]
 output = [1, "core::incandescent-lamp"]
@@ -120,7 +120,7 @@ output = [0, ""]
 
 [["core::smelting"]]
 inputs = [[2, "core::iron-ore-chunk"]]
-output = [2, "core::pig-iron"]
+output = [2, "core::iron"]
 
 [["core::smelting"]]
 inputs = [[2, "core::copper-ore-chunk"]]
