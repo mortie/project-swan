@@ -156,7 +156,7 @@ void BasicPhysicsBody::update(const Swan::Context &ctx, float dt)
 	Vec2 step = dir * 0.4;
 
 	// Move out if we're in the center of something
-	while (true) {
+	for (int i = 0; i < 10; ++i) {
 		auto x = (int64_t)floor(body.midX() * FLUID_RESOLUTION);
 		auto y = (int64_t)floor(body.bottom() * FLUID_RESOLUTION - 0.05);
 		if (ctx.plane.fluids().isFluidCellSolid({x, y})) {
