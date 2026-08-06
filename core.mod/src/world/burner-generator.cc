@@ -43,6 +43,7 @@ void registerBurnerGenerator(Swan::Mod &mod)
 		.breakableBy = Swan::Tool::HAND,
 		.droppedItem = "core::burner-generator",
 		.tileEntity = "core::tile::burner-generator",
+		.onTileUpdate = breakIfFloating,
 		.onActivate = onActivate,
 	});
 }
