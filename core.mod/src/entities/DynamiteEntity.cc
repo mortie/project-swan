@@ -33,7 +33,7 @@ static void explode(Swan::Ctx &ctx, Swan::Vec2 pos)
 		});
 	}
 
-	Swan::TilePos base = {(int)round(pos.x), (int)round(pos.y)};
+	Swan::TilePos base = tilePos(pos);
 	auto consider = [&](Swan::Vec2i offset) {
 		Swan::TilePos pos = base + offset;
 		float dist = offset.as<float>().scale(0.75, 1.0).length();
@@ -47,10 +47,12 @@ static void explode(Swan::Ctx &ctx, Swan::Vec2 pos)
 			return;
 		}
 
-		auto dir = base - pos;
-		auto cast = ctx.plane.tiles().raycast(pos.as<float>().add(0.5, 0.5), dir, dist);
-		if (cast.hit) {
-			return;
+		if (offset != Swan::Vec2i{0, 0}) {
+			auto dir = base - pos;
+			auto cast = ctx.plane.tiles().raycastIgnoreStart(tileCenter(pos), dir, dist);
+			if (cast.hit) {
+				return;
+			}
 		}
 
 		if (tile.breakableBy.contains(Swan::Tool::HAND)) {
@@ -86,8 +88,15 @@ static void explode(Swan::Ctx &ctx, Swan::Vec2 pos)
 		auto delta = collision.body.center() - pos;
 
 		Swan::Vec2 vel = delta.norm() * (20.0 / std::max(delta.length(), 1.0f));
-		collision.ref.traitThen<Swan::PhysicsBodyTrait>([&](auto &body) {
-			body.addVelocity(vel);
+		collision.ref.traitThen<Swan::PhysicsBodyTrait>([&](Swan::PhysicsBody &physics) {
+			auto body = collision.ref.trait<Swan::BodyTrait>();
+			auto vec = pos - body->center();
+			auto cast = ctx.plane.tiles().raycast(body->center(), vec, vec.length());
+			if (cast.hit) {
+				return;
+			}
+
+			physics.addVelocity(vel);
 		});
 	}
 }
@@ -117,6 +126,15 @@ void DynamiteEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 		.scale({0.75, 0.75})
 		.translate(physicsBody_.body.pos)
 		.translate({-0.05, -0.275}));
+	rnd.drawRect({
+		.pos = Swan::tilePos(physicsBody_.body.center()),
+	});
+	rnd.drawRect({
+		.pos = physicsBody_.body.center().add(-0.05, -0.05),
+		.size = {0.1, 0.1},
+		.outline = {0, 0, 0, 0},
+		.fill = {0, 1, 0, 1},
+	});
 }
 
 void DynamiteEntity::update(Swan::Ctx &ctx, float dt)

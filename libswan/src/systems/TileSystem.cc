@@ -427,6 +427,83 @@ Raycast TileSystemImpl::raycast(
 	}
 }
 
+Raycast TileSystemImpl::raycastIgnoreStart(
+	Vec2 start, Vec2 direction, float distance)
+{
+	// Ughhh this shouldn't just be an almost-carbon-copy of raycast.
+	// But I should rewrite raycasts altogether some time anyway...
+	float squareDist = distance * distance;
+	Vec2 pos = start;
+	Vec2 prevPos = start;
+	TilePos tp = {(int)floor(pos.x), (int)floor(pos.y)};
+
+	if (squareDist == 0) {
+		return {
+			.hit = false,
+			.tile = get(tp),
+			.pos = tp,
+			.face = Vec2i::ZERO,
+		};
+	}
+
+	Vec2 step = direction.norm() * 0.25;
+	// This is the change from 'raycast'
+	TilePos prevTP = tp;
+	Tile *tile = &get(tp);
+
+	auto isFaceValid = [&](TilePos tp, Vec2i face) {
+		tp += face;
+		return !get(tp).isSolid();
+	};
+
+	while (true) {
+		do {
+			prevPos = pos;
+			pos += step;
+			if ((pos - start).squareLength() > squareDist) {
+				return {
+					.hit = false,
+					.tile = *tile,
+					.pos = tp,
+					.face = Vec2i::ZERO,
+				};
+			}
+
+			tp = {(int)floor(pos.x), (int)floor(pos.y)};
+		} while (tp == prevTP);
+		prevTP = tp;
+
+		tile = &get(tp);
+		if (!tile->isSolid()) {
+			continue;
+		}
+
+		Vec2i face = Vec2i::ZERO;
+		Vec2 rel = pos - tp;
+		Vec2 prevRel = prevPos - tp;
+
+		if (rel.y > 0 && prevRel.y < 0 && isFaceValid(tp, {0, -1})) {
+			face = {0, -1};
+		}
+		else if (rel.y < 1 && prevRel.y > 1 && isFaceValid(tp, {0, 1})) {
+			face = {0, 1};
+		}
+		else if (rel.x > 0 && prevRel.x < 0 && isFaceValid(tp, {-1, 0})) {
+			face = {-1, 0};
+		}
+		else if (rel.x < 1 && prevRel.x > 1 && isFaceValid(tp, {1, 0})) {
+			face = {1, 0};
+		}
+
+		return {
+			.hit = true,
+			.tile = *tile,
+			.pos = tp,
+			.face = face,
+		};
+	}
+}
+
 void TileSystemImpl::spawnTileParticles(TilePos pos, const Tile &tile)
 {
 	// We normally want the particles to be drawn in front of tiles,

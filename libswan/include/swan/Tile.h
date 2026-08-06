@@ -66,7 +66,7 @@ struct Tile {
 		float lightLevel = 0;
 		float temperature = 0;
 		ToolSet breakableBy = Tool::NONE;
-		float explosionResistance = breakableBy.contains(Tool::HAND) ? 0.23 : 0.31;
+		float explosionResistance = breakableBy.contains(Tool::HAND) ? 0.18 : 0.22;
 
 		// Some tiles are part of a collection of tiles (e.g connected tiles, direction variations, etc).
 		// The 'baseOffset' represents the offset from the first tile in the collection.

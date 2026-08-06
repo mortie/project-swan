@@ -77,8 +77,8 @@ inline constexpr ChunkRelPos chunkRelPos(TilePos pos)
 inline constexpr TilePos tilePos(Vec2 pos)
 {
 	return {
-		(int32_t)round(pos.x),
-		(int32_t)round(pos.y),
+		(int32_t)floor(pos.x),
+		(int32_t)floor(pos.y),
 	};
 }
 

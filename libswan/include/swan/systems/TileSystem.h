@@ -44,6 +44,7 @@ public:
 	bool placeTile(TilePos pos, Tile::ID id);
 
 	Raycast raycast(Vec2 pos, Vec2 direction, float distance);
+	Raycast raycastIgnoreStart(Vec2 pos, Vec2 direction, float distance);
 
 	void scheduleUpdate(TilePos pos)
 	{
@@ -119,6 +120,7 @@ public:
 	using TileSystemImpl::breakTileSilently;
 	using TileSystemImpl::placeTile;
 	using TileSystemImpl::raycast;
+	using TileSystemImpl::raycastIgnoreStart;
 	using TileSystemImpl::scheduleUpdate;
 	using TileSystemImpl::spawnTileParticles;
 
