@@ -115,13 +115,13 @@ void IncandescentLampTileEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 
 	rnd.drawTileSprite({
 		.transform = Cygnet::Mat3gf{}.translate(tileEntity_.pos),
-		.sprite = sprites::misc__incandescentLampGlow,
+		.sprite = sprites::misc__incandescentLampGlowRed,
 		.opacity = std::min(light_ * 2.f, 3.f),
 	});
 
 	rnd.drawTileSprite({
 		.transform = Cygnet::Mat3gf{}.translate(tileEntity_.pos),
-		.sprite = sprites::misc__incandescentLampGlowRed,
+		.sprite = sprites::misc__incandescentLampGlow,
 		.opacity = std::min((light_ - 1) / 2.8f, 3.f),
 	});
 }
