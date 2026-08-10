@@ -311,19 +311,7 @@ public:
 		drawRect(RenderLayer::NORMAL, dr);
 	}
 
-	void drawTriangleStrip(RenderLayer layer, DrawTriangleStrip dts)
-	{
-		size_t offset = vertexBuffer_.size();
-		vertexBuffer_.resize(offset + dts.points.size());
-		memcpy(
-			&vertexBuffer_[offset], dts.points.data(),
-			dts.points.size() * sizeof(dts.points[0]));
-		baseLayers_[int(layer)].drawTriangleStrip.push_back({
-			.fill = dts.fill,
-			.start = offset,
-			.end = offset + dts.points.size(),
-		});
-	}
+	void drawTriangleStrip(RenderLayer layer, DrawTriangleStrip dts);
 	void drawTriangleStrip(DrawTriangleStrip dts)
 	{
 		drawTriangleStrip(RenderLayer::NORMAL, dts);

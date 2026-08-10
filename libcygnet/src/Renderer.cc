@@ -415,6 +415,20 @@ void Renderer::applyAnchor(Anchor anchor, Swan::Vec2 &pos, Swan::Vec2 size)
 	}
 };
 
+void Renderer::drawTriangleStrip(RenderLayer layer, DrawTriangleStrip dts)
+{
+	size_t offset = vertexBuffer_.size();
+	vertexBuffer_.resize(offset + dts.points.size());
+	memcpy(
+		&vertexBuffer_[offset], dts.points.data(),
+		dts.points.size() * sizeof(dts.points[0]));
+	baseLayers_[int(layer)].drawTriangleStrip.push_back({
+		.fill = dts.fill,
+		.start = offset,
+		.end = offset + dts.points.size(),
+	});
+}
+
 void Renderer::drawPolyLine(RenderLayer layer, DrawPolyLine dpl)
 {
 	if (dpl.points.size() < 2) {
