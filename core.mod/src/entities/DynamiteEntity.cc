@@ -126,15 +126,6 @@ void DynamiteEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 		.scale({0.75, 0.75})
 		.translate(physicsBody_.body.pos)
 		.translate({-0.05, -0.275}));
-	rnd.drawRect({
-		.pos = Swan::tilePos(physicsBody_.body.center()),
-	});
-	rnd.drawRect({
-		.pos = physicsBody_.body.center().add(-0.05, -0.05),
-		.size = {0.1, 0.1},
-		.outline = {0, 0, 0, 0},
-		.fill = {0, 1, 0, 1},
-	});
 }
 
 void DynamiteEntity::update(Swan::Ctx &ctx, float dt)
