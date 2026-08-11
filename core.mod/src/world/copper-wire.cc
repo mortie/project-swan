@@ -3,7 +3,6 @@
 #include "entities/PlayerEntity.h"
 #include "swan/EntityCollection.h"
 #include "swan/traits/InventoryTrait.h"
-#include "traits/PowerSourceTrait.h"
 #include "traits/PowerNodeTrait.h"
 #include "util/InteractionManager.h"
 #include <memory>
