@@ -98,6 +98,10 @@ inputs = [
 ]
 output = [1, "core::burner-generator"]
 
+[["core::workbench"]]
+inputs = [[1, "core::copper"]]
+output = [2, "core::copper-wire"]
+
 [["core::burning"]]
 inputs = [[1, "core::stick"]]
 output = [0, ""]
