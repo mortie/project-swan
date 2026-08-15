@@ -16,8 +16,10 @@
 #include <capnp/message.h>
 #include <capnp/serialize-packed.h>
 
+#ifndef SWAN_HEADLESS
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#endif
 
 #include "Clock.h"
 #include "swan.capnp.h"
@@ -152,6 +154,7 @@ void Game::drawDebugMenu()
 	ImGui::Checkbox("Draw chunk boundaries", &debug_.drawChunkBoundaries);
 	ImGui::Checkbox("Draw world ticks", &debug_.drawWorldTicks);
 
+	#ifndef SWAN_HEADLESS
 	bool prevEnableVSync = enableVSync_;
 	ImGui::Checkbox("Enable VSync", &enableVSync_);
 	if (enableVSync_ && !prevEnableVSync) {
@@ -160,6 +163,7 @@ void Game::drawDebugMenu()
 	else if (!enableVSync_ && prevEnableVSync) {
 		glfwSwapInterval(0);
 	}
+	#endif
 
 	ImGui::Checkbox("Show fluid particles", &debug_.fluidParticleLocations);
 	ImGui::Checkbox("Disable shadows", &debug_.disableShadows);
@@ -491,6 +495,7 @@ void Game::render()
 
 void Game::screenshot(const char *path, int w, int h)
 {
+#ifndef SWAN_HEADLESS
 	if (w < 0) {
 		w = 1920;
 	} else if (w < 8) {
@@ -551,6 +556,7 @@ void Game::screenshot(const char *path, int w, int h)
 	if (!stbi_write_png(path, w, h, 4, pixels.get(), w * 4)) {
 		warn << "Writing screenshot failed";
 	}
+#endif
 }
 
 void Game::update(float dt)

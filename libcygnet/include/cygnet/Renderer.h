@@ -493,7 +493,6 @@ public:
 	}
 
 private:
-
 	void renderLayer(RenderLayer layer, Mat3gf camMat);
 	void renderUILayer(Mat3gf camMat);
 	void applyAnchor(Anchor anchor, Mat3gf &mat, Swan::Vec2 size);

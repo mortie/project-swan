@@ -1,3 +1,6 @@
+#include "InputHandler.h"
+
+#ifndef SWAN_HEADLESS
 #include <bitset>
 #include <cassert>
 #include <cmath>
@@ -14,12 +17,14 @@
 #include "inputmaps/buttons.h"
 #include "inputmaps/keys.h"
 #include "inputmaps/mouse.h"
-#include "InputHandler.h"
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#endif
 
 namespace Swan {
+
+#ifndef SWAN_HEADLESS
 
 struct InputHandler::LogEntry {
 	const char *kind;
@@ -550,4 +555,30 @@ void InputHandler::registerAxisInput(std::string_view input, float *activation)
 	});
 }
 
+#else
+
+struct InputHandler::Impl {};
+
+InputHandler::InputHandler() = default;
+InputHandler::~InputHandler() = default;
+
+Action InputHandler::action(std::string_view name) { return {}; }
+
+void InputHandler::onKeyDown(int) {}
+void InputHandler::onKeyUp(int) {}
+void InputHandler::onMouseDown(int) {}
+void InputHandler::onMouseUp(int) {}
+void InputHandler::onButtonDown(int) {}
+void InputHandler::onButtonUp(int) {}
+void InputHandler::drawDebug() {}
+
+void InputHandler::setActions(std::vector<ActionSpec>) {}
+void InputHandler::beginFrame() {}
+void InputHandler::endFrame() {}
+
+void InputHandler::updateGamepad(Gamepad &) {}
+void InputHandler::registerInput(std::string_view, ActionKind, float *) {}
+void InputHandler::registerAxisInput(std::string_view, float*) {}
+
+#endif
 }

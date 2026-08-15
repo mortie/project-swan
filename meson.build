@@ -36,6 +36,11 @@ if meson.get_compiler('cpp').get_id() == 'clang'
   add_global_arguments('-Werror=reorder-init-list', language : 'cpp')
 endif
 
+is_headless = get_option('swan_headless')
+if is_headless
+  add_project_arguments('-DSWAN_HEADLESS', language: 'cpp')
+endif
+
 maybe_libtracy = []
 if get_option('trace')
   tracy_proj = subproject('tracy')
@@ -43,26 +48,34 @@ if get_option('trace')
   add_project_arguments('-DTRACY_ENABLE', language: 'cpp')
 endif
 
-glfw_opts = cmake.subproject_options()
-glfw_opts.add_cmake_defines({
-  'GLFW_LIBRARY_TYPE': 'SHARED',
-  'GLFW_BUILD_EXAMPLES': false,
-  'GLFW_BUILD_TESTS': false,
-  'GLFW_BUILD_DOCS': false,
-  'CMAKE_INSTALL_LIBDIR': 'lib',
-})
-glfw_opts.set_override_option('warning_level', '1')
-glfw_sub = cmake.subproject('glfw', options: glfw_opts)
-libglfw3 = glfw_sub.dependency('glfw')
+if is_headless
+  libglfw3 = []
+else
+  glfw_opts = cmake.subproject_options()
+  glfw_opts.add_cmake_defines({
+    'GLFW_LIBRARY_TYPE': 'SHARED',
+    'GLFW_BUILD_EXAMPLES': false,
+    'GLFW_BUILD_TESTS': false,
+    'GLFW_BUILD_DOCS': false,
+    'CMAKE_INSTALL_LIBDIR': 'lib',
+  })
+  glfw_opts.set_override_option('warning_level', '1')
+  glfw_sub = cmake.subproject('glfw', options: glfw_opts)
+  libglfw3 = glfw_sub.dependency('glfw')
+endif
 
-portaudio_opts = cmake.subproject_options()
-portaudio_opts.add_cmake_defines({
-  'BUILD_SHARED_LIBS': true,
-  'CMAKE_INSTALL_LIBDIR': 'lib',
-})
-portaudio_opts.set_override_option('warning_level', '0')
-portaudio_sub = cmake.subproject('portaudio', options: portaudio_opts)
-libportaudio = portaudio_sub.dependency('portaudio')
+if is_headless
+  libportaudio = []
+else
+  portaudio_opts = cmake.subproject_options()
+  portaudio_opts.add_cmake_defines({
+    'BUILD_SHARED_LIBS': true,
+    'CMAKE_INSTALL_LIBDIR': 'lib',
+  })
+  portaudio_opts.set_override_option('warning_level', '0')
+  portaudio_sub = cmake.subproject('portaudio', options: portaudio_opts)
+  libportaudio = portaudio_sub.dependency('portaudio')
+endif
 
 tpl_opts = cmake.subproject_options()
 tpl_opts.add_cmake_defines({
@@ -71,23 +84,28 @@ tpl_opts.add_cmake_defines({
 tpl_sub = cmake.subproject('tiny-process-library', options: tpl_opts)
 libtpl = tpl_sub.dependency('tiny-process-library')
 
-libffmpeg = [
-  dependency('libavcodec', required: get_option('ffmpeg')),
-  dependency('libavdevice', required: get_option('ffmpeg')),
-  dependency('libavfilter', required: get_option('ffmpeg')),
-  dependency('libavformat', required: get_option('ffmpeg')),
-  dependency('libavutil', required: get_option('ffmpeg')),
-  dependency('libswresample', required: get_option('ffmpeg')),
-  dependency('libswscale', required: get_option('ffmpeg')),
-]
+if is_headless
+  libffmpeg = []
+  has_ffmpeg = false
+else
+  libffmpeg = [
+    dependency('libavcodec', required: get_option('ffmpeg')),
+    dependency('libavdevice', required: get_option('ffmpeg')),
+    dependency('libavfilter', required: get_option('ffmpeg')),
+    dependency('libavformat', required: get_option('ffmpeg')),
+    dependency('libavutil', required: get_option('ffmpeg')),
+    dependency('libswresample', required: get_option('ffmpeg')),
+    dependency('libswscale', required: get_option('ffmpeg')),
+  ]
 
-has_ffmpeg = true
-foreach lib: libffmpeg
-  if not lib.found()
-    has_ffmpeg = false
-    break
-  endif
-endforeach
+  has_ffmpeg = true
+  foreach lib: libffmpeg
+    if not lib.found()
+      has_ffmpeg = false
+      break
+    endif
+  endforeach
+endif
 
 libcpptoml = subproject('cpptoml-ng').get_variable('cpptoml_dep')
 libdw = dependency('libdw', required: false)
@@ -108,7 +126,9 @@ libscisavm = scisa_sub.get_variable('libscisavm')
 
 subdir('third-party')
 
-if host_machine.system() == 'windows'
+if is_headless
+  libgl = []
+elif host_machine.system() == 'windows'
   libgl = libglad
 else
   libgl = dependency('OpenGL')

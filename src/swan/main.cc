@@ -7,8 +7,10 @@
 #include <vector>
 #include <chrono>
 
+#ifndef SWAN_HEADLESS
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#endif
 
 #ifndef __MINGW32__
 #include <backward.hpp>
@@ -26,9 +28,11 @@
 
 #include "../swan-build/build.h"
 
+#ifndef SWAN_HEADLESS
 #define HAS_MODERN_GLFW \
 	GLFW_VERSION_MAJOR > 3 || \
 	(GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 4)
+#endif
 
 using namespace Swan;
 
@@ -39,6 +43,7 @@ using namespace Swan;
 	} \
 } while (0)
 
+#ifndef SWAN_HEADLESS
 static Game *gameptr;
 static ImGuiIO *imguiIo;
 static double pixelRatio = 1;
@@ -110,6 +115,7 @@ static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
 		imguiIo->Fonts->Build();
 	}
 }
+#endif
 
 int main(int argc, char **argv)
 {
@@ -152,11 +158,17 @@ int main(int argc, char **argv)
 
 	if (mods.empty()) {
 		panic << "Empty mods list!";
+		return 1;
 	}
 
 	if (!worldPath) {
 		panic << "Missing world path!";
+		return 1;
 	}
+
+#ifdef SWAN_HEADLESS
+	info << "Running in headless mode.";
+#endif
 
 	auto compileMods = [&]() {
 		if (!doCompileMods) {
@@ -177,6 +189,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+#ifndef SWAN_HEADLESS
 	glfwSetErrorCallback(+[] (int error, const char *description) {
 		warn << "GLFW Error: " << error << ": " << description;
 	});
@@ -227,6 +240,7 @@ int main(int argc, char **argv)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 	Cygnet::glCheck();
+#endif
 
 	// Create the game and mod list
 	Game game(compileMods);
@@ -250,6 +264,7 @@ int main(int argc, char **argv)
 		game.createWorld(worldPath, "core::default", seed, mods);
 	}
 
+#ifndef SWAN_HEADLESS
 	gameptr = &game;
 	glfwSetKeyCallback(window, keyCallback);
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -321,20 +336,27 @@ int main(int argc, char **argv)
 	GLuint globalVao;
 	glGenVertexArrays(1, &globalVao);
 	glBindVertexArray(globalVao);
+#endif
 
 	Swan::info << "Timer 'initialize': " << initTimer;
 
 	auto prevTime = std::chrono::steady_clock::now();
 
 	int slowFrames = 0;
+#ifdef SWAN_HEADLESS
+	while (!game.shouldQuit_) {
+#else
 	while (!glfwWindowShouldClose(window) && !game.shouldQuit_) {
+#endif
 		ZoneScopedN("game loop");
 
+#ifndef SWAN_HEADLESS
 		glfwPollEvents();
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
 		Cygnet::glCheck();
+		ImGui::NewFrame();
+#endif
 
 		auto now = std::chrono::steady_clock::now();
 		std::chrono::duration<float> dur(now - prevTime);
@@ -406,6 +428,7 @@ int main(int argc, char **argv)
 			}
 		}
 
+#ifndef SWAN_HEADLESS
 		{
 			ZoneScopedN("game draw");
 			game.draw();
@@ -435,6 +458,7 @@ int main(int argc, char **argv)
 			glfwSwapBuffers(window);
 			Cygnet::glCheck();
 		}
+#endif
 
 		FrameMark;
 	}

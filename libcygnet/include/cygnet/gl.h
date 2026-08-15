@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef SWAN_HEADLESS
+
 // IWYU pragma: begin_exports
 #if defined(__APPLE__)
 #define GL_SILENCE_DEPRECATION
@@ -13,6 +15,11 @@
 #error "Unknown architecture"
 #endif
 // IWYU pragma: end_exports
+
+#else
+typedef int GLint;
+typedef unsigned int GLuint;
+#endif
 
 namespace Cygnet {
 

@@ -1,5 +1,6 @@
 #include "SoundPlayer.h"
 
+#ifndef SWAN_HEADLESS
 #include <cassert>
 #include <portaudio.h>
 #include <thread>
@@ -8,8 +9,11 @@
 #include <atomic>
 
 #include "RingBuffer.h"
+#endif
 
 namespace Swan {
+
+#ifndef SWAN_HEADLESS
 
 constexpr size_t MAX_PLAYBACKS = 64;
 constexpr size_t MAX_NEW_PLAYBACKS = 32;
@@ -310,5 +314,21 @@ void SoundPlayer::setCenter(float x, float y)
 	context_->centerX = x;
 	context_->centerY = y;
 }
+
+#else
+
+struct SoundPlayer::Context {};
+
+SoundPlayer::SoundPlayer() = default;
+SoundPlayer::~SoundPlayer() = default;
+
+void SoundPlayer::volume(float) {}
+float SoundPlayer::volume() { return 0; }
+void SoundPlayer::flush() {}
+
+void SoundPlayer::play(SoundAsset *, float, std::optional<std::pair<float, float>>, SoundHandle) {}
+void SoundPlayer::setCenter(float, float) {}
+
+#endif
 
 }

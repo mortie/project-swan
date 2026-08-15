@@ -11,17 +11,25 @@ libglad = declare_dependency(
   ),
 )
 
+imgui_sources = [
+  'imgui/imgui_demo.cpp',
+  'imgui/imgui_draw.cpp',
+  'imgui/imgui_tables.cpp',
+  'imgui/imgui_widgets.cpp',
+  'imgui/imgui.cpp',
+  'imgui/misc/cpp/imgui_stdlib.cpp',
+]
+if not is_headless
+  imgui_sources += [
+    'imgui/backends/imgui_impl_opengl3.cpp',
+    'imgui/backends/imgui_impl_glfw.cpp',
+  ]
+endif
+
 libimgui = declare_dependency(
   include_directories: ['.', 'imgui'],
   link_with: shared_library('imgui',
-    'imgui/backends/imgui_impl_opengl3.cpp',
-    'imgui/backends/imgui_impl_glfw.cpp',
-    'imgui/imgui_demo.cpp',
-    'imgui/imgui_draw.cpp',
-    'imgui/imgui_tables.cpp',
-    'imgui/imgui_widgets.cpp',
-    'imgui/imgui.cpp',
-    'imgui/misc/cpp/imgui_stdlib.cpp',
+    imgui_sources,
     include_directories: 'imgui',
     cpp_args: ['-Wno-sign-compare', '-Wno-deprecated-enum-enum-conversion'],
     dependencies: [libglfw3],

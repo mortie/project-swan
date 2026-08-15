@@ -1,5 +1,6 @@
 #include "Renderer.h"
 
+#ifndef SWAN_HEADLESS
 #include <cassert>
 #include <iostream>
 #include <numbers>
@@ -28,8 +29,11 @@
 #ifdef DrawText
 #undef DrawText
 #endif
+#endif
 
 namespace Cygnet {
+
+#ifndef SWAN_HEADLESS
 
 struct RendererState {
 	AlphaBlendProg alphaBlendProg{};
@@ -109,30 +113,6 @@ void Renderer::update(float dt)
 			particles[i].pos += meta.vel * dt;
 		}
 	}
-}
-
-void Renderer::clear()
-{
-	for (int idx = 0; idx <= (int)RenderLayer::MAX; ++idx) {
-		baseLayers_[idx].drawTile.clear();
-		baseLayers_[idx].drawSprite.clear();
-		baseLayers_[idx].drawParticle.clear();
-		baseLayers_[idx].drawRect.clear();
-		baseLayers_[idx].drawTriangleStrip.clear();
-		baseLayers_[idx].drawText.clear();
-	}
-
-	drawChunks_.clear();
-	drawChunkFluids_.clear();
-	drawChunkShadows_.clear();
-	drawTileClips_.clear();
-	drawTileSprites_.clear();
-	drawTileParticles_.clear();
-	drawFluidMasks_.clear();
-	textBuffer_.clear();
-	vertexBuffer_.clear();
-	textUIBuffer_.clear();
-	drawUIElements_.clear();
 }
 
 void Renderer::render(const RenderCamera &cam, RenderProps props)
@@ -873,6 +853,87 @@ void Renderer::destroyMask(RenderMask mask)
 	assert(mask.tex != ~(GLuint)0);
 	glDeleteTextures(1, &mask.tex);
 	glCheck();
+}
+
+#else
+
+struct RendererState {};
+
+Renderer::Renderer() = default;
+Renderer::~Renderer() = default;
+
+void Renderer::drawTriangleStrip(RenderLayer, DrawTriangleStrip) {}
+void Renderer::drawPolyLine(RenderLayer, DrawPolyLine) {}
+
+Rect Renderer::pushUIView(Rect, Anchor) { return {}; }
+void Renderer::popUIView() {}
+bool Renderer::assertUIViewStackEmpty() { return true; }
+Renderer::TextSegment Renderer::prepareUIText(DrawText dt, Anchor)
+{
+	return {
+		.drawText = dt,
+		.atlas = dt.textCache.atlas_,
+		.size = {},
+		.start = 0,
+		.end = 0,
+	};
+}
+
+void Renderer::update(float) {}
+void Renderer::render(const RenderCamera &, RenderProps) {}
+void Renderer::renderUI(const RenderCamera &, RenderProps) {}
+
+void Renderer::uploadFluidAtlas(const void *) {}
+void Renderer::uploadTileAtlas(const void *, int, int) {}
+void Renderer::uploadTileMap(std::span<uint16_t>) {}
+void Renderer::modifyTile(TileID, uint16_t) {}
+
+RenderChunk Renderer::createChunk(TileID *, TileID *) { return {}; }
+void Renderer::modifyChunk(RenderChunk, Swan::Vec2i, TileID) {}
+void Renderer::modifyChunkBackground(RenderChunk, Swan::Vec2i, TileID) {}
+void Renderer::destroyChunk(RenderChunk) {}
+
+RenderChunkFluid Renderer::createChunkFluid(uint8_t *) { return {}; }
+void Renderer::modifyChunkFluid(RenderChunkFluid, uint8_t *) {}
+void Renderer::destroyChunkFluid(RenderChunkFluid) {}
+
+RenderChunkShadow Renderer::createChunkShadow(uint8_t *) { return {}; }
+void Renderer::modifyChunkShadow(RenderChunkShadow, uint8_t *) {}
+void Renderer::destroyChunkShadow(RenderChunkShadow) {}
+
+RenderSprite Renderer::createSprite(void *, int, int, int, int, bool) { return {}; }
+void Renderer::destroySprite(RenderSprite) {}
+
+RenderMask Renderer::createMask(void *, int, int) { return {}; }
+void Renderer::destroyMask(RenderMask) {}
+
+void Renderer::applyAnchor(Anchor, Mat3gf &, Swan::Vec2) {}
+void Renderer::applyAnchor(Anchor, Swan::Vec2 &, Swan::Vec2) {}
+
+#endif
+
+void Renderer::clear()
+{
+	for (int idx = 0; idx <= (int)RenderLayer::MAX; ++idx) {
+		baseLayers_[idx].drawTile.clear();
+		baseLayers_[idx].drawSprite.clear();
+		baseLayers_[idx].drawParticle.clear();
+		baseLayers_[idx].drawRect.clear();
+		baseLayers_[idx].drawTriangleStrip.clear();
+		baseLayers_[idx].drawText.clear();
+	}
+
+	drawChunks_.clear();
+	drawChunkFluids_.clear();
+	drawChunkShadows_.clear();
+	drawTileClips_.clear();
+	drawTileSprites_.clear();
+	drawTileParticles_.clear();
+	drawFluidMasks_.clear();
+	textBuffer_.clear();
+	vertexBuffer_.clear();
+	textUIBuffer_.clear();
+	drawUIElements_.clear();
 }
 
 }

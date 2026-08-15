@@ -4,16 +4,17 @@ shader_gen = generator(
   arguments: ['@INPUT@', '@OUTPUT0@', '@OUTPUT1@'],
 )
 
-libcygnet = declare_dependency(
-  include_directories: 'include',
-  link_with: shared_library('cygnet',
+cygnet_sources = [
+  'src/Gui.cc',
+  'src/Renderer.cc',
+  'src/ResourceManager.cc',
+  'src/TextCache.cc',
+  'src/TileAtlas.cc',
+]
+if not is_headless
+  cygnet_sources += [
     'src/gl.cc',
     'src/GlWrappers.cc',
-    'src/Gui.cc',
-    'src/Renderer.cc',
-    'src/ResourceManager.cc',
-    'src/TextCache.cc',
-    'src/TileAtlas.cc',
     'src/util.cc',
     shader_gen.process(
       'src/glsl/AlphaBlend.glsl',
@@ -29,6 +30,13 @@ libcygnet = declare_dependency(
       'src/glsl/Text.glsl',
       'src/glsl/Tile.glsl',
     ),
+  ]
+endif
+
+libcygnet = declare_dependency(
+  include_directories: 'include',
+  link_with: shared_library('cygnet',
+    cygnet_sources,
     dependencies: [
       common, libthreads, libgl, libglfw3, libstb_truetype, libstb_image,
     ] + maybe_libtracy,

@@ -1,5 +1,6 @@
 #include "TextCache.h"
 
+#ifndef SWAN_HEADLESS
 #include <string.h>
 #include <stdexcept>
 #include <iostream>
@@ -11,8 +12,11 @@
 
 #include "gl.h"
 #include "util.h"
+#endif
 
 namespace Cygnet {
+
+#ifndef SWAN_HEADLESS
 
 struct FontFace {
 	std::unique_ptr<uint8_t[]> content;
@@ -278,5 +282,23 @@ void TextCache::kern(Codepoint prev, RenderedCodepoint &rendered)
 		rendered.x = -60 * scale_;
 	}
 }
+
+#else
+
+std::shared_ptr<FontFace> loadFontFace(const char *) { return nullptr; }
+
+TextCache::TextCache(std::shared_ptr<FontFace>, int) {}
+TextCache::~TextCache() = default;
+
+const TextCache::RenderedCodepoint &render(TextCache::Codepoint)
+{
+	static TextCache::RenderedCodepoint codepoint;
+	return codepoint;
+}
+
+void TextCache::renderString(std::string_view, std::vector<RenderedCodepoint> &, Swan::Vec2 &) {}
+void TextCache::kern(Codepoint, RenderedCodepoint &) {}
+
+#endif
 
 }

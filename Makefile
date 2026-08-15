@@ -1,5 +1,6 @@
 OUT ?= ./build
 MESON ?= ./meson/meson.py
+MESON_OPTS ?=
 
 define scanner-gen-data-file
 endef
@@ -9,6 +10,7 @@ all: build
 
 $(OUT)/build.ninja:
 	$(MESON) setup $(OUT) \
+		$(MESON_OPTS) \
 		-Dbuildtype=debug -Ddebug=true -Doptimization=1 \
 		-Dprefix=$(abspath $(OUT)/pfx)
 
