@@ -319,6 +319,11 @@ void SoundPlayer::setCenter(float x, float y)
 
 struct SoundPlayer::Context {};
 
+SoundHandle SoundHandle::make() { return {}; }
+bool SoundHandle::done() { return true; }
+void SoundHandle::stop() {}
+void SoundHandle::move(Vec2) {}
+
 SoundPlayer::SoundPlayer() = default;
 SoundPlayer::~SoundPlayer() = default;
 
