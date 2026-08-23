@@ -1,5 +1,5 @@
 #include "Game.h"
-#include "kj/io.h"
+#include "swan/constants.h"
 
 #include <algorithm>
 #include <cmath>
@@ -13,6 +13,7 @@
 #include <cygnet/gl.h>
 #include <stb/stb_image_write.h>
 
+#include <kj/io.h>
 #include <capnp/message.h>
 #include <capnp/serialize-packed.h>
 
@@ -29,7 +30,7 @@
 
 namespace Swan {
 
-static constexpr float TICK_DELTA = 1.0 / 20.0;
+static constexpr float TICK_DELTA = 1.0 / TICK_RATE;
 
 static std::string formatNow()
 {
@@ -120,9 +121,15 @@ void Game::onMouseMove(float x, float y)
 	hasMouseMoved_ = true;
 }
 
-void Game::onScrollWheel(double dy)
+void Game::onScrollWheel(float dy)
 {
 	didScroll_ += dy;
+}
+
+void Game::onViewportSize(int w, int h)
+{
+	cam_.size = {w, h};
+	uiCam_.size = {w, h};
 }
 
 Vec2 Game::getMousePos()
@@ -155,12 +162,12 @@ void Game::drawDebugMenu()
 	ImGui::Checkbox("Draw world ticks", &debug_.drawWorldTicks);
 
 	#ifndef SWAN_HEADLESS
-	bool prevEnableVSync = enableVSync_;
-	ImGui::Checkbox("Enable VSync", &enableVSync_);
-	if (enableVSync_ && !prevEnableVSync) {
+	bool prevEnableVSync = vsync_;
+	ImGui::Checkbox("Enable VSync", &vsync_);
+	if (vsync_ && !prevEnableVSync) {
 		glfwSwapInterval(1);
 	}
-	else if (!enableVSync_ && prevEnableVSync) {
+	else if (!vsync_ && prevEnableVSync) {
 		glfwSwapInterval(0);
 	}
 	#endif
@@ -180,16 +187,28 @@ void Game::drawDebugMenu()
 		triggerSave_ = true;
 	}
 
+	ImGui::SameLine();
+
 	if (ImGui::Button("Screenshot")) {
 		std::filesystem::create_directories("screenshots");
 		auto path = cat("screenshots/", formatNow(), ".png");
 		screenshot(path.c_str());
 	}
 
+	if (server_.running()) {
+		if (ImGui::Button("Stop Server")) {
+			server_.end();
+		}
+	} else if (ImGui::Button("Start Server")) {
+		server_.listen(nullptr, 11216);
+	}
+
 	if (!FrameRecorder::isAvailable()) {
 		ImGui::Text("Screen recording unavailable");
 	}
 	else if (frameRecorder_) {
+		ImGui::SameLine();
+
 		if (ImGui::Button("End recording")) {
 			frameRecorder_->end();
 			frameRecorder_.reset();
@@ -197,6 +216,8 @@ void Game::drawDebugMenu()
 		}
 	}
 	else {
+		ImGui::SameLine();
+
 		if (ImGui::Button("Begin recording")) {
 			frameRecorder_.emplace();
 
@@ -212,6 +233,10 @@ void Game::drawDebugMenu()
 				fixedDeltaTime_.reset();
 			}
 		}
+	}
+
+	if (server_.running()) {
+		ImGui::Text("Server running.");
 	}
 
 	ImGui::SliderFloat(
@@ -702,6 +727,8 @@ void Game::tick()
 		triggerSave_ = false;
 	}
 
+	tickServer();
+
 	perf_.tickCount += 1;
 	if (perf_.tickCount >= 20) {
 		perf_.entityTickTime.capture(perf_.tickCount);
@@ -714,6 +741,30 @@ void Game::tick()
 	if (world_->tick(TICK_DELTA, tickDeadline_)) {
 		tickInProgress_ = false;
 	}
+}
+
+void Game::tickServer()
+{
+	if (!server_) {
+		return;
+	}
+
+	server_.tick(TICK_DELTA);
+
+	mp_proto::ClientToServer::Reader r;
+	const MPServer::ClientInfo *client;
+	while ((client = server_.receive(r))) {
+		info << "Received message from client '" << client->identifier << ":";
+	}
+}
+
+void Game::onQuit()
+{
+	if (server_) {
+		server_.end("Server shutting down.");
+	}
+
+	save();
 }
 
 void Game::save()

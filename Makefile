@@ -36,6 +36,10 @@ gdrun:
 run: pfx
 	cd $(OUT)/pfx && $(CMD) ./bin/swan --mod $(abspath core.mod) --world default.swan
 
+.PHONY: run-mp
+run-mp: pfx
+	cd $(OUT)/pfx && $(CMD) ./bin/swan --mod $(abspath core.mod) --mp-host localhost
+
 .PHONY: launcher
 launcher: pfx
 	cd $(OUT)/pfx && $(CMD) ./bin/swan-launcher

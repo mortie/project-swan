@@ -1,5 +1,5 @@
 project(
-  'swan', 'cpp',
+  'swan', 'c', 'cpp',
   version: 'alpha-2026-07-21.0',
   default_options: [
     'cpp_std=c++20',
@@ -83,6 +83,31 @@ tpl_opts.add_cmake_defines({
 })
 tpl_sub = cmake.subproject('tiny-process-library', options: tpl_opts)
 libtpl = tpl_sub.dependency('tiny-process-library')
+
+sdl_opts = cmake.subproject_options()
+sdl_opts.add_cmake_defines({
+  'SDL_AUDIO': false,
+  'SDL_VIDEO': false,
+  'SDL_JOYSTICK': false,
+  'SDL_HAPTIC': false,
+  'SDL_HIDAPI': false,
+  'SDL_POWER': false,
+  'SDL_SENSOR': false,
+  'SDL_DIALOG': false,
+  'SDL_TRAY': false,
+})
+sdl_sub = cmake.subproject('SDL', options: sdl_opts)
+libsdl = sdl_sub.dependency('SDL3-shared')
+
+if target_machine.system() == 'windows'
+  sdl_platform = 'WINDOWS'
+elif target_machine.system() == 'linux'
+  sdl_platform = 'LINUX'
+elif target_machine.system() == 'darwin'
+  sdl_platform = 'DARWIN'
+else
+  error('Unknown target system: ' + target_machine.system())
+endif
 
 if is_headless
   libffmpeg = []
@@ -171,7 +196,7 @@ endif
 
 swan_deps = [
   libswan, libcygnet, common, libimgui, libgl, libglfw3, libbackwardcpp,
-  libcpptoml, libsha1, libscisasm, libscisavm, libtpl,
+  libcpptoml, libsha1, libscisasm, libscisavm, libtpl, libsdl, libsdl_net,
 ] + maybe_libtracy
 
 executable(

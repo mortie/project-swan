@@ -14,15 +14,17 @@
 #include <vector>
 
 #include "Command.h"
+#include "GameIO.h"
 #include "InputHandler.h"
 #include "common.h"
 #include "World.h"
 #include "SoundPlayer.h"
 #include "FrameRecorder.h"
+#include "MPServer.h"
 
 namespace Swan {
 
-class Game {
+class Game: public GameIO {
 public:
 	Game(std::function<bool()> recompileMods);
 
@@ -85,8 +87,9 @@ public:
 	void loadWorld(
 		std::string worldPath, std::span<const std::string> modPaths);
 
-	void onMouseMove(float x, float y);
-	void onScrollWheel(double dy);
+	void onMouseMove(float x, float y) override;
+	void onScrollWheel(float dy) override;
+	void onViewportSize(int w, int h) override;
 
 	Vec2 getMouseScreenPos() { return mousePos_; }
 	Vec2 getMouseUIPos() { return mouseUIPos_; }
@@ -117,14 +120,15 @@ public:
 
 	void drawDebugMenu();
 	void drawPerfMenu();
-	void draw();
-	void render();
-	void screenshot(const char *path, int w = -1, int h = -1);
+	void draw() override;
+	void render() override;
+	void screenshot(const char *path, int w = -1, int h = -1) override;
 
-	void update(float dt);
+	void update(float dt) override;
+	void onQuit() override;
 	void save();
 
-	InputHandler &inputs() { return inputHandler_; }
+	InputHandler &inputs() override { return inputHandler_; }
 	Action action(std::string_view name) { return inputs().action(name); }
 
 	CommandSpec *matchCommand(std::span<CowStr> tokens, std::vector<CowStr> &out);
@@ -142,13 +146,13 @@ public:
 
 	bool triggerSave_ = false;
 	int triggerReload_ = 0;
-	bool enableVSync_ = false;
 	float timeScale_ = 1.0;
 	std::optional<float> fixedDeltaTime_;
 	float fpsLimit_ = 0;
 	Debug debug_;
 	Perf perf_;
 	std::vector<EntityRef> debugEntities_;
+	MPServer server_;
 
 	bool paused_ = false;
 	bool shouldQuit_ = false;
@@ -181,6 +185,7 @@ public:
 private:
 	bool reload();
 	void tick();
+	void tickServer();
 	void initInputHandler();
 	void initCommandHandler();
 

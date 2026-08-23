@@ -1,5 +1,6 @@
-#include "swan/Clock.h"
+#include <SDL3_net/SDL_net.h>
 #include <cstdlib>
+#include <memory>
 #include <random>
 #include <sstream>
 #include <unistd.h>
@@ -25,6 +26,8 @@
 
 #include <swan/swan.h>
 #include <swan/assets.h>
+#include <swan/GameIO.h>
+#include <swan/MPGame.h>
 
 #include "../swan-build/build.h"
 
@@ -44,7 +47,7 @@ using namespace Swan;
 } while (0)
 
 #ifndef SWAN_HEADLESS
-static Game *gameptr;
+static GameIO *gameptr;
 static ImGuiIO *imguiIo;
 static double pixelRatio = 1;
 
@@ -101,8 +104,7 @@ static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
 	glfwGetWindowSize(window, &width, &height);
 	glViewport(0, 0, dw, dh);
 	Cygnet::glCheck();
-	gameptr->cam_.size = {dw, dh};
-	gameptr->uiCam_.size = {dw, dh};
+	gameptr->onViewportSize(dw, dh);
 	double newPixelRatio = (double)dw / (double)width;
 
 	if (newPixelRatio != pixelRatio) {
@@ -121,6 +123,12 @@ int main(int argc, char **argv)
 {
 	RTClock initTimer;
 
+	if (!NET_Init()) {
+		panic << "Failed to initialize SDL3_net.";
+		return 1;
+	}
+	SWAN_DEFER(NET_Quit());
+
 	std::optional<uint32_t> seedArg;
 	const char *worldPath = nullptr;
 
@@ -132,11 +140,31 @@ int main(int argc, char **argv)
 	const char *swanRoot = ".";
 	bool doCompileMods = true;
 	const char *thumbnailPath = nullptr;
+
+	MPClient::Options multiplayer = {
+		.host = "",
+		.port = 11216,
+		.nick = "dummy",
+		.identifier = "dummyidentifier",
+	};
+
 	for (int i = 1; i < argc; ++i) {
 		std::string_view arg = argv[i];
 		if (arg == "--mod") {
 			i += 1;
 			mods.push_back(argv[i]);
+		} else if (arg == "--mp-host") {
+			i += 1;
+			multiplayer.host = argv[i];
+		} else if (arg == "--mp-nick") {
+			i += 1;
+			multiplayer.nick = argv[i];
+		} else if (arg == "--mp-port") {
+			i += 1;
+			multiplayer.port = atoi(argv[i]);
+		} else if (arg == "--mp-identifier") {
+			i += 1;
+			multiplayer.identifier = atoi(argv[i]);
 		} else if (arg == "--swan") {
 			i += 1;
 			swanRoot = argv[i];
@@ -161,12 +189,12 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	if (!worldPath) {
-		panic << "Missing world path!";
+#ifdef SWAN_HEADLESS
+	if (joinServer) {
+		panic << "Can't join a server in headless mode.";
 		return 1;
 	}
 
-#ifdef SWAN_HEADLESS
 	info << "Running in headless mode.";
 #endif
 
@@ -243,29 +271,44 @@ int main(int argc, char **argv)
 #endif
 
 	// Create the game and mod list
-	Game game(compileMods);
-
-	// Load or create world
-	if (std::filesystem::exists(worldPath)) {
-		game.loadWorld(worldPath, mods);
+	std::unique_ptr<GameIO> game;
+	if (multiplayer.host != "") {
+		info << "Connecting to multiplayer host: " << multiplayer.host << ":" << multiplayer.port;
+		auto ptr = std::make_unique<MPGame>(compileMods);
+		ptr->connect(std::move(multiplayer));
+		game = std::move(ptr);
 	} else {
-		uint32_t seed;
-		if (seedArg) {
-			seed = *seedArg;
-		} else {
-			std::random_device dev;
-			static_assert(
-				sizeof(dev()) >= sizeof(uint32_t),
-				"Maybe we need to generate the seed in a more fancy way?");
-			seed = dev();
+		if (!worldPath) {
+			panic << "Missing world path!";
+			return 1;
 		}
 
-		info << "Creating world with seed: " << seed;
-		game.createWorld(worldPath, "core::default", seed, mods);
+		auto ptr = std::make_unique<Game>(compileMods);
+
+		// Load or create world
+		if (std::filesystem::exists(worldPath)) {
+			ptr->loadWorld(worldPath, mods);
+		} else {
+			uint32_t seed;
+			if (seedArg) {
+				seed = *seedArg;
+			} else {
+				std::random_device dev;
+				static_assert(
+					sizeof(dev()) >= sizeof(uint32_t),
+					"Maybe we need to generate the seed in a more fancy way?");
+				seed = dev();
+			}
+
+			info << "Creating world with seed: " << seed;
+			ptr->createWorld(worldPath, "core::default", seed, mods);
+		}
+
+		game = std::move(ptr);
 	}
 
 #ifndef SWAN_HEADLESS
-	gameptr = &game;
+	gameptr = game.get();
 	glfwSetKeyCallback(window, keyCallback);
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 	glfwSetCursorPosCallback(window, cursorPositionCallback);
@@ -274,7 +317,7 @@ int main(int argc, char **argv)
 
 	glfwSwapInterval(1);
 	Cygnet::glCheck();
-	game.enableVSync_ = true;
+	game->vsync_ = true;
 
 	GLFWmonitor *currentMonitor = [&] {
 		int winX, winY, winW, winH;
@@ -310,7 +353,7 @@ int main(int argc, char **argv)
 	}();
 
 	const GLFWvidmode *mode = glfwGetVideoMode(currentMonitor);
-	game.fpsLimit_ = mode->refreshRate;
+	game->fpsLimit_ = mode->refreshRate;
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -346,7 +389,7 @@ int main(int argc, char **argv)
 #ifdef SWAN_HEADLESS
 	while (!game.shouldQuit_) {
 #else
-	while (!glfwWindowShouldClose(window) && !game.shouldQuit_) {
+	while (!glfwWindowShouldClose(window) && !game->shouldQuit_) {
 #endif
 		ZoneScopedN("game loop");
 
@@ -360,8 +403,8 @@ int main(int argc, char **argv)
 
 		auto now = std::chrono::steady_clock::now();
 		std::chrono::duration<float> dur(now - prevTime);
-		if (game.fpsLimit_ > 0) {
-			std::chrono::duration<float> minDur(1.0 / game.fpsLimit_);
+		if (game->fpsLimit_ > 0) {
+			std::chrono::duration<float> minDur(1.0 / game->fpsLimit_);
 			if (dur < minDur) {
 				using T = std::chrono::steady_clock::duration;
 				auto sleepTime = std::chrono::duration_cast<T>(minDur - dur);
@@ -396,19 +439,19 @@ int main(int argc, char **argv)
 
 		// If the game has a fixed delta time,
 		// ignore anything we've measured so far.
-		if (game.fixedDeltaTime_) {
-			dt = *game.fixedDeltaTime_;
+		if (game->fixedDeltaTime_) {
+			dt = game->fixedDeltaTime_;
 		}
 
 		// Scale delta time by time scale.
 		// Everything after this will use a scaled delta time
 		// rather than the real delta time.
-		dt *= game.timeScale_;
+		dt *= game->timeScale_;
 
 		// Simple case: we can keep up, only need one physics update
 		if (dt <= 1 / 25.0) {
 			ZoneScopedN("game update");
-			game.update(dt);
+			game->update(dt);
 
 			// Complex case: run multiple steps this iteration
 		}
@@ -424,14 +467,14 @@ int main(int argc, char **argv)
 			}
 			for (int i = 0; i < count; ++i) {
 				ZoneScopedN("game update");
-				game.update(delta);
+				game->update(delta);
 			}
 		}
 
 #ifndef SWAN_HEADLESS
 		{
 			ZoneScopedN("game draw");
-			game.draw();
+			game->draw();
 			Cygnet::glCheck();
 		}
 
@@ -443,7 +486,7 @@ int main(int argc, char **argv)
 
 		{
 			ZoneScopedN("game render");
-			game.render();
+			game->render();
 			Cygnet::glCheck();
 		}
 
@@ -464,10 +507,10 @@ int main(int argc, char **argv)
 	}
 
 	if (thumbnailPath) {
-		game.screenshot(thumbnailPath, 256, 256);
+		game->screenshot(thumbnailPath, 256, 256);
 	}
 
-	game.save();
+	game->onQuit();
 
 	// Sometimes, destructing stuff hangs forever.
 	// Especially AudioOutputUnitStop on macOS sometimes hangs
