@@ -62,7 +62,7 @@ static void explode(Swan::Ctx &ctx, Swan::Vec2 pos)
 				tile.more->onExplode(ctx, pos);
 			}
 
-			ctx.plane.tiles().setID(pos, Swan::World::AIR_TILE_ID);
+			ctx.plane.tiles().setID(pos, Swan::WorldData::AIR_TILE_ID);
 		}
 	};
 

@@ -73,6 +73,7 @@ libswan = declare_dependency(
     'src/SoundPlayer.cc',
     'src/Tile.cc',
     'src/World.cc',
+    'src/WorldData.cc',
     'src/WorldPlane.cc',
     swan_proto,
     multiplayer_proto,

@@ -48,8 +48,13 @@ public:
 	void tick(float dt);
 	void end(const char *reason);
 
-	capnp::MallocMessageBuilder builder()
-	{ return capnp::MallocMessageBuilder(scratch_); }
+	mp_proto::ServerToClient::Builder builder()
+	{
+		using MMB = capnp::MallocMessageBuilder;
+		builder_.~MMB();
+		new (&builder_) MMB(scratch_);
+		return builder_.initRoot<mp_proto::ServerToClient>();
+	}
 
 	const ClientInfo *receive(mp_proto::ClientToServer::Reader &r);
 	void kick(Client &client, const char *reason);
@@ -61,8 +66,12 @@ private:
 	// Scratch buffers for encoding and sending messages
 	kj::Array<capnp::word> scratch_ = kj::heapArray<capnp::word>(1024);
 	kj::VectorOutputStream stream_;
+	capnp::MallocMessageBuilder builder_;
 
 	size_t receiveIndex_ = 0;
+	size_t nextClientID_ = 1;
+
+	friend MPServer;
 };
 
 bool MPServer::Impl::listen(const char *host, int port)
@@ -97,10 +106,9 @@ bool MPServer::Impl::listen(const char *host, int port)
 
 void MPServer::Impl::end(const char *reason)
 {
-	auto mb = builder();
-	auto root = mb.initRoot<mp_proto::ServerToClient>();
+	auto root = builder();
 	root.initShutdown().setReason(reason);
-	MPSocket::encode(mb, stream_);
+	MPSocket::encode(builder_, stream_);
 
 	// Send shutdown messages to all clients
 	for (auto &client: clients_) {
@@ -159,8 +167,7 @@ void MPServer::Impl::tick(float dt)
 			continue;
 		}
 
-		auto mb = builder();
-		auto root = mb.initRoot<mp_proto::ServerToClient>();
+		auto root = builder();
 		switch (client.state) {
 		case Client::HANDSHAKING:
 			warn << "Client timed out during handshake";
@@ -184,7 +191,7 @@ void MPServer::Impl::tick(float dt)
 			break;
 		}
 
-		client.sock.encodeAndSend(mb, stream_);
+		client.sock.encodeAndSend(builder_, stream_);
 		i += 1;
 	}
 }
@@ -226,11 +233,13 @@ MPServer::Impl::receive(mp_proto::ClientToServer::Reader &r)
 			const char *addrStr = NET_GetAddressString(addr.get());
 
 			(info
-				<< "Client handshake completed: Client from IP "
+				<< "Client handshake completed: Client " << nextClientID_
+				<< " from IP "
 				<< addrStr << " connected with: "
 				<< "nick '" << nick.cStr()
 				<< "', identifier '" << identifier.cStr()
 				<< "', using host '" << hello.getHost().cStr() << "'");
+			client.info.id.id = nextClientID_++;
 			client.info.identifier = identifier.cStr();
 			client.info.nick = nick.cStr();
 			client.info.requestWorld = hello.getRequestWorld();
@@ -238,10 +247,9 @@ MPServer::Impl::receive(mp_proto::ClientToServer::Reader &r)
 			client.timer = 5;
 
 			// Respond to let the client know it's good
-			auto mb = builder();
-			auto root = mb.initRoot<mp_proto::ServerToClient>();
+			auto root = builder();
 			root.initHello();
-			client.sock.encodeAndSend(mb, stream_);
+			client.sock.encodeAndSend(builder_, stream_);
 
 			return &client.info;
 		}
@@ -272,10 +280,9 @@ void MPServer::Impl::kick(Client &client, const char *reason)
 {
 	client.state = Client::KICKED;
 	client.timer = 2;
-	auto mb = builder();
-	auto root = mb.initRoot<mp_proto::ServerToClient>();
+	auto root = builder();
 	root.initKick().setReason(reason);
-	client.sock.encodeAndSend(mb, stream_);
+	client.sock.encodeAndSend(builder_, stream_);
 }
 
 MPServer::MPServer() = default;
@@ -310,6 +317,38 @@ const MPServer::ClientInfo *
 MPServer::receive(mp_proto::ClientToServer::Reader &r)
 {
 	return impl_->receive(r);
+}
+
+mp_proto::ServerToClient::Builder MPServer::builder()
+{
+	return impl_->builder();
+}
+
+void MPServer::send(
+	ClientID id,
+	const mp_proto::ServerToClient::Builder &)
+{
+	for (auto &c: impl_->clients_) {
+		if (c->info.id.id != id.id) {
+			continue;
+		}
+
+		c->sock.encodeAndSend(impl_->builder_, impl_->stream_);
+		break;
+	}
+}
+
+void MPServer::broadcast(const mp_proto::ServerToClient::Builder &)
+{
+	MPSocket::encode(impl_->builder_, impl_->stream_);
+
+	for (auto &c: impl_->clients_) {
+		if (c->info.id.id == 0) {
+			continue;
+		}
+
+		c->sock.send(impl_->stream_);
+	}
 }
 
 }

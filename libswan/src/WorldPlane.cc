@@ -15,19 +15,21 @@
 namespace Swan {
 
 WorldPlane::WorldPlane(
-	ID id, World *world, std::unique_ptr<WorldGen> worldGen,
-	std::vector<std::unique_ptr<EntityCollection>> &&colls):
-	id_(id), world_(world), worldGen_(std::move(worldGen)),
+		ID id, WorldData *world, GameIO *game,
+		std::unique_ptr<WorldGen> worldGen,
+		std::vector<std::unique_ptr<EntityCollection>> colls):
+	id_(id), world_(world), game_(game),
+	worldGen_(std::move(worldGen)),
 	entitySystem_(*this, std::move(colls))
 {}
 
 Context WorldPlane::getContext()
 {
 	return {
-		.game = *world_->game_,
+		.game = *game_,
 		.world = *world_,
 		.plane = *this,
-		.gui = world_->game_->gui_,
+		.gui = game_->gui_,
 	};
 }
 
@@ -128,26 +130,21 @@ size_t WorldPlane::getChunkDataMemUsage()
 	return size;
 }
 
-Cygnet::Color WorldPlane::backgroundColor()
-{
-	return worldGen_->backgroundColor(world_->player_->pos);
-}
-
-void WorldPlane::draw(Cygnet::Renderer &rnd)
+void WorldPlane::draw(Cygnet::Renderer &rnd, Vec2 center)
 {
 	ZoneScopedN("WorldPlane draw");
 	auto ctx = getContext();
-	auto &pbody = *(world_->player_);
 
 	{
 		ZoneScopedN("Draw background");
-		worldGen_->drawBackground(ctx, rnd, world_->game_->cam_.pos);
+		worldGen_->drawBackground(ctx, rnd, center);
 	}
 
 	ChunkPos pcpos = ChunkPos(
-		(int)floor(pbody.pos.x / CHUNK_WIDTH),
-		(int)floor(pbody.pos.y / CHUNK_HEIGHT));
+		(int)floor(center.x / CHUNK_WIDTH),
+		(int)floor(center.y / CHUNK_HEIGHT));
 
+	// Draw chunks
 	for (int x = -1; x <= 1; ++x) {
 		for (int y = -1; y <= 1; ++y) {
 			auto iter = chunks_.find(pcpos + ChunkPos(x, y));
@@ -162,6 +159,15 @@ void WorldPlane::draw(Cygnet::Renderer &rnd)
 				}
 			}
 		}
+	}
+
+	// Draw world ticks
+	for (auto &pos: drawWorldTicks_) {
+		rnd.drawRect({
+			.pos = pos.as<float>(),
+			.size = {1, 1},
+			.fill = {1, 0, 1, 1},
+		});
 	}
 
 	{
@@ -202,7 +208,7 @@ void WorldPlane::update(float dt)
 				Tile *tile = &world_->getTileByID(id);
 
 				if (tile->isSolid()) {
-					chunk->setFluidID({x, y}, World::SOLID_FLUID_ID);
+					chunk->setFluidID({x, y}, WorldData::SOLID_FLUID_ID);
 				} else if (tile->more->fluidCollision) {
 					chunk->setFluidSolid({x, y}, *tile->more->fluidCollision);
 				}
@@ -224,14 +230,14 @@ void WorldPlane::update(float dt)
 		ZoneScopedN("Entities");
 		RTClock clock;
 		entitySystem_.update(dt);
-		world_->game_->perf_.entityUpdateTime.record(clock.duration());
+		game_->perf_.entityUpdateTime.record(clock.duration());
 	}
 
 	{
 		ZoneScopedN("Fluids");
 		RTClock clock;
 		fluidSystem_.update(dt);
-		world_->game_->perf_.fluidUpdateTime.record(clock.duration());
+		game_->perf_.fluidUpdateTime.record(clock.duration());
 	}
 }
 
@@ -258,6 +264,7 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 	// Perform world ticks
 	RTClock worldTickClock;
 	suppressChunkKeepalive_ += 1;
+	drawWorldTicks_.clear();
 	for (size_t i = 0; i < activeChunks_.size(); ++i) {
 		// Avoid range-based for loop because activeChunks_ might get resized
 		Chunk *chunk = activeChunks_[i];
@@ -272,18 +279,14 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 				pos.y += randomPos / CHUNK_WIDTH;
 				randomTile.more->onWorldTick(getContext(), pos);
 
-				if (world_->game_->debug_.drawWorldTicks) {
-					world_->game_->renderer_.drawRect({
-						.pos = pos.as<float>(),
-						.size = {1, 1},
-						.fill = {1, 0, 1, 1},
-					});
+				if (game_->debug_.drawWorldTicks) {
+					drawWorldTicks_.push_back(pos);
 				}
 			}
 		}
 	}
 	suppressChunkKeepalive_ -= 1;
-	world_->game_->perf_.worldTickTime.record(worldTickClock.duration());
+	game_->perf_.worldTickTime.record(worldTickClock.duration());
 
 	// Tick all chunks, figure out if any of them should be deleted or compressed
 	bool hasDeletedChunk = false;
@@ -303,7 +306,7 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 			info << "Compressing inactive modified chunk " << chunk->pos();
 			lightSystem_.removeChunk(chunk->pos());
 			chunk->lightGeneration_ = 0;
-			chunk->destroyTextures(world_->game_->renderer_);
+			chunk->destroyTextures(game_->renderer_);
 			chunk->compress();
 			activeChunks_[i] = activeChunks_.back();
 			activeChunks_.pop_back();
@@ -314,7 +317,7 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 			if (hasDeletedChunk) break;
 			info << "Deleting inactive unmodified chunk " << chunk->pos();
 			lightSystem_.removeChunk(chunk->pos());
-			chunk->destroyTextures(world_->game_->renderer_);
+			chunk->destroyTextures(game_->renderer_);
 			chunks_.erase(chunk->pos());
 			tickChunks_.clear();
 			activeChunks_[i] = activeChunks_.back();
@@ -341,14 +344,14 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 
 	// ..and the 'B' buffers of the tile system
 	tileSystem_.endTick();
-	world_->game_->perf_.tileTickTime.record(tileTickClock.duration());
+	game_->perf_.tileTickTime.record(tileTickClock.duration());
 
 	{
 		// Tick entities
 		ZoneScopedN("Entities");
 		RTClock clock;
 		entitySystem_.tick(dt);
-		world_->game_->perf_.entityTickTime.record(clock.duration());
+		game_->perf_.entityTickTime.record(clock.duration());
 	}
 
 	{
@@ -360,7 +363,7 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 		} else {
 			tickProgress_ = TickProgress::FLUID_ONGOING;
 		}
-		world_->game_->perf_.fluidTickTime.record(clock.duration());
+		game_->perf_.fluidTickTime.record(clock.duration());
 	}
 
 	return tickProgress_ == TickProgress::IDLE;

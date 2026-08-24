@@ -1,5 +1,6 @@
 #include "systems/TileSystem.h"
 
+#include "WorldData.h"
 #include "WorldPlane.h"
 #include "World.h"
 #include "Game.h"
@@ -210,7 +211,7 @@ bool TileSystemImpl::breakTile(TilePos pos)
 {
 	// If the block is already air, do nothing
 	Tile::ID id = getID(pos);
-	if (id == World::AIR_TILE_ID) {
+	if (id == WorldData::AIR_TILE_ID) {
 		return false;
 	}
 
@@ -218,15 +219,15 @@ bool TileSystemImpl::breakTile(TilePos pos)
 	spawnTileParticles(pos, tile);
 
 	if (tile.more->breakSound) {
-		plane_.world_->game_->playSound(tile.more->breakSound, pos);
+		plane_.game_->playSound(tile.more->breakSound, pos);
 	}
 	else {
-		plane_.world_->game_->playSound(
-			plane_.world_->getSound(World::THUD_SOUND_NAME), pos);
+		plane_.game_->playSound(
+			plane_.world_->getSound(WorldData::THUD_SOUND_NAME), pos);
 	}
 
 	// Change tile to air
-	setID(pos, World::AIR_TILE_ID);
+	setID(pos, WorldData::AIR_TILE_ID);
 	return true;
 }
 
@@ -234,7 +235,7 @@ bool TileSystemImpl::breakTileSilently(TilePos pos)
 {
 	// If the block is already air, do nothing
 	Tile::ID id = getID(pos);
-	if (id == World::AIR_TILE_ID) {
+	if (id == WorldData::AIR_TILE_ID) {
 		return false;
 	}
 
@@ -242,7 +243,7 @@ bool TileSystemImpl::breakTileSilently(TilePos pos)
 	spawnTileParticles(pos, tile);
 
 	// Change tile to air
-	setID(pos, World::AIR_TILE_ID);
+	setID(pos, WorldData::AIR_TILE_ID);
 	return true;
 }
 
@@ -291,8 +292,8 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 
 	auto &newTile = plane_.world_->getTileByID(id);
 
-	plane_.world_->game_->playSound(oldTile.more->breakSound, pos);
-	plane_.world_->game_->playSound(newTile.more->placeSound, pos);
+	plane_.game_->playSound(oldTile.more->breakSound, pos);
+	plane_.game_->playSound(newTile.more->placeSound, pos);
 
 	// We didn't run the onBreak and despawn tile entities yet,
 	// so let's do that
@@ -511,7 +512,7 @@ void TileSystemImpl::spawnTileParticles(TilePos pos, const Tile &tile)
 	// However, we also want it to be drawn behind fluids.
 	// Therefore, if the tile is in a fluid, braw it in layer BEHIND.
 	auto &fluid = plane_.fluids().getAtPos(pos.as<float>().add(0.5, 0.5));
-	auto layer = fluid.id > World::SOLID_FLUID_ID
+	auto layer = fluid.id > WorldData::SOLID_FLUID_ID
 		? Cygnet::RenderLayer::BEHIND
 		: Cygnet::RenderLayer::NORMAL;
 
@@ -525,7 +526,7 @@ void TileSystemImpl::spawnTileParticles(TilePos pos, const Tile &tile)
 				continue;
 			}
 
-			plane_.world_->game_->spawnParticle(layer, {
+			plane_.game_->spawnParticle(layer, {
 				.pos = {fx, fy},
 				.vel = {
 					(randfloat() - 0.5f) * 2.0f,

@@ -33,7 +33,7 @@ public:
 private:
 	void place(Swan::Ctx &ctx);
 
-	Swan::Tile::ID tile_ = Swan::World::INVALID_TILE_ID;
+	Swan::Tile::ID tile_ = Swan::WorldData::INVALID_TILE_ID;
 	Swan::BasicPhysicsBody physicsBody_;
 };
 

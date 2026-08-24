@@ -223,7 +223,7 @@ void CraftingInventory::deserialize(
 {
 	for (auto x: r.getDiscoveredRecipes()) {
 		auto &tile = ctx.world.getItem(x.cStr());
-		if (tile.id == Swan::World::INVALID_TILE_ID) {
+		if (tile.id == Swan::WorldData::INVALID_TILE_ID) {
 			continue;
 		}
 

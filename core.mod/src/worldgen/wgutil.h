@@ -53,7 +53,7 @@ inline void generateSurfaceShrubs(
 		}
 
 		Swan::Tile::ID tile = area({x, surfaceLevel - 1});
-		if (tile != Swan::World::AIR_TILE_ID) {
+		if (tile != Swan::WorldData::AIR_TILE_ID) {
 			continue;
 		}
 
@@ -95,7 +95,7 @@ inline void generateOutcrops(
 			}
 
 			auto &id = area({x, y});
-			if (id != Swan::World::AIR_TILE_ID) {
+			if (id != Swan::WorldData::AIR_TILE_ID) {
 				continue;
 			}
 

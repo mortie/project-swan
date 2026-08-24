@@ -63,8 +63,8 @@ void Game::createWorld(
 	initInputHandler();
 	initCommandHandler();
 
-	for (auto &mod: world_->mods_) {
-		mod.mod_->start(*world_);
+	for (auto &mod: world_->data().mods_) {
+		mod.mod_->start(world_->data(), *this);
 	}
 
 	world_->setWorldGen(worldgen);
@@ -101,8 +101,8 @@ void Game::loadWorld(
 	initInputHandler();
 	initCommandHandler();
 
-	for (auto &mod: world_->mods_) {
-		mod.mod_->start(*world_);
+	for (auto &mod: world_->data().mods_) {
+		mod.mod_->start(world_->data(), *this);
 	}
 
 	auto world = reader.getRoot<proto::World>();
@@ -130,6 +130,23 @@ void Game::onViewportSize(int w, int h)
 {
 	cam_.size = {w, h};
 	uiCam_.size = {w, h};
+}
+
+void Game::playSound(
+	SoundAsset *asset,
+	float volume,
+	std::optional<Vec2> center)
+{
+	soundPlayer_.play(asset, volume, center);
+}
+
+void Game::playSound(
+	SoundAsset *asset,
+	float volume,
+	std::optional<Vec2> center,
+	SoundHandle &handle)
+{
+	soundPlayer_.play(asset, volume, center, handle);
 }
 
 Vec2 Game::getMousePos()
@@ -161,7 +178,7 @@ void Game::drawDebugMenu()
 	ImGui::Checkbox("Draw chunk boundaries", &debug_.drawChunkBoundaries);
 	ImGui::Checkbox("Draw world ticks", &debug_.drawWorldTicks);
 
-	#ifndef SWAN_HEADLESS
+#ifndef SWAN_HEADLESS
 	bool prevEnableVSync = vsync_;
 	ImGui::Checkbox("Enable VSync", &vsync_);
 	if (vsync_ && !prevEnableVSync) {
@@ -170,7 +187,7 @@ void Game::drawDebugMenu()
 	else if (!vsync_ && prevEnableVSync) {
 		glfwSwapInterval(0);
 	}
-	#endif
+#endif
 
 	ImGui::Checkbox("Show fluid particles", &debug_.fluidParticleLocations);
 	ImGui::Checkbox("Disable shadows", &debug_.disableShadows);
@@ -315,8 +332,8 @@ void Game::drawDebugMenu()
 
 	if (!hasSortedItems_) {
 		sortedItems_.clear();
-		sortedItems_.reserve(world_->items_.size());
-		for (auto &item: world_->items_) {
+		sortedItems_.reserve(world_->data().items_.size());
+		for (auto &item: world_->data().items_) {
 			sortedItems_.push_back(&item);
 		}
 		std::sort(sortedItems_.begin(), sortedItems_.end(), [](Item *a, Item *b) {
@@ -754,7 +771,22 @@ void Game::tickServer()
 	mp_proto::ClientToServer::Reader r;
 	const MPServer::ClientInfo *client;
 	while ((client = server_.receive(r))) {
-		info << "Received message from client '" << client->identifier << ":";
+		if (r.hasHello()) {
+			if (r.getHello().getRequestWorld()) {
+				auto root = server_.builder();
+				auto sync = root.initInitialSync();
+				world_->currentPlane().serialize(sync.initCurrentPlane());
+				auto tiles = sync.initTiles(world_->data().tiles_.size());
+				for (size_t i = 0; i < tiles.size(); ++i) {
+					tiles.set(i, world_->data().tiles_[i].name.c_str());
+				}
+
+				server_.send(client->id, root);
+			}
+		} else {
+			info << "Received unknown message from client '" << client->identifier << ":";
+			info << r.toString().flatten().cStr();
+		}
 	}
 }
 
@@ -881,7 +913,7 @@ bool Game::reload()
 	}
 
 	std::vector<std::string> mods;
-	for (auto &mod: world_->mods_) {
+	for (auto &mod: world_->data().mods_) {
 		mods.push_back(mod.path_);
 	}
 
@@ -953,7 +985,7 @@ void Game::initInputHandler()
 		.defaultInputs = {"axis:RIGHT_Y"},
 	});
 
-	for (auto &mod: world_->mods_) {
+	for (auto &mod: world_->data().mods_) {
 		for (auto action: mod.mod_->actions_) {
 			action.name = cat(mod.name(), "::", action.name);
 			actions.push_back(std::move(action));
@@ -994,8 +1026,8 @@ void Game::initCommandHandler()
 		.help = "Show help info.",
 		.handler = +[](Swan::Ctx &ctx, std::span<CowStr>, std::string &out) {
 			out = "Available commands:\n";
-
-			for (auto &set: ctx.game.commandSets_) {
+			Game &game = *static_cast<Game *>(&ctx.game);
+			for (auto &set: game.commandSets_) {
 				for (auto &cmd: set.commands) {
 					if (cmd.pattern.empty()) {
 						continue;
@@ -1019,7 +1051,8 @@ void Game::initCommandHandler()
 		.help = "Show help info for a given command.",
 		.handler = +[](Swan::Ctx &ctx, std::span<CowStr> argv, std::string &out) {
 			std::vector<CowStr> params;
-			CommandSpec *command = ctx.game.matchCommand(argv, params);
+			Game &game = *static_cast<Game *>(&ctx.game);
+			CommandSpec *command = game.matchCommand(argv, params);
 			for (auto &part: command->pattern) {
 				if (out != "") {
 					out += ' ';
@@ -1047,7 +1080,7 @@ void Game::initCommandHandler()
 		},
 	});
 
-	for (auto &mod: world_->mods_) {
+	for (auto &mod: world_->data().mods_) {
 		commandSets_.push_back({
 			.name = std::string(mod.name()),
 			.commands = mod.takeCommands(),

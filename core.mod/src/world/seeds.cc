@@ -38,7 +38,7 @@ public:
 				return;
 			}
 
-			bool isAir = self.id == Swan::World::AIR_TILE_ID;
+			bool isAir = self.id == Swan::WorldData::AIR_TILE_ID;
 			if (bottom.name == "core::grass" && isAir) {
 				ctx.plane.tiles().set(pos_, "core::tall-grass");
 				return;

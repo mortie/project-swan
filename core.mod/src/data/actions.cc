@@ -6,10 +6,10 @@ namespace CoreMod::actions {
 #include "actions.x"
 #undef X
 
-void init(Swan::World &world)
+void init(Swan::GameIO &game)
 {
-	auto &game = *world.game_;
-#define X(var, name) var = game.action(name);
+	auto &inputs = game.inputs();
+#define X(var, name) var = inputs.action(name);
 #include "actions.x"
 #undef X
 }

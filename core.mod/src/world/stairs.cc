@@ -8,12 +8,16 @@ static bool spawnStairs(Swan::Ctx &ctx, Swan::TilePos pos)
 		return false;
 	}
 
+	// TODO
+	/*
 	std::string_view variant;
 	if (pos.x + 0.5 < ctx.world.player_->center().x) {
 		variant = "core::stairs::left";
 	} else {
 		variant = "core::stairs::right";
 	}
+	*/
+	std::string variant = "core::stairs::left";
 
 	ctx.plane.tiles().set(pos, variant);
 	return true;

@@ -69,7 +69,8 @@ void SpiderEntity::update(Swan::Ctx &ctx, float dt)
 void SpiderEntity::tick(Swan::Ctx &ctx, float dt)
 {
 	if (!target_) {
-		target_ = ctx.world.player_;
+		// TODO
+		//target_ = ctx.world.player_;
 	}
 
 	if (target_ && (target_->center() - physicsBody_.body.center()).squareLength() > 10 * 10) {

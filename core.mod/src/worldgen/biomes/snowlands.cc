@@ -60,7 +60,7 @@ static void generatePines(
 		for (int y = area.end.y; y >= area.begin.y; y -= 1) {
 			Swan::Tile::ID tile = area({x, y});
 			Swan::Tile::ID tileBelow = area({x, y + 1});
-			if (tileBelow == tiles::snow && tile == Swan::World::AIR_TILE_ID) {
+			if (tileBelow == tiles::snow && tile == Swan::WorldData::AIR_TILE_ID) {
 				spawnPine({x, y}, area, wg);
 			}
 		}
@@ -92,7 +92,7 @@ static void postProcess(WorldArea &area, WGContext &wg)
 
 		Swan::TilePos pos(x, area.surfaceLevel(x));
 		auto above = pos.add(0, -1);
-		if (area(pos) == tiles::stone && area(above) == Swan::World::AIR_TILE_ID) {
+		if (area(pos) == tiles::stone && area(above) == Swan::WorldData::AIR_TILE_ID) {
 			area(above) = tiles::boulder;
 		}
 	}

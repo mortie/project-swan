@@ -90,13 +90,13 @@ inline constexpr Vec2 tileCenter(TilePos pos)
 	};
 }
 
-class Game;
-class World;
+class GameIO;
+class WorldData;
 class WorldPlane;
 
 struct Context {
-	Game &game;
-	World &world;
+	GameIO &game;
+	WorldData &world;
 	WorldPlane &plane;
 	Cygnet::Gui &gui;
 };

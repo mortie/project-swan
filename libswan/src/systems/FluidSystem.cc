@@ -171,7 +171,7 @@ void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 			(relPos.y * FLUID_RESOLUTION + y) * CHUNK_WIDTH * FLUID_RESOLUTION];
 		for (size_t x = 0; x < FLUID_RESOLUTION; ++x) {
 			Fluid::ID id = row[relPos.x * FLUID_RESOLUTION + x] & 0x3f;
-			if (id == World::AIR_FLUID_ID || id == World::SOLID_FLUID_ID) {
+			if (id == WorldData::AIR_FLUID_ID || id == WorldData::SOLID_FLUID_ID) {
 				continue;
 			}
 
@@ -233,7 +233,7 @@ void FluidSystemImpl::setSolid(TilePos pos, const FluidCollision &set)
 			}
 
 			Fluid::ID id = row[relPos.x * FLUID_RESOLUTION + x] & 0x3f;
-			if (id == World::AIR_FLUID_ID || id == World::SOLID_FLUID_ID) {
+			if (id == WorldData::AIR_FLUID_ID || id == WorldData::SOLID_FLUID_ID) {
 				continue;
 			}
 
@@ -277,8 +277,8 @@ void FluidSystemImpl::spawnFluidParticle(Vec2 pos, Fluid::ID fluid, Vec2 vel)
 
 Fluid &FluidSystemImpl::getAtPos(Vec2 pos) {
 	auto id = getFluidCell(worldPosToFluidPos(pos)).id();
-	if (id == World::SOLID_FLUID_ID) {
-		id = World::AIR_FLUID_ID;
+	if (id == WorldData::SOLID_FLUID_ID) {
+		id = WorldData::AIR_FLUID_ID;
 	}
 	return plane_.world_->getFluidByID(id);
 }
@@ -348,7 +348,7 @@ Fluid &FluidSystemImpl::takeAnyFromRow(TilePos pos, int y)
 		return plane_.world_->getFluidByID(id);
 	}
 
-	return plane_.world_->getFluidByID(World::AIR_FLUID_ID);
+	return plane_.world_->getFluidByID(WorldData::AIR_FLUID_ID);
 }
 
 bool FluidSystemImpl::isFluidCellSolid(FluidPos gridPos)
@@ -371,7 +371,7 @@ void FluidSystemImpl::draw(Cygnet::Renderer &rnd)
 		});
 	}
 
-	if (plane_.world_->game_->debug_.fluidParticleLocations) {
+	if (plane_.game_->debug_.fluidParticleLocations) {
 		for (auto &particle: particles_) {
 			rnd.drawRect(Cygnet::Renderer::DrawRect{
 				.pos = fluidPosToWorldPos(worldPosToFluidPos(particle.pos))
@@ -387,12 +387,12 @@ void FluidSystemImpl::draw(Cygnet::Renderer &rnd)
 void FluidSystemImpl::update(float dt)
 {
 	auto spawnMist = [&](const FluidParticle &particle) {
-		if (plane_.world_->game_->renderer_.isCulled(particle.pos)) {
+		if (plane_.game_->renderer_.isCulled(particle.pos)) {
 			return;
 		}
 
 		for (int i = 0; i < int(randfloat() * 6); ++i) {
-			plane_.world_->game_->spawnParticle({
+			plane_.game_->spawnParticle({
 				.pos = {
 					particle.pos.x + (randfloat() - 0.5f) * 0.2f,
 					particle.pos.y,
@@ -607,7 +607,7 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 
 	FluidCellRef self = getFluidCell(pos);
 	Fluid::ID id = self.id();
-	if (id <= World::SOLID_FLUID_ID || id >= World::INVALID_FLUID_ID) {
+	if (id <= WorldData::SOLID_FLUID_ID || id >= WorldData::INVALID_FLUID_ID) {
 		return;
 	}
 
@@ -676,7 +676,7 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 		auto aPos = pos.add(ax, 0);
 		auto a = getFluidCell(aPos);
 		auto aID = a.id();
-		if (aID != World::SOLID_FLUID_ID && aID != id) {
+		if (aID != WorldData::SOLID_FLUID_ID && aID != id) {
 			self.setID(aID);
 			a.set(id, ax);
 			triggerUpdateAround(pos);
@@ -687,7 +687,7 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 		auto bPos = pos.add(bx, 0);
 		auto b = getFluidCell(bPos);
 		auto bID = b.id();
-		if (bID != World::SOLID_FLUID_ID && bID != id) {
+		if (bID != WorldData::SOLID_FLUID_ID && bID != id) {
 			self.setID(bID);
 			b.set(id, bx);
 			triggerUpdateAround(pos);

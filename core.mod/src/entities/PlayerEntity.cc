@@ -62,6 +62,10 @@ PlayerEntity::PlayerEntity(Swan::Ctx &ctx, Swan::Vec2 pos):
 
 void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
+	// TODO: Give access to the stuff in 'game' better
+	// (or re-write how player logic works?)
+	auto *game = dynamic_cast<Swan::Game *>(&ctx.game);
+
 	if (invulnerable_ > 0) {
 		rnd.setGamma(gamma_ + invulnerable_ * 3);
 	} else if (vit_ == Vit::LETHARGIC) {
@@ -258,9 +262,9 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	if (!heldStack_.empty()) {
 		Swan::Vec2 pos;
 		if (mouseMode_) {
-			pos = ctx.game.getMouseUIPos();
+			pos = game->getMouseUIPos();
 		} else {
-			pos = (lookVector_ / ctx.game.uiCam_.zoom) * ctx.game.cam_.zoom;
+			pos = (lookVector_ / game->uiCam_.zoom) * game->cam_.zoom;
 		}
 
 		rnd.drawUITile({
@@ -282,14 +286,14 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	// Draw tooltips for player inventory
 	if (ui_.hoveredInventorySlot >= 0 && heldStack_.empty()) {
 		inventory_.renderTooltip(
-			ctx, rnd, ctx.game.getMouseUIPos(),
+			ctx, rnd, game->getMouseUIPos(),
 			ui_.hoveredInventorySlot);
 	}
 
 	// Draw tooltips for auxiliary inventory
 	if (ui_.hoveredAuxInventorySlot >= 0 && heldStack_.empty()) {
 		auxInventory_->renderTooltip(
-			ctx, rnd, ctx.game.getMouseUIPos(),
+			ctx, rnd, game->getMouseUIPos(),
 			ui_.hoveredAuxInventorySlot);
 	}
 
@@ -332,6 +336,10 @@ void PlayerEntity::drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 
 void PlayerEntity::drawConsole(Swan::Ctx &ctx)
 {
+	// TODO: Give access to the stuff in 'game' better
+	// (or re-write how player logic works?)
+	auto *game = dynamic_cast<Swan::Game *>(&ctx.game);
+
 	ImGui::SetNextWindowSize(ImVec2(300, 200));
 	ImGui::Begin("Console", &consoleVisible_);
 	ImGui::Text("Command");
@@ -353,7 +361,7 @@ void PlayerEntity::drawConsole(Swan::Ctx &ctx)
 
 		ImGui::SetKeyboardFocusHere(-1);
 		consoleOutput_.clear();
-		ctx.game.runCommand(ctx, consoleInput_, consoleOutput_);
+		game->runCommand(ctx, consoleInput_, consoleOutput_);
 		consoleInput_ = "";
 	}
 
@@ -363,6 +371,10 @@ void PlayerEntity::drawConsole(Swan::Ctx &ctx)
 
 void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 {
+	// TODO: Give access to the stuff in 'game' better
+	// (or re-write how player logic works?)
+	auto *game = dynamic_cast<Swan::Game *>(&ctx.game);
+
 	if (interactTimer_ > 0) {
 		interactTimer_ -= dt;
 	}
@@ -399,7 +411,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 	}
 
 	// Select between mouse mode and controller mode
-	if (ctx.game.hasMouseMoved()) {
+	if (game->hasMouseMoved()) {
 		mouseMode_ = true;
 	} else if (actions::selectX || actions::selectY) {
 		mouseMode_ = false;
@@ -407,7 +419,7 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 
 	Swan::Vec2 facePos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.3};
 	if (mouseMode_) {
-		Swan::Vec2 mousePos = ctx.game.getMousePos();
+		Swan::Vec2 mousePos = game->getMousePos();
 		lookVector_ = mousePos - facePos;
 	} else {
 		lookVector_ = {
@@ -614,7 +626,7 @@ void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 	// Drown
 	Swan::Fluid &fluidTop = ctx.plane.fluids().getAtPos(
 		physicsBody_.body.topMid().add(0, 0.1));
-	if (fluidTop.id == Swan::World::AIR_FLUID_ID) {
+	if (fluidTop.id == Swan::WorldData::AIR_FLUID_ID) {
 		oxygen_ += dt * 4;
 		if (oxygen_ > MAX_OXYGEN) {
 			oxygen_ = MAX_OXYGEN;
@@ -935,8 +947,12 @@ void PlayerEntity::dropItem(Swan::Ctx &ctx)
 
 void PlayerEntity::handleInventoryHover(Swan::Ctx &ctx)
 {
+	// TODO: Give access to the stuff in 'game' better
+	// (or re-write how player logic works?)
+	auto *game = dynamic_cast<Swan::Game *>(&ctx.game);
+
 	ui_.hoveredInventorySlot = -1;
-	auto mousePos = ctx.game.getMouseUIPos();
+	auto mousePos = game->getMouseUIPos();
 	ui_.hoveredInventorySlot = Swan::UI::inventoryCellIndex(mousePos, ui_.hotbarRect);
 	if (ui_.hoveredInventorySlot < 0 && ui_.showInventory) {
 		ui_.hoveredInventorySlot = Swan::UI::inventoryCellIndex(mousePos, ui_.inventoryRect, 10);

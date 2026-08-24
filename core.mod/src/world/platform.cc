@@ -40,7 +40,7 @@ static void updatePlatform(Swan::Ctx &ctx, Swan::TilePos pos)
 	bool hasPlatformRight = dynamic_cast<PlatformTraits *>(right.more->traits.get());
 	bool hasSolidRight = right.isSupportH() && !hasPlatformRight;
 
-	Swan::Tile::ID desired = Swan::World::AIR_TILE_ID;
+	Swan::Tile::ID desired = Swan::WorldData::AIR_TILE_ID;
 	if (hasSolidBelow) {
 		if (hasPlatformLeft && hasPlatformRight) {
 			desired = tiles::platform__supported__center;
@@ -69,7 +69,7 @@ static void updatePlatform(Swan::Ctx &ctx, Swan::TilePos pos)
 		}
 	}
 
-	if (desired == Swan::World::AIR_TILE_ID) {
+	if (desired == Swan::WorldData::AIR_TILE_ID) {
 		breakTileAndDropItem(ctx, pos);
 		return;
 	}

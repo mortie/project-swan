@@ -6,7 +6,7 @@ namespace CoreMod::sprites {
 #include "sprites.x"
 #undef X
 
-void init(Swan::World &world)
+void init(Swan::WorldData &world)
 {
 #define X(var, name) var = world.getSprite(name);
 #include "sprites.x"

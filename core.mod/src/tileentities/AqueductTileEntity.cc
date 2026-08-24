@@ -1,5 +1,6 @@
 #include "AqueductTileEntity.h"
 
+#include "swan/WorldData.h"
 #include "world/aqueduct.h"
 
 namespace CoreMod {
@@ -122,7 +123,7 @@ void AqueductTileEntity::tick2(Swan::Ctx &ctx, float dt)
 			}
 		} else {
 			Swan::Fluid &fluid = ctx.plane.fluids().takeAnyFromRow(pos, 2);
-			if (fluid.id != Swan::World::AIR_FLUID_ID) {
+			if (fluid.id != Swan::WorldData::AIR_FLUID_ID) {
 				content_.fluid = &fluid;
 				content_.level = 0.1;
 			}

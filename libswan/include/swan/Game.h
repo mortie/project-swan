@@ -28,58 +28,6 @@ class Game: public GameIO {
 public:
 	Game(std::function<bool()> recompileMods);
 
-	struct Debug {
-		bool show = false;
-		bool drawCollisionBoxes = false;
-		bool drawChunkBoundaries = false;
-		bool drawWorldTicks = false;
-		bool fluidParticleLocations = false;
-		bool disableShadows = false;
-		bool handBreakAny = false;
-		bool outputEntityProto = false;
-		bool godMode = false;
-		bool infiniteItems = false;
-		bool showInputDebug = false;
-	};
-
-	struct PerfRecord {
-		float maxMs = 0;
-		float avgMs = 0;
-		float nextMaxSec = 0;
-		float nextSumSec = 0;
-
-		void record(float sec)
-		{
-			nextSumSec += sec;
-			if (sec > nextMaxSec) {
-				nextMaxSec = sec;
-			}
-		}
-
-		void capture(int num)
-		{
-			maxMs = nextMaxSec * 1000;
-			nextMaxSec = 0;
-			avgMs = (nextSumSec / num) * 1000;
-			nextSumSec = 0;
-		}
-	};
-
-	struct Perf {
-		bool show = false;
-		int updateCount = 0;
-		int tickCount = 0;
-
-		int fps = 0;
-		int tps = 0;
-		PerfRecord entityUpdateTime;
-		PerfRecord entityTickTime;
-		PerfRecord tileTickTime;
-		PerfRecord fluidTickTime;
-		PerfRecord fluidUpdateTime;
-		PerfRecord worldTickTime;
-	};
-
 	void createWorld(
 		std::string worldPath, const std::string &worldgen,
 		uint32_t seed, std::span<std::string> modPaths);
@@ -95,25 +43,13 @@ public:
 	Vec2 getMouseUIPos() { return mouseUIPos_; }
 	bool hasMouseMoved() { return hasMouseMoved_; }
 
-	void playSound(SoundAsset *asset);
-	void playSound(SoundAsset *asset, float volume);
-	void playSound(SoundAsset *asset, Vec2 center);
-	void playSound(SoundAsset *asset, float volume, Vec2 center);
-	void playSound(SoundAsset *asset, SoundHandle handle);
-	void playSound(SoundAsset *asset, float volume, SoundHandle handle);
-	void playSound(SoundAsset *asset, Vec2 center, SoundHandle handle);
-	void playSound(SoundAsset *asset, float volume, Vec2 center, SoundHandle handle);
-
-	void spawnParticle(
-		Cygnet::RenderLayer layer,
-		Cygnet::Renderer::SpawnParticle p)
-	{
-		renderer_.spawnParticle(layer, p);
-	}
-	void spawnParticle(Cygnet::Renderer::SpawnParticle p)
-	{
-		renderer_.spawnParticle(p);
-	}
+	void playSound(
+		SoundAsset *asset, float volume,
+		std::optional<Vec2> center) override;
+	void playSound(
+		SoundAsset *asset, float volume,
+		std::optional<Vec2> center,
+		SoundHandle &handle) override;
 
 	Vec2 getMousePos();
 	TilePos getMouseTile();
@@ -129,15 +65,12 @@ public:
 	void save();
 
 	InputHandler &inputs() override { return inputHandler_; }
-	Action action(std::string_view name) { return inputs().action(name); }
 
 	CommandSpec *matchCommand(std::span<CowStr> tokens, std::vector<CowStr> &out);
 	void runCommand(Ctx &ctx, std::string_view command, std::string &out);
 
 	std::unique_ptr<World> world_ = NULL;
 	std::string worldPath_;
-	Cygnet::Renderer renderer_;
-	Cygnet::Gui gui_{&renderer_};
 	Cygnet::RenderCamera cam_{.zoom = 1.0 / 8};
 	Cygnet::RenderCamera uiCam_{.zoom = 1.0 / 16};
 
@@ -149,7 +82,6 @@ public:
 	float timeScale_ = 1.0;
 	std::optional<float> fixedDeltaTime_;
 	float fpsLimit_ = 0;
-	Debug debug_;
 	Perf perf_;
 	std::vector<EntityRef> debugEntities_;
 	MPServer server_;
@@ -163,12 +95,6 @@ public:
 		std::chrono::steady_clock::now().time_since_epoch()).count();
 	int frameCount_ = 0;
 	int tickCount_ = 0;
-
-	std::shared_ptr<Cygnet::FontFace> notoSans_{Cygnet::loadFontFace(
-		"assets/NotoSans-Regular.ttf")};
-
-	Cygnet::TextCache smallFont_{notoSans_, 60};
-	Cygnet::TextCache bigFont_{notoSans_, 200};
 
 	Action pauseAction_;
 	Action entityDebugMenuAction_;
@@ -208,49 +134,5 @@ private:
 	std::vector<CowStr> commandTokensBuf_;
 	std::vector<CowStr> commandArgvBuf_;
 };
-
-
-inline void Game::playSound(SoundAsset *asset)
-{
-	soundPlayer_.play(asset, 0.5, {});
-}
-
-inline void Game::playSound(SoundAsset *asset, float volume)
-{
-	soundPlayer_.play(asset, volume, {});
-}
-
-inline void Game::playSound(SoundAsset *asset, Vec2 center)
-{
-	soundPlayer_.play(asset, 0.5, std::pair{center.x, center.y});
-}
-
-inline void Game::playSound(SoundAsset *asset, float volume, Vec2 center)
-{
-	soundPlayer_.play(asset, volume, std::pair{center.x, center.y});
-}
-
-inline void Game::playSound(SoundAsset *asset, SoundHandle handle)
-{
-	soundPlayer_.play(asset, 0.5, {}, std::move(handle));
-}
-
-inline void Game::playSound(SoundAsset *asset, float volume, SoundHandle handle)
-{
-	soundPlayer_.play(asset, volume, {}, std::move(handle));
-}
-
-inline void Game::playSound(SoundAsset *asset, Vec2 center, SoundHandle handle)
-{
-	soundPlayer_.play(
-		asset, 0.5, std::pair{center.x, center.y}, std::move(handle));
-}
-
-inline void Game::playSound(
-	SoundAsset *asset, float volume, Vec2 center, SoundHandle handle)
-{
-	soundPlayer_.play(
-		asset, volume, std::pair{center.x, center.y}, std::move(handle));
-}
 
 }

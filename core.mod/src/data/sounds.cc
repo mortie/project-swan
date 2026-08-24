@@ -6,7 +6,7 @@ namespace CoreMod::sounds {
 #include "sounds.x"
 #undef X
 
-void init(Swan::World &world)
+void init(Swan::WorldData &world)
 {
 #define X(var, name) var = world.getSound(name);
 #include "sounds.x"

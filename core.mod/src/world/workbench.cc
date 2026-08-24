@@ -8,9 +8,12 @@ namespace CoreMod {
 
 static bool spawnWorkbench(Swan::Ctx &ctx, Swan::TilePos pos)
 {
+	// TODO
+	/*
 	if (pos.x + 0.5 < ctx.world.player_->center().x) {
 		pos -= {1, 0};
 	}
+	*/
 
 	if (!ctx.plane.tiles().get(pos).isReplacable()) {
 		pos += {1, 0};

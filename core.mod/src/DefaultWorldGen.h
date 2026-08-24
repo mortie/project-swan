@@ -13,7 +13,7 @@ class DefaultWorldGen: public Swan::WorldGen {
 public:
 	static constexpr float DAY_LENGTH = 15 * 60;
 
-	DefaultWorldGen(Swan::World &world, uint32_t seed):
+	DefaultWorldGen(Swan::WorldData &world, uint32_t seed):
 		bgCave_(sprites::misc__backgroundCave),
 		clouds_{
 			sprites::misc__cloud1,
@@ -45,7 +45,7 @@ private:
 			tile(tile), background(background) {}
 
 		Swan::Tile::ID tile;
-		Swan::Tile::ID background = Swan::World::AIR_TILE_ID;
+		Swan::Tile::ID background = Swan::WorldData::AIR_TILE_ID;
 	};
 
 	void drawSurfaceBackground(

@@ -137,7 +137,7 @@ public:
 			.image = "@::invalid",
 			.isSolid = false,
 			.onSpawn = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
-				ctx.plane.tiles().setIDWithoutUpdate(pos, Swan::World::AIR_TILE_ID);
+				ctx.plane.tiles().setIDWithoutUpdate(pos, Swan::WorldData::AIR_TILE_ID);
 				ctx.plane.fluids().setInTile(pos, ctx.world.getFluid("core::water").id);
 				return true;
 			},
@@ -147,7 +147,7 @@ public:
 			.image = "@::invalid",
 			.isSolid = false,
 			.onSpawn = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
-				ctx.plane.tiles().setIDWithoutUpdate(pos, Swan::World::AIR_TILE_ID);
+				ctx.plane.tiles().setIDWithoutUpdate(pos, Swan::WorldData::AIR_TILE_ID);
 				ctx.plane.fluids().setPartialInTile(pos, ctx.world.getFluid("core::water").id);
 				return true;
 			},
@@ -158,7 +158,7 @@ public:
 			.image = "@::invalid",
 			.isSolid = false,
 			.onSpawn = +[](Swan::Ctx &ctx, Swan::TilePos pos) {
-				ctx.plane.tiles().setIDWithoutUpdate(pos, Swan::World::AIR_TILE_ID);
+				ctx.plane.tiles().setIDWithoutUpdate(pos, Swan::WorldData::AIR_TILE_ID);
 				ctx.plane.fluids().setInTile(pos, ctx.world.getFluid("core::oil").id);
 				return true;
 			},
@@ -286,7 +286,7 @@ public:
 				auto above = meta.cursor.add(0, -1);
 				bool plantPotato =
 					(tile == tiles::dirt || tile == tiles::grass) &&
-					(ctx.plane.tiles().getID(above) == Swan::World::AIR_TILE_ID);
+					(ctx.plane.tiles().getID(above) == Swan::WorldData::AIR_TILE_ID);
 				if (plantPotato) {
 					ctx.plane.tiles().setID(above, tiles::potatoBush__0);
 					meta.stack.remove(1);
@@ -616,19 +616,25 @@ public:
 			.pattern = {"tp", "@x", "@y"},
 			.help = "Set the player position to (@x, @y). Use '-' for current coordinate.",
 			.handler = +[](Swan::Ctx &ctx, std::span<Swan::CowStr> argv, std::string &out) {
+				auto game = dynamic_cast<Swan::Game *>(&ctx.game);
+				if (!game) {
+					out += "Teleport doesn't work in multiplayer mode.";
+					return;
+				}
+
 				if (argv[0].str() != "-") {
-					ctx.world.player_->setMidX(strtof(std::string(argv[0].str()).c_str(), nullptr));
+					game->world_->player_->setMidX(strtof(std::string(argv[0].str()).c_str(), nullptr));
 				}
 				if (argv[1].str() != "-") {
-					ctx.world.player_->setMidY(strtof(std::string(argv[1].str()).c_str(), nullptr));
+					game->world_->player_->setMidY(strtof(std::string(argv[1].str()).c_str(), nullptr));
 				}
 			},
 		});
 	}
 
-	void start(Swan::World &world) override
+	void start(Swan::WorldData &world, Swan::GameIO &game) override
 	{
-		actions::init(world);
+		actions::init(game);
 		sounds::init(world);
 		sprites::init(world);
 		tiles::init(world);

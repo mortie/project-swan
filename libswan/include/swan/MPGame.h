@@ -24,6 +24,17 @@ public:
 	void screenshot(const char *path, int w, int h) override {}
 	void onQuit() override;
 
+	void playSound(
+		SoundAsset *asset, float volume,
+		std::optional<Vec2> center) override
+	{}
+
+	void playSound(
+		SoundAsset *asset, float volume,
+		std::optional<Vec2> center,
+		SoundHandle &handle) override
+	{}
+
 	void connect(MPClient::Options opts);
 
 private:

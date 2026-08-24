@@ -210,11 +210,11 @@ DefaultWorldGen::GeneratedTile DefaultWorldGen::genTile(
 			!isOil(pos.add(0, 1), grassLevel)));
 	if (spawnCave) {
 		if (pos.y == grassLevel) {
-			return Swan::World::AIR_TILE_ID;
+			return Swan::WorldData::AIR_TILE_ID;
 		} else if (pos.y < stoneLevel + 30 || caveState == 1) {
-			return {Swan::World::AIR_TILE_ID, background};
+			return {Swan::WorldData::AIR_TILE_ID, background};
 		} else {
-			return Swan::World::AIR_TILE_ID;
+			return Swan::WorldData::AIR_TILE_ID;
 		}
 	}
 
@@ -251,7 +251,7 @@ DefaultWorldGen::GeneratedTile DefaultWorldGen::genTile(
 		return biome.surfaceTile;
 	}
 	else {
-		return Swan::World::AIR_TILE_ID;
+		return Swan::WorldData::AIR_TILE_ID;
 	}
 }
 
@@ -469,10 +469,13 @@ void DefaultWorldGen::debugInfo(Swan::Ctx &ctx)
 		"Time of day: %d%%, sunlight: %d%%",
 		int(timeOfDay_ * 100), int(sunlightLevel_ * 100));
 
+	// TODO
+	/*
 	auto &player = *ctx.world.player_;
 	Swan::TilePos playerPos = player.center().as<int>();
 	const Biome &biome = getBiome(playerPos.x);
 	ImGui::Text("Biome: %s", biome.name);
+	*/
 }
 
 void DefaultWorldGen::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)

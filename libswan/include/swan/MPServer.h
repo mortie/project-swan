@@ -19,10 +19,15 @@ public:
 	MPServer();
 	~MPServer();
 
+	struct ClientID {
+		size_t id = 0;
+	};
+
 	struct ClientInfo {
 		std::string identifier;
 		std::string nick;
 		bool requestWorld = false;
+		ClientID id;
 	};
 
 	bool listen(const char *host, int port);
@@ -31,6 +36,10 @@ public:
 	void tick(float dt);
 
 	const ClientInfo *receive(mp_proto::ClientToServer::Reader &r);
+
+	mp_proto::ServerToClient::Builder builder();
+	void send(ClientID id, const mp_proto::ServerToClient::Builder &);
+	void broadcast(const mp_proto::ServerToClient::Builder &);
 
 	operator bool() const { return impl_.get(); }
 

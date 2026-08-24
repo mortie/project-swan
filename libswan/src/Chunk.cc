@@ -12,6 +12,7 @@
 #include "Clock.h"
 #include "World.h"
 #include "Game.h"
+#include "WorldData.h"
 #include "capnp/message.h"
 #include "capnp/serialize-packed.h"
 #include "kj/io.h"
@@ -30,7 +31,7 @@ Chunk::Chunk(ChunkPos pos): pos_(pos)
 
 	Tile::ID *backgroundData = getBackgroundTileData();
 	for (size_t i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT; ++i) {
-		backgroundData[i] = World::AIR_TILE_ID;
+		backgroundData[i] = WorldData::AIR_TILE_ID;
 	}
 }
 
@@ -351,9 +352,9 @@ void Chunk::setFluidSolid(ChunkRelPos pos, const FluidCollision &set)
 			pos.x * FLUID_RESOLUTION;
 		for (int x = 0; x < FLUID_RESOLUTION; ++x) {
 			if (set[y * FLUID_RESOLUTION + x]) {
-				row[x] = World::SOLID_FLUID_ID;
-			} else if (row[x] == World::SOLID_FLUID_ID) {
-				row[x] = World::AIR_FLUID_ID;
+				row[x] = WorldData::SOLID_FLUID_ID;
+			} else if (row[x] == WorldData::SOLID_FLUID_ID) {
+				row[x] = WorldData::AIR_FLUID_ID;
 			}
 		}
 	}
@@ -367,8 +368,8 @@ void Chunk::clearFluidSolid(ChunkRelPos pos)
 			(pos.y * FLUID_RESOLUTION + y) * CHUNK_WIDTH * FLUID_RESOLUTION +
 			pos.x * FLUID_RESOLUTION;
 		for (int x = 0; x < FLUID_RESOLUTION; ++x) {
-			if (row[x] == World::SOLID_FLUID_ID) {
-				row[x] = World::AIR_FLUID_ID;
+			if (row[x] == WorldData::SOLID_FLUID_ID) {
+				row[x] = WorldData::AIR_FLUID_ID;
 			}
 		}
 	}
