@@ -95,6 +95,7 @@ sdl_opts.add_cmake_defines({
   'SDL_SENSOR': false,
   'SDL_DIALOG': false,
   'SDL_TRAY': false,
+  'SDL_UNIX_CONSOLE_BUILD': true,
 })
 sdl_sub = cmake.subproject('SDL', options: sdl_opts)
 libsdl = sdl_sub.dependency('SDL3-shared')

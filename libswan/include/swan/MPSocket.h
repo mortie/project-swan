@@ -6,9 +6,8 @@
 #include <capnp/message.h>
 #include <capnp/serialize-packed.h>
 #include <kj/io.h>
-
-#include "kj/vector.h"
-#include "multiplayer.capnp.h"
+#include <kj/vector.h>
+#include <vector>
 
 namespace Swan {
 
