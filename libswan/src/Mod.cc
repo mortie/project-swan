@@ -26,13 +26,13 @@ std::optional<ModInfo> ModInfo::parse(std::string path)
 	}
 
 	auto name = root->get("name");
-	if (!name || name->as<std::string>()) {
+	if (!name || !name->as<std::string>()) {
 		warn << "Failed to parse " << modTomlPath << ": Missing 'name'";
 		return std::nullopt;
 	}
 
 	auto version = root->get("version");
-	if (!version || version->as<std::string>()) {
+	if (!version || !version->as<std::string>()) {
 		warn << "Failed to parse " << modTomlPath << ": Missing 'version'";
 		return std::nullopt;
 	}
