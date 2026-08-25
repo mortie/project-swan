@@ -132,7 +132,7 @@ void MainWindow::update()
 	auto avail = ImGui::GetContentRegionAvail();
 	ImGui::BeginChild(
 		"Worlds",
-		ImVec2(avail.x,avail.y - 35),
+		ImVec2(avail.x,avail.y - 70),
 		0, ImGuiWindowFlags_NoScrollbar);
 
 	for (auto &wrapper: worlds_) {
@@ -242,6 +242,14 @@ void MainWindow::update()
 		launch(id, calcSeed(newWorldSeed_));
 	}
 
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 80);
+	ImGui::InputText("##Server Host", &serverHost_);
+	ImGui::SameLine(0, 5);
+	ImGui::PushItemWidth(80);
+	if (ImGui::Button("Join Server")) {
+		launchMultiplayer(serverHost_);
+	}
+
 	if (running) {
 		ImGui::EndDisabled();
 	}
@@ -303,6 +311,42 @@ void MainWindow::launch(
 			cmd.push_back("--seed");
 			cmd.push_back(std::to_string(*seed));
 		}
+
+		// TODO: This should show output in a console window
+		auto receiveOutput = [](const char *data, size_t len) {
+			std::cerr << std::string_view(data, len);
+		};
+
+		TPL::Process proc(
+			cmd, "",
+			receiveOutput, // stdout
+			receiveOutput // stderr
+		);
+
+		int status = proc.get_exit_status();
+		Swan::info << "Swan exited with exit code " << status << '.';
+
+		running->store(false);
+	}).detach();
+}
+
+void MainWindow::launchMultiplayer(std::string host)
+{
+	if (running_->load()) {
+		return;
+	}
+
+	restoreNavCursor_ = ImGui::GetIO().NavVisible;
+	ImGui::SetNavCursorVisible(false);
+	ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableGamepad;
+
+	running_->store(true);
+	std::thread([running = running_, host = std::move(host)] {
+		std::vector<std::string> cmd = {
+			"./bin/swan",
+			"--mod", "core.mod",
+			"--mp-host", host,
+		};
 
 		// TODO: This should show output in a console window
 		auto receiveOutput = [](const char *data, size_t len) {
