@@ -2,7 +2,7 @@
 
 #include "EntityCollection.h"
 #include "WorldPlane.h"
-#include "Game.h"
+#include "GameIO.h"
 #include <fstream>
 
 #include <capnp/message.h>
@@ -75,6 +75,11 @@ public:
 		Ctx &ctx, proto::EntitySystem::Collection::Builder w) override;
 	void deserialize(
 		Ctx &ctx, proto::EntitySystem::Collection::Reader r) override;
+
+	void serializeUpdates(
+		Ctx &ctx, mp_proto::EntityCollectionUpdate::Builder w) override;
+	void deserializeUpdates(
+		Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader w) override;
 
 	const std::string name_;
 	uint64_t nextId_ = 0;
@@ -436,6 +441,12 @@ inline void EntityCollectionImpl<Ent>::serialize(
 		}
 	}
 
+	// TODO: Do this more intelligently somehow
+	auto scratch = kj::heapArray<capnp::word>(1024);
+	auto scratchBytes = scratch.asBytes();
+	memset(&scratchBytes.front(), 0, scratchBytes.size());
+	kj::VectorOutputStream stream;
+
 	w.setName(name_);
 	w.setNextID(nextId_);
 	auto entities = w.initEntities(entities_.size());
@@ -447,10 +458,10 @@ inline void EntityCollectionImpl<Ent>::serialize(
 		auto root = mb.initRoot<typename Ent::Proto>();
 		wrapper.ent.serialize(ctx, root);
 
-		kj::VectorOutputStream out;
-		capnp::writePackedMessage(out, mb);
+		stream.clear();
+		capnp::writePackedMessage(stream, mb);
 
-		auto arr = out.getArray();
+		auto arr = stream.getArray();
 		auto data = entities[i].initData(arr.size());
 		memcpy(&data.front(), &arr.front(), arr.size());
 
@@ -493,6 +504,64 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 		} catch (std::exception &ex) {
 			warn << "Failed to deserialize " << name_ << " entity: " << ex.what();
 			entities_.pop_back();
+		}
+	}
+}
+
+template<typename Ent>
+void EntityCollectionImpl<Ent>::serializeUpdates(
+	Ctx &ctx, mp_proto::EntityCollectionUpdate::Builder w)
+{
+	// TODO: Do this more intelligently somehow
+	auto scratch = kj::heapArray<capnp::word>(1024);
+	auto scratchBytes = scratch.asBytes();
+	memset(&scratchBytes.front(), 0, scratchBytes.size());
+	kj::VectorOutputStream stream;
+
+	// Yeah there's some code duplication here with serialize(),
+	// but this is gonna have to change a bunch for netcode optimization reasons
+	// while serialize() is gonna stay the same
+	auto entities = w.initUpdatedEntities(entities_.size());
+	for (size_t i = 0; i < entities_.size(); ++i) {
+		auto &wrapper = entities_[i];
+		entities[i].setId(wrapper.id);
+
+		capnp::MallocMessageBuilder mb;
+		auto root = mb.initRoot<typename Ent::Proto>();
+		wrapper.ent.serialize(ctx, root);
+
+		stream.clear();
+		capnp::writePackedMessage(stream, mb);
+
+		auto arr = stream.getArray();
+		auto data = entities[i].initData(arr.size());
+		memcpy(&data.front(), &arr.front(), arr.size());
+	}
+}
+
+template<typename Ent>
+void EntityCollectionImpl<Ent>::deserializeUpdates(
+	Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader r)
+{
+	for (auto entity: r.getUpdatedEntities()) {
+		uint64_t id = entity.getId();
+		auto it = idToIndex_.find(id);
+		if (it == idToIndex_.end()) {
+			warn << "Update for non-existent entity with ID " << id;
+			continue;
+		}
+
+		auto &wrapper = entities_[it->second];
+
+		// This is gonna need some updates for netcode optimization too
+		auto data = entity.getData();
+		kj::ArrayInputStream stream(data);
+		capnp::PackedMessageReader reader(stream);
+		try {
+			auto root = reader.getRoot<typename Ent::Proto>();
+			wrapper.ent.deserialize(ctx, root);
+		} catch (std::exception &ex) {
+			warn << "Failed to deserialize " << name_ << " entity: " << ex.what();
 		}
 	}
 }

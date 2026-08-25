@@ -4,6 +4,7 @@ using Cxx = import "/capnp/c++.capnp";
 $Cxx.namespace("Swan::mp_proto");
 
 using import "./swan.capnp".WorldPlane;
+using import "./swan.capnp".EntitySystem;
 
 struct ClientToServer {
 	union {
@@ -35,6 +36,7 @@ struct ServerToClient {
 		kick @2 :Kick;
 		ping @3 :Void;
 		worldSync @4 :WorldSync;
+		tick @5 :Tick;
 	}
 
 	struct Hello {}
@@ -54,4 +56,13 @@ struct ServerToClient {
 		currentPlane @3 :WorldPlane;
 		worldSeed @4 :UInt32;
 	}
+
+	struct Tick {
+		updatedEntityCollections @0 :List(EntityCollectionUpdate);
+	}
+}
+
+struct EntityCollectionUpdate {
+	index @0 :UInt32;
+	updatedEntities @1 :List(EntitySystem.Entity);
 }

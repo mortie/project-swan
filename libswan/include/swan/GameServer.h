@@ -25,10 +25,12 @@ private:
 	void onMessageFromClient(
 		const MPServer::ClientInfo &client,
 		mp_proto::ClientToServer::Reader &r);
+	void broadcastTickUpdate();
 
 	MPServer server_;
 	World *world_;
 	std::vector<std::string> modIDs_;
+	int clientCount_ = 0;
 };
 
 }

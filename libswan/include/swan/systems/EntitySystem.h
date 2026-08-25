@@ -81,6 +81,9 @@ public:
 	std::span<FoundEntity> getInTile(TilePos pos);
 	std::span<FoundEntity> getInArea(Vec2 pos, Vec2 size);
 
+	std::span<std::unique_ptr<EntityCollection>> collections()
+	{ return collections_; }
+
 	EntityRef getTileEntity(TilePos pos);
 
 	EntityRef current();
@@ -133,6 +136,7 @@ public:
 	using EntitySystemImpl::getInTile;
 	using EntitySystemImpl::getInArea;
 	using EntitySystemImpl::getTileEntity;
+	using EntitySystemImpl::collections;
 	using EntitySystemImpl::current;
 
 	friend WorldPlane;

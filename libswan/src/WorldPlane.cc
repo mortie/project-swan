@@ -8,6 +8,7 @@
 
 #include <swan/log.h>
 #include "Clock.h"
+#include "WorldData.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
 
 namespace Swan {

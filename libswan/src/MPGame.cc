@@ -208,6 +208,20 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 		plane_->deserialize(sync.getCurrentPlane(), tileIDs);
 
 		info << "Successfully performed initial world sync.";
+	} else if (r.isTick()) {
+		auto tick = r.getTick();
+
+		Ctx ctx = plane_->getContext();
+		for (auto update: tick.getUpdatedEntityCollections()) {
+			auto colls = plane_->entities().collections();
+			size_t index = update.getIndex();
+			if (index >= colls.size()) {
+				warn << "Got update for out-of-range collection: " << index;
+				continue;
+			}
+
+			colls[index]->deserializeUpdates(ctx, update);
+		}
 	} else {
 		info << "Received unknown message from server:";
 		info << r.toString().flatten().cStr();

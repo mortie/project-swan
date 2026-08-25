@@ -9,6 +9,7 @@
 #include "Entity.h"
 #include "traits/BodyTrait.h"
 #include "swan.capnp.h"
+#include "multiplayer.capnp.h"
 
 namespace Swan {
 
@@ -119,6 +120,9 @@ public:
 	virtual const std::string &name() = 0;
 	virtual std::type_index type() = 0;
 
+	// TODO: This should track updates cleverly
+	bool hasUpdated() { return size() > 0; }
+
 	virtual size_t size() = 0;
 	virtual Entity *get(uint64_t id) = 0;
 	virtual Body *getBody(uint64_t id) = 0;
@@ -136,6 +140,11 @@ public:
 		Ctx &ctx, proto::EntitySystem::Collection::Builder w) = 0;
 	virtual void deserialize(
 		Ctx &ctx, proto::EntitySystem::Collection::Reader r) = 0;
+
+	virtual void serializeUpdates(
+		Ctx &ctx, mp_proto::EntityCollectionUpdate::Builder w) = 0;
+	virtual void deserializeUpdates(
+		Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader r) = 0;
 
 protected:
 	uint64_t currentId_;
