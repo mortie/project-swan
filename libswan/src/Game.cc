@@ -1,6 +1,5 @@
-#include "Game.h"
-#include "swan/constants.h"
-
+#include <swan/constants.h>
+#include <swan/HashMap.h>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -24,6 +23,8 @@
 
 #include "Clock.h"
 #include "swan.capnp.h"
+#include "Game.h"
+#include "GameServer.h"
 
 #include "traits/InventoryTrait.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
@@ -58,6 +59,8 @@ Game::Game(std::function<bool()> recompileMods, HashMap<ModInfo> mods):
 		modPaths_.push_back(mod.path);
 	}
 }
+
+Game::~Game() = default;
 
 void Game::createWorld(
 	std::string worldPath, const std::string &worldgen,
@@ -217,16 +220,19 @@ void Game::drawDebugMenu()
 		screenshot(path.c_str());
 	}
 
-	if (server_.running()) {
+	if (server_) {
 		if (ImGui::Button("Stop Server")) {
-			server_.end();
+			server_.reset();
 		}
 	} else if (ImGui::Button("Start Server")) {
 		std::vector<std::string> modIDs;
+		modIDs.reserve(mods_.size());
 		for (auto &[id, _]: mods_) {
 			modIDs.push_back(id);
 		}
-		server_.listen(nullptr, 11216, std::move(modIDs));
+
+		server_ = std::make_unique<GameServer>(world_.get(), std::move(modIDs));
+		server_->listen(nullptr, 11216);
 	}
 
 	if (!FrameRecorder::isAvailable()) {
@@ -261,7 +267,7 @@ void Game::drawDebugMenu()
 		}
 	}
 
-	if (server_.running()) {
+	if (server_) {
 		ImGui::Text("Server running.");
 	}
 
@@ -753,7 +759,9 @@ void Game::tick()
 		triggerSave_ = false;
 	}
 
-	tickServer();
+	if (server_) {
+		server_->tick(TICK_DELTA);
+	}
 
 	perf_.tickCount += 1;
 	if (perf_.tickCount >= 20) {
@@ -769,42 +777,9 @@ void Game::tick()
 	}
 }
 
-void Game::tickServer()
-{
-	if (!server_) {
-		return;
-	}
-
-	server_.tick(TICK_DELTA);
-
-	mp_proto::ClientToServer::Reader r;
-	const MPServer::ClientInfo *client;
-	while ((client = server_.receive(r))) {
-		if (r.hasHello()) {
-			if (r.getHello().getRequestWorld()) {
-				auto root = server_.builder();
-				auto sync = root.initWorldSync();
-				world_->currentPlane().serialize(sync.initCurrentPlane());
-				auto tiles = sync.initTiles(world_->data().tiles_.size());
-				for (size_t i = 0; i < tiles.size(); ++i) {
-					tiles.set(i, world_->data().tiles_[i].name.c_str());
-				}
-
-				server_.send(client->id, root);
-			}
-		} else {
-			info << "Received unknown message from client '" << client->identifier << ":";
-			info << r.toString().flatten().cStr();
-		}
-	}
-}
-
 void Game::onQuit()
 {
-	if (server_) {
-		server_.end("Server shutting down.");
-	}
-
+	server_.reset();
 	save();
 }
 
@@ -928,6 +903,7 @@ bool Game::reload()
 
 	save();
 	soundPlayer_.flush();
+	server_.reset();
 	world_.reset();
 	loadWorld(worldPath_);
 	debugEntities_.clear();

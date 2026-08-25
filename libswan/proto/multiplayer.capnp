@@ -37,10 +37,7 @@ struct ServerToClient {
 		worldSync @4 :WorldSync;
 	}
 
-	struct Hello {
-		# List of mod IDs (name@version) which the server uses
-		mods @0 :List(Text);
-	}
+	struct Hello {}
 
 	struct Shutdown {
 		reason @0 :Text;
@@ -51,8 +48,10 @@ struct ServerToClient {
 	}
 
 	struct WorldSync {
-		tiles @0 :List(Text);
-		currentPlaneIndex @1 :UInt32;
-		currentPlane @2 :WorldPlane;
+		modIDs @0 :List(Text);
+		tiles @1 :List(Text);
+		currentPlaneIndex @2 :UInt32;
+		currentPlane @3 :WorldPlane;
+		worldSeed @4 :UInt32;
 	}
 }

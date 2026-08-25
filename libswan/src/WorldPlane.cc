@@ -8,8 +8,6 @@
 
 #include <swan/log.h>
 #include "Clock.h"
-#include "World.h"
-#include "Game.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
 
 namespace Swan {
@@ -128,6 +126,23 @@ size_t WorldPlane::getChunkDataMemUsage()
 		size += chunk.getMemUsage();
 	}
 	return size;
+}
+
+void WorldPlane::keepChunksActiveAround(Vec2 pos)
+{
+	ChunkPos pcpos = ChunkPos(
+		(int)floor(pos.x / CHUNK_WIDTH),
+		(int)floor(pos.y / CHUNK_HEIGHT));
+
+	// Draw chunks
+	for (int x = -1; x <= 1; ++x) {
+		for (int y = -1; y <= 1; ++y) {
+			auto iter = chunks_.find(pcpos + ChunkPos(x, y));
+			if (iter != chunks_.end()) {
+				iter->second.keepActive();
+			}
+		}
+	}
 }
 
 void WorldPlane::draw(Cygnet::Renderer &rnd, Vec2 center)

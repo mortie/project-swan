@@ -253,6 +253,7 @@ public:
 
 	void drawSprite(RenderLayer layer, DrawSprite drawSprite)
 	{
+		assert(drawSprite.sprite.tex != ~(GLuint)0);
 		baseLayers_[int(layer)].drawSprite.push_back(drawSprite);
 	}
 	void drawSprite(DrawSprite ds)
@@ -262,6 +263,7 @@ public:
 
 	void drawTileSprite(DrawSprite drawSprite)
 	{
+		assert(drawSprite.sprite.tex != ~(GLuint)0);
 		drawTileSprites_.push_back(drawSprite);
 	}
 

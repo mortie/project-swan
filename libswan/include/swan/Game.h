@@ -20,13 +20,15 @@
 #include "World.h"
 #include "SoundPlayer.h"
 #include "FrameRecorder.h"
-#include "MPServer.h"
 
 namespace Swan {
+
+class GameServer;
 
 class Game: public GameIO {
 public:
 	Game(std::function<bool()> recompileMods, HashMap<ModInfo> mods);
+	~Game();
 
 	void createWorld(
 		std::string worldPath, const std::string &worldgen,
@@ -83,7 +85,7 @@ public:
 	float fpsLimit_ = 0;
 	Perf perf_;
 	std::vector<EntityRef> debugEntities_;
-	MPServer server_;
+	std::unique_ptr<GameServer> server_;
 
 	bool paused_ = false;
 	bool shouldQuit_ = false;
@@ -110,7 +112,6 @@ public:
 private:
 	bool reload();
 	void tick();
-	void tickServer();
 	void initInputHandler();
 	void initCommandHandler();
 

@@ -60,6 +60,7 @@ libswan = declare_dependency(
     'src/EntityCollection.cc',
     'src/FrameRecorder.cc',
     'src/Game.cc',
+    'src/GameServer.cc',
     'src/InputHandler.cc',
     'src/ItemStack.cc',
     'src/LightServer.cc',

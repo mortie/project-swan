@@ -7,7 +7,6 @@
 #include "Item.h"
 #include "Fluid.h"
 #include "WorldGen.h"
-#include "Entity.h"
 #include "EntityCollection.h"
 #include "Mod.h"
 #include "Recipe.h"

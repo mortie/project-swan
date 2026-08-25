@@ -72,6 +72,7 @@ public:
 	size_t getChunkCount() { return chunks_.size(); }
 	size_t getActiveChunkCount() { return activeChunks_.size(); }
 	size_t getChunkDataMemUsage();
+	void keepChunksActiveAround(Vec2 pos);
 
 	void draw(Cygnet::Renderer &rnd, Vec2 center);
 	void update(float dt);

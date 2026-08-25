@@ -1,8 +1,8 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <vector>
 #include <swan/util.h>
 #include <swan/log.h>
 #include <capnp/message.h>
@@ -20,7 +20,7 @@ public:
 	~MPServer();
 
 	struct ClientID {
-		size_t id = 0;
+		uint64_t id = 0;
 	};
 
 	struct ClientInfo {
@@ -30,7 +30,7 @@ public:
 		ClientID id;
 	};
 
-	bool listen(const char *host, int port, std::vector<std::string> modIDs);
+	bool listen(const char *host, int port);
 	void end(const char *reason = "Server shutting down");
 	bool running() { return impl_.get(); }
 	void tick(float dt);

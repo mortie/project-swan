@@ -28,6 +28,11 @@ public:
 		std::unordered_set<WorldPlane::ID> tickedPlanes;
 	};
 
+	struct PlaneWrapper {
+		std::string worldGen;
+		std::unique_ptr<WorldPlane> plane;
+	};
+
 	World(Game *game, uint32_t seed, std::span<const std::string> modPaths);
 
 	void setWorldGen(std::string gen);
@@ -36,9 +41,10 @@ public:
 	void setCurrentPlane(WorldPlane &plane);
 
 	WorldPlane &currentPlane()
-	{
-		return *planes_[currentPlane_].plane;
-	}
+	{ return *planes_[currentPlane_].plane; }
+
+	PlaneWrapper &getPlane(WorldPlane::ID id)
+	{ return planes_[id]; }
 
 	WorldPlane &addPlane(std::string gen);
 
@@ -66,11 +72,6 @@ private:
 	class ChunkRenderer {
 	public:
 		void tick(WorldPlane &plane, ChunkPos abspos);
-	};
-
-	struct PlaneWrapper {
-		std::string worldGen;
-		std::unique_ptr<WorldPlane> plane;
 	};
 
 	std::vector<ModWrapper> loadMods(std::span<const std::string> paths);

@@ -32,8 +32,7 @@ struct MPServer::Client {
 
 class MPServer::Impl {
 public:
-	Impl(std::vector<std::string> modIDs):
-		modIDs_(std::move(modIDs))
+	Impl()
 	{
 		// Need to zero the scratch space.
 		// There doesn't seem to be a nice "allocate a zeroed kj array" function.
@@ -66,8 +65,7 @@ private:
 	capnp::MallocMessageBuilder builder_;
 
 	size_t receiveIndex_ = 0;
-	size_t nextClientID_ = 1;
-	std::vector<std::string> modIDs_;
+	uint64_t nextClientID_ = 1;
 
 	friend MPServer;
 };
@@ -247,11 +245,7 @@ MPServer::Impl::receive(mp_proto::ClientToServer::Reader &r)
 			// Respond to let the client know it's good,
 			// and to let it know which mods to load
 			auto root = builder();
-			auto serverHello = root.initHello();
-			auto modIDs = serverHello.initMods(modIDs_.size());
-			for (size_t i = 0; i < modIDs_.size(); ++i) {
-				modIDs.set(i, modIDs_[i]);
-			}
+			root.initHello();
 			client.sock.encodeAndSend(builder_, stream_);
 
 			return &client.info;
@@ -291,10 +285,10 @@ void MPServer::Impl::kick(Client &client, const char *reason)
 MPServer::MPServer() = default;
 MPServer::~MPServer() = default;
 
-bool MPServer::listen(const char *host, int port, std::vector<std::string> modIDs)
+bool MPServer::listen(const char *host, int port)
 {
 	end("Server restarting");
-	impl_ = std::make_unique<Impl>(std::move(modIDs));
+	impl_ = std::make_unique<Impl>();
 	if (!impl_->listen(host, port)) {
 		impl_.reset();
 		return false;

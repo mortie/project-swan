@@ -8,6 +8,7 @@
 #include "InputHandler.h"
 #include "MPClient.h"
 #include "Mod.h"
+#include "WorldData.h"
 #include "WorldPlane.h"
 #include "swan/HashMap.h"
 
@@ -15,15 +16,12 @@ namespace Swan {
 
 class MPGame: public GameIO {
 public:
-	MPGame(std::function<bool()> recompileMods, HashMap<ModInfo> mods):
-		recompileMods_(recompileMods),
-		mods_(std::move(mods))
-	{}
+	MPGame(std::function<bool()> recompileMods, HashMap<ModInfo> mods);
 
-	InputHandler &inputs() override { return inputs_; }
+	InputHandler &inputs() override { return inputHandler_; }
 	void onMouseMove(float x, float y) override {}
-	void onScrollWheel(float dy) override {}
-	void onViewportSize(int w, int h) override {}
+	void onScrollWheel(float dy) override;
+	void onViewportSize(int w, int h) override;
 
 	void update(float dt) override;
 	void draw() override;
@@ -46,16 +44,19 @@ public:
 
 private:
 	void tick(float dt);
+	void onMessageFromServer(mp_proto::ServerToClient::Reader &r);
 
 	Cygnet::Renderer renderer_;
 	Cygnet::RenderCamera cam_{.zoom = 1.0 / 8};
+	Cygnet::RenderCamera uiCam_{.zoom = 1.0 / 16};
 
 	std::function<bool()> recompileMods_;
 	HashMap<ModInfo> mods_;
 
-	InputHandler inputs_;
+	InputHandler inputHandler_;
 	MPClient client_;
 	float tickTimer_ = 0;
+	std::unique_ptr<WorldData> data_;
 	std::unique_ptr<WorldPlane> plane_;
 };
 

@@ -1,6 +1,7 @@
 #include "MPGame.h"
 
 #include <imgui/imgui.h>
+#include <memory>
 #include <swan/constants.h>
 #include <swan/log.h>
 
@@ -8,13 +9,45 @@ namespace Swan {
 
 static constexpr float TICK_DELTA = 1.0 / TICK_RATE;
 
+MPGame::MPGame(std::function<bool()> recompileMods, HashMap<ModInfo> mods):
+	recompileMods_(recompileMods),
+	mods_(std::move(mods))
+{
+	// Temporary, until we sort out client-side lighting
+	debug_.disableShadows = true;
+}
+
+void MPGame::onScrollWheel(float dy)
+{
+	cam_.zoom += dy * 0.05f * cam_.zoom;
+
+	float zoomLim = debug_.godMode ? 0.002 : 0.0175;
+	if (cam_.zoom > 1) {
+		cam_.zoom = 1;
+	}
+	else if (cam_.zoom < zoomLim) {
+		cam_.zoom = zoomLim;
+	}
+}
+
+void MPGame::onViewportSize(int w, int h)
+{
+	cam_.size = {w, h};
+	uiCam_.size = {w, h};
+}
+
 void MPGame::update(float dt)
 {
+	inputHandler_.beginFrame();
+	inputHandler_.endFrame();
+
 	tickTimer_ += dt;
 	if (tickTimer_ >= TICK_DELTA) {
 		tickTimer_ -= TICK_DELTA;
 		tick(TICK_DELTA);
 	}
+
+	renderer_.update(dt);
 }
 
 void MPGame::draw()
@@ -57,14 +90,26 @@ void MPGame::draw()
 		ImGui::Text("Reason: %s", state.reason.c_str());
 	}
 
+	ImGui::End();
+
+	renderer_.setCull({
+		.pos = cam_.pos,
+		.size = {1 / cam_.zoom, 1 / cam_.zoom},
+	});
+
 	renderer_.clear();
 
-	ImGui::End();
+	if (plane_) {
+		renderer_.setBackgroundColor(plane_->worldGen_->backgroundColor(cam_.pos));
+		plane_->keepChunksActiveAround(cam_.pos);
+		plane_->draw(renderer_, cam_.pos);
+	}
 }
 
 void MPGame::render()
 {
 	renderer_.render(cam_);
+	renderer_.renderUI(uiCam_);
 }
 
 void MPGame::onQuit()
@@ -85,9 +130,87 @@ void MPGame::tick(float dt)
 
 	mp_proto::ServerToClient::Reader r;
 	while (client_.receive(r)) {
-		if (r.isWorldSync()) {
-			info << "Got initial sync message yay";
+		onMessageFromServer(r);
+	}
+}
+
+void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
+{
+	if (r.isWorldSync()) {
+		auto sync = r.getWorldSync();
+
+		// Resolve the paths of all the mods
+		std::vector<std::string> modPaths;
+		modPaths.reserve(sync.getModIDs().size());
+		bool hasAllMods = true;
+		for (auto modID: sync.getModIDs()) {
+			auto mod = mods_.find(modID.cStr());
+			if (mod == mods_.end()) {
+				panic << "Missing mod: " << modID.cStr();
+				hasAllMods = false;
+			}
+
+			modPaths.push_back(mod->second.path);
+			info << "Server requested mod: " << modID.cStr();
 		}
+
+		if (!hasAllMods) {
+			client_.end();
+			return;
+		}
+
+		data_ = std::make_unique<WorldData>();
+		data_->loadMods(modPaths);
+		data_->buildResources(renderer_);
+
+		// Initiate input handler
+		std::vector<ActionSpec> actions;
+		for (auto &mod: data_->mods_) {
+			for (auto action: mod.mod_->actions_) {
+				action.name = cat(mod.name(), "::", action.name);
+				actions.push_back(std::move(action));
+			}
+		}
+		inputHandler_.setActions(std::move(actions));
+
+		// Init mods
+		for (auto &mod: data_->mods_) {
+			mod.mod_->start(*data_, *this);
+		}
+
+		// Make world generator
+		auto worldGenName = sync.getCurrentPlane().getWorldGen().cStr();
+		auto worldGenIt = data_->worldGenFactories_.find(worldGenName);
+		if (worldGenIt == data_->worldGenFactories_.end()) {
+			panic << "Missing world generator: " << worldGenName;
+			client_.end();
+			return;
+		}
+		auto worldGen = worldGenIt->second.create(*data_, sync.getWorldSeed());
+
+		// Make entity collections
+		std::vector<std::unique_ptr<EntityCollection>> colls;
+		colls.reserve(data_->entCollFactories_.size());
+		for (auto &fact: data_->entCollFactories_) {
+			colls.emplace_back(fact.second.create(fact.second.name));
+		}
+
+		// Make list of tiles
+		std::vector<Tile::ID> tileIDs;
+		tileIDs.reserve(sync.getTiles().size());
+		for (auto tileName: sync.getTiles()) {
+			tileIDs.push_back(data_->getTileID(tileName.cStr()));
+		}
+
+		plane_ = std::make_unique<WorldPlane>(
+			sync.getCurrentPlaneIndex(), data_.get(), this,
+			std::move(worldGen), std::move(colls));
+		plane_->deserialize(sync.getCurrentPlane(), tileIDs);
+
+		info << "Successfully performed initial world sync.";
+	} else {
+		info << "Received unknown message from server:";
+		info << r.toString().flatten().cStr();
 	}
 }
 

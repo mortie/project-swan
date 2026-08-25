@@ -37,8 +37,6 @@ struct ModInfo {
 	static std::optional<ModInfo> parse(std::string path);
 };
 
-bool parseModInfo(HashMap<ModInfo> &map, std::string path);
-
 class Mod {
 public:
 	Mod(std::string name, ModWrapper &wrapper):

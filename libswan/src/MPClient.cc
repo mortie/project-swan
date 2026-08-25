@@ -1,6 +1,5 @@
 #include "MPClient.h"
 
-#include <cstdint>
 #include <swan/util.h>
 #include <swan/log.h>
 #include <SDL3_net/SDL_net.h>
