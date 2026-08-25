@@ -1,11 +1,18 @@
 #include "MPSocket.h"
 #include "kj/io.h"
-#include "kj/vector.h"
 
 #include <cstdlib>
 #include <swan/log.h>
 
 namespace Swan {
+
+static bool enableDebug() {
+	static bool enable = [] {
+		const char *s = getenv("SWAN_DEBUG_NET");
+		return s && std::string_view(s) == "1";
+	}();
+	return enable;
+}
 
 bool MPSocket::encode(capnp::MessageBuilder &mb, kj::VectorOutputStream &stream)
 {
@@ -21,6 +28,10 @@ bool MPSocket::encode(capnp::MessageBuilder &mb, kj::VectorOutputStream &stream)
 	if (size > 0xffffffffull) {
 		warn << "Attempt to send oversized message: " << size;
 		return false;
+	}
+
+	if (enableDebug()) {
+		info << "Net: Encoded " << size << " byte payload";
 	}
 
 	// Fill in header
@@ -111,6 +122,10 @@ bool MPSocket::receiveRaw()
 	// We keep around an ArrayInputStream and a PackedMessageReader
 	// so that the ServerToClient::Reader can out-live this stack frame.
 	scratch_.emplace(kj::ArrayPtr{rxBuf_.data(), size});
+
+	if (enableDebug()) {
+		info << "Net: Received " << size << " byte payload";
+	}
 
 	return true;
 }
