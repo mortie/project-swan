@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 #include <memory>
@@ -27,6 +28,16 @@ namespace Swan {
 
 class World;
 class ModWrapper;
+
+struct ModInfo {
+	std::string path;
+	std::string name;
+	std::string version;
+
+	static std::optional<ModInfo> parse(std::string path);
+};
+
+bool parseModInfo(HashMap<ModInfo> &map, std::string path);
 
 class Mod {
 public:

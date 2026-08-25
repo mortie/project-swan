@@ -1,14 +1,10 @@
 #include "MPServer.h"
 
-#include <atomic>
 #include <cassert>
 #include <chrono>
-#include <cstdint>
-#include <mutex>
 #include <swan/util.h>
 #include <swan/log.h>
 #include <SDL3_net/SDL_net.h>
-#include <thread>
 
 #include "MPSocket.h"
 #include "SDL3/SDL_error.h"
@@ -36,7 +32,8 @@ struct MPServer::Client {
 
 class MPServer::Impl {
 public:
-	Impl()
+	Impl(std::vector<std::string> modIDs):
+		modIDs_(std::move(modIDs))
 	{
 		// Need to zero the scratch space.
 		// There doesn't seem to be a nice "allocate a zeroed kj array" function.
@@ -70,6 +67,7 @@ private:
 
 	size_t receiveIndex_ = 0;
 	size_t nextClientID_ = 1;
+	std::vector<std::string> modIDs_;
 
 	friend MPServer;
 };
@@ -220,9 +218,9 @@ MPServer::Impl::receive(mp_proto::ClientToServer::Reader &r)
 				continue;
 			}
 
-			auto hello = r.getHello();
-			auto identifier = hello.getIdentifier();
-			auto nick = hello.getNick();
+			auto clientHello = r.getHello();
+			auto identifier = clientHello.getIdentifier();
+			auto nick = clientHello.getNick();
 			if (identifier == "" || nick == "") {
 				warn << "Client hello missing identifier and nick";
 				kick(client, "Protocol hello error");
@@ -238,17 +236,22 @@ MPServer::Impl::receive(mp_proto::ClientToServer::Reader &r)
 				<< addrStr << " connected with: "
 				<< "nick '" << nick.cStr()
 				<< "', identifier '" << identifier.cStr()
-				<< "', using host '" << hello.getHost().cStr() << "'");
+				<< "', using host '" << clientHello.getHost().cStr() << "'");
 			client.info.id.id = nextClientID_++;
 			client.info.identifier = identifier.cStr();
 			client.info.nick = nick.cStr();
-			client.info.requestWorld = hello.getRequestWorld();
+			client.info.requestWorld = clientHello.getRequestWorld();
 			client.state = Client::IDLE;
 			client.timer = 5;
 
-			// Respond to let the client know it's good
+			// Respond to let the client know it's good,
+			// and to let it know which mods to load
 			auto root = builder();
-			root.initHello();
+			auto serverHello = root.initHello();
+			auto modIDs = serverHello.initMods(modIDs_.size());
+			for (size_t i = 0; i < modIDs_.size(); ++i) {
+				modIDs.set(i, modIDs_[i]);
+			}
 			client.sock.encodeAndSend(builder_, stream_);
 
 			return &client.info;
@@ -288,10 +291,10 @@ void MPServer::Impl::kick(Client &client, const char *reason)
 MPServer::MPServer() = default;
 MPServer::~MPServer() = default;
 
-bool MPServer::listen(const char *host, int port)
+bool MPServer::listen(const char *host, int port, std::vector<std::string> modIDs)
 {
 	end("Server restarting");
-	impl_ = std::make_unique<Impl>();
+	impl_ = std::make_unique<Impl>(std::move(modIDs));
 	if (!impl_->listen(host, port)) {
 		impl_.reset();
 		return false;

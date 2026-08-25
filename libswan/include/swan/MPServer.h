@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <string>
-#include <cstdint>
+#include <vector>
 #include <swan/util.h>
 #include <swan/log.h>
 #include <capnp/message.h>
@@ -30,7 +30,7 @@ public:
 		ClientID id;
 	};
 
-	bool listen(const char *host, int port);
+	bool listen(const char *host, int port, std::vector<std::string> modIDs);
 	void end(const char *reason = "Server shutting down");
 	bool running() { return impl_.get(); }
 	void tick(float dt);

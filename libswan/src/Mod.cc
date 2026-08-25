@@ -7,6 +7,43 @@
 
 namespace Swan {
 
+std::optional<ModInfo> ModInfo::parse(std::string path)
+{
+	std::string modTomlPath = cat(path, "/mod.toml");
+	std::ifstream f(modTomlPath);
+	if (!f) {
+		warn << "Failed to parse " << modTomlPath << ": File doesn't exist";
+		return std::nullopt;
+	}
+
+	cpptoml::parser parser(f);
+	std::shared_ptr<cpptoml::table> root;
+	try {
+		root = parser.parse();
+	} catch (cpptoml::parse_exception &exc) {
+		warn << "Failed to parse " << modTomlPath << ": " << exc.what();
+		return std::nullopt;
+	}
+
+	auto name = root->get("name");
+	if (!name || name->as<std::string>()) {
+		warn << "Failed to parse " << modTomlPath << ": Missing 'name'";
+		return std::nullopt;
+	}
+
+	auto version = root->get("version");
+	if (!version || version->as<std::string>()) {
+		warn << "Failed to parse " << modTomlPath << ": Missing 'version'";
+		return std::nullopt;
+	}
+
+	return ModInfo {
+		.path = std::move(path),
+		.name = std::move(name->as<std::string>()->get()),
+		.version = std::move(version->as<std::string>()->get()),
+	};
+}
+
 std::shared_ptr<cpptomlng::table> Mod::loadToml(std::string_view name)
 {
 	std::string path = cat(wrapper_.path_, "/assets/resources/", name, ".toml");

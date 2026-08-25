@@ -34,11 +34,12 @@ struct ServerToClient {
 		shutdown @1 :Shutdown;
 		kick @2 :Kick;
 		ping @3 :Void;
-		initialSync @4 :WorldSync;
+		worldSync @4 :WorldSync;
 	}
 
 	struct Hello {
-		# Keep this as a struct so that we can add info to it later if necessary
+		# List of mod IDs (name@version) which the server uses
+		mods @0 :List(Text);
 	}
 
 	struct Shutdown {

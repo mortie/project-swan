@@ -1,3 +1,4 @@
+#include "pfx/include/swan/HashMap.h"
 #include <SDL3_net/SDL_net.h>
 #include <cstdlib>
 #include <memory>
@@ -136,7 +137,7 @@ int main(int argc, char **argv)
 	backward::SignalHandling sh;
 #endif
 
-	std::vector<std::string> mods;
+	std::vector<std::string> modPaths;
 	const char *swanRoot = ".";
 	bool doCompileMods = true;
 	const char *thumbnailPath = nullptr;
@@ -152,7 +153,7 @@ int main(int argc, char **argv)
 		std::string_view arg = argv[i];
 		if (arg == "--mod") {
 			i += 1;
-			mods.push_back(argv[i]);
+			modPaths.push_back(argv[i]);
 		} else if (arg == "--mp-host") {
 			i += 1;
 			multiplayer.host = argv[i];
@@ -184,9 +185,23 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (mods.empty()) {
+	if (modPaths.empty()) {
 		panic << "Empty mods list!";
 		return 1;
+	}
+
+	HashMap<ModInfo> mods;
+	std::vector<std::string> modIDs;
+	for (auto &path: modPaths) {
+		auto mod = ModInfo::parse(path);
+		if (!mod) {
+			panic << "Failed to parse mod info for " << path;
+			return 1;
+		}
+
+		auto id = cat(mod->name, "@", mod->version);
+		mods[id] = std::move(*mod);
+		modIDs.push_back(std::move(id));
 	}
 
 #ifdef SWAN_HEADLESS
@@ -205,8 +220,8 @@ int main(int argc, char **argv)
 
 		ScopedTimer timer("compile mods");
 
-		for (auto &mod: mods) {
-			if (!SwanBuild::build(mod.c_str(), swanRoot)) {
+		for (auto &[id, mod]: mods) {
+			if (!SwanBuild::build(mod.path.c_str(), swanRoot)) {
 				return false;
 			}
 		}
@@ -274,7 +289,7 @@ int main(int argc, char **argv)
 	std::unique_ptr<GameIO> game;
 	if (multiplayer.host != "") {
 		info << "Connecting to multiplayer host: " << multiplayer.host << ":" << multiplayer.port;
-		auto ptr = std::make_unique<MPGame>(compileMods);
+		auto ptr = std::make_unique<MPGame>(compileMods, mods);
 		ptr->connect(std::move(multiplayer));
 		game = std::move(ptr);
 	} else {
@@ -283,11 +298,11 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		auto ptr = std::make_unique<Game>(compileMods);
+		auto ptr = std::make_unique<Game>(compileMods, mods);
 
 		// Load or create world
 		if (std::filesystem::exists(worldPath)) {
-			ptr->loadWorld(worldPath, mods);
+			ptr->loadWorld(worldPath);
 		} else {
 			uint32_t seed;
 			if (seedArg) {
@@ -301,7 +316,7 @@ int main(int argc, char **argv)
 			}
 
 			info << "Creating world with seed: " << seed;
-			ptr->createWorld(worldPath, "core::default", seed, mods);
+			ptr->createWorld(worldPath, "core::default", seed);
 		}
 
 		game = std::move(ptr);

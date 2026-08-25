@@ -1,13 +1,11 @@
 #include "World.h"
 
-#include <limits>
 #include <string_view>
 #include <swan/constants.h>
 #include <swan/log.h>
 
 #include "Game.h"
 #include "Clock.h"
-#include "assets.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
 #include "WorldData.h"
 

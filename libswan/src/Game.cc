@@ -44,22 +44,28 @@ static std::string formatNow()
 	return s;
 }
 
-Game::Game(std::function<bool()> recompileMods):
-	recompileMods_(std::move(recompileMods))
+Game::Game(std::function<bool()> recompileMods, HashMap<ModInfo> mods):
+	recompileMods_(std::move(recompileMods)),
+	mods_(std::move(mods))
 {
 	const char *val = getenv("SWAN_DEBUG_KEYS");
 	if (val && std::string_view(val) == "1") {
 		debug_.showInputDebug = true;
 	}
+
+	modPaths_.reserve(mods_.size());
+	for (auto &[id, mod]: mods_) {
+		modPaths_.push_back(mod.path);
+	}
 }
 
 void Game::createWorld(
 	std::string worldPath, const std::string &worldgen,
-	uint32_t seed, std::span<std::string> modPaths)
+	uint32_t seed)
 {
 	ScopedTimer timer("create world");
 
-	world_ = std::make_unique<World>(this, seed, modPaths);
+	world_ = std::make_unique<World>(this, seed, modPaths_);
 	initInputHandler();
 	initCommandHandler();
 
@@ -74,8 +80,7 @@ void Game::createWorld(
 	worldPath_ = std::move(worldPath);
 }
 
-void Game::loadWorld(
-	std::string worldPath, std::span<const std::string> modPaths)
+void Game::loadWorld(std::string worldPath)
 {
 	ScopedTimer timer("load world");
 
@@ -97,7 +102,7 @@ void Game::loadWorld(
 	kj::ArrayInputStream stream({(unsigned char *)data.data(), data.size()});
 	capnp::PackedMessageReader reader(stream);
 
-	world_ = std::make_unique<World>(this, 0, modPaths);
+	world_ = std::make_unique<World>(this, 0, modPaths_);
 	initInputHandler();
 	initCommandHandler();
 
@@ -217,7 +222,11 @@ void Game::drawDebugMenu()
 			server_.end();
 		}
 	} else if (ImGui::Button("Start Server")) {
-		server_.listen(nullptr, 11216);
+		std::vector<std::string> modIDs;
+		for (auto &[id, _]: mods_) {
+			modIDs.push_back(id);
+		}
+		server_.listen(nullptr, 11216, std::move(modIDs));
 	}
 
 	if (!FrameRecorder::isAvailable()) {
@@ -774,7 +783,7 @@ void Game::tickServer()
 		if (r.hasHello()) {
 			if (r.getHello().getRequestWorld()) {
 				auto root = server_.builder();
-				auto sync = root.initInitialSync();
+				auto sync = root.initWorldSync();
 				world_->currentPlane().serialize(sync.initCurrentPlane());
 				auto tiles = sync.initTiles(world_->data().tiles_.size());
 				for (size_t i = 0; i < tiles.size(); ++i) {
@@ -920,7 +929,7 @@ bool Game::reload()
 	save();
 	soundPlayer_.flush();
 	world_.reset();
-	loadWorld(worldPath_, mods);
+	loadWorld(worldPath_);
 	debugEntities_.clear();
 
 	info << "Reloaded in " << startTime.duration() << " seconds.";

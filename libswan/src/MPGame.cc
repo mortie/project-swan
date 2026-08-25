@@ -85,7 +85,7 @@ void MPGame::tick(float dt)
 
 	mp_proto::ServerToClient::Reader r;
 	while (client_.receive(r)) {
-		if (r.isInitialSync()) {
+		if (r.isWorldSync()) {
 			info << "Got initial sync message yay";
 		}
 	}

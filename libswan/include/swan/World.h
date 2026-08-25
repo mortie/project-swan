@@ -15,9 +15,7 @@
 #include "WorldData.h"
 #include "common.h"
 #include "WorldPlane.h"
-#include "assets.h"
 #include "swan.capnp.h"
-#include "multiplayer.capnp.h"
 
 namespace Swan {
 

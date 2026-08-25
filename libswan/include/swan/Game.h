@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Clock.h"
-#include <bitset>
 #include <chrono>
 #include <string>
 #include <span>
@@ -12,6 +11,7 @@
 
 #include <kj/io.h>
 #include <vector>
+#include <swan/HashMap.h>
 
 #include "Command.h"
 #include "GameIO.h"
@@ -26,14 +26,13 @@ namespace Swan {
 
 class Game: public GameIO {
 public:
-	Game(std::function<bool()> recompileMods);
+	Game(std::function<bool()> recompileMods, HashMap<ModInfo> mods);
 
 	void createWorld(
 		std::string worldPath, const std::string &worldgen,
-		uint32_t seed, std::span<std::string> modPaths);
+		uint32_t seed);
 
-	void loadWorld(
-		std::string worldPath, std::span<const std::string> modPaths);
+	void loadWorld(std::string worldPath);
 
 	void onMouseMove(float x, float y) override;
 	void onScrollWheel(float dy) override;
@@ -130,6 +129,8 @@ private:
 
 	double didScroll_ = 0;
 	std::function<bool()> recompileMods_;
+	HashMap<ModInfo> mods_;
+	std::vector<std::string> modPaths_;
 
 	std::vector<CowStr> commandTokensBuf_;
 	std::vector<CowStr> commandArgvBuf_;
