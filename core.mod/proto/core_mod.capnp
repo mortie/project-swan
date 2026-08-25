@@ -61,6 +61,7 @@ struct PlayerEntity {
 	inventorySlot @4 :UInt8;
 	health @5 :UInt8;
 	craftingInventory @6 :CraftingInventory;
+	direction @7 :Bool;
 }
 
 struct SpiderEntity {

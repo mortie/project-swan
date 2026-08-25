@@ -677,6 +677,7 @@ void PlayerEntity::serialize(
 	w.setInventorySlot(ui_.selectedInventorySlot);
 	w.setHealth(health_);
 	craftingInventory_.serialize(ctx, w.initCraftingInventory());
+	w.setDirection(lastDirection_ > 0);
 }
 
 void PlayerEntity::deserialize(
@@ -694,6 +695,7 @@ void PlayerEntity::deserialize(
 	ui_.selectedInventorySlot = r.getInventorySlot();
 	health_ = r.getHealth();
 	craftingInventory_.deserialize(ctx, r.getCraftingInventory());
+	lastDirection_ = r.getDirection() ? 1 : -1;
 }
 
 bool PlayerEntity::askToOpenInventory(
