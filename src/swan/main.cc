@@ -1,4 +1,3 @@
-#include "pfx/include/swan/HashMap.h"
 #include <SDL3_net/SDL_net.h>
 #include <cstdlib>
 #include <memory>
@@ -26,6 +25,7 @@
 #include <filesystem>
 
 #include <swan/swan.h>
+#include <swan/HashMap.h>
 #include <swan/assets.h>
 #include <swan/GameIO.h>
 #include <swan/MPGame.h>
