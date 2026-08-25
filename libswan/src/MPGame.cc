@@ -47,6 +47,9 @@ void MPGame::update(float dt)
 		tick(TICK_DELTA);
 	}
 
+	cam_.pos.x += camXAction_.value() * 5 * dt;
+	cam_.pos.y += camYAction_.value() * 5 * dt;
+
 	renderer_.update(dt);
 }
 
@@ -164,14 +167,7 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 		data_->buildResources(renderer_);
 
 		// Initiate input handler
-		std::vector<ActionSpec> actions;
-		for (auto &mod: data_->mods_) {
-			for (auto action: mod.mod_->actions_) {
-				action.name = cat(mod.name(), "::", action.name);
-				actions.push_back(std::move(action));
-			}
-		}
-		inputHandler_.setActions(std::move(actions));
+		initInputHandler();
 
 		// Init mods
 		for (auto &mod: data_->mods_) {
@@ -226,6 +222,34 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 		info << "Received unknown message from server:";
 		info << r.toString().flatten().cStr();
 	}
+}
+
+void MPGame::initInputHandler()
+{
+	std::vector<ActionSpec> actions;
+
+	actions.push_back({
+		.name = "@::cam-x",
+		.kind = ActionKind::AXIS,
+		.defaultInputs = {"key:A;D"},
+	});
+	actions.push_back({
+		.name = "@::cam-y",
+		.kind = ActionKind::AXIS,
+		.defaultInputs = {"key:W;S"},
+	});
+
+	for (auto &mod: data_->mods_) {
+		for (auto action: mod.mod_->actions_) {
+			action.name = cat(mod.name(), "::", action.name);
+			actions.push_back(std::move(action));
+		}
+	}
+
+	inputHandler_.setActions(std::move(actions));
+
+	camXAction_ = inputHandler_.action("@::cam-x");
+	camYAction_ = inputHandler_.action("@::cam-y");
 }
 
 }

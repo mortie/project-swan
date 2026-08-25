@@ -4,6 +4,7 @@
 #include <cygnet/Renderer.h>
 #include <memory>
 
+#include "Action.h"
 #include "GameIO.h"
 #include "InputHandler.h"
 #include "MPClient.h"
@@ -45,6 +46,7 @@ public:
 private:
 	void tick(float dt);
 	void onMessageFromServer(mp_proto::ServerToClient::Reader &r);
+	void initInputHandler();
 
 	Cygnet::Renderer renderer_;
 	Cygnet::RenderCamera cam_{.zoom = 1.0 / 8};
@@ -58,6 +60,9 @@ private:
 	float tickTimer_ = 0;
 	std::unique_ptr<WorldData> data_;
 	std::unique_ptr<WorldPlane> plane_;
+
+	Action camXAction_;
+	Action camYAction_;
 };
 
 }
