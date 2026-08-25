@@ -1,6 +1,8 @@
+#include <algorithm>
 #include <string_view>
 #include <swan/swan.h>
 #include <iostream>
+#include <utility>
 
 std::string_view varify(std::string_view name)
 {
@@ -23,7 +25,7 @@ std::string_view varify(std::string_view name)
 	return std::string_view(varName);
 };
 
-void enumerateSprites(std::string_view mod, std::string base, std::string path)
+void enumerateSprites(std::vector<std::string> &out, std::string base, std::string path)
 {
 	if (!std::filesystem::exists(path)) {
 		return;
@@ -33,7 +35,7 @@ void enumerateSprites(std::string_view mod, std::string base, std::string path)
 		if (it.is_directory()) {
 			std::string newPath = Swan::cat(path, "/", it.path().filename());
 			std::string newBase = Swan::cat(base, it.path().filename(), "/");
-			enumerateSprites(mod, std::move(newBase), std::move(newPath));
+			enumerateSprites(out, std::move(newBase), std::move(newPath));
 			continue;
 		}
 
@@ -46,21 +48,22 @@ void enumerateSprites(std::string_view mod, std::string base, std::string path)
 		}
 
 		std::string name = Swan::cat(base, it.path().filename().stem());
-		std::cout << "X(" << varify(name) << ", \"" << mod << "::" << name << "\");\n";
+		out.push_back(std::move(name));
 	}
 }
 
-void enumerateSounds(std::string_view mod, std::string base, std::string path)
+void enumerateSounds(std::vector<std::string> &out, std::string base, std::string path)
 {
 	if (!std::filesystem::exists(path)) {
 		return;
 	}
 
+	std::vector<std::string> sounds;
 	for (auto &it: std::filesystem::directory_iterator(path)) {
 		if (it.is_directory()) {
 			std::string newPath = Swan::cat(path, "/", it.path().filename());
 			std::string newBase = Swan::cat(base, it.path().filename(), "/");
-			enumerateSounds(mod, std::move(newBase), std::move(newPath));
+			enumerateSounds(out, std::move(newBase), std::move(newPath));
 			continue;
 		}
 
@@ -73,7 +76,7 @@ void enumerateSounds(std::string_view mod, std::string base, std::string path)
 		}
 
 		std::string name = Swan::cat(base, it.path().filename().stem());
-		std::cout << "X(" << varify(name) << ", \"" << mod << "::" << name << "\");\n";
+		out.push_back(std::move(name));
 	}
 }
 
@@ -100,27 +103,31 @@ int main(int argc, char **argv)
 	wrapper.path_ = modPath;
 	std::unique_ptr<Swan::Mod> mod(create(wrapper));
 
+	std::vector<std::string> names;
+
 	if (category == "tiles") {
 		for (auto &tile: mod->tiles_) {
 			if (tile.name.find('@') != std::string::npos) {
 				continue;
 			}
-
-			auto name = varify(tile.name);
-			std::cout << "X(" << name << ", \"" << mod->name_ << "::" << tile.name << "\");\n";
+			names.push_back(tile.name);
 		}
 	} else if (category == "actions") {
 		for (auto &spec: mod->actions_) {
-			auto name = varify(spec.name);
-			std::cout << "X(" << name << ", \"" << mod->name_ << "::" << spec.name << "\");\n";
+			names.push_back(spec.name);
 		}
 	} else if (category == "sprites") {
-		enumerateSprites(mod->name_, "", Swan::cat(modPath, "/assets/sprites"));
+		enumerateSprites(names, "", Swan::cat(modPath, "/assets/sprites"));
 	} else if (category == "sounds") {
-		enumerateSounds(mod->name_, "", Swan::cat(modPath, "/assets/sounds"));
+		enumerateSounds(names, "", Swan::cat(modPath, "/assets/sounds"));
 	} else {
 		std::cerr << "Unknown category: " << category << '\n';
 		return 1;
+	}
+
+	std::sort(names.begin(), names.end());
+	for (auto &name: names) {
+		std::cout << "X(" << varify(name) << ", \"" << mod->name_ << "::" << name << "\");\n";
 	}
 
 	return 0;
