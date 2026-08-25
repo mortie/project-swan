@@ -205,7 +205,7 @@ int main(int argc, char **argv)
 	}
 
 #ifdef SWAN_HEADLESS
-	if (joinServer) {
+	if (multiplayer.host != "") {
 		panic << "Can't join a server in headless mode.";
 		return 1;
 	}
@@ -402,7 +402,7 @@ int main(int argc, char **argv)
 
 	int slowFrames = 0;
 #ifdef SWAN_HEADLESS
-	while (!game.shouldQuit_) {
+	while (!game->shouldQuit_) {
 #else
 	while (!glfwWindowShouldClose(window) && !game->shouldQuit_) {
 #endif

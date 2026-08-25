@@ -331,7 +331,7 @@ void SoundPlayer::volume(float) {}
 float SoundPlayer::volume() { return 0; }
 void SoundPlayer::flush() {}
 
-void SoundPlayer::play(SoundAsset *, float, std::optional<std::pair<float, float>>, SoundHandle) {}
+void SoundPlayer::play(SoundAsset *, float, std::optional<Vec2>, SoundHandle) {}
 void SoundPlayer::setCenter(float, float) {}
 
 #endif
