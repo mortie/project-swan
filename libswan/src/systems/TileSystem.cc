@@ -3,11 +3,15 @@
 #include "WorldData.h"
 #include "WorldPlane.h"
 #include "World.h"
-#include "Game.h"
+#include "GameServer.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
 #include "traits/TileEntityTrait.h"
 
 namespace Swan {
+
+TileSystemImpl::TileSystemImpl(WorldPlane &plane):
+	plane_(plane)
+{}
 
 void TileSystemImpl::set(TilePos pos, std::string_view name)
 {
@@ -47,6 +51,9 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 	// The code which called onSpawn will handle the rest.
 	if (placingTile_) {
 		chunk.setTileID(rp, id);
+		if (plane_.game_->server_) {
+			plane_.game_->server_->onTileChange(plane_.id_, pos, id);
+		}
 		return true;
 	}
 
@@ -73,6 +80,9 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 	}
 
 	chunk.setTileID(rp, id);
+	if (plane_.game_->server_) {
+		plane_.game_->server_->onTileChange(plane_.id_, pos, id);
+	}
 
 	if (!oldTile.isOpaque() && newTile.isOpaque()) {
 		plane_.lights().addSolidBlock(pos);
@@ -305,6 +315,9 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 		plane_.entities().despawnTileEntity(pos);
 	}
 	chunk.setTileID(rp, id);
+	if (plane_.game_->server_) {
+		plane_.game_->server_->onTileChange(plane_.id_, pos, id);
+	}
 
 	if (!oldTile.isOpaque() && newTile.isOpaque()) {
 		plane_.lights().addSolidBlock(pos);
@@ -352,6 +365,16 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 	scheduleUpdate(pos.add(0, 1));
 
 	return true;
+}
+
+void TileSystemImpl::forceSetID(TilePos pos, Tile::ID id)
+{
+	Chunk &chunk = plane_.getChunk(chunkPos(pos));
+	ChunkRelPos rp = chunkRelPos(pos);
+	chunk.setTileID(rp, id);
+	if (plane_.game_->server_) {
+		plane_.game_->server_->onTileChange(plane_.id_, pos, id);
+	}
 }
 
 Raycast TileSystemImpl::raycast(

@@ -63,6 +63,7 @@ public:
 
 	void update(float dt) override;
 	void onQuit() override;
+
 	void save();
 
 	InputHandler &inputs() override { return inputHandler_; }

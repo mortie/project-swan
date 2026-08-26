@@ -10,6 +10,7 @@ namespace Swan {
 struct SoundAsset;
 class SoundHandle;
 class InputHandler;
+class GameServer;
 
 class GameIO {
 public:
@@ -119,6 +120,8 @@ public:
 
 	Cygnet::TextCache smallFont_{notoSans_, 60};
 	Cygnet::TextCache bigFont_{notoSans_, 200};
+
+	GameServer *server_ = nullptr;
 };
 
 inline void GameIO::playSound(SoundAsset *asset)

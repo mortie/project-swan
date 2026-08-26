@@ -1,4 +1,5 @@
 #include "MPGame.h"
+#include "common.h"
 
 #include <imgui/imgui.h>
 #include <memory>
@@ -218,9 +219,13 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 
 			colls[index]->deserializeUpdates(ctx, update);
 		}
+	} else if (r.isTileChange()) {
+		auto change = r.getTileChange();
+		auto pos = TilePos{change.getPos().getX(), change.getPos().getY()};
+		plane_->tiles().forceSetID(pos, change.getNewTile());
 	} else {
-		info << "Received unknown message from server:";
-		info << r.toString().flatten().cStr();
+		warn << "Received unknown message from server:";
+		warn << r.toString().flatten().cStr();
 	}
 }
 

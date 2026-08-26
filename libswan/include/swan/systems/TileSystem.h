@@ -19,7 +19,7 @@ struct Raycast {
 
 class TileSystemImpl {
 public:
-	TileSystemImpl(WorldPlane &plane): plane_(plane) {}
+	TileSystemImpl(WorldPlane &plane);
 
 	/*
 	 * Available to game logic
@@ -42,6 +42,12 @@ public:
 	bool breakTile(TilePos pos);
 	bool breakTileSilently(TilePos pos);
 	bool placeTile(TilePos pos, Tile::ID id);
+
+	// This is a dangerous function which
+	// will forcibly set the tile ID at a particular location.
+	// It might break tile invariants.
+	// Intended for use by multiplier game clients.
+	void forceSetID(TilePos pos, Tile::ID id);
 
 	Raycast raycast(Vec2 pos, Vec2 direction, float distance);
 	Raycast raycastIgnoreStart(Vec2 pos, Vec2 direction, float distance);
@@ -119,6 +125,7 @@ public:
 	using TileSystemImpl::breakTile;
 	using TileSystemImpl::breakTileSilently;
 	using TileSystemImpl::placeTile;
+	using TileSystemImpl::forceSetID;
 	using TileSystemImpl::raycast;
 	using TileSystemImpl::raycastIgnoreStart;
 	using TileSystemImpl::scheduleUpdate;

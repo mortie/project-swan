@@ -4,12 +4,13 @@
 #include "swan/log.h"
 #include "traits/TileEntityTrait.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
+#include "Game.h"
 
 namespace Swan {
 
 EntitySystemImpl::EntitySystemImpl(
-	WorldPlane &plane,
-	std::vector<std::unique_ptr<EntityCollection>> &&colls):
+		WorldPlane &plane,
+		std::vector<std::unique_ptr<EntityCollection>> &&colls):
 	plane_(plane),
 	collections_(std::move(colls))
 {

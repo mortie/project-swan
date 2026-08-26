@@ -233,6 +233,7 @@ void Game::drawDebugMenu()
 
 		server_ = std::make_unique<GameServer>(world_.get(), std::move(modIDs));
 		server_->listen(nullptr, 11216);
+		((GameIO *)this)->server_ = server_.get();
 	}
 
 	if (!FrameRecorder::isAvailable()) {
@@ -780,6 +781,7 @@ void Game::tick()
 void Game::onQuit()
 {
 	server_.reset();
+	((GameIO *)this)->server_ = nullptr;
 	save();
 }
 
@@ -904,6 +906,7 @@ bool Game::reload()
 	save();
 	soundPlayer_.flush();
 	server_.reset();
+	((GameIO *)this)->server_ = nullptr;
 	world_.reset();
 	loadWorld(worldPath_);
 	debugEntities_.clear();

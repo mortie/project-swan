@@ -21,6 +21,8 @@ public:
 
 	struct ClientID {
 		uint64_t id = 0;
+		friend bool operator==(ClientID a, ClientID b)
+		{ return a.id == b.id; }
 	};
 
 	struct ClientInfo {

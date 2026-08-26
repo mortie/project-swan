@@ -3,6 +3,7 @@
 using Cxx = import "/capnp/c++.capnp";
 $Cxx.namespace("Swan::mp_proto");
 
+using import "./swan.capnp".Vec2i;
 using import "./swan.capnp".WorldPlane;
 using import "./swan.capnp".EntitySystem;
 
@@ -37,6 +38,7 @@ struct ServerToClient {
 		ping @3 :Void;
 		worldSync @4 :WorldSync;
 		tick @5 :Tick;
+		tileChange @6 :TileChange;
 	}
 
 	struct Hello {}
@@ -59,6 +61,11 @@ struct ServerToClient {
 
 	struct Tick {
 		updatedEntityCollections @0 :List(EntityCollectionUpdate);
+	}
+
+	struct TileChange {
+		pos @0 :Vec2i;
+		newTile @1 :UInt16;
 	}
 }
 
