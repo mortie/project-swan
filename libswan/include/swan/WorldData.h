@@ -16,7 +16,11 @@ namespace Swan {
 
 class WorldData {
 public:
+	WorldData() = default;
+	WorldData(WorldData &&) = default;
 	~WorldData();
+
+	WorldData &operator=(WorldData &&) = default;
 
 	static constexpr Tile::ID INVALID_TILE_ID = 0;
 	static constexpr char INVALID_TILE_NAME[] = "@::invalid";
@@ -34,6 +38,10 @@ public:
 
 	static constexpr char INVALID_SOUND_NAME[] = "@::invalid";
 	static constexpr char THUD_SOUND_NAME[] = "@::thud";
+
+	/**
+	 * Tiles
+	 */
 
 	Tile &getTileByID(Tile::ID id)
 	{
@@ -56,6 +64,10 @@ public:
 		return tiles_[INVALID_TILE_ID];
 	}
 
+	/**
+	 * Items
+	 */
+
 	Item &getItem(std::string_view name);
 	Item &getItemByID(Tile::ID id)
 	{
@@ -71,6 +83,10 @@ public:
 	{
 		return items_[INVALID_TILE_ID];
 	}
+
+	/**
+	 * Fluids
+	 */
 
 	Fluid &getFluidByID(Fluid::ID id)
 	{
@@ -88,6 +104,10 @@ public:
 		return fluids_[INVALID_FLUID_ID];
 	}
 
+	/**
+	 * Etc
+	 */
+
 	Cygnet::RenderSprite &getSprite(std::string_view name);
 	SoundAsset *getSound(std::string_view name);
 
@@ -103,7 +123,7 @@ public:
 	}
 
 	void loadMods(std::span<const std::string> paths);
-	void buildResources(Cygnet::Renderer &rnd);
+	void buildResources(Cygnet::Renderer &rnd, std::vector<std::string> namesByID);
 
 	// These things get filled in when we load mods.
 	std::vector<Tile> tiles_;
@@ -116,6 +136,7 @@ public:
 	HashMap<WorldGen::Factory> worldGenFactories_;
 	HashMap<EntityCollection::Factory> entCollFactories_;
 	HashMap<Cygnet::RenderSprite> sprites_;
+	std::vector<std::string> namesByID_;
 
 	// Mods must be loaded before resources.
 	std::vector<ModWrapper> mods_;

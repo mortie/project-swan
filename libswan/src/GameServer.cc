@@ -77,9 +77,9 @@ void GameServer::onMessageFromClient(
 		WorldPlane::ID planeID = 0;
 		auto &plane = world_->getPlane(planeID);
 
-		auto tiles = sync.initTiles(world_->data().tiles_.size());
-		for (size_t i = 0; auto &tile: world_->data().tiles_) {
-			tiles.set(i++, tile.name.c_str());
+		auto namesByID = sync.initNamesByID(world_->data().namesByID_.size());
+		for (size_t i = 0; auto &name: world_->data().namesByID_) {
+			namesByID.set(i++, name);
 		}
 
 		sync.setCurrentPlaneIndex(planeID);

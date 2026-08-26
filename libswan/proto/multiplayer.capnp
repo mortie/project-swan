@@ -54,7 +54,7 @@ struct ServerToClient {
 
 	struct WorldSync {
 		modIDs @0 :List(Text);
-		tiles @1 :List(Text);
+		namesByID @1 :List(Text);
 		currentPlaneIndex @2 :UInt32;
 		currentPlane @3 :WorldPlane;
 		worldSeed @4 :UInt32;

@@ -33,7 +33,7 @@ public:
 		std::unique_ptr<WorldPlane> plane;
 	};
 
-	World(Game *game, uint32_t seed, std::span<const std::string> modPaths);
+	World(Game *game, uint32_t seed, WorldData data);
 
 	void setWorldGen(std::string gen);
 	void spawnPlayer();
@@ -52,9 +52,7 @@ public:
 	WorldPlane &addPlane(std::string gen);
 
 	WorldPlane &addPlane()
-	{
-		return addPlane(defaultWorldGen_);
-	}
+	{ return addPlane(defaultWorldGen_); }
 
 	Cygnet::Color backgroundColor();
 	void draw(Cygnet::Renderer &rnd);

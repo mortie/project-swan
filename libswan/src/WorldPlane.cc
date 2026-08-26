@@ -422,7 +422,7 @@ void WorldPlane::serialize(proto::WorldPlane::Builder w)
 	}
 }
 
-void WorldPlane::deserialize(proto::WorldPlane::Reader r, std::span<Tile::ID> tileMap)
+void WorldPlane::deserialize(proto::WorldPlane::Reader r)
 {
 	{
 		// Deserialize world generator
@@ -440,7 +440,7 @@ void WorldPlane::deserialize(proto::WorldPlane::Reader r, std::span<Tile::ID> ti
 	chunkInitList_.clear();
 	for (auto chunkR: r.getChunks()) {
 		Chunk tempChunk({0, 0});
-		tempChunk.deserialize(chunkR, tileMap);
+		tempChunk.deserialize(chunkR);
 		auto [it, _] = chunks_.emplace(tempChunk.pos(), std::move(tempChunk));
 		auto &chunk = it->second;
 

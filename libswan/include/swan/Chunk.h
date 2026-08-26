@@ -189,7 +189,7 @@ public:
 	}
 
 	void serialize(proto::Chunk::Builder w) const;
-	void deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap);
+	void deserialize(proto::Chunk::Reader r);
 
 	std::unordered_set<EntityRef> entities_;
 	uint64_t lightGeneration_ = 0;

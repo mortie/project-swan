@@ -165,9 +165,15 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 			return;
 		}
 
+		std::vector<std::string> namesByID;
+		namesByID.reserve(sync.getNamesByID().size());
+		for (auto name: sync.getNamesByID()) {
+			namesByID.push_back(name);
+		}
+
 		data_ = std::make_unique<WorldData>();
 		data_->loadMods(modPaths);
-		data_->buildResources(renderer_);
+		data_->buildResources(renderer_, namesByID);
 
 		// Initiate input handler
 		initInputHandler();
@@ -194,17 +200,10 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 			colls.emplace_back(fact.second.create(fact.second.name));
 		}
 
-		// Make list of tiles
-		std::vector<Tile::ID> tileIDs;
-		tileIDs.reserve(sync.getTiles().size());
-		for (auto tileName: sync.getTiles()) {
-			tileIDs.push_back(data_->getTileID(tileName.cStr()));
-		}
-
 		plane_ = std::make_unique<WorldPlane>(
 			sync.getCurrentPlaneIndex(), data_.get(), this,
 			std::move(worldGen), std::move(colls));
-		plane_->deserialize(sync.getCurrentPlane(), tileIDs);
+		plane_->deserialize(sync.getCurrentPlane());
 
 		info << "Successfully performed initial world sync.";
 	} else if (r.isTick()) {

@@ -79,7 +79,7 @@ public:
 	std::unique_ptr<WorldGen> worldGen_;
 
 	void serialize(proto::WorldPlane::Builder w);
-	void deserialize(proto::WorldPlane::Reader r, std::span<Tile::ID> tileMap);
+	void deserialize(proto::WorldPlane::Reader r);
 
 private:
 	std::unordered_map<ChunkPos, Chunk> chunks_;

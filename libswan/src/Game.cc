@@ -1,3 +1,4 @@
+#include "WorldData.h"
 #include <swan/constants.h>
 #include <swan/HashMap.h>
 #include <algorithm>
@@ -68,7 +69,11 @@ void Game::createWorld(
 {
 	ScopedTimer timer("create world");
 
-	world_ = std::make_unique<World>(this, seed, modPaths_);
+	WorldData data;
+	data.loadMods(modPaths_);
+	data.buildResources(renderer_, {});
+
+	world_ = std::make_unique<World>(this, seed, std::move(data));
 	initInputHandler();
 	initCommandHandler();
 
@@ -101,11 +106,22 @@ void Game::loadWorld(std::string worldPath)
 		return;
 	}
 
-	auto data = std::move(ss).str();
-	kj::ArrayInputStream stream({(unsigned char *)data.data(), data.size()});
+	auto buffer = std::move(ss).str();
+	kj::ArrayInputStream stream({(unsigned char *)buffer.data(), buffer.size()});
 	capnp::PackedMessageReader reader(stream);
+	auto worldReader = reader.getRoot<proto::World>();
 
-	world_ = std::make_unique<World>(this, 0, modPaths_);
+	WorldData data;
+	std::vector<std::string> namesByID;
+	namesByID.reserve(worldReader.getNamesByID().size());
+	for (auto name: worldReader.getNamesByID()) {
+		namesByID.push_back(name);
+	}
+
+	data.loadMods(modPaths_);
+	data.buildResources(renderer_, std::move(namesByID));
+
+	world_ = std::make_unique<World>(this, 0, std::move(data));
 	initInputHandler();
 	initCommandHandler();
 
@@ -113,8 +129,7 @@ void Game::loadWorld(std::string worldPath)
 		mod.mod_->start(world_->data(), *this);
 	}
 
-	auto world = reader.getRoot<proto::World>();
-	world_->deserialize(world);
+	world_->deserialize(worldReader);
 	hasSortedItems_ = false;
 	worldPath_ = std::move(worldPath);
 }

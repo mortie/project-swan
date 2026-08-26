@@ -22,13 +22,10 @@ static void chunkLine(int l, WorldPlane &plane, ChunkPos &abspos, const Vec2i &d
 World::World(
 		Game *game,
 		uint32_t seed,
-		std::span<const std::string> modPaths):
+		WorldData data):
 	game_(game),
-	seed_(seed)
-{
-	data_.loadMods(modPaths);
-	data_.buildResources(game->renderer_);
-}
+	data_(std::move(data))
+{}
 
 /*
 float World::findImageYOffset(ImageAsset &image)
@@ -190,15 +187,15 @@ void World::tickDone()
 
 void World::serialize(proto::World::Builder w)
 {
-	auto tilesBuilder = w.initTiles(data_.tiles_.size());
-	for (size_t i = 0; i < data_.tiles_.size(); ++i) {
-		tilesBuilder.set(i, data_.tiles_[i].name.c_str());
-	}
-
 	auto planesBuilder = w.initPlanes(planes_.size());
 	for (size_t i = 0; i < planes_.size(); ++i) {
 		planes_[i].plane->serialize(planesBuilder[i]);
 		planesBuilder[i].setWorldGen(planes_[i].worldGen);
+	}
+
+	auto namesByID = w.initNamesByID(data_.namesByID_.size());
+	for (size_t i = 0; i < data_.namesByID_.size(); ++i) {
+		namesByID.set(i, data_.namesByID_[i]);
 	}
 
 	playerRef_.serialize(w.initPlayer());
@@ -208,13 +205,6 @@ void World::serialize(proto::World::Builder w)
 
 void World::deserialize(proto::World::Reader r)
 {
-	std::vector<Tile::ID> tileMap;
-	auto tiles = r.getTiles();
-	tileMap.reserve(tiles.size());
-	for (auto tile: tiles) {
-		tileMap.push_back(data_.getTileID(tile.cStr()));
-	}
-
 	// Seed must exist before we deserialize planes
 	seed_ = r.getSeed();
 
@@ -222,7 +212,7 @@ void World::deserialize(proto::World::Reader r)
 	planes_.clear();
 	planes_.reserve(planes.size());
 	for (auto plane: planes) {
-		addPlane(plane.getWorldGen().cStr()).deserialize(plane, tileMap);
+		addPlane(plane.getWorldGen().cStr()).deserialize(plane);
 	}
 
 	currentPlane_ = r.getCurrentPlane();

@@ -58,7 +58,12 @@ struct TileEntity {
 }
 
 struct World {
-	tiles @0 :List(Text);
+	# namesByID maps between item/tile names and Tile::ID values.
+	# The index indicates the ID minus 2, the value indicates the name.
+	# The "minus 2" is because ID 0 is always invalid
+	# and ID 1 is always air.
+	namesByID @0 :List(Text);
+
 	planes @1 :List(WorldPlane);
 	player @2 :EntityRef;
 	currentPlane @3 :UInt32;

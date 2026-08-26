@@ -106,7 +106,7 @@ void WorldData::loadMods(std::span<const std::string> paths)
 	}
 }
 
-void WorldData::buildResources(Cygnet::Renderer &rnd)
+void WorldData::buildResources(Cygnet::Renderer &rnd, std::vector<std::string> namesByID)
 {
 	ScopedTimer timer("build resources");
 
@@ -179,6 +179,10 @@ void WorldData::buildResources(Cygnet::Renderer &rnd)
 	SoundAsset *fallbackSound = &sounds_[INVALID_SOUND_NAME];
 	SoundAsset *thudSound = getSound(THUD_SOUND_NAME);
 
+	/**
+	 * Tiles and items
+	 */
+
 	// Let tile ID 0 be the invalid tile
 	builder.addTile(INVALID_TILE_ID, INVALID_TILE_NAME);
 	tilesMap_[INVALID_TILE_NAME] = INVALID_TILE_ID;
@@ -214,30 +218,26 @@ void WorldData::buildResources(Cygnet::Renderer &rnd)
 		tile.more->particles = fallbackTileParticles;
 	}
 
-	// Count number of tiles.
-	// This lets us avoid re-allocating the tiles vector
-	// while building tiles.
-	size_t tileCount = tiles_.size();
-	for (auto &mod: mods_) {
-		tileCount += mod.mod_->tiles_.size();
+	// Build a map from string to ID, which we'll need later.
+	HashMap<Tile::ID> idsByName;
+	for (size_t i = 0; i < namesByID.size(); ++i) {
+		idsByName[namesByID[i]] = i + 2;
 	}
+	Tile::ID nextID = namesByID.size() + 2;
 
-	// Need to fill in every tile before we do items,
-	// because all items will end up after all tiles in the tile atlas.
-	// In the rendering system, there's no real difference between a tile
-	// and an item.
-	tiles_.reserve(tileCount);
-	items_.reserve(tileCount);
+	// Fill in all tiles before we do items.
 	for (auto &mod: mods_) {
 		for (auto &tileBuilder: mod.mod_->tiles_) {
 			std::string tileName = cat(mod.name(), "::", tileBuilder.name);
-			Tile::ID tileId = tiles_.size();
+			auto idIt = idsByName.find(tileName);
+			Tile::ID tileId = idIt == idsByName.end() ? nextID++ : idIt->second;
 
-			auto metaIt = tileMeta.find(tileBuilder.image);
+			if (tiles_.size() <= tileId) {
+				tiles_.resize(tileId + 1);
+			}
 
 			tilesMap_[tileName] = tileId;
-			tiles_.push_back(Tile(tileId, tileName, std::move(tileBuilder)));
-			auto &tile = tiles_.back();
+			Tile &tile = tiles_[tileId] = Tile(tileId, tileName, std::move(tileBuilder));
 
 			if (tileBuilder.fluidMask) {
 				auto maskIt = masks.find(*tileBuilder.fluidMask);
@@ -255,6 +255,7 @@ void WorldData::buildResources(Cygnet::Renderer &rnd)
 			}
 
 			float yOffset = 0;
+			auto metaIt = tileMeta.find(tileBuilder.image);
 			if (metaIt != tileMeta.end()) {
 				tile.more->particles = metaIt->second.particles;
 				yOffset = metaIt->second.yOffset;
@@ -295,15 +296,17 @@ void WorldData::buildResources(Cygnet::Renderer &rnd)
 			 * Create item representing the tile
 			 */
 
+			if (items_.size() <= tileId) {
+				items_.resize(tileId + 1);
+			}
+
 			auto name = tile.name.string();
-			items_.push_back(Item(tile.id, name, {
+			itemsMap_[name] = tile.id;
+			Item &item = items_[tileId] = Item(tile.id, name, {
 				.name = "",
 				.lightLevel = tile.more->lightLevel,
-			}));
-			auto &item = items_.back();
-			itemsMap_[name] = tile.id;
+			});
 			item.displayName = mod.lang("items", tileBuilder.name);
-			item.tile = &tile;
 			item.yOffset = yOffset;
 
 			// Tiles whose names contain '::' are "variants".
@@ -313,17 +316,25 @@ void WorldData::buildResources(Cygnet::Renderer &rnd)
 		}
 	}
 
-	// Put all items after all the tiles
-	Tile::ID nextItemId = tileCount;
-	assert(nextItemId == tiles_.size());
+	// We can now fix up the tile pointers in items.
+	// All items we have so far will have an associated tile.
+	for (auto &item: items_) {
+		item.tile = &tiles_[item.id];
+	}
+
+	// Put all real items after all the tiles
+	nextID = tiles_.size();
 
 	// Load all items which aren't just tiles in disguise.
 	for (auto &mod: mods_) {
 		for (auto &itemBuilder: mod.mod_->items_) {
-			//auto image = loadTileImage(itemBuilder.image);
-
 			std::string itemName = cat(mod.name(), "::", itemBuilder.name);
-			Tile::ID itemId = nextItemId++;
+			auto idIt = idsByName.find(itemName);
+			Tile::ID itemId = idIt == idsByName.end() ? nextID++ : idIt->second;
+
+			if (items_.size() <= itemId) {
+				items_.resize(itemId + 1);
+			}
 
 			auto metaIt = tileMeta.find(itemBuilder.image);
 
@@ -333,7 +344,7 @@ void WorldData::buildResources(Cygnet::Renderer &rnd)
 			}
 			builder.addTile(itemId, itemBuilder.image);
 
-			items_.push_back(Item(itemId, itemName, itemBuilder));
+			items_[itemId] = Item(itemId, itemName, itemBuilder);
 			itemsMap_[itemName] = itemId;
 			auto &item = items_.back();
 			item.displayName = mod.lang("items", itemBuilder.name);
@@ -344,6 +355,29 @@ void WorldData::buildResources(Cygnet::Renderer &rnd)
 			}
 		}
 	}
+
+	// Prune old names from namesByID
+	for (size_t i = 0; i < namesByID.size(); ++i) {
+		auto &name = namesByID[i];
+		if (!itemsMap_.contains(name) && !tilesMap_.contains(name)) {
+			name = "";
+		}
+	}
+
+	// Add anything we may be missing
+	while (namesByID.size() < tiles_.size() - 2) {
+		namesByID.push_back(tiles_[namesByID.size() + 2].name.string());
+	}
+	while (namesByID.size() < items_.size() - 2) {
+		namesByID.push_back(items_[namesByID.size() + 2].name);
+	}
+
+	// Keep it around for later
+	namesByID_ = std::move(namesByID);
+
+	/**
+	 * End tiles and items
+	 */
 
 	// Load all fluids.
 

@@ -248,7 +248,7 @@ void Chunk::serialize(proto::Chunk::Builder w) const
 	memcpy(&d.front(), dataPtr, dataLen);
 }
 
-void Chunk::deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap)
+void Chunk::deserialize(proto::Chunk::Reader r)
 {
 	isModified_ = true;
 	pos_ = {r.getPos().getX(), r.getPos().getY()};
@@ -285,28 +285,6 @@ void Chunk::deserialize(proto::Chunk::Reader r, std::span<Tile::ID> tileMap)
 		decompress();
 		wasCompressed = true;
 		break;
-	}
-
-	// Fix up foreground tiles
-	std::span<Tile::ID> tileData(getTileData(), CHUNK_WIDTH * CHUNK_HEIGHT);
-	for (Tile::ID &tile: tileData) {
-		if (tile > tileMap.size()) {
-			tile = 0;
-		}
-		else {
-			tile = tileMap[tile];
-		}
-	}
-
-	// Fix up background tiles
-	tileData = {getBackgroundTileData(), CHUNK_WIDTH * CHUNK_HEIGHT};
-	for (Tile::ID &tile: tileData) {
-		if (tile > tileMap.size()) {
-			tile = 0;
-		}
-		else {
-			tile = tileMap[tile];
-		}
 	}
 
 	if (wasCompressed) {
