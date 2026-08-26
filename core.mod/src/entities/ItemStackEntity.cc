@@ -79,7 +79,7 @@ void ItemStackEntity::serialize(
 {
 	physicsBody_.serialize(w.initBody());
 	w.setLifetime(lifetime_);
-	w.setItem(item_->name);
+	w.setItem(item_->id);
 }
 
 void ItemStackEntity::deserialize(
@@ -87,7 +87,7 @@ void ItemStackEntity::deserialize(
 {
 	physicsBody_.deserialize(r.getBody());
 	lifetime_ = r.getLifetime();
-	item_ = &ctx.world.getItem(r.getItem().cStr());
+	item_ = &ctx.world.getItemByID(r.getItem());
 	updateLight(ctx);
 }
 

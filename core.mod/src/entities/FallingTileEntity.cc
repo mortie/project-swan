@@ -88,14 +88,14 @@ void FallingTileEntity::serialize(
 	Swan::Ctx &ctx, Proto::Builder w)
 {
 	physicsBody_.serialize(w.initBody());
-	w.setTile(ctx.world.getTileByID(tile_).name);
+	w.setTile(tile_);
 }
 
 void FallingTileEntity::deserialize(
 	Swan::Ctx &ctx, Proto::Reader r)
 {
 	physicsBody_.deserialize(r.getBody());
-	tile_ = ctx.world.getTileID(r.getTile().cStr());
+	tile_ = r.getTile();
 }
 
 }

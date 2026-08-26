@@ -34,7 +34,7 @@ struct EntityRef {
 }
 
 struct ItemStack {
-	item @0 :Text;
+	item @0 :UInt16;
 	count @1 :UInt8;
 }
 

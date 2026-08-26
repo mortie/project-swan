@@ -39,18 +39,17 @@ struct SeedEntity {
 	timer @0 :Float32;
 	pos @1 :Vec2i;
 	dying @2 :Float32;
-	tile @3 :Text;
 }
 
 struct FallingTileEntity {
 	body @0 :BasicPhysicsBody;
-	tile @1 :Text;
+	tile @1 :UInt16;
 }
 
 struct ItemStackEntity {
 	body @0 :BasicPhysicsBody;
 	lifetime @1 :Float32;
-	item @2 :Text;
+	item @2 :UInt16;
 }
 
 struct PlayerEntity {
@@ -83,7 +82,7 @@ struct CrucibleTileEntity {
 	tileEntity @0 :TileEntity;
 	drawSupports @1 :Bool;
 	temperature @2 :Float32;
-	items @3 :List(Text);
+	items @3 :List(UInt16);
 	progress @4 :Progress;
 	targetTemperature @5 :Float32;
 
@@ -128,11 +127,11 @@ struct ItemPipeTileEntity {
 
 	struct InboxItem {
 		from @0 :Direction;
-		item @1 :Text;
+		item @1 :UInt16;
 	}
 
 	struct MovingItem {
-		item @0 :Text;
+		item @0 :UInt16;
 		from @1 :Direction;
 		to @2 :Direction;
 		timer @3 :UInt8;

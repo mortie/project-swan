@@ -83,7 +83,6 @@ public:
 		auto pos = w.initPos();
 		pos.setX(pos_.x);
 		pos.setY(pos_.y);
-		w.setPos(pos);
 		w.setTimer(timer_);
 		w.setDying(dying_);
 	}
