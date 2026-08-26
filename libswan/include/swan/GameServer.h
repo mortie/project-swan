@@ -4,6 +4,11 @@
 #include "Tile.h"
 #include "WorldPlane.h"
 #include "common.h"
+
+#include <kj/array.h>
+#include <kj/io.h>
+#include <kj/vector.h>
+#include <capnp/common.h>
 #include <vector>
 
 namespace Swan {
@@ -42,7 +47,7 @@ private:
 	void onMessageFromClient(
 		const MPServer::ClientInfo &client,
 		mp_proto::ClientToServer::Reader &r);
-	void broadcastTickUpdateForPlane(WorldPlane::ID plane);
+	void broadcastTickUpdateForPlane(WorldPlane &plane);
 
 	void broadcastToPlane(
 		WorldPlane::ID plane,
@@ -52,6 +57,9 @@ private:
 	World *world_;
 	std::vector<std::string> modIDs_;
 	std::vector<ConnectedClient> clients_;
+
+	kj::VectorOutputStream stream_;
+	kj::Array<capnp::word> scratch_ = kj::heapArray<capnp::word>(1024);
 };
 
 }

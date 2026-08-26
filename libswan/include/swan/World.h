@@ -46,6 +46,9 @@ public:
 	PlaneWrapper &getPlane(WorldPlane::ID id)
 	{ return planes_[id]; }
 
+	std::span<PlaneWrapper> planes()
+	{ return planes_; }
+
 	WorldPlane &addPlane(std::string gen);
 
 	WorldPlane &addPlane()

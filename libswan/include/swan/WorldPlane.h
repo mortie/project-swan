@@ -53,19 +53,13 @@ public:
 	EntityRef spawnPlayer();
 
 	bool breakTile(TilePos pos)
-	{
-		return tileSystem_.breakTile(pos);
-	}
+	{ return tileSystem_.breakTile(pos); }
 
 	bool placeTile(TilePos pos, Tile::ID id)
-	{
-		return tileSystem_.placeTile(pos, id);
-	}
+	{ return tileSystem_.placeTile(pos, id); }
 
 	void nextTick(std::function<void(Ctx &)> cb)
-	{
-		nextTickA_.push_back(std::move(cb));
-	}
+	{ nextTickA_.push_back(std::move(cb)); }
 
 	void regenerate();
 

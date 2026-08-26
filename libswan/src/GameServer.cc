@@ -1,6 +1,7 @@
 #include "GameServer.h"
 
 #include "World.h"
+#include "capnp/message.h"
 
 namespace Swan {
 
@@ -40,8 +41,9 @@ void GameServer::tick(float dt)
 {
 	server_.tick(dt);
 
-	// TODO: Figure out which planes a client is on
-	broadcastTickUpdateForPlane(0);
+	for (auto &plane: world_->planes()) {
+		broadcastTickUpdateForPlane(*plane.plane);
+	}
 
 	mp_proto::ClientToServer::Reader r;
 	const MPServer::ClientInfo *client;
@@ -69,9 +71,10 @@ void GameServer::onMessageFromClient(
 			modIDs.set(i, id);
 		}
 
-		// Always use plane ID 0 for now
+		// Always use plane ID 0 for now.
+		// Typically, we'd want to fetch this out of some persistent data
+		// based on client identifier
 		WorldPlane::ID planeID = 0;
-
 		auto &plane = world_->getPlane(planeID);
 
 		auto tiles = sync.initTiles(world_->data().tiles_.size());
@@ -108,16 +111,22 @@ void GameServer::onMessageFromClient(
 	}
 }
 
-void GameServer::broadcastTickUpdateForPlane(WorldPlane::ID planeID)
+void GameServer::broadcastTickUpdateForPlane(WorldPlane &plane)
 {
-	if (clients_.empty()) {
+	bool hasClientOnPlane = false;
+	for (auto &client: clients_) {
+		if (client.plane == plane.id_) {
+			hasClientOnPlane = true;
+			break;
+		}
+	}
+	if (!hasClientOnPlane) {
 		return;
 	}
 
 	auto root = server_.builder();
 	auto tick = root.initTick();
 
-	auto &plane = *world_->getPlane(planeID).plane;
 	Ctx ctx = plane.getContext();
 
 	size_t updatedCollectionsCount = 0;
@@ -138,6 +147,16 @@ void GameServer::broadcastTickUpdateForPlane(WorldPlane::ID planeID)
 		updatedCollections[id].setIndex(idx);
 		id += 1;
 		idx += 1;
+	}
+
+	{ // Serialize world gen data
+		stream_.clear();
+		capnp::MallocMessageBuilder builder(scratch_);
+		plane.worldGen_->serialize(ctx, builder);
+		capnp::writePackedMessage(stream_, builder);
+		auto arr = stream_.getArray();
+		auto data = tick.initWorldGenData(arr.size());
+		memcpy(&data.front(), &arr.front(), arr.size());
 	}
 
 	broadcastToPlane(plane.id_, root);

@@ -3,6 +3,8 @@
 
 #include <imgui/imgui.h>
 #include <memory>
+#include <kj/io.h>
+#include <capnp/serialize-packed.h>
 #include <swan/constants.h>
 #include <swan/log.h>
 
@@ -218,6 +220,13 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 			}
 
 			colls[index]->deserializeUpdates(ctx, update);
+		}
+
+		{ // Deserialize world gen data
+			auto data = tick.getWorldGenData();
+			kj::ArrayInputStream stream(data);
+			capnp::PackedMessageReader reader(stream);
+			plane_->worldGen_->deserialize(ctx, reader);
 		}
 	} else if (r.isTileChange()) {
 		auto change = r.getTileChange();

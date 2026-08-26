@@ -62,6 +62,7 @@ struct ServerToClient {
 
 	struct Tick {
 		updatedEntityCollections @0 :List(EntityCollectionUpdate);
+		worldGenData @1 :Data;
 	}
 
 	struct TileChange {
