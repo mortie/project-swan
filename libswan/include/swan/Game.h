@@ -61,7 +61,14 @@ public:
 	void update(float dt) override;
 	void onQuit() override;
 
-	void onTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID) override;
+	void onTileChange(
+		WorldPlane::ID plane,
+		TilePos pos,
+		Tile::ID newID) override;
+	void onBackgroundTileChange(
+		WorldPlane::ID plane,
+		TilePos pos,
+		Tile::ID newID) override;
 
 	void save();
 

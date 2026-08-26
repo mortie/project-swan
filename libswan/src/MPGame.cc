@@ -223,6 +223,10 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 		auto change = r.getTileChange();
 		auto pos = TilePos{change.getPos().getX(), change.getPos().getY()};
 		plane_->tiles().forceSetID(pos, change.getNewTile());
+	} else if (r.isBackgroundTileChange()) {
+		auto change = r.getBackgroundTileChange();
+		auto pos = TilePos{change.getPos().getX(), change.getPos().getY()};
+		plane_->tiles().forceSetBackgroundID(pos, change.getNewTile());
 	} else {
 		warn << "Received unknown message from server:";
 		warn << r.toString().flatten().cStr();

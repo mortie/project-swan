@@ -6,13 +6,28 @@ namespace Swan {
 
 void GameServer::onTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID)
 {
-	info << "Sending update @ " << pos << " to " << clients_.size() << " clients";
 	if (clients_.empty()) {
 		return;
 	}
 
 	auto root = server_.builder();
 	auto change = root.initTileChange();
+	auto p = change.initPos();
+	p.setX(pos.x);
+	p.setY(pos.y);
+	change.setNewTile(newID);
+
+	broadcastToPlane(plane, root);
+}
+
+void GameServer::onBackgroundTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID)
+{
+	if (clients_.empty()) {
+		return;
+	}
+
+	auto root = server_.builder();
+	auto change = root.initBackgroundTileChange();
 	auto p = change.initPos();
 	p.setX(pos.x);
 	p.setY(pos.y);

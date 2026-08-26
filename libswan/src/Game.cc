@@ -798,6 +798,13 @@ void Game::onTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID)
 	}
 }
 
+void Game::onBackgroundTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID)
+{
+	if (server_) {
+		server_->onBackgroundTileChange(plane, pos, newID);
+	}
+}
+
 void Game::save()
 {
 	ScopedTimer timer("save world");

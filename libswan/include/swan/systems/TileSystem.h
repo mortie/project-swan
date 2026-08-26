@@ -48,6 +48,7 @@ public:
 	// It might break tile invariants.
 	// Intended for use by multiplier game clients.
 	void forceSetID(TilePos pos, Tile::ID id);
+	void forceSetBackgroundID(TilePos pos, Tile::ID id);
 
 	Raycast raycast(Vec2 pos, Vec2 direction, float distance);
 	Raycast raycastIgnoreStart(Vec2 pos, Vec2 direction, float distance);
@@ -126,6 +127,7 @@ public:
 	using TileSystemImpl::breakTileSilently;
 	using TileSystemImpl::placeTile;
 	using TileSystemImpl::forceSetID;
+	using TileSystemImpl::forceSetBackgroundID;
 	using TileSystemImpl::raycast;
 	using TileSystemImpl::raycastIgnoreStart;
 	using TileSystemImpl::scheduleUpdate;

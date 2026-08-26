@@ -152,6 +152,7 @@ bool TileSystemImpl::setBackgroundIDWithoutUpdate(TilePos pos, Tile::ID id)
 	Tile &newTile = plane_.world_->getTileByID(id);
 
 	chunk.setBackgroundTileID(rp, id);
+	plane_.game_->onBackgroundTileChange(plane_.id_, pos, id);
 
 	if (newTile.more->onSpawn) {
 		newTile.more->onSpawn(plane_.getContext(), pos);
@@ -377,6 +378,19 @@ void TileSystemImpl::forceSetID(TilePos pos, Tile::ID id)
 
 	chunk.setTileID(rp, id);
 	plane_.game_->onTileChange(plane_.id_, pos, id);
+}
+
+void TileSystemImpl::forceSetBackgroundID(TilePos pos, Tile::ID id)
+{
+	Chunk &chunk = plane_.getChunk(chunkPos(pos));
+	ChunkRelPos rp = chunkRelPos(pos);
+	auto oldID = chunk.getBackgroundTileID(rp);
+	if (oldID == id) {
+		return;
+	}
+
+	chunk.setBackgroundTileID(rp, id);
+	plane_.game_->onBackgroundTileChange(plane_.id_, pos, id);
 }
 
 Raycast TileSystemImpl::raycast(

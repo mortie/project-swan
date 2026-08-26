@@ -23,7 +23,14 @@ public:
 	{}
 	~GameServer() { server_.end(); }
 
-	void onTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID);
+	void onTileChange(
+		WorldPlane::ID plane,
+		TilePos pos,
+		Tile::ID newID);
+	void onBackgroundTileChange(
+		WorldPlane::ID plane,
+		TilePos pos,
+		Tile::ID newID);
 
 	void tick(float dt);
 

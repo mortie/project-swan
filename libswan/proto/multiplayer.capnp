@@ -39,6 +39,7 @@ struct ServerToClient {
 		worldSync @4 :WorldSync;
 		tick @5 :Tick;
 		tileChange @6 :TileChange;
+		backgroundTileChange @7 :TileChange;
 	}
 
 	struct Hello {}

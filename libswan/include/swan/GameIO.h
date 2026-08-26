@@ -81,7 +81,16 @@ public:
 	virtual void screenshot(const char *path, int w, int h) = 0;
 	virtual void onQuit() = 0;
 
-	virtual void onTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID) {}
+	virtual void onTileChange(
+		WorldPlane::ID plane,
+		TilePos pos,
+		Tile::ID newID)
+	{}
+	virtual void onBackgroundTileChange(
+		WorldPlane::ID plane,
+		TilePos pos,
+		Tile::ID newID)
+	{}
 
 	virtual void playSound(
 		SoundAsset *asset, float volume,
