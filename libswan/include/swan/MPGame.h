@@ -48,7 +48,6 @@ private:
 	void onMessageFromServer(mp_proto::ServerToClient::Reader &r);
 	void initInputHandler();
 
-	Cygnet::Renderer renderer_;
 	Cygnet::RenderCamera cam_{.zoom = 1.0 / 8};
 	Cygnet::RenderCamera uiCam_{.zoom = 1.0 / 16};
 

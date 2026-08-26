@@ -370,8 +370,8 @@ void TileSystemImpl::forceSetID(TilePos pos, Tile::ID id)
 		return;
 	}
 
-	if (oldID != WorldData::AIR_TILE_ID) {
-		const Tile &tile = plane_.world_->getTileByID(id);
+	if (id == WorldData::AIR_TILE_ID) {
+		const Tile &tile = plane_.world_->getTileByID(oldID);
 		spawnTileParticles(pos, tile);
 	}
 
@@ -535,7 +535,7 @@ void TileSystemImpl::spawnTileParticles(TilePos pos, const Tile &tile)
 	// We normally want the particles to be drawn in front of tiles,
 	// which means using layer NORMAL.
 	// However, we also want it to be drawn behind fluids.
-	// Therefore, if the tile is in a fluid, braw it in layer BEHIND.
+	// Therefore, if the tile is in a fluid, draw it in layer BEHIND.
 	auto &fluid = plane_.fluids().getAtPos(pos.as<float>().add(0.5, 0.5));
 	auto layer = fluid.id > WorldData::SOLID_FLUID_ID
 		? Cygnet::RenderLayer::BEHIND

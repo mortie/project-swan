@@ -4,9 +4,6 @@
 #include <chrono>
 #include <string>
 #include <span>
-#include <cygnet/Renderer.h>
-#include <cygnet/Gui.h>
-#include <cygnet/TextCache.h>
 #include <cygnet/util.h>
 
 #include <kj/io.h>
