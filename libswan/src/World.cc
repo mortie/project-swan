@@ -181,6 +181,13 @@ bool World::tick(float dt, RTDeadline deadline)
 	}
 }
 
+void World::tickDone()
+{
+	for (auto &plane: planes_) {
+		plane.plane->tickDone();
+	}
+}
+
 void World::serialize(proto::World::Builder w)
 {
 	auto tilesBuilder = w.initTiles(data_.tiles_.size());

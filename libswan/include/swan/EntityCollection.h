@@ -121,7 +121,7 @@ public:
 	virtual std::type_index type() = 0;
 
 	// TODO: This should track updates cleverly
-	bool hasUpdated() { return size() > 0; }
+	virtual bool hasUpdated() = 0;
 
 	virtual size_t size() = 0;
 	virtual Entity *get(uint64_t id) = 0;
@@ -132,6 +132,7 @@ public:
 	virtual void update(Ctx &ctx, float dt) = 0;
 	virtual void tick(Ctx &ctx, float dt) = 0;
 	virtual void tick2(Ctx &ctx, float dt) = 0;
+	virtual void tickDone(Ctx &ctx) = 0;
 	virtual void draw(Ctx &ctx, Cygnet::Renderer &rnd) = 0;
 	virtual void erase(Ctx &ctx, uint64_t id) = 0;
 	virtual void onWorldLoaded(Ctx &ctx) = 0;

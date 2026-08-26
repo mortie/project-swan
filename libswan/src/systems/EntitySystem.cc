@@ -241,6 +241,15 @@ void EntitySystemImpl::tick(float dt)
 	currentCollection_ = nullptr;
 }
 
+void EntitySystemImpl::tickDone()
+{
+	auto ctx = getContext();
+
+	for (auto &coll: collections_) {
+		coll->tickDone(ctx);
+	}
+}
+
 EntityCollection *EntitySystemImpl::getCollectionOf(std::string_view name)
 {
 	auto it = collectionsByName_.find(name);

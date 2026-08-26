@@ -51,9 +51,7 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 	// The code which called onSpawn will handle the rest.
 	if (placingTile_) {
 		chunk.setTileID(rp, id);
-		if (plane_.game_->server_) {
-			plane_.game_->server_->onTileChange(plane_.id_, pos, id);
-		}
+		plane_.game_->onTileChange(plane_.id_, pos, id);
 		return true;
 	}
 
@@ -80,9 +78,7 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 	}
 
 	chunk.setTileID(rp, id);
-	if (plane_.game_->server_) {
-		plane_.game_->server_->onTileChange(plane_.id_, pos, id);
-	}
+	plane_.game_->onTileChange(plane_.id_, pos, id);
 
 	if (!oldTile.isOpaque() && newTile.isOpaque()) {
 		plane_.lights().addSolidBlock(pos);
@@ -315,9 +311,7 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 		plane_.entities().despawnTileEntity(pos);
 	}
 	chunk.setTileID(rp, id);
-	if (plane_.game_->server_) {
-		plane_.game_->server_->onTileChange(plane_.id_, pos, id);
-	}
+	plane_.game_->onTileChange(plane_.id_, pos, id);
 
 	if (!oldTile.isOpaque() && newTile.isOpaque()) {
 		plane_.lights().addSolidBlock(pos);
@@ -371,10 +365,18 @@ void TileSystemImpl::forceSetID(TilePos pos, Tile::ID id)
 {
 	Chunk &chunk = plane_.getChunk(chunkPos(pos));
 	ChunkRelPos rp = chunkRelPos(pos);
-	chunk.setTileID(rp, id);
-	if (plane_.game_->server_) {
-		plane_.game_->server_->onTileChange(plane_.id_, pos, id);
+	auto oldID = chunk.getTileID(rp);
+	if (oldID == id) {
+		return;
 	}
+
+	if (oldID != WorldData::AIR_TILE_ID) {
+		const Tile &tile = plane_.world_->getTileByID(id);
+		spawnTileParticles(pos, tile);
+	}
+
+	chunk.setTileID(rp, id);
+	plane_.game_->onTileChange(plane_.id_, pos, id);
 }
 
 Raycast TileSystemImpl::raycast(

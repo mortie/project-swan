@@ -35,7 +35,7 @@ private:
 	void onMessageFromClient(
 		const MPServer::ClientInfo &client,
 		mp_proto::ClientToServer::Reader &r);
-	void broadcastTickUpdate();
+	void broadcastTickUpdateForPlane(WorldPlane::ID plane);
 
 	void broadcastToPlane(
 		WorldPlane::ID plane,

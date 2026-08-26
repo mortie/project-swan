@@ -77,6 +77,7 @@ public:
 	void draw(Cygnet::Renderer &rnd, Vec2 center);
 	void update(float dt);
 	bool tick(float dt, RTDeadline deadline);
+	void tickDone();
 
 	ID id_;
 	WorldData *world_;

@@ -233,7 +233,6 @@ void Game::drawDebugMenu()
 
 		server_ = std::make_unique<GameServer>(world_.get(), std::move(modIDs));
 		server_->listen(nullptr, 11216);
-		((GameIO *)this)->server_ = server_.get();
 	}
 
 	if (!FrameRecorder::isAvailable()) {
@@ -739,6 +738,12 @@ void Game::update(float dt)
 		tickDeadline_.reset();
 		if (world_->tick(TICK_DELTA, tickDeadline_)) {
 			tickInProgress_ = false;
+
+			if (server_) {
+				server_->tick(TICK_DELTA);
+			}
+
+			world_->tickDone();
 		}
 	}
 	else if (tickAcc_ >= TICK_DELTA) {
@@ -760,10 +765,6 @@ void Game::tick()
 		triggerSave_ = false;
 	}
 
-	if (server_) {
-		server_->tick(TICK_DELTA);
-	}
-
 	perf_.tickCount += 1;
 	if (perf_.tickCount >= 20) {
 		perf_.entityTickTime.capture(perf_.tickCount);
@@ -775,14 +776,26 @@ void Game::tick()
 	tickInProgress_ = true;
 	if (world_->tick(TICK_DELTA, tickDeadline_)) {
 		tickInProgress_ = false;
+
+		if (server_) {
+			server_->tick(TICK_DELTA);
+		}
+
+		world_->tickDone();
 	}
 }
 
 void Game::onQuit()
 {
 	server_.reset();
-	((GameIO *)this)->server_ = nullptr;
 	save();
+}
+
+void Game::onTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID)
+{
+	if (server_) {
+		server_->onTileChange(plane, pos, newID);
+	}
 }
 
 void Game::save()
@@ -793,6 +806,12 @@ void Game::save()
 		info << "Completing current tick...";
 		if (world_->tick(TICK_DELTA, RTDeadline(2))) {
 			tickInProgress_ = false;
+
+			if (server_) {
+				server_->tick(TICK_DELTA);
+			}
+
+			world_->tickDone();
 		} else {
 			warn << "Failed to complete tick in 2 seconds!";
 		}
@@ -906,7 +925,6 @@ bool Game::reload()
 	save();
 	soundPlayer_.flush();
 	server_.reset();
-	((GameIO *)this)->server_ = nullptr;
 	world_.reset();
 	loadWorld(worldPath_);
 	debugEntities_.clear();

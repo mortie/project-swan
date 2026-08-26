@@ -71,5 +71,7 @@ struct ServerToClient {
 
 struct EntityCollectionUpdate {
 	index @0 :UInt32;
-	updatedEntities @1 :List(EntitySystem.Entity);
+	newEntities @1 :List(UInt64);
+	despawnedEntities @2 :List(UInt64);
+	updatedEntities @3 :List(EntitySystem.Entity);
 }

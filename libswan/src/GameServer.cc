@@ -25,7 +25,8 @@ void GameServer::tick(float dt)
 {
 	server_.tick(dt);
 
-	broadcastTickUpdate();
+	// TODO: Figure out which planes a client is on
+	broadcastTickUpdateForPlane(0);
 
 	mp_proto::ClientToServer::Reader r;
 	const MPServer::ClientInfo *client;
@@ -92,7 +93,7 @@ void GameServer::onMessageFromClient(
 	}
 }
 
-void GameServer::broadcastTickUpdate()
+void GameServer::broadcastTickUpdateForPlane(WorldPlane::ID planeID)
 {
 	if (clients_.empty()) {
 		return;
@@ -101,9 +102,7 @@ void GameServer::broadcastTickUpdate()
 	auto root = server_.builder();
 	auto tick = root.initTick();
 
-	// Ugh we will have to keep track of per-client world planes aren't we.
-	// Let's worry about that later
-	auto &plane = world_->currentPlane();
+	auto &plane = *world_->getPlane(planeID).plane;
 	Ctx ctx = plane.getContext();
 
 	size_t updatedCollectionsCount = 0;

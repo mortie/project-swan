@@ -98,6 +98,7 @@ public:
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
 	void tick(float dt);
+	void tickDone();
 
 	EntityCollection *getCollectionOf(std::string_view name);
 

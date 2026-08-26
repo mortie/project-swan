@@ -64,6 +64,8 @@ public:
 	void update(float dt) override;
 	void onQuit() override;
 
+	void onTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID) override;
+
 	void save();
 
 	InputHandler &inputs() override { return inputHandler_; }

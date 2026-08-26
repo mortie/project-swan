@@ -57,6 +57,7 @@ public:
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
 	bool tick(float dt, RTDeadline deadline);
+	void tickDone();
 
 	uint32_t seed() const { return seed_; }
 

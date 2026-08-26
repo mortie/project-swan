@@ -385,6 +385,11 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 	return tickProgress_ == TickProgress::IDLE;
 }
 
+void WorldPlane::tickDone()
+{
+	entitySystem_.tickDone();
+}
+
 void WorldPlane::serialize(proto::WorldPlane::Builder w)
 {
 	entitySystem_.serialize(w.initEntitySystem());

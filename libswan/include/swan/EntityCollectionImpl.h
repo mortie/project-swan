@@ -64,9 +64,18 @@ public:
 		return typeid(Ent);
 	}
 
+	bool hasUpdated() override
+	{
+		return (
+			entities_.size() > 0 ||
+			newEntitiesThisTick_.size() > 0 ||
+			despawnedEntitiesThisTick_.size() > 0);
+	}
+
 	void update(Ctx &ctx, float dt) override;
 	void tick(Ctx &ctx, float dt) override;
 	void tick2(Ctx &ctx, float dt) override;
+	void tickDone(Ctx &ctx) override;
 	void draw(Ctx &ctx, Cygnet::Renderer &rnd) override;
 	void erase(Ctx &ctx, uint64_t id) override;
 	void onWorldLoaded(Ctx &ctx) override;
@@ -86,6 +95,8 @@ public:
 	std::vector<Wrapper> entities_;
 	std::unordered_map<uint64_t, size_t> idToIndex_;
 	bool hasTicked_ = false;
+	std::vector<uint64_t> newEntitiesThisTick_;
+	std::vector<uint64_t> despawnedEntitiesThisTick_;
 };
 
 /*
@@ -209,6 +220,7 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(Ctx &ctx, Args &&... args)
 
 	idToIndex_[id] = index;
 	w.id = id;
+	newEntitiesThisTick_.push_back(id);
 
 	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 		Body &body = w.ent.get(BodyTrait::Tag{});
@@ -234,6 +246,7 @@ inline EntityRef EntityCollectionImpl<Ent>::spawnMove(Ctx &ctx, Ent &&ent)
 
 	idToIndex_[id] = index;
 	w.id = id;
+	newEntitiesThisTick_.push_back(id);
 
 	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 		Body &body = w.ent.get(BodyTrait::Tag{});
@@ -261,6 +274,7 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(Ctx &ctx)
 	idToIndex_[id] = index;
 
 	currentId_ = prevCurrentId;
+	newEntitiesThisTick_.push_back(id);
 	return {this, id};
 }
 
@@ -365,6 +379,14 @@ inline void EntityCollectionImpl<Ent>::tick2(Ctx &ctx, float dt)
 }
 
 template<typename Ent>
+inline void EntityCollectionImpl<Ent>::tickDone(Ctx &ctx)
+{
+	newEntitiesThisTick_.clear();
+	despawnedEntitiesThisTick_.clear();
+}
+
+
+template<typename Ent>
 inline void EntityCollectionImpl<Ent>::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 {
 	ZoneScopedN(__PRETTY_FUNCTION__);
@@ -399,6 +421,7 @@ inline void EntityCollectionImpl<Ent>::erase(Ctx &ctx, uint64_t id)
 		return;
 	}
 
+	despawnedEntitiesThisTick_.push_back(id);
 	size_t index = indexIt->second;
 
 	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
@@ -518,6 +541,16 @@ void EntityCollectionImpl<Ent>::serializeUpdates(
 	memset(&scratchBytes.front(), 0, scratchBytes.size());
 	kj::VectorOutputStream stream;
 
+	auto newEntities = w.initNewEntities(newEntitiesThisTick_.size());
+	for (size_t i = 0; auto id: newEntitiesThisTick_) {
+		newEntities.set(i++, id);
+	}
+
+	auto despawnedEntities = w.initDespawnedEntities(despawnedEntitiesThisTick_.size());
+	for (size_t i = 0; auto id: despawnedEntitiesThisTick_) {
+		despawnedEntities.set(i++, id);
+	}
+
 	// Yeah there's some code duplication here with serialize(),
 	// but this is gonna have to change a bunch for netcode optimization reasons
 	// while serialize() is gonna stay the same
@@ -543,6 +576,25 @@ template<typename Ent>
 void EntityCollectionImpl<Ent>::deserializeUpdates(
 	Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader r)
 {
+	// Despawn despawned entities
+	for (auto id: r.getDespawnedEntities()) {
+		erase(ctx, id);
+	}
+
+	// Spawn new entities
+	for (auto id: r.getNewEntities()) {
+		if (idToIndex_.contains(id)) {
+			warn << "Was told that ID " << id << " just spawned, but it already exists!";
+			continue;
+		}
+
+		size_t index = entities_.size();
+		auto &w = entities_.emplace_back(ctx);
+		w.id = id;
+		idToIndex_[id] = index;
+	}
+
+	// Deserialize updated entities
 	for (auto entity: r.getUpdatedEntities()) {
 		uint64_t id = entity.getId();
 		auto it = idToIndex_.find(id);
@@ -557,6 +609,7 @@ void EntityCollectionImpl<Ent>::deserializeUpdates(
 		auto data = entity.getData();
 		kj::ArrayInputStream stream(data);
 		capnp::PackedMessageReader reader(stream);
+		currentId_ = id;
 		try {
 			auto root = reader.getRoot<typename Ent::Proto>();
 			wrapper.ent.deserialize(ctx, root);

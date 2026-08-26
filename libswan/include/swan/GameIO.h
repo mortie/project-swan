@@ -5,6 +5,8 @@
 #include <cygnet/Renderer.h>
 #include <swan/Vector2.h>
 
+#include "WorldPlane.h"
+
 namespace Swan {
 
 struct SoundAsset;
@@ -79,6 +81,8 @@ public:
 	virtual void screenshot(const char *path, int w, int h) = 0;
 	virtual void onQuit() = 0;
 
+	virtual void onTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID) {}
+
 	virtual void playSound(
 		SoundAsset *asset, float volume,
 		std::optional<Vec2> center) = 0;
@@ -120,8 +124,6 @@ public:
 
 	Cygnet::TextCache smallFont_{notoSans_, 60};
 	Cygnet::TextCache bigFont_{notoSans_, 200};
-
-	GameServer *server_ = nullptr;
 };
 
 inline void GameIO::playSound(SoundAsset *asset)
