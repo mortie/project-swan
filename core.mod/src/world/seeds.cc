@@ -95,6 +95,15 @@ public:
 		dying_ = r.getDying();
 	}
 
+	// Seed entities only need to do something on the server side.
+	bool hasUpdated() override
+	{ return false; }
+	void deserializeUpdates(Swan::Ctx &ctx, capnp::MessageReader &mr) override
+	{}
+	void serializeUpdates(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override
+	{}
+
+
 private:
 	float timer_ = 0;
 	float dying_ = 0;
