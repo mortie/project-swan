@@ -201,6 +201,7 @@ void BasicPhysicsBody::serialize(proto::BasicPhysicsBody::Builder w)
 	auto velB = w.initVel();
 	velB.setX(vel.x);
 	velB.setY(vel.y);
+	w.setOnGround(onGround);
 }
 
 void BasicPhysicsBody::deserialize(proto::BasicPhysicsBody::Reader r)
@@ -209,8 +210,7 @@ void BasicPhysicsBody::deserialize(proto::BasicPhysicsBody::Reader r)
 	body.pos.y = r.getPos().getY();
 	vel.x = r.getVel().getX();
 	vel.y = r.getVel().getY();
-
-	onGround = false;
+	onGround = r.getOnGround();
 }
 
 }

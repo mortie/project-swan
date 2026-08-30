@@ -41,6 +41,7 @@ struct ItemStack {
 struct BasicPhysicsBody {
 	pos @0 :Vec2;
 	vel @1 :Vec2;
+	onGround @2 :Bool;
 }
 
 struct BasicInventory {
