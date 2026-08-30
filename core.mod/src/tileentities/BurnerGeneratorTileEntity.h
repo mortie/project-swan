@@ -15,8 +15,6 @@ class BurnerGeneratorTileEntity final: public Swan::Entity,
 	public PowerSourceTrait,
 	public PowerNodeTrait {
 public:
-	using Proto = proto::BurnerGeneratorTileEntity;
-
 	BurnerGeneratorTileEntity(Swan::Ctx &);
 
 	Swan::TileEntity &get(Swan::TileEntityTrait::Tag) override
@@ -36,8 +34,8 @@ public:
 
 	void drawDebug(Swan::Ctx &ctx) override;
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w);
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 private:
 	class Inventory: public Swan::Inventory {

@@ -9,8 +9,6 @@ namespace CoreMod {
 class FallingTileEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait {
 public:
-	using Proto = proto::FallingTileEntity;
-
 	FallingTileEntity(Swan::Ctx &ctx);
 	FallingTileEntity(Swan::Ctx &ctx, Swan::Vec2 pos, Swan::Tile::ID tile);
 
@@ -27,8 +25,8 @@ public:
 	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
 	void update(Swan::Ctx &ctx, float dt) override;
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w);
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 private:
 	void place(Swan::Ctx &ctx);

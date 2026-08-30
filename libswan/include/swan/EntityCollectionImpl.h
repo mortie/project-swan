@@ -291,7 +291,7 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(
 	capnp::PackedMessageReader reader(stream);
 	try {
 		Ent *e = (Ent *)ent.get();
-		e->deserialize(ctx, reader.getRoot<typename Ent::Proto>());
+		e->deserialize(ctx, reader);
 	} catch (std::exception &ex) {
 		warn << "Failed to spawn " << name_ << ": " << ex.what();
 		erase(ctx, ent);
@@ -478,8 +478,7 @@ inline void EntityCollectionImpl<Ent>::serialize(
 		entities[i].setId(wrapper.id);
 
 		capnp::MallocMessageBuilder mb;
-		auto root = mb.initRoot<typename Ent::Proto>();
-		wrapper.ent.serialize(ctx, root);
+		wrapper.ent.serialize(ctx, mb);
 
 		stream.clear();
 		capnp::writePackedMessage(stream, mb);
@@ -521,8 +520,7 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 		kj::ArrayInputStream stream(data);
 		capnp::PackedMessageReader reader(stream);
 		try {
-			auto root = reader.getRoot<typename Ent::Proto>();
-			wrapper.ent.deserialize(ctx, root);
+			wrapper.ent.deserialize(ctx, reader);
 			idToIndex_[wrapper.id] = index;
 		} catch (std::exception &ex) {
 			warn << "Failed to deserialize " << name_ << " entity: " << ex.what();
@@ -551,23 +549,27 @@ void EntityCollectionImpl<Ent>::serializeUpdates(
 		despawnedEntities.set(i++, id);
 	}
 
-	// Yeah there's some code duplication here with serialize(),
-	// but this is gonna have to change a bunch for netcode optimization reasons
-	// while serialize() is gonna stay the same
-	auto entities = w.initUpdatedEntities(entities_.size());
+	std::vector<size_t> updatedIndexes;
 	for (size_t i = 0; i < entities_.size(); ++i) {
-		auto &wrapper = entities_[i];
-		entities[i].setId(wrapper.id);
+		if (entities_[i].ent.hasUpdated()) {
+			updatedIndexes.push_back(i);
+		}
+	}
+
+	auto entities = w.initUpdatedEntities(updatedIndexes.size());
+	for (size_t i = 0; size_t index: updatedIndexes) {
+		auto &wrapper = entities_[index];
+		auto entity = entities[i++];
+		entity.setId(wrapper.id);
 
 		capnp::MallocMessageBuilder mb;
-		auto root = mb.initRoot<typename Ent::Proto>();
-		wrapper.ent.serialize(ctx, root);
+		wrapper.ent.serializeUpdates(ctx, mb);
 
 		stream.clear();
 		capnp::writePackedMessage(stream, mb);
 
 		auto arr = stream.getArray();
-		auto data = entities[i].initData(arr.size());
+		auto data = entity.initData(arr.size());
 		memcpy(&data.front(), &arr.front(), arr.size());
 	}
 }
@@ -611,8 +613,7 @@ void EntityCollectionImpl<Ent>::deserializeUpdates(
 		capnp::PackedMessageReader reader(stream);
 		currentId_ = id;
 		try {
-			auto root = reader.getRoot<typename Ent::Proto>();
-			wrapper.ent.deserialize(ctx, root);
+			wrapper.ent.deserializeUpdates(ctx, reader);
 		} catch (std::exception &ex) {
 			warn << "Failed to deserialize " << name_ << " entity: " << ex.what();
 		}

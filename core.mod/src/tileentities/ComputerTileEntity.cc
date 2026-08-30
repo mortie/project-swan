@@ -1,4 +1,5 @@
 #include "ComputerTileEntity.h"
+#include "core_mod.capnp.h"
 #include "imgui/imgui.h"
 
 #include <scisa/scisasm.h>
@@ -96,14 +97,16 @@ void ComputerTileEntity::tick(Swan::Ctx &ctx, float dt)
 	cpu_.step(1);
 }
 
-void ComputerTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
+void ComputerTileEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::ComputerTileEntity>();
 	tileEntity_.serialize(w.initTileEntity());
 	w.setAssembly(assembly_);
 }
 
-void ComputerTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
+void ComputerTileEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::ComputerTileEntity>();
 	tileEntity_.deserialize(r.getTileEntity());
 	assembly_ = r.getAssembly();
 	assemble();

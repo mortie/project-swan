@@ -2,6 +2,7 @@
 
 #include <optional>
 
+#include "core_mod.capnp.h"
 #include "entities/ItemStackEntity.h"
 
 namespace CoreMod {
@@ -129,9 +130,9 @@ void ItemPipeTileEntity::onDespawn(Swan::Ctx &ctx)
 	}
 }
 
-void ItemPipeTileEntity::serialize(
-	Swan::Ctx &ctx, Proto::Builder w)
+void ItemPipeTileEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::ItemPipeTileEntity>();
 	tileEntity_.serialize(w.initTileEntity());
 
 	if (inbox_.content_) {
@@ -149,9 +150,9 @@ void ItemPipeTileEntity::serialize(
 	}
 }
 
-void ItemPipeTileEntity::deserialize(
-	Swan::Ctx &ctx, Proto::Reader r)
+void ItemPipeTileEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::ItemPipeTileEntity>();
 	tileEntity_.deserialize(r.getTileEntity());
 
 	inbox_.content_.reset();

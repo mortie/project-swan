@@ -16,13 +16,15 @@ void DrainTileEntity::tick(Swan::Ctx &ctx, float dt)
 	}
 }
 
-void DrainTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
+void DrainTileEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<Swan::proto::TileEntity>();
 	tileEntity_.serialize(w);
 }
 
-void DrainTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
+void DrainTileEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<Swan::proto::TileEntity>();
 	tileEntity_.deserialize(r);
 }
 

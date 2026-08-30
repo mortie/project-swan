@@ -9,8 +9,6 @@ namespace CoreMod {
 class ItemStackEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait {
 public:
-	using Proto = proto::ItemStackEntity;
-
 	ItemStackEntity(Swan::Ctx &ctx);
 	ItemStackEntity(Swan::Ctx &ctx, Swan::Vec2 pos, Swan::Item *item);
 	ItemStackEntity(Swan::Ctx &ctx, Swan::Vec2 pos, Swan::Vec2 vel, Swan::Item *item);
@@ -30,8 +28,8 @@ public:
 	void tick(Swan::Ctx &ctx, float dt) override;
 	void onDespawn(Swan::Ctx &ctx) override;
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w);
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 	Swan::Item *item()
 	{

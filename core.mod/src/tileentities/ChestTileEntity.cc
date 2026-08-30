@@ -1,10 +1,12 @@
 #include "ChestTileEntity.h"
+#include "core_mod.capnp.h"
 #include "world/util.h"
 
 namespace CoreMod {
 
-void ChestTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
+void ChestTileEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::ChestTileEntity>();
 	// Close the chest on load if it's open
 	auto &tile = ctx.plane.tiles().get(tileEntity_.pos);
 	if (tile.name.str().ends_with("::open")) {
@@ -16,8 +18,9 @@ void ChestTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 	inventory_.serialize(w.initInventory());
 }
 
-void ChestTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
+void ChestTileEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::ChestTileEntity>();
 	tileEntity_.deserialize(r.getTileEntity());
 	inventory_.deserialize(ctx, r.getInventory());
 }

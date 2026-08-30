@@ -13,8 +13,6 @@ class PlayerEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait,
 	public Swan::InventoryTrait {
 public:
-	using Proto = proto::PlayerEntity;
-
 	using CloseInventoryCallback = void(Swan::Ctx &, Swan::EntityRef);
 
 	PlayerEntity(Swan::Ctx &ctx);
@@ -40,8 +38,8 @@ public:
 	void tick(Swan::Ctx &ctx, float dt) override;
 	void drawDebug(Swan::Ctx &ctx) override;
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w);
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 	bool askToOpenInventory(Swan::EntityRef ent, CloseInventoryCallback cb);
 	void askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent);

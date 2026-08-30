@@ -1,4 +1,5 @@
 #include "ItemStackEntity.h"
+#include "core_mod.capnp.h"
 
 namespace CoreMod {
 
@@ -74,17 +75,17 @@ void ItemStackEntity::onDespawn(Swan::Ctx &ctx)
 	}
 }
 
-void ItemStackEntity::serialize(
-	Swan::Ctx &ctx, Proto::Builder w)
+void ItemStackEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::ItemStackEntity>();
 	physicsBody_.serialize(w.initBody());
 	w.setLifetime(lifetime_);
 	w.setItem(item_->id);
 }
 
-void ItemStackEntity::deserialize(
-	Swan::Ctx &ctx, Proto::Reader r)
+void ItemStackEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::ItemStackEntity>();
 	physicsBody_.deserialize(r.getBody());
 	lifetime_ = r.getLifetime();
 	item_ = &ctx.world.getItemByID(r.getItem());

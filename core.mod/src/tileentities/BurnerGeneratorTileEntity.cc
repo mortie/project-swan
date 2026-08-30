@@ -1,4 +1,5 @@
 #include "BurnerGeneratorTileEntity.h"
+#include "core_mod.capnp.h"
 #include "swan/ItemStack.h"
 #include "traits/items.h"
 #include "world/util.h"
@@ -68,8 +69,9 @@ void BurnerGeneratorTileEntity::drawDebug(Swan::Ctx &ctx)
 	ImGui::Text("Burn time: %.1fs", currentBurnTime_);
 }
 
-void BurnerGeneratorTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
+void BurnerGeneratorTileEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::BurnerGeneratorTileEntity>();
 	tileEntity_.serialize(w.initTileEntity());
 	power_.serialize(w.initPowerSource());
 	inventory_.stack_.serialize(w.initContent());
@@ -77,8 +79,9 @@ void BurnerGeneratorTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 	powerNode_.serialize(w.initPowerNode());
 }
 
-void BurnerGeneratorTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
+void BurnerGeneratorTileEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::BurnerGeneratorTileEntity>();
 	tileEntity_.deserialize(r.getTileEntity());
 	power_.deserialize(r.getPowerSource());
 	inventory_.stack_.deserialize(ctx, r.getContent());

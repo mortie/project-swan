@@ -16,16 +16,14 @@ public:
 		points_{startPoint}
 	{}
 
-	using Proto = proto::CopperWireEntity;
-
 	bool setEndPoint(Swan::Vec2 endPoint);
 
 	void update(Swan::Ctx &ctx, float dt) override;
 	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
 	void onDespawn(Swan::Ctx &ctx) override;
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w);
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 	Swan::EntityRef begin_;
 	Swan::EntityRef end_;

@@ -5,6 +5,7 @@
 #include <imgui/imgui.h>
 
 #include "ItemStackEntity.h"
+#include "core_mod.capnp.h"
 #include "world/util.h"
 #include "world/ladder.h"
 #include "world/workbench.h"
@@ -665,9 +666,9 @@ void PlayerEntity::drawDebug(Swan::Ctx &ctx)
 	ImGui::Text("Temperature: %.01f", computeAirTemperature(ctx));
 }
 
-void PlayerEntity::serialize(
-	Swan::Ctx &ctx, Proto::Builder w)
+void PlayerEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::PlayerEntity>();
 	physicsBody_.serialize(w.initBody());
 	inventory_.serialize(w.initInventory());
 	heldStack_.serialize(w.initHeldStack());
@@ -680,9 +681,9 @@ void PlayerEntity::serialize(
 	w.setDirection(lastDirection_ > 0);
 }
 
-void PlayerEntity::deserialize(
-	Swan::Ctx &ctx, Proto::Reader r)
+void PlayerEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::PlayerEntity>();
 	physicsBody_.deserialize(r.getBody());
 	inventory_.deserialize(ctx, r.getInventory());
 	heldStack_.deserialize(ctx, r.getHeldStack());

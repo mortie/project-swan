@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include "core_mod.capnp.h"
 #include "world/util.h"
 #include "data/sounds.h"
 
@@ -159,16 +160,16 @@ void DynamiteEntity::tick(Swan::Ctx &ctx, float dt)
 	});
 }
 
-void DynamiteEntity::serialize(
-	Swan::Ctx &ctx, Proto::Builder w)
+void DynamiteEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::DynamiteEntity>();
 	physicsBody_.serialize(w.initBody());
 	w.setFuse(fuse_);
 }
 
-void DynamiteEntity::deserialize(
-	Swan::Ctx &ctx, Proto::Reader r)
+void DynamiteEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::DynamiteEntity>();
 	physicsBody_.deserialize(r.getBody());
 	fuse_ = r.getFuse();
 }

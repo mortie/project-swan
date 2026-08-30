@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <limits>
 #include <numbers>
+#include "core_mod.capnp.h"
 #include "traits/PowerSourceTrait.h"
 #include "data/sprites.h"
 
@@ -156,14 +157,16 @@ void IncandescentLampTileEntity::drawDebug(Swan::Ctx &ctx)
 	ImGui::Text("Light: %.1f", light_);
 }
 
-void IncandescentLampTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
+void IncandescentLampTileEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::IncandescentLampTileEntity>();
 	tileEntity_.serialize(w.initTileEntity());
 	powerNode_.serialize(w.initPowerNode());
 }
 
-void IncandescentLampTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
+void IncandescentLampTileEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::IncandescentLampTileEntity>();
 	tileEntity_.deserialize(r.getTileEntity());
 	powerNode_.deserialize(ctx, r.getPowerNode());
 }

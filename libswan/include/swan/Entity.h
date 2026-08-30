@@ -1,6 +1,8 @@
 #pragma once
 
 #include <swan/util.h>
+#include <capnp/message.h>
+#include <capnp/serialize.h>
 #include "common.h"
 
 namespace Swan {
@@ -34,6 +36,18 @@ public:
 	{}
 	virtual void drawDebug(Ctx &ctx)
 	{}
+
+	virtual void serialize(Ctx &ctx, capnp::MessageBuilder &mb)
+	{}
+	virtual void deserialize(Ctx &ctx, capnp::MessageReader &mr)
+	{}
+
+	virtual bool hasUpdated()
+	{ return true; }
+	virtual void serializeUpdates(Ctx &ctx, capnp::MessageBuilder &mb)
+	{ serialize(ctx, mb); }
+	virtual void deserializeUpdates(Ctx &ctx, capnp::MessageReader &mr)
+	{ deserialize(ctx, mr); }
 
 	template<typename T>
 	using TraitType = decltype(std::declval<T>().get(typename T::Tag{}));

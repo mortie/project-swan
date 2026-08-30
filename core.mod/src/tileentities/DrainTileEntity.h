@@ -7,8 +7,6 @@ namespace CoreMod {
 class DrainTileEntity final: public Swan::Entity,
 	public Swan::TileEntityTrait {
 public:
-	using Proto = Swan::proto::TileEntity;
-
 	DrainTileEntity(Swan::Ctx &ctx)
 	{}
 
@@ -19,8 +17,8 @@ public:
 
 	void tick(Swan::Ctx &ctx, float dt) override;
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w);
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 private:
 	Swan::TileEntity tileEntity_;
