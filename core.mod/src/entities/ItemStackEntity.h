@@ -31,6 +31,13 @@ public:
 	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
 	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
+	bool hasUpdated() override
+	{
+		return (
+			!physicsBody_.onGround ||
+			physicsBody_.vel.squareLength() > 0.01 * 0.01);
+	}
+
 	Swan::Item *item()
 	{
 		return item_;
