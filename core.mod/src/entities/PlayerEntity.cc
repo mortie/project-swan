@@ -6,6 +6,7 @@
 
 #include "ItemStackEntity.h"
 #include "core_mod.capnp.h"
+#include "swan/constants.h"
 #include "world/util.h"
 #include "world/ladder.h"
 #include "world/workbench.h"
@@ -697,6 +698,41 @@ void PlayerEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 	health_ = r.getHealth();
 	craftingInventory_.deserialize(ctx, r.getCraftingInventory());
 	lastDirection_ = r.getDirection() ? 1 : -1;
+}
+
+void PlayerEntity::serializeUpdates(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
+{
+	auto w = mb.initRoot<proto::PlayerEntity>();
+	physicsBody_.serialize(w.initBody());
+	heldStack_.serialize(w.initHeldStack());
+	w.setHealth(health_);
+	w.setDirection(lastDirection_ > 0);
+}
+
+void PlayerEntity::deserializeUpdates(Swan::Ctx &ctx, capnp::MessageReader &mr)
+{
+	auto r = mr.getRoot<proto::PlayerEntity>();
+	physicsBody_.deserialize(r.getBody());
+	heldStack_.deserialize(ctx, r.getHeldStack());
+	health_ = r.getHealth();
+	lastDirection_ = r.getDirection() ? 1 : -1;
+
+	if (!physicsBody_.onGround) {
+		if (state_ != State::FALLING) {
+			state_ = State::FALLING;
+			currentAnimation_ = fallingAnimation();
+		}
+	} else if (std::abs(physicsBody_.vel.x) > 1) {
+		if (state_ != State::RUNNING) {
+			state_ = State::RUNNING;
+			currentAnimation_ = runningAnimation();
+		}
+	} else if (state_ != State::IDLE) {
+		state_ = State::IDLE;
+		currentAnimation_ = idleAnimation();
+	}
+
+	currentAnimation_.tick(1.0 / Swan::TICK_RATE);
 }
 
 bool PlayerEntity::askToOpenInventory(

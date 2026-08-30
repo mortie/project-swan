@@ -41,6 +41,9 @@ public:
 	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
 	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
+	void serializeUpdates(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserializeUpdates(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
+
 	bool askToOpenInventory(Swan::EntityRef ent, CloseInventoryCallback cb);
 	void askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent);
 	Swan::EntityRef currentInventoryEntity() { return auxInventoryEntity_; }
