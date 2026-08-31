@@ -306,4 +306,14 @@ bool MPClient::receive(mp_proto::ServerToClient::Reader &r)
 	return impl_->receive(r);
 }
 
+capnp::MallocMessageBuilder MPClient::builder()
+{
+	return impl_->builder();
+}
+
+void MPClient::send(capnp::MallocMessageBuilder &mb)
+{
+	impl_->send(mb);
+}
+
 }

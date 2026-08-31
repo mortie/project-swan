@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "Action.h"
+#include "EntityCollection.h"
 #include "GameIO.h"
 #include "InputHandler.h"
 #include "MPClient.h"
@@ -15,14 +16,19 @@
 
 namespace Swan {
 
-class MPGame: public GameIO {
+class MPGame final: public GameIO {
 public:
 	MPGame(std::function<bool()> recompileMods, HashMap<ModInfo> mods);
 
 	InputHandler &inputs() override { return inputHandler_; }
-	void onMouseMove(float x, float y) override {}
+	void onMouseMove(float x, float y) override;
 	void onScrollWheel(float dy) override;
 	void onViewportSize(int w, int h) override;
+
+	Vec2 getMousePos() override;
+	TilePos getMouseTile() override;
+	Vec2 uiPosFromWorldPos(Vec2 worldPos) override
+	{ return (worldPos / uiCam_.zoom) * cam_.zoom; }
 
 	void update(float dt) override;
 	void draw() override;
@@ -47,6 +53,7 @@ private:
 	void tick(float dt);
 	void onMessageFromServer(mp_proto::ServerToClient::Reader &r);
 	void initInputHandler();
+	void sendPlayerState();
 
 	Cygnet::RenderCamera cam_{.zoom = 1.0 / 8};
 	Cygnet::RenderCamera uiCam_{.zoom = 1.0 / 16};
@@ -60,8 +67,7 @@ private:
 	std::unique_ptr<WorldData> data_;
 	std::unique_ptr<WorldPlane> plane_;
 
-	Action camXAction_;
-	Action camYAction_;
+	EntityRef player_;
 };
 
 }

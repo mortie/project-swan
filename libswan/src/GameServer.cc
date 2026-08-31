@@ -1,7 +1,10 @@
 #include "GameServer.h"
 
 #include "World.h"
+#include "Game.h"
 #include "capnp/message.h"
+#include "capnp/serialize-packed.h"
+#include "EntityCollectionImpl.h"
 
 namespace Swan {
 
@@ -56,12 +59,15 @@ void GameServer::onMessageFromClient(
 	const MPServer::ClientInfo &client,
 	mp_proto::ClientToServer::Reader &r)
 {
-	if (r.hasHello()) {
+	if (r.isHello()) {
 		if (!r.getHello().getRequestWorld()) {
 			// Nothing to do here; the client didn't request world data,
 			// so we won't do the world sync
 			return;
 		}
+
+		auto player = game_->onPlayerConnected(r.getHello().getIdentifier().cStr());
+		auto &plane = world_->getPlane(player.plane);
 
 		auto root = server_.builder();
 		auto sync = root.initWorldSync();
@@ -71,27 +77,23 @@ void GameServer::onMessageFromClient(
 			modIDs.set(i, id);
 		}
 
-		// Always use plane ID 0 for now.
-		// Typically, we'd want to fetch this out of some persistent data
-		// based on client identifier
-		WorldPlane::ID planeID = 0;
-		auto &plane = world_->getPlane(planeID);
-
 		auto namesByID = sync.initNamesByID(world_->data().namesByID_.size());
 		for (size_t i = 0; auto &name: world_->data().namesByID_) {
 			namesByID.set(i++, name);
 		}
 
-		sync.setCurrentPlaneIndex(planeID);
+		sync.setCurrentPlaneIndex(player.plane);
 		plane.plane->serialize(sync.initCurrentPlane());
 		sync.getCurrentPlane().setWorldGen(plane.worldGen);
 		sync.setWorldSeed(world_->seed());
+		player.ref.serialize(sync.initPlayerRef());
 
 		server_.send(client.id, root);
 
 		clients_.push_back(ConnectedClient {
 			.info = client,
-			.plane = planeID,
+			.plane = player.plane,
+			.ref = player.ref,
 		});
 	} else if (r.isQuit()) {
 		info << "Client " << client.identifier << " disconnected.";
@@ -105,6 +107,20 @@ void GameServer::onMessageFromClient(
 			clients_.pop_back();
 			break;
 		}
+	} else if (r.isUpdatePlayer()) {
+		auto &c = *std::find_if(clients_.begin(), clients_.end(), [&](auto &c) {
+			return c.info.id == client.id;
+		});
+		Entity *ent = c.ref.get();
+		if (!ent) {
+			warn << "Update from player without entity!";
+			return;
+		}
+
+		auto &plane = *world_->getPlane(c.plane).plane;
+		kj::ArrayInputStream stream(r.getUpdatePlayer());
+		capnp::PackedMessageReader reader(stream);
+		ent->deserializeUpdates(plane.getContext(), reader);
 	} else {
 		info << "Received unknown message from client '" << client.identifier << ":";
 		info << r.toString().flatten().cStr();

@@ -268,6 +268,8 @@ MPServer::Impl::receive(mp_proto::ClientToServer::Reader &r)
 			receiveIndex_ += 1;
 			continue;
 		}
+
+		return &client.info;
 	}
 
 	return nullptr;

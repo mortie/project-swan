@@ -81,6 +81,13 @@ public:
 	virtual void screenshot(const char *path, int w, int h) = 0;
 	virtual void onQuit() = 0;
 
+	Vec2 getMouseScreenPos() { return mousePos_; }
+	Vec2 getMouseUIPos() { return mouseUIPos_; }
+	bool hasMouseMoved() { return hasMouseMoved_; }
+	virtual Vec2 getMousePos() = 0;
+	virtual TilePos getMouseTile() = 0;
+	virtual Vec2 uiPosFromWorldPos(Vec2 worldPos) = 0;
+
 	virtual void onTileChange(
 		WorldPlane::ID plane,
 		TilePos pos,
@@ -133,6 +140,10 @@ public:
 
 	Cygnet::TextCache smallFont_{notoSans_, 60};
 	Cygnet::TextCache bigFont_{notoSans_, 200};
+
+	Vec2 mousePos_;
+	Vec2 mouseUIPos_;
+	bool hasMouseMoved_ = false;
 };
 
 inline void GameIO::playSound(SoundAsset *asset)

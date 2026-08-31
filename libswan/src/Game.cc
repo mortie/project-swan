@@ -189,6 +189,17 @@ void Game::onViewportSize(int w, int h)
 	uiCam_.size = {w, h};
 }
 
+Vec2 Game::getMousePos()
+{
+	return (getMouseScreenPos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;
+}
+
+TilePos Game::getMouseTile()
+{
+	auto pos = (getMouseScreenPos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;
+	return TilePos{(int)floor(pos.x), (int)floor(pos.y)};
+}
+
 void Game::playSound(
 	SoundAsset *asset,
 	float volume,
@@ -204,18 +215,6 @@ void Game::playSound(
 	SoundHandle &handle)
 {
 	soundPlayer_.play(asset, volume, center, handle);
-}
-
-Vec2 Game::getMousePos()
-{
-	return (getMouseScreenPos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;
-}
-
-TilePos Game::getMouseTile()
-{
-	auto pos = (getMouseScreenPos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;
-
-	return TilePos{(int)floor(pos.x), (int)floor(pos.y)};
 }
 
 void Game::drawDebugMenu()
@@ -286,7 +285,7 @@ void Game::drawDebugMenu()
 			modIDs.push_back(id);
 		}
 
-		server_ = std::make_unique<GameServer>(world_.get(), std::move(modIDs));
+		server_ = std::make_unique<GameServer>(world_.get(), this, std::move(modIDs));
 		server_->listen(nullptr, 11216);
 	}
 
@@ -1201,6 +1200,21 @@ void Game::initCommandHandler()
 			.name = std::string(mod.name()),
 			.commands = mod.takeCommands(),
 		});
+	}
+}
+
+Game::PlayerData Game::onPlayerConnected(std::string_view identifier)
+{
+	auto it = playerData_.find(identifier);
+	if (it == playerData_.end()) {
+		info << "Spawning new player for client '" << identifier << '\'';
+		return playerData_[std::string(identifier)] = {
+			.plane = 0,
+			.ref = world_->getPlane(0).plane->spawnPlayer(),
+		};
+	} else {
+		info << "Found existing player data for client '" << identifier << '\'';
+		return it->second;
 	}
 }
 

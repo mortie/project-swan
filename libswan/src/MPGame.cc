@@ -1,5 +1,10 @@
 #include "MPGame.h"
+#include "Entity.h"
+#include "capnp/message.h"
 #include "common.h"
+#include "traits/BodyTrait.h"
+#include "traits/PlayerControllerTrait.h"
+#include "EntityCollectionImpl.h" // IWYU pragma: keep
 
 #include <imgui/imgui.h>
 #include <memory>
@@ -18,6 +23,16 @@ MPGame::MPGame(std::function<bool()> recompileMods, HashMap<ModInfo> mods):
 {
 	// Temporary, until we sort out client-side lighting
 	debug_.disableShadows = true;
+}
+
+void MPGame::onMouseMove(float x, float y)
+{
+	Vec2 pixPos{x, y};
+	mousePos_ = (pixPos / cam_.size.as<float>()) * renderer_.winScale();
+	pixPos -= uiCam_.size / 2;
+	mouseUIPos_ = (pixPos / uiCam_.size / uiCam_.zoom * 2) * renderer_.winScale();
+	gui_.onMouseMove(mouseUIPos_);
+	hasMouseMoved_ = true;
 }
 
 void MPGame::onScrollWheel(float dy)
@@ -39,6 +54,18 @@ void MPGame::onViewportSize(int w, int h)
 	uiCam_.size = {w, h};
 }
 
+Vec2 MPGame::getMousePos()
+{
+	return (getMouseScreenPos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;
+}
+
+TilePos MPGame::getMouseTile()
+{
+	auto pos = (getMouseScreenPos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;
+	return TilePos{(int)floor(pos.x), (int)floor(pos.y)};
+}
+
+
 void MPGame::update(float dt)
 {
 	inputHandler_.beginFrame();
@@ -50,10 +77,26 @@ void MPGame::update(float dt)
 		tick(TICK_DELTA);
 	}
 
-	cam_.pos.x += camXAction_.value() * 5 * dt;
-	cam_.pos.y += camYAction_.value() * 5 * dt;
-
 	renderer_.update(dt);
+
+	auto *controller = player_.as<PlayerControllerTrait>();
+	if (controller) {
+		controller->controlPlayer(plane_->getContext(), dt);
+
+		// Make camera follow player
+		auto body = player_.trait<BodyTrait>();
+		auto camTarget = body->pos + body->size / 2;
+		auto camSqDist = (cam_.pos - camTarget).squareLength();
+		if (camSqDist > 20 * 20) {
+			cam_.pos = camTarget;
+		} else {
+			constexpr float HALF_LIFE = 0.05;
+			cam_.pos = {
+				lerpSmooth(cam_.pos.x, camTarget.x, HALF_LIFE, dt),
+				lerpSmooth(cam_.pos.y, camTarget.y, HALF_LIFE, dt),
+			};
+		}
+	}
 }
 
 void MPGame::draw()
@@ -109,6 +152,11 @@ void MPGame::draw()
 		renderer_.setBackgroundColor(plane_->worldGen_->backgroundColor(cam_.pos));
 		plane_->keepChunksActiveAround(cam_.pos);
 		plane_->draw(renderer_, cam_.pos);
+	}
+
+	auto *controller = player_.as<PlayerControllerTrait>();
+	if (controller) {
+		controller->drawUI(plane_->getContext(), renderer_);
 	}
 }
 
@@ -204,6 +252,7 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 			sync.getCurrentPlaneIndex(), data_.get(), this,
 			std::move(worldGen), std::move(colls));
 		plane_->deserialize(sync.getCurrentPlane());
+		player_.deserialize(plane_->getContext(), sync.getPlayerRef());
 
 		info << "Successfully performed initial world sync.";
 	} else if (r.isTick()) {
@@ -218,7 +267,14 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 				continue;
 			}
 
-			colls[index]->deserializeUpdates(ctx, update);
+			auto &coll = colls[index];
+			if (coll.get() == player_.collection()) {
+				// Ignore the current player if we got player updates.
+				// We control the state of this one player.
+				coll->deserializeUpdates(ctx, update, player_.id());
+			} else {
+				coll->deserializeUpdates(ctx, update, {});
+			}
 		}
 
 		{ // Deserialize world gen data
@@ -227,6 +283,9 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 			capnp::PackedMessageReader reader(stream);
 			plane_->worldGen_->deserialize(ctx, reader);
 		}
+
+		// Finally, send the player's current state
+		sendPlayerState();
 	} else if (r.isTileChange()) {
 		auto change = r.getTileChange();
 		auto pos = TilePos{change.getPos().getX(), change.getPos().getY()};
@@ -245,17 +304,6 @@ void MPGame::initInputHandler()
 {
 	std::vector<ActionSpec> actions;
 
-	actions.push_back({
-		.name = "@::cam-x",
-		.kind = ActionKind::AXIS,
-		.defaultInputs = {"key:A;D"},
-	});
-	actions.push_back({
-		.name = "@::cam-y",
-		.kind = ActionKind::AXIS,
-		.defaultInputs = {"key:W;S"},
-	});
-
 	for (auto &mod: data_->mods_) {
 		for (auto action: mod.mod_->actions_) {
 			action.name = cat(mod.name(), "::", action.name);
@@ -264,9 +312,29 @@ void MPGame::initInputHandler()
 	}
 
 	inputHandler_.setActions(std::move(actions));
+}
 
-	camXAction_ = inputHandler_.action("@::cam-x");
-	camYAction_ = inputHandler_.action("@::cam-y");
+void MPGame::sendPlayerState()
+{
+	Entity *ent = player_.get();
+	if (!ent) {
+		info << "No entity!";
+		return;
+	}
+
+	// TODO: Don't allocate every time
+
+	capnp::MallocMessageBuilder mb;
+	ent->serializeUpdates(plane_->getContext(), mb);
+
+	kj::VectorOutputStream stream;
+	capnp::writePackedMessage(stream, mb);
+	auto arr = stream.getArray();
+
+	auto builder = client_.builder();
+	auto data = builder.initRoot<mp_proto::ClientToServer>().initUpdatePlayer(arr.size());
+	memcpy(&data.asBytes().front(), &arr.front(), arr.size());
+	client_.send(builder);
 }
 
 }

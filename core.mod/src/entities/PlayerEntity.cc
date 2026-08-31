@@ -151,40 +151,6 @@ void PlayerEntity::drawConsole(Swan::Ctx &ctx)
 	ImGui::End();
 }
 
-void PlayerEntity::update(Swan::Ctx &ctx, float dt)
-{
-	// God mode, or normal physics
-	if (ctx.game.debug_.godMode) {
-		physicsBody_.onGround = false;
-		physicsBody_.friction();
-
-		physicsBody_.force += {
-			actions::moveX.value() * MOVE_FORCE_GROUND,
-			actions::moveY.value() * MOVE_FORCE_GROUND,
-		};
-
-		physicsBody_.updateNoclip(ctx, dt);
-	} else  {
-		handlePhysics(ctx, dt);
-
-		bool wasOnGround = physicsBody_.onGround;
-		auto oldVel = physicsBody_.vel;
-		physicsBody_.update(ctx, dt);
-		if (!wasOnGround && physicsBody_.onGround) {
-			auto squareSpeed = oldVel.squareLength();
-			if (squareSpeed >= 30 * 30) {
-				hurt(ctx, 4);
-			}
-			else if (squareSpeed >= 25 * 25) {
-				hurt(ctx, 3);
-			}
-			else if (squareSpeed >= 20 * 20) {
-				hurt(ctx, 2);
-			}
-		}
-	}
-}
-
 void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 {
 	auto lightPos = physicsBody_.body.topMid().as<int>();
@@ -279,10 +245,6 @@ void PlayerEntity::drawDebug(Swan::Ctx &ctx)
 
 void PlayerEntity::controlPlayer(Swan::Ctx &ctx, float dt)
 {
-	// TODO: Give access to the stuff in 'game' better
-	// (or re-write how player logic works?)
-	auto *game = dynamic_cast<Swan::Game *>(&ctx.game);
-
 	if (interactTimer_ > 0) {
 		interactTimer_ -= dt;
 	}
@@ -319,7 +281,7 @@ void PlayerEntity::controlPlayer(Swan::Ctx &ctx, float dt)
 	}
 
 	// Select between mouse mode and controller mode
-	if (game->hasMouseMoved()) {
+	if (ctx.game.hasMouseMoved()) {
 		mouseMode_ = true;
 	} else if (actions::selectX || actions::selectY) {
 		mouseMode_ = false;
@@ -327,7 +289,7 @@ void PlayerEntity::controlPlayer(Swan::Ctx &ctx, float dt)
 
 	Swan::Vec2 facePos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.3};
 	if (mouseMode_) {
-		Swan::Vec2 mousePos = game->getMousePos();
+		Swan::Vec2 mousePos = ctx.game.getMousePos();
 		lookVector_ = mousePos - facePos;
 	} else {
 		lookVector_ = {
@@ -449,14 +411,40 @@ void PlayerEntity::controlPlayer(Swan::Ctx &ctx, float dt)
 		dropItem(ctx);
 	}
 
+	// God mode, or normal physics
+	if (ctx.game.debug_.godMode) {
+		physicsBody_.onGround = false;
+		physicsBody_.friction();
+
+		physicsBody_.force += {
+			actions::moveX.value() * MOVE_FORCE_GROUND,
+			actions::moveY.value() * MOVE_FORCE_GROUND,
+		};
+
+		physicsBody_.updateNoclip(ctx, dt);
+	} else  {
+		handlePhysics(ctx, dt);
+
+		bool wasOnGround = physicsBody_.onGround;
+		auto oldVel = physicsBody_.vel;
+		physicsBody_.update(ctx, dt);
+		if (!wasOnGround && physicsBody_.onGround) {
+			auto squareSpeed = oldVel.squareLength();
+			if (squareSpeed >= 30 * 30) {
+				hurt(ctx, 4);
+			}
+			else if (squareSpeed >= 25 * 25) {
+				hurt(ctx, 3);
+			}
+			else if (squareSpeed >= 20 * 20) {
+				hurt(ctx, 2);
+			}
+		}
+	}
 }
 
 void PlayerEntity::drawUI(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
-	// TODO: Give access to the stuff in 'game' better
-	// (or re-write how player logic works?)
-	auto *game = dynamic_cast<Swan::Game *>(&ctx.game);
-
 	if (invulnerable_ > 0) {
 		rnd.setGamma(gamma_ + invulnerable_ * 3);
 	} else if (vit_ == Vit::LETHARGIC) {
@@ -628,9 +616,9 @@ void PlayerEntity::drawUI(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	if (!heldStack_.empty()) {
 		Swan::Vec2 pos;
 		if (mouseMode_) {
-			pos = game->getMouseUIPos();
+			pos = ctx.game.getMouseUIPos();
 		} else {
-			pos = (lookVector_ / game->uiCam_.zoom) * game->cam_.zoom;
+			pos = ctx.game.uiPosFromWorldPos(lookVector_);
 		}
 
 		rnd.drawUITile({
@@ -652,14 +640,14 @@ void PlayerEntity::drawUI(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	// Draw tooltips for player inventory
 	if (ui_.hoveredInventorySlot >= 0 && heldStack_.empty()) {
 		inventory_.renderTooltip(
-			ctx, rnd, game->getMouseUIPos(),
+			ctx, rnd, ctx.game.getMouseUIPos(),
 			ui_.hoveredInventorySlot);
 	}
 
 	// Draw tooltips for auxiliary inventory
 	if (ui_.hoveredAuxInventorySlot >= 0 && heldStack_.empty()) {
 		auxInventory_->renderTooltip(
-			ctx, rnd, game->getMouseUIPos(),
+			ctx, rnd, ctx.game.getMouseUIPos(),
 			ui_.hoveredAuxInventorySlot);
 	}
 
@@ -993,12 +981,8 @@ void PlayerEntity::dropItem(Swan::Ctx &ctx)
 
 void PlayerEntity::handleInventoryHover(Swan::Ctx &ctx)
 {
-	// TODO: Give access to the stuff in 'game' better
-	// (or re-write how player logic works?)
-	auto *game = dynamic_cast<Swan::Game *>(&ctx.game);
-
 	ui_.hoveredInventorySlot = -1;
-	auto mousePos = game->getMouseUIPos();
+	auto mousePos = ctx.game.getMouseUIPos();
 	ui_.hoveredInventorySlot = Swan::UI::inventoryCellIndex(mousePos, ui_.hotbarRect);
 	if (ui_.hoveredInventorySlot < 0 && ui_.showInventory) {
 		ui_.hoveredInventorySlot = Swan::UI::inventoryCellIndex(mousePos, ui_.inventoryRect, 10);

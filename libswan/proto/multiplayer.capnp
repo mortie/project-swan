@@ -6,12 +6,14 @@ $Cxx.namespace("Swan::mp_proto");
 using import "./swan.capnp".Vec2i;
 using import "./swan.capnp".WorldPlane;
 using import "./swan.capnp".EntitySystem;
+using import "./swan.capnp".EntityRef;
 
 struct ClientToServer {
 	union {
 		hello @0 :Hello;
 		quit @1 :Void;
 		pong @2 :Void;
+		updatePlayer @3 :Data;
 	}
 
 	struct Hello {
@@ -58,6 +60,7 @@ struct ServerToClient {
 		currentPlaneIndex @2 :UInt32;
 		currentPlane @3 :WorldPlane;
 		worldSeed @4 :UInt32;
+		playerRef @5 :EntityRef;
 	}
 
 	struct Tick {

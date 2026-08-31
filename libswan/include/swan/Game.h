@@ -23,7 +23,7 @@ namespace Swan {
 
 class GameServer;
 
-class Game: public GameIO {
+class Game final: public GameIO {
 public:
 	Game(std::function<bool()> recompileMods, HashMap<ModInfo> mods);
 	~Game();
@@ -43,9 +43,10 @@ public:
 	void onScrollWheel(float dy) override;
 	void onViewportSize(int w, int h) override;
 
-	Vec2 getMouseScreenPos() { return mousePos_; }
-	Vec2 getMouseUIPos() { return mouseUIPos_; }
-	bool hasMouseMoved() { return hasMouseMoved_; }
+	Vec2 getMousePos() override;
+	TilePos getMouseTile() override;
+	Vec2 uiPosFromWorldPos(Vec2 worldPos) override
+	{ return (worldPos / uiCam_.zoom) * cam_.zoom; }
 
 	void playSound(
 		SoundAsset *asset, float volume,
@@ -54,9 +55,6 @@ public:
 		SoundAsset *asset, float volume,
 		std::optional<Vec2> center,
 		SoundHandle &handle) override;
-
-	Vec2 getMousePos();
-	TilePos getMouseTile();
 
 	void drawDebugMenu();
 	void drawPerfMenu();
@@ -136,11 +134,9 @@ private:
 	void initInputHandler();
 	void initCommandHandler();
 
-	float tickAcc_ = 0;
+	PlayerData onPlayerConnected(std::string_view identifier);
 
-	Vec2 mousePos_;
-	Vec2 mouseUIPos_;
-	bool hasMouseMoved_ = false;
+	float tickAcc_ = 0;
 
 	std::vector<Item *> sortedItems_;
 	bool hasSortedItems_ = false;
@@ -156,6 +152,8 @@ private:
 
 	std::vector<CowStr> commandTokensBuf_;
 	std::vector<CowStr> commandArgvBuf_;
+
+	friend GameServer;
 };
 
 }

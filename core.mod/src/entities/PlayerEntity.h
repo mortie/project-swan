@@ -35,7 +35,6 @@ public:
 	}
 
 	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
-	void update(Swan::Ctx &ctx, float dt) override;
 	void tick(Swan::Ctx &ctx, float dt) override;
 	void drawDebug(Swan::Ctx &ctx) override;
 

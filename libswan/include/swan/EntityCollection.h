@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <typeindex>
 #include <functional>
@@ -145,7 +146,8 @@ public:
 	virtual void serializeUpdates(
 		Ctx &ctx, mp_proto::EntityCollectionUpdate::Builder w) = 0;
 	virtual void deserializeUpdates(
-		Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader r) = 0;
+		Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader r,
+		std::optional<uint64_t> ignoredID) = 0;
 
 protected:
 	uint64_t currentId_;

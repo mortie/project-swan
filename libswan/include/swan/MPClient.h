@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <capnp/message.h>
 
 #include "multiplayer.capnp.h"
 
@@ -39,6 +40,9 @@ public:
 	void end();
 	void tick(float dt);
 	bool receive(mp_proto::ServerToClient::Reader &r);
+
+	capnp::MallocMessageBuilder builder();
+	void send(capnp::MallocMessageBuilder &);
 
 	State state();
 

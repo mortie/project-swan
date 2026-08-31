@@ -88,7 +88,8 @@ public:
 	void serializeUpdates(
 		Ctx &ctx, mp_proto::EntityCollectionUpdate::Builder w) override;
 	void deserializeUpdates(
-		Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader w) override;
+		Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader w,
+		std::optional<uint64_t> ignoredID) override;
 
 	const std::string name_;
 	uint64_t nextId_ = 0;
@@ -576,7 +577,8 @@ void EntityCollectionImpl<Ent>::serializeUpdates(
 
 template<typename Ent>
 void EntityCollectionImpl<Ent>::deserializeUpdates(
-	Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader r)
+	Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader r,
+	std::optional<uint64_t> ignoredID)
 {
 	// Despawn despawned entities
 	for (auto id: r.getDespawnedEntities()) {
@@ -599,6 +601,10 @@ void EntityCollectionImpl<Ent>::deserializeUpdates(
 	// Deserialize updated entities
 	for (auto entity: r.getUpdatedEntities()) {
 		uint64_t id = entity.getId();
+		if (ignoredID && *ignoredID == id) {
+			continue;
+		}
+
 		auto it = idToIndex_.find(id);
 		if (it == idToIndex_.end()) {
 			warn << "Update for non-existent entity with ID " << id;

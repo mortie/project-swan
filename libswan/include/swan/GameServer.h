@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EntityCollection.h"
 #include "MPServer.h"
 #include "Tile.h"
 #include "WorldPlane.h"
@@ -14,16 +15,19 @@
 namespace Swan {
 
 class World;
+class Game;
 
 class GameServer {
 public:
 	struct ConnectedClient {
 		MPServer::ClientInfo info;
 		WorldPlane::ID plane;
+		EntityRef ref;
 	};
 
-	GameServer(World *world, std::vector<std::string> modIDs):
+	GameServer(World *world, Game *game, std::vector<std::string> modIDs):
 		world_(world),
+		game_(game),
 		modIDs_(std::move(modIDs))
 	{}
 	~GameServer() { server_.end(); }
@@ -55,6 +59,7 @@ private:
 
 	MPServer server_;
 	World *world_;
+	Game *game_;
 	std::vector<std::string> modIDs_;
 	std::vector<ConnectedClient> clients_;
 
