@@ -789,6 +789,7 @@ void Game::update(float dt)
 		auto *controller = localPlayer_->ref.as<PlayerControllerTrait>();
 		if (controller) {
 			auto &plane = *world_->getPlane(localPlayer_->plane).plane;
+			auto override = plane.entities().overrideCurrentEntity(localPlayer_->ref);
 			controller->controlPlayer(plane.getContext(), dt);
 		}
 

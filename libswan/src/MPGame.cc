@@ -20,10 +20,7 @@ static constexpr float TICK_DELTA = 1.0 / TICK_RATE;
 MPGame::MPGame(std::function<bool()> recompileMods, HashMap<ModInfo> mods):
 	recompileMods_(recompileMods),
 	mods_(std::move(mods))
-{
-	// Temporary, until we sort out client-side lighting
-	debug_.disableShadows = true;
-}
+{}
 
 void MPGame::onMouseMove(float x, float y)
 {
@@ -81,6 +78,7 @@ void MPGame::update(float dt)
 
 	auto *controller = player_.as<PlayerControllerTrait>();
 	if (controller) {
+		auto override = plane_->entities().overrideCurrentEntity(player_);
 		controller->controlPlayer(plane_->getContext(), dt);
 
 		// Make camera follow player

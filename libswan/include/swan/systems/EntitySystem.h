@@ -27,6 +27,22 @@ struct FoundEntity {
 
 class EntitySystemImpl {
 public:
+	class CurrentEntityOverride {
+	public:
+		CurrentEntityOverride(EntitySystemImpl *sys, EntityRef ref): sys_(sys)
+		{
+			sys_->currentEntityStack_.push_back(ref);
+		}
+
+		~CurrentEntityOverride()
+		{
+			sys_->currentEntityStack_.pop_back();
+		}
+
+	private:
+		EntitySystemImpl *sys_;
+	};
+
 	EntitySystemImpl(
 		WorldPlane &plane,
 		std::vector<std::unique_ptr<EntityCollection>> &&colls);
@@ -88,6 +104,9 @@ public:
 
 	EntityRef current();
 
+	CurrentEntityOverride overrideCurrentEntity(EntityRef ref)
+	{ return {this, ref}; }
+
 	/*
 	 * Available to friends
 	 */
@@ -124,6 +143,8 @@ private:
 
 	std::vector<EntityRef> despawnListA_;
 	std::vector<EntityRef> despawnListB_;
+
+	friend CurrentEntityOverride;
 };
 
 class EntitySystem: private EntitySystemImpl {
@@ -139,6 +160,7 @@ public:
 	using EntitySystemImpl::getTileEntity;
 	using EntitySystemImpl::collections;
 	using EntitySystemImpl::current;
+	using EntitySystemImpl::overrideCurrentEntity;
 
 	friend WorldPlane;
 	friend TileSystemImpl;
