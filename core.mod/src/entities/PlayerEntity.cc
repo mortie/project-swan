@@ -64,6 +64,395 @@ PlayerEntity::PlayerEntity(Swan::Ctx &ctx, Swan::Vec2 pos):
 
 void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
+	Cygnet::Mat3gf mat;
+
+	// Currently, there is no sprite for running left.
+	// Running left is just running right but flipped.
+	if (lastDirection_ < 0) {
+		mat.translate({-0.9, 0}).scale({-1, 1}).translate({0.9, 0});
+	}
+
+	// Teleportation animation..
+	if (teleState_ != 0) {
+		float frac = teleportTimer_ / 0.2;
+		mat.scale({frac, 1});
+		mat.translate({(1.0f - frac) * 0.9f, 0});
+	}
+
+	// The running animation dips into the ground a bit
+	if (state_ == State::RUNNING) {
+		mat.translate({0, 3.5 / 32.0});
+	}
+
+	// Position
+	mat.translate(physicsBody_.body.pos - Swan::Vec2{0.6, 0.5});
+
+	currentAnimation_.draw(rnd, mat);
+}
+
+void PlayerEntity::drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
+{
+	ui_.inventoryRect = rnd.uiView({
+		.pos = {0, -2},
+		.size = {12, 5},
+	}, [&] {
+		// Inventory content
+		Swan::UI::inventory(
+			ctx, rnd, {10, 3}, sprites::ui__inventory,
+			{inventory_.content_.begin() + 10, inventory_.content_.end()},
+			ui_.hoveredInventorySlot - 10);
+
+		// Selection
+		if (ui_.selectedInventorySlot >= 10) {
+			int slot = ui_.selectedInventorySlot - 10;
+			int y = slot / 10;
+			int x = slot % 10;
+			rnd.drawUISprite({
+				.transform = Cygnet::Mat3gf{}.translate(
+					{float(x), float(y)}),
+				.sprite = sprites::ui__selectedSlot,
+			}, Cygnet::Anchor::TOP_LEFT);
+		}
+	}, Cygnet::Anchor::BOTTOM);
+}
+
+void PlayerEntity::drawConsole(Swan::Ctx &ctx)
+{
+	// TODO: Give access to the stuff in 'game' better
+	// (or re-write how player logic works?)
+	auto *game = dynamic_cast<Swan::Game *>(&ctx.game);
+
+	ImGui::SetNextWindowSize(ImVec2(300, 200));
+	ImGui::Begin("Console", &consoleVisible_);
+	ImGui::Text("Command");
+
+	if (consoleFirstFrame_) {
+		ImGui::SetKeyboardFocusHere();
+	}
+	consoleFirstFrame_ = false;
+
+	ImGui::SetNextItemWidth(-1);
+	bool enter = ImGui::InputText(
+		"##Command", &consoleInput_,
+		ImGuiInputTextFlags_EnterReturnsTrue);
+
+	if (enter) {
+		if (consoleInput_ == "") {
+			consoleVisible_ = false;
+		}
+
+		ImGui::SetKeyboardFocusHere(-1);
+		consoleOutput_.clear();
+		game->runCommand(ctx, consoleInput_, consoleOutput_);
+		consoleInput_ = "";
+	}
+
+	ImGui::TextWrapped("%s", consoleOutput_.c_str());
+	ImGui::End();
+}
+
+void PlayerEntity::update(Swan::Ctx &ctx, float dt)
+{
+	// God mode, or normal physics
+	if (ctx.game.debug_.godMode) {
+		physicsBody_.onGround = false;
+		physicsBody_.friction();
+
+		physicsBody_.force += {
+			actions::moveX.value() * MOVE_FORCE_GROUND,
+			actions::moveY.value() * MOVE_FORCE_GROUND,
+		};
+
+		physicsBody_.updateNoclip(ctx, dt);
+	} else  {
+		handlePhysics(ctx, dt);
+
+		bool wasOnGround = physicsBody_.onGround;
+		auto oldVel = physicsBody_.vel;
+		physicsBody_.update(ctx, dt);
+		if (!wasOnGround && physicsBody_.onGround) {
+			auto squareSpeed = oldVel.squareLength();
+			if (squareSpeed >= 30 * 30) {
+				hurt(ctx, 4);
+			}
+			else if (squareSpeed >= 25 * 25) {
+				hurt(ctx, 3);
+			}
+			else if (squareSpeed >= 20 * 20) {
+				hurt(ctx, 2);
+			}
+		}
+	}
+}
+
+void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
+{
+	auto lightPos = physicsBody_.body.topMid().as<int>();
+	if (lightPos.x < 0) lightPos.x -= 1;
+	if (lightPos.y < 0) lightPos.y -= 1;
+
+	auto lightLevel = ctx.plane.tiles().getLightLevel(lightPos);
+	float desiredGamma = 1.0 / ((lightLevel / 256.0) + 1) * 2;
+
+	if (gamma_ < desiredGamma) {
+		gamma_ += 0.01;
+		if (gamma_ > desiredGamma) {
+			gamma_ = desiredGamma;
+		}
+	} else if (gamma_ > desiredGamma) {
+		gamma_ -= 0.01;
+		if (gamma_ < desiredGamma) {
+			gamma_ = desiredGamma;
+		}
+	}
+
+	// Calculate the held light we would expect to produce
+	std::optional<HeldLight> light;
+	if (!heldStack_.empty() && heldStack_.item()->lightLevel) {
+		light = {
+			.pos = placePos_,
+			.level = heldStack_.item()->lightLevel,
+		};
+	}
+
+	// If the actual held light is different than what we expect,
+	// tell the light system to remove and add lights as needed
+	if (heldLight_ != light) {
+		if (heldLight_) {
+			ctx.plane.lights().removeLight(heldLight_->pos, heldLight_->level);
+		}
+
+		if (light) {
+			ctx.plane.lights().addLight(light->pos, light->level);
+		}
+
+		heldLight_ = light;
+	};
+
+	if (auxInventory_ == &craftingInventory_) {
+		craftingInventory_.recompute(ctx, inventory_.content(), {
+			.workbench = inWorkbench_,
+		});
+	}
+
+	// Drown
+	Swan::Fluid &fluidTop = ctx.plane.fluids().getAtPos(
+		physicsBody_.body.topMid().add(0, 0.1));
+	if (fluidTop.id == Swan::WorldData::AIR_FLUID_ID) {
+		oxygen_ += dt * 4;
+		if (oxygen_ > MAX_OXYGEN) {
+			oxygen_ = MAX_OXYGEN;
+		}
+	}
+	else if (blackout_ <= 0) {
+		oxygen_ -= dt * 0.75;
+		if (oxygen_ < 0) {
+			ctx.game.playSound(sounds::misc__hurt, 0.4f);
+			oxygen_ = 0;
+			health_ = 0;
+			blackout_ = BLACKOUT_TIME;
+			state_ = State::IDLE;
+			currentAnimation_ = idleAnimation();
+		}
+	}
+
+	float airTemp = computeAirTemperature(ctx);
+
+	if (airTemp < 5 && blackout_ <= 0) {
+		temperature_ -= dt * 0.5;
+		if (temperature_ < -12) {
+			ctx.game.playSound(sounds::misc__hurt, 0.4f);
+			health_ = 0;
+			blackout_ = BLACKOUT_TIME;
+			state_ = State::IDLE;
+			currentAnimation_ = idleAnimation();
+		}
+	} else if (temperature_ < 0 && blackout_ <= 0) {
+		temperature_ += dt * 1;
+	}
+}
+
+void PlayerEntity::drawDebug(Swan::Ctx &ctx)
+{
+	ImGui::Text("Temperature: %.01f", computeAirTemperature(ctx));
+}
+
+void PlayerEntity::controlPlayer(Swan::Ctx &ctx, float dt)
+{
+	// TODO: Give access to the stuff in 'game' better
+	// (or re-write how player logic works?)
+	auto *game = dynamic_cast<Swan::Game *>(&ctx.game);
+
+	if (interactTimer_ > 0) {
+		interactTimer_ -= dt;
+	}
+
+	if (blackout_ > 0) {
+		float prevBlackout = blackout_;
+		blackout_ -= dt;
+		if (prevBlackout > 1.5 && blackout_ <= 1.5) {
+			ctx.game.playSound(sounds::misc__teleport);
+			physicsBody_.body.pos = spawnPoint_;
+			physicsBody_.vel = {};
+			state_ = State::IDLE;
+			currentAnimation_ = idleAnimation();
+			temperature_ = 0;
+		}
+
+		if (blackout_ > 1.5) {
+			return;
+		}
+	}
+
+	if (invulnerable_ > 0) {
+		invulnerable_ -= dt;
+	}
+
+	if (health_ <= 0) {
+		vit_ = Vit::LETHARGIC;
+	}
+	else if (health_ <= 4) {
+		vit_ = Vit::WINDED;
+	}
+	else {
+		vit_ = Vit::OK;
+	}
+
+	// Select between mouse mode and controller mode
+	if (game->hasMouseMoved()) {
+		mouseMode_ = true;
+	} else if (actions::selectX || actions::selectY) {
+		mouseMode_ = false;
+	}
+
+	Swan::Vec2 facePos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.3};
+	if (mouseMode_) {
+		Swan::Vec2 mousePos = game->getMousePos();
+		lookVector_ = mousePos - facePos;
+	} else {
+		lookVector_ = {
+			actions::selectX.value() * 6,
+			actions::selectY.value() * 6,
+		};
+
+		if (lookVector_ == Swan::Vec2::ZERO) {
+			lookVector_ = {float(lastDirection_), 0.25};
+		}
+	}
+
+	// Look vector limit
+	if (lookVector_.squareLength() > 6 * 6) {
+		lookVector_ = lookVector_.norm() * 6;
+	}
+
+	auto cursorRaycast = ctx.plane.tiles().raycast(
+		facePos, lookVector_, std::min(lookVector_.length(), 5.9f));
+	breakPos_ = cursorRaycast.pos;
+	placePos_ = cursorRaycast.pos + cursorRaycast.face;
+
+	// Compute a world position which represents where the user "looks",
+	// or as close we can get without passing through solid tiles.
+	// Used as the 'lookPos' property for interaction managers.
+	Swan::Vec2 lookPos;
+	if (cursorRaycast.hit) {
+		lookPos = Swan::tileCenter(placePos_);
+	} else {
+		lookPos = facePos + lookVector_;
+	}
+
+	jumpTimer_.tick(dt);
+
+	// Update the interaction manager
+	if (interactionManager_) {
+		interactionManager_->update(ctx, dt, {
+			.lookPos = lookPos,
+			.breakPos = breakPos_,
+			.placePos = placePos_,
+		});
+	}
+
+	// Handle teleporting back to spawn point + animation
+	if (teleState_ == 1) {
+		teleportTimer_ -= dt;
+		if (teleportTimer_ <= 0) {
+			physicsBody_.body.pos = spawnPoint_;
+			teleportTimer_ = 0;
+			teleState_ = 2;
+		}
+	}
+	else if (teleState_ == 2) {
+		teleportTimer_ += dt * 2;
+		if (teleportTimer_ >= 0.2) {
+			teleState_ = 0;
+		}
+	}
+	else if (actions::returnHome) {
+		ctx.game.playSound(sounds::misc__teleport);
+		teleportTimer_ = 0.2;
+		teleState_ = 1;
+	}
+
+	handleInventorySelection(ctx);
+	handleInventoryHover(ctx);
+
+	// Cheats
+	if (actions::cheatHeal) {
+		health_ += 1;
+	}
+	else if (actions::cheatHurt) {
+		hurt(ctx, 1);
+	}
+	else if (actions::cheatTickWorld) {
+		auto &tile = ctx.plane.tiles().get(breakPos_);
+		if (tile.more->onWorldTick) {
+			Swan::info << "World ticking " << tile.name << " at " << breakPos_;
+			tile.more->onWorldTick(ctx, breakPos_);
+		}
+	}
+	else if (actions::cheatGrabItem) {
+		auto &tile = ctx.plane.tiles().get(breakPos_);
+		int count = 1;
+		if (actions::sprint) {
+			count = 16;
+		}
+		Swan::ItemStack stack(&ctx.world.getItem(tile.name), count);
+		inventory_.insert(stack);
+	}
+
+	// Console
+	if (actions::openConsole) {
+		consoleVisible_ = true;
+		consoleFirstFrame_ = true;
+	}
+
+	// Break block, or click UI
+	if (actions::guiClick) {
+		if (ui_.hoveredInventorySlot >= 0 || ui_.hoveredAuxInventorySlot >= 0) {
+			handleInventoryClick(ctx);
+		} else {
+			onLeftClick(ctx);
+		}
+	}
+	else if (actions::breakTile) {
+		if (ui_.hoveredInventorySlot < 0 && ui_.hoveredAuxInventorySlot < 0) {
+			onLeftClick(ctx);
+		}
+	}
+
+	// Place block, or activate tile or item
+	if (actions::activate) {
+		onRightClick(ctx, lookPos);
+	}
+
+	// Drop item
+	if (actions::dropItem) {
+		dropItem(ctx);
+	}
+
+}
+
+void PlayerEntity::drawUI(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
+{
 	// TODO: Give access to the stuff in 'game' better
 	// (or re-write how player logic works?)
 	auto *game = dynamic_cast<Swan::Game *>(&ctx.game);
@@ -111,31 +500,6 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 			.fill = blackoutColor,
 		});
 	}
-
-	Cygnet::Mat3gf mat;
-
-	// Currently, there is no sprite for running left.
-	// Running left is just running right but flipped.
-	if (lastDirection_ < 0) {
-		mat.translate({-0.9, 0}).scale({-1, 1}).translate({0.9, 0});
-	}
-
-	// Teleportation animation..
-	if (teleState_ != 0) {
-		float frac = teleportTimer_ / 0.2;
-		mat.scale({frac, 1});
-		mat.translate({(1.0f - frac) * 0.9f, 0});
-	}
-
-	// The running animation dips into the ground a bit
-	if (state_ == State::RUNNING) {
-		mat.translate({0, 3.5 / 32.0});
-	}
-
-	// Position
-	mat.translate(physicsBody_.body.pos - Swan::Vec2{0.6, 0.5});
-
-	currentAnimation_.draw(rnd, mat);
 
 	rnd.drawRect(Cygnet::RenderLayer::FOREGROUND, {
 		.pos = Swan::Vec2(placePos_).add(0.1, 0.1),
@@ -308,363 +672,6 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	if (interactionManager_) {
 		interactionManager_->draw(ctx, rnd);
 	}
-}
-
-void PlayerEntity::drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
-{
-	ui_.inventoryRect = rnd.uiView({
-		.pos = {0, -2},
-		.size = {12, 5},
-	}, [&] {
-		// Inventory content
-		Swan::UI::inventory(
-			ctx, rnd, {10, 3}, sprites::ui__inventory,
-			{inventory_.content_.begin() + 10, inventory_.content_.end()},
-			ui_.hoveredInventorySlot - 10);
-
-		// Selection
-		if (ui_.selectedInventorySlot >= 10) {
-			int slot = ui_.selectedInventorySlot - 10;
-			int y = slot / 10;
-			int x = slot % 10;
-			rnd.drawUISprite({
-				.transform = Cygnet::Mat3gf{}.translate(
-					{float(x), float(y)}),
-				.sprite = sprites::ui__selectedSlot,
-			}, Cygnet::Anchor::TOP_LEFT);
-		}
-	}, Cygnet::Anchor::BOTTOM);
-}
-
-void PlayerEntity::drawConsole(Swan::Ctx &ctx)
-{
-	// TODO: Give access to the stuff in 'game' better
-	// (or re-write how player logic works?)
-	auto *game = dynamic_cast<Swan::Game *>(&ctx.game);
-
-	ImGui::SetNextWindowSize(ImVec2(300, 200));
-	ImGui::Begin("Console", &consoleVisible_);
-	ImGui::Text("Command");
-
-	if (consoleFirstFrame_) {
-		ImGui::SetKeyboardFocusHere();
-	}
-	consoleFirstFrame_ = false;
-
-	ImGui::SetNextItemWidth(-1);
-	bool enter = ImGui::InputText(
-		"##Command", &consoleInput_,
-		ImGuiInputTextFlags_EnterReturnsTrue);
-
-	if (enter) {
-		if (consoleInput_ == "") {
-			consoleVisible_ = false;
-		}
-
-		ImGui::SetKeyboardFocusHere(-1);
-		consoleOutput_.clear();
-		game->runCommand(ctx, consoleInput_, consoleOutput_);
-		consoleInput_ = "";
-	}
-
-	ImGui::TextWrapped("%s", consoleOutput_.c_str());
-	ImGui::End();
-}
-
-void PlayerEntity::update(Swan::Ctx &ctx, float dt)
-{
-	// TODO: Give access to the stuff in 'game' better
-	// (or re-write how player logic works?)
-	auto *game = dynamic_cast<Swan::Game *>(&ctx.game);
-
-	if (interactTimer_ > 0) {
-		interactTimer_ -= dt;
-	}
-
-	if (blackout_ > 0) {
-		float prevBlackout = blackout_;
-		blackout_ -= dt;
-		if (prevBlackout > 1.5 && blackout_ <= 1.5) {
-			ctx.game.playSound(sounds::misc__teleport);
-			physicsBody_.body.pos = spawnPoint_;
-			physicsBody_.vel = {};
-			state_ = State::IDLE;
-			currentAnimation_ = idleAnimation();
-			temperature_ = 0;
-		}
-
-		if (blackout_ > 1.5) {
-			return;
-		}
-	}
-
-	if (invulnerable_ > 0) {
-		invulnerable_ -= dt;
-	}
-
-	if (health_ <= 0) {
-		vit_ = Vit::LETHARGIC;
-	}
-	else if (health_ <= 4) {
-		vit_ = Vit::WINDED;
-	}
-	else {
-		vit_ = Vit::OK;
-	}
-
-	// Select between mouse mode and controller mode
-	if (game->hasMouseMoved()) {
-		mouseMode_ = true;
-	} else if (actions::selectX || actions::selectY) {
-		mouseMode_ = false;
-	}
-
-	Swan::Vec2 facePos = physicsBody_.body.topMid() + Swan::Vec2{0, 0.3};
-	if (mouseMode_) {
-		Swan::Vec2 mousePos = game->getMousePos();
-		lookVector_ = mousePos - facePos;
-	} else {
-		lookVector_ = {
-			actions::selectX.value() * 6,
-			actions::selectY.value() * 6,
-		};
-
-		if (lookVector_ == Swan::Vec2::ZERO) {
-			lookVector_ = {float(lastDirection_), 0.25};
-		}
-	}
-
-	// Look vector limit
-	if (lookVector_.squareLength() > 6 * 6) {
-		lookVector_ = lookVector_.norm() * 6;
-	}
-
-	auto cursorRaycast = ctx.plane.tiles().raycast(
-		facePos, lookVector_, std::min(lookVector_.length(), 5.9f));
-	breakPos_ = cursorRaycast.pos;
-	placePos_ = cursorRaycast.pos + cursorRaycast.face;
-
-	// Compute a world position which represents where the user "looks",
-	// or as close we can get without passing through solid tiles.
-	// Used as the 'lookPos' property for interaction managers.
-	Swan::Vec2 lookPos;
-	if (cursorRaycast.hit) {
-		lookPos = Swan::tileCenter(placePos_);
-	} else {
-		lookPos = facePos + lookVector_;
-	}
-
-	jumpTimer_.tick(dt);
-
-	// Update the interaction manager
-	if (interactionManager_) {
-		interactionManager_->update(ctx, dt, {
-			.lookPos = lookPos,
-			.breakPos = breakPos_,
-			.placePos = placePos_,
-		});
-	}
-
-	// Handle teleporting back to spawn point + animation
-	if (teleState_ == 1) {
-		teleportTimer_ -= dt;
-		if (teleportTimer_ <= 0) {
-			physicsBody_.body.pos = spawnPoint_;
-			teleportTimer_ = 0;
-			teleState_ = 2;
-		}
-	}
-	else if (teleState_ == 2) {
-		teleportTimer_ += dt * 2;
-		if (teleportTimer_ >= 0.2) {
-			teleState_ = 0;
-		}
-	}
-	else if (actions::returnHome) {
-		ctx.game.playSound(sounds::misc__teleport);
-		teleportTimer_ = 0.2;
-		teleState_ = 1;
-	}
-
-	handleInventorySelection(ctx);
-	handleInventoryHover(ctx);
-
-	// Cheats
-	if (actions::cheatHeal) {
-		health_ += 1;
-	}
-	else if (actions::cheatHurt) {
-		hurt(ctx, 1);
-	}
-	else if (actions::cheatTickWorld) {
-		auto &tile = ctx.plane.tiles().get(breakPos_);
-		if (tile.more->onWorldTick) {
-			Swan::info << "World ticking " << tile.name << " at " << breakPos_;
-			tile.more->onWorldTick(ctx, breakPos_);
-		}
-	}
-	else if (actions::cheatGrabItem) {
-		auto &tile = ctx.plane.tiles().get(breakPos_);
-		int count = 1;
-		if (actions::sprint) {
-			count = 16;
-		}
-		Swan::ItemStack stack(&ctx.world.getItem(tile.name), count);
-		inventory_.insert(stack);
-	}
-
-	// Console
-	if (actions::openConsole) {
-		consoleVisible_ = true;
-		consoleFirstFrame_ = true;
-	}
-
-	// Break block, or click UI
-	if (actions::guiClick) {
-		if (ui_.hoveredInventorySlot >= 0 || ui_.hoveredAuxInventorySlot >= 0) {
-			handleInventoryClick(ctx);
-		} else {
-			onLeftClick(ctx);
-		}
-	}
-	else if (actions::breakTile) {
-		if (ui_.hoveredInventorySlot < 0 && ui_.hoveredAuxInventorySlot < 0) {
-			onLeftClick(ctx);
-		}
-	}
-
-	// Place block, or activate tile or item
-	if (actions::activate) {
-		onRightClick(ctx, lookPos);
-	}
-
-	// Drop item
-	if (actions::dropItem) {
-		dropItem(ctx);
-	}
-
-	// God mode, or normal physics
-	if (ctx.game.debug_.godMode) {
-		physicsBody_.onGround = false;
-		physicsBody_.friction();
-
-		physicsBody_.force += {
-			actions::moveX.value() * MOVE_FORCE_GROUND,
-			actions::moveY.value() * MOVE_FORCE_GROUND,
-		};
-
-		physicsBody_.updateNoclip(ctx, dt);
-	} else  {
-		handlePhysics(ctx, dt);
-
-		bool wasOnGround = physicsBody_.onGround;
-		auto oldVel = physicsBody_.vel;
-		physicsBody_.update(ctx, dt);
-		if (!wasOnGround && physicsBody_.onGround) {
-			auto squareSpeed = oldVel.squareLength();
-			if (squareSpeed >= 30 * 30) {
-				hurt(ctx, 4);
-			}
-			else if (squareSpeed >= 25 * 25) {
-				hurt(ctx, 3);
-			}
-			else if (squareSpeed >= 20 * 20) {
-				hurt(ctx, 2);
-			}
-		}
-	}
-}
-
-void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
-{
-	auto lightPos = physicsBody_.body.topMid().as<int>();
-	if (lightPos.x < 0) lightPos.x -= 1;
-	if (lightPos.y < 0) lightPos.y -= 1;
-
-	auto lightLevel = ctx.plane.tiles().getLightLevel(lightPos);
-	float desiredGamma = 1.0 / ((lightLevel / 256.0) + 1) * 2;
-
-	if (gamma_ < desiredGamma) {
-		gamma_ += 0.01;
-		if (gamma_ > desiredGamma) {
-			gamma_ = desiredGamma;
-		}
-	} else if (gamma_ > desiredGamma) {
-		gamma_ -= 0.01;
-		if (gamma_ < desiredGamma) {
-			gamma_ = desiredGamma;
-		}
-	}
-
-	// Calculate the held light we would expect to produce
-	std::optional<HeldLight> light;
-	if (!heldStack_.empty() && heldStack_.item()->lightLevel) {
-		light = {
-			.pos = placePos_,
-			.level = heldStack_.item()->lightLevel,
-		};
-	}
-
-	// If the actual held light is different than what we expect,
-	// tell the light system to remove and add lights as needed
-	if (heldLight_ != light) {
-		if (heldLight_) {
-			ctx.plane.lights().removeLight(heldLight_->pos, heldLight_->level);
-		}
-
-		if (light) {
-			ctx.plane.lights().addLight(light->pos, light->level);
-		}
-
-		heldLight_ = light;
-	};
-
-	if (auxInventory_ == &craftingInventory_) {
-		craftingInventory_.recompute(ctx, inventory_.content(), {
-			.workbench = inWorkbench_,
-		});
-	}
-
-	// Drown
-	Swan::Fluid &fluidTop = ctx.plane.fluids().getAtPos(
-		physicsBody_.body.topMid().add(0, 0.1));
-	if (fluidTop.id == Swan::WorldData::AIR_FLUID_ID) {
-		oxygen_ += dt * 4;
-		if (oxygen_ > MAX_OXYGEN) {
-			oxygen_ = MAX_OXYGEN;
-		}
-	}
-	else if (blackout_ <= 0) {
-		oxygen_ -= dt * 0.75;
-		if (oxygen_ < 0) {
-			ctx.game.playSound(sounds::misc__hurt, 0.4f);
-			oxygen_ = 0;
-			health_ = 0;
-			blackout_ = BLACKOUT_TIME;
-			state_ = State::IDLE;
-			currentAnimation_ = idleAnimation();
-		}
-	}
-
-	float airTemp = computeAirTemperature(ctx);
-
-	if (airTemp < 5 && blackout_ <= 0) {
-		temperature_ -= dt * 0.5;
-		if (temperature_ < -12) {
-			ctx.game.playSound(sounds::misc__hurt, 0.4f);
-			health_ = 0;
-			blackout_ = BLACKOUT_TIME;
-			state_ = State::IDLE;
-			currentAnimation_ = idleAnimation();
-		}
-	} else if (temperature_ < 0 && blackout_ <= 0) {
-		temperature_ += dt * 1;
-	}
-}
-
-void PlayerEntity::drawDebug(Swan::Ctx &ctx)
-{
-	ImGui::Text("Temperature: %.01f", computeAirTemperature(ctx));
 }
 
 void PlayerEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)

@@ -66,9 +66,18 @@ struct World {
 	namesByID @0 :List(Text);
 
 	planes @1 :List(WorldPlane);
-	player @2 :EntityRef;
-	currentPlane @3 :UInt32;
-	seed @4 :UInt32;
+	seed @2 :UInt32;
+
+	# This stores data for all players.
+	# The identifier "default" represents the current player
+	# in a world created in single player
+	playerData @3 :List(PlayerData);
+
+	struct PlayerData {
+		identifier @0 :Text;
+		plane @1 :UInt16;
+		ref @2 :EntityRef;
+	}
 }
 
 struct WorldPlane {

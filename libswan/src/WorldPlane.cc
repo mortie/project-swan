@@ -136,12 +136,9 @@ void WorldPlane::keepChunksActiveAround(Vec2 pos)
 		(int)floor(pos.y / CHUNK_HEIGHT));
 
 	// Draw chunks
-	for (int x = -1; x <= 1; ++x) {
-		for (int y = -1; y <= 1; ++y) {
-			auto iter = chunks_.find(pcpos + ChunkPos(x, y));
-			if (iter != chunks_.end()) {
-				iter->second.keepActive();
-			}
+	for (int x = -2; x <= 2; ++x) {
+		for (int y = -2; y <= 2; ++y) {
+			getChunk(pcpos + ChunkPos(x, y)).keepActive();
 		}
 	}
 }

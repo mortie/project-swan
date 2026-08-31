@@ -622,11 +622,16 @@ public:
 					return;
 				}
 
+				if (!game->localPlayer_) {
+					return;
+				}
+
+				auto body = game->localPlayer_->ref.trait<Swan::BodyTrait>();
 				if (argv[0].str() != "-") {
-					game->world_->player_->setMidX(strtof(std::string(argv[0].str()).c_str(), nullptr));
+					body->setMidX(strtof(std::string(argv[0].str()).c_str(), nullptr));
 				}
 				if (argv[1].str() != "-") {
-					game->world_->player_->setMidY(strtof(std::string(argv[1].str()).c_str(), nullptr));
+					body->setMidY(strtof(std::string(argv[1].str()).c_str(), nullptr));
 				}
 			},
 		});

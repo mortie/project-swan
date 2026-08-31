@@ -1,4 +1,5 @@
 #include "WorldData.h"
+#include "traits/PlayerControllerTrait.h"
 #include <swan/constants.h>
 #include <swan/HashMap.h>
 #include <algorithm>
@@ -82,8 +83,17 @@ void Game::createWorld(
 	}
 
 	world_->setWorldGen(worldgen);
-	world_->setCurrentPlane(world_->addPlane());
-	world_->spawnPlayer();
+	world_->addPlane();
+#ifndef SWAN_HEADLESS
+	localPlayer_ = &(playerData_["default"] = {
+		.plane = 0,
+		.ref = world_->getPlane(0).plane->spawnPlayer(),
+	});
+	if (!localPlayer_->ref.as<PlayerControllerTrait>()) {
+		warn << "Player does not implement PlayerControllerTrait!";
+	}
+#endif
+
 	hasSortedItems_ = false;
 	worldPath_ = std::move(worldPath);
 }
@@ -132,6 +142,30 @@ void Game::loadWorld(std::string worldPath)
 	world_->deserialize(worldReader);
 	hasSortedItems_ = false;
 	worldPath_ = std::move(worldPath);
+
+	for (auto p: worldReader.getPlayerData()) {
+		PlayerData &data = playerData_[p.getIdentifier().cStr()] = {
+			.plane = p.getPlane(),
+			.ref = {},
+		};
+		data.ref.deserialize(world_->getPlane(data.plane).plane->getContext(), p.getRef());
+	}
+
+#ifndef SWAN_HEADLESS
+	auto defaultPlayerIt = playerData_.find("default");
+	if (defaultPlayerIt == playerData_.end()) {
+		warn << "Missing default player! Spawning a new one.";
+		localPlayer_ = &(playerData_["default"] = {
+			.plane = 0,
+			.ref = world_->getPlane(0).plane->spawnPlayer(),
+		});
+	} else {
+		localPlayer_ = &defaultPlayerIt->second;
+	}
+	if (!localPlayer_->ref.as<PlayerControllerTrait>()) {
+		warn << "Player does not implement PlayerControllerTrait!";
+	}
+#endif
 }
 
 void Game::onMouseMove(float x, float y)
@@ -186,16 +220,22 @@ TilePos Game::getMouseTile()
 
 void Game::drawDebugMenu()
 {
-	ImGui::Text(
-		"Position: x=%d y=%d",
-		int(round(world_->player_->pos.x)),
-		int(round(world_->player_->pos.y)));
+	Entity *player = localPlayer_ ? localPlayer_->ref.get() : nullptr;
+	Body *playerBody = player ? player->trait<BodyTrait>() : nullptr;
+	if (playerBody) {
+		ImGui::Text(
+			"Position: x=%d y=%d",
+			int(round(playerBody->pos.x)),
+			int(round(playerBody->pos.y)));
+	}
 
 	ImGui::Text("World seed: %u", world_->seed());
 
 	Swan::Ctx &ctx = world_->currentPlane().getContext();
 	world_->currentPlane().worldGen_->debugInfo(ctx);
-	world_->playerRef_->drawDebug(ctx);
+	if (player) {
+		player->drawDebug(ctx);
+	}
 
 	ImGui::Checkbox("Draw collision boxes", &debug_.drawCollisionBoxes);
 	ImGui::Checkbox("Draw chunk boundaries", &debug_.drawChunkBoundaries);
@@ -379,11 +419,13 @@ void Game::drawDebugMenu()
 		}
 
 		if (ImGui::Button(item->name.c_str())) {
-			auto *inventory = world_->playerRef_.trait<InventoryTrait>();
-			ItemStack stack(item, 1);
+			Inventory *inventory = player ? player->trait<InventoryTrait>() : nullptr;
+			if (inventory) {
+				ItemStack stack(item, 1);
 
-			info << "Giving player " << stack.count() << ' ' << item->name;
-			inventory->insert(stack);
+				info << "Giving player " << stack.count() << ' ' << item->name;
+				inventory->insert(stack);
+			}
 		}
 	}
 	ImGui::EndChild();
@@ -540,8 +582,16 @@ void Game::draw()
 	}
 
 	renderer_.clear();
-	renderer_.setBackgroundColor(world_->backgroundColor());
-	world_->draw(renderer_);
+	if (localPlayer_) {
+		auto &plane = *world_->getPlane(localPlayer_->plane).plane;
+		renderer_.setBackgroundColor(plane.worldGen_->backgroundColor(cam_.pos));
+		plane.draw(renderer_, cam_.pos);
+
+		auto *controller = localPlayer_->ref.as<PlayerControllerTrait>();
+		if (controller) {
+			controller->drawUI(plane.getContext(), renderer_);
+		}
+	}
 	gui_.endFrame();
 }
 
@@ -735,6 +785,30 @@ void Game::update(float dt)
 		world_->currentPlane().regenerate();
 	}
 
+	if (localPlayer_) {
+		// Make the player control itself
+		auto *controller = localPlayer_->ref.as<PlayerControllerTrait>();
+		if (controller) {
+			auto &plane = *world_->getPlane(localPlayer_->plane).plane;
+			controller->controlPlayer(plane.getContext(), dt);
+		}
+
+		// Make camera follow player
+		auto body = localPlayer_->ref.trait<BodyTrait>();
+		auto camTarget = body->pos + body->size / 2;
+		auto camSqDist = (cam_.pos - camTarget).squareLength();
+		if (camSqDist > 20 * 20) {
+			cam_.pos = camTarget;
+		} else {
+			constexpr float HALF_LIFE = 0.05;
+			cam_.pos = {
+				lerpSmooth(cam_.pos.x, camTarget.x, HALF_LIFE, dt),
+				lerpSmooth(cam_.pos.y, camTarget.y, HALF_LIFE, dt),
+			};
+		}
+	}
+
+	// Update the rest of the world
 	renderer_.update(dt);
 	world_->update(dt);
 
@@ -778,6 +852,10 @@ void Game::tick()
 	if (triggerSave_) {
 		save();
 		triggerSave_ = false;
+	}
+
+	if (localPlayer_) {
+		world_->getPlane(localPlayer_->plane).plane->keepChunksActiveAround(cam_.pos);
 	}
 
 	perf_.tickCount += 1;
@@ -843,6 +921,16 @@ void Game::save()
 	capnp::MallocMessageBuilder mb;
 	auto world = mb.initRoot<proto::World>();
 	world_->serialize(world);
+
+	info << "Serializing " << playerData_.size() << " players...";
+	auto playerBuilder = world.initPlayerData(playerData_.size());
+	for (size_t i = 0; auto &[ident, player]: playerData_) {
+		auto p = playerBuilder[i++];
+		p.setIdentifier(ident);
+		p.setPlane(player.plane);
+		player.ref.serialize(p.initRef());
+	}
+
 	kj::VectorOutputStream out;
 	capnp::writePackedMessage(out, mb);
 

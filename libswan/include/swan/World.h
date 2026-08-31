@@ -36,9 +36,6 @@ public:
 	World(Game *game, uint32_t seed, WorldData data);
 
 	void setWorldGen(std::string gen);
-	void spawnPlayer();
-
-	void setCurrentPlane(WorldPlane &plane);
 
 	WorldPlane &currentPlane()
 	{ return *planes_[currentPlane_].plane; }
@@ -55,7 +52,6 @@ public:
 	{ return addPlane(defaultWorldGen_); }
 
 	Cygnet::Color backgroundColor();
-	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
 	bool tick(float dt, RTDeadline deadline);
 	void tickDone();
@@ -67,15 +63,7 @@ public:
 
 	WorldData &data() { return data_; }
 
-	EntityRef playerRef_;
-	Body *player_;
-
 private:
-	class ChunkRenderer {
-	public:
-		void tick(WorldPlane &plane, ChunkPos abspos);
-	};
-
 	std::vector<ModWrapper> loadMods(std::span<const std::string> paths);
 	void buildResources();
 
@@ -84,7 +72,6 @@ private:
 	int resourceTickCounter_ = 0;
 
 	uint32_t seed_;
-	ChunkRenderer chunkRenderer_;
 	WorldPlane::ID currentPlane_ = 0;
 	std::vector<PlaneWrapper> planes_;
 	std::string defaultWorldGen_;

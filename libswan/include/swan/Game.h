@@ -11,6 +11,7 @@
 #include <swan/HashMap.h>
 
 #include "Command.h"
+#include "EntityCollection.h"
 #include "GameIO.h"
 #include "InputHandler.h"
 #include "common.h"
@@ -26,6 +27,11 @@ class Game: public GameIO {
 public:
 	Game(std::function<bool()> recompileMods, HashMap<ModInfo> mods);
 	~Game();
+
+	struct PlayerData {
+		WorldPlane::ID plane;
+		EntityRef ref;
+	};
 
 	void createWorld(
 		std::string worldPath, const std::string &worldgen,
@@ -115,6 +121,14 @@ public:
 	Action uiCameraZoomAction_;
 
 	std::vector<CommandSet> commandSets_;
+
+	// localPlayer_ is a pointer to an element within playerData_.
+	// This is legal thanks to C++'s unordered_map stability guarantees.
+	// If the type of hash map is changed to one which doesn't provide
+	// the same pointer stability guarantees, we should change it to
+	// HashMap<unique_ptr<PlayerData>>.
+	PlayerData *localPlayer_ = nullptr;
+	HashMap<PlayerData> playerData_;
 
 private:
 	bool reload();

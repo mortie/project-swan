@@ -11,7 +11,8 @@ namespace CoreMod {
 
 class PlayerEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait,
-	public Swan::InventoryTrait {
+	public Swan::InventoryTrait,
+	public Swan::PlayerControllerTrait {
 public:
 	using CloseInventoryCallback = void(Swan::Ctx &, Swan::EntityRef);
 
@@ -37,6 +38,9 @@ public:
 	void update(Swan::Ctx &ctx, float dt) override;
 	void tick(Swan::Ctx &ctx, float dt) override;
 	void drawDebug(Swan::Ctx &ctx) override;
+
+	void controlPlayer(Swan::Ctx &ctx, float dt) override;
+	void drawUI(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
 
 	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
 	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
