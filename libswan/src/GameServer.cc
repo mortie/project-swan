@@ -120,6 +120,7 @@ void GameServer::onMessageFromClient(
 		auto &plane = *world_->getPlane(c.plane).plane;
 		kj::ArrayInputStream stream(r.getUpdatePlayer());
 		capnp::PackedMessageReader reader(stream);
+		auto override = plane.entities().overrideCurrentEntity(c.ref);
 		ent->deserializeUpdates(plane.getContext(), reader);
 	} else {
 		info << "Received unknown message from client '" << client.identifier << ":";

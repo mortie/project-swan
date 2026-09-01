@@ -80,6 +80,8 @@ public:
 
 	void serialize(proto::WorldPlane::Builder w);
 	void deserialize(proto::WorldPlane::Reader r);
+	void deserializeCollectionUpdates(
+		EntityCollection &coll, mp_proto::EntityCollectionUpdate::Reader r);
 
 private:
 	std::unordered_map<ChunkPos, Chunk> chunks_;

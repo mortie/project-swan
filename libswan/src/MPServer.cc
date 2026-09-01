@@ -10,6 +10,7 @@
 #include "SDL3/SDL_error.h"
 #include "capnp/message.h"
 #include "multiplayer.capnp.h"
+#include "kjutil.h"
 
 namespace Swan {
 
@@ -32,13 +33,6 @@ struct MPServer::Client {
 
 class MPServer::Impl {
 public:
-	Impl()
-	{
-		// Need to zero the scratch space.
-		// There doesn't seem to be a nice "allocate a zeroed kj array" function.
-		memset(&scratch_.front(), 0, scratch_.asBytes().size());
-	}
-
 	bool listen(const char *host, int port);
 
 	void tick(float dt);
@@ -60,7 +54,7 @@ private:
 	std::vector<std::unique_ptr<Client>> clients_;
 
 	// Scratch buffers for encoding and sending messages
-	kj::Array<capnp::word> scratch_ = kj::heapArray<capnp::word>(1024);
+	kj::Array<capnp::word> scratch_ = kjZeroedArray<capnp::word>(1024);
 	kj::VectorOutputStream stream_;
 	capnp::MallocMessageBuilder builder_;
 

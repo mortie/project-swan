@@ -19,6 +19,7 @@ namespace Swan {
 
 class WorldPlane;
 class TileSystemImpl;
+class MPGame;
 
 struct FoundEntity {
 	EntityRef ref;
@@ -145,6 +146,7 @@ private:
 	std::vector<EntityRef> despawnListB_;
 
 	friend CurrentEntityOverride;
+	friend WorldPlane;
 };
 
 class EntitySystem: private EntitySystemImpl {

@@ -5,6 +5,7 @@
 #include "Tile.h"
 #include "WorldPlane.h"
 #include "common.h"
+#include "kjutil.h"
 
 #include <kj/array.h>
 #include <kj/io.h>
@@ -64,7 +65,7 @@ private:
 	std::vector<ConnectedClient> clients_;
 
 	kj::VectorOutputStream stream_;
-	kj::Array<capnp::word> scratch_ = kj::heapArray<capnp::word>(1024);
+	kj::Array<capnp::word> scratch_ = kjZeroedArray<capnp::word>(1024);
 };
 
 }

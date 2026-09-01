@@ -13,6 +13,8 @@ struct SoundAsset;
 class SoundHandle;
 class InputHandler;
 class GameServer;
+class Game;
+class MPGame;
 
 class GameIO {
 public:
@@ -70,6 +72,10 @@ public:
 
 	virtual ~GameIO() = default;
 
+	virtual MPGame *clientSide() { return nullptr; }
+	virtual Game *serverSide() { return nullptr; }
+	virtual EntityRef localPlayer() = 0;
+
 	virtual InputHandler &inputs() = 0;
 	virtual void onMouseMove(float x, float y) = 0;
 	virtual void onScrollWheel(float dy) = 0;
@@ -106,6 +112,8 @@ public:
 		SoundAsset *asset, float volume,
 		std::optional<Vec2> center,
 		SoundHandle &handle) = 0;
+
+	bool isServer() { return isServer_; }
 
 	void playSound(SoundAsset *asset);
 	void playSound(SoundAsset *asset, float volume);
@@ -144,6 +152,7 @@ public:
 	Vec2 mousePos_;
 	Vec2 mouseUIPos_;
 	bool hasMouseMoved_ = false;
+	bool isServer_ = false;
 };
 
 inline void GameIO::playSound(SoundAsset *asset)

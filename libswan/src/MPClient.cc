@@ -12,6 +12,7 @@
 
 #include "multiplayer.capnp.h"
 #include "MPSocket.h"
+#include "kjutil.h"
 
 namespace Swan {
 
@@ -21,11 +22,7 @@ class MPClient::Impl {
 public:
 	Impl(Options opts):
 		opts_(std::move(opts))
-	{
-		// Need to zero the scratch space.
-		// There doesn't seem to be a nice "allocate a zeroed kj array" function.
-		memset(&scratch_.front(), 0, scratch_.asBytes().size());
-	}
+	{}
 
 	void tick(float dt);
 	void end();
@@ -55,7 +52,7 @@ private:
 	MPSocket sock_;
 
 	// Scratch buffers for encoding and sending messages
-	kj::Array<capnp::word> scratch_ = kj::heapArray<capnp::word>(1024);
+	kj::Array<capnp::word> scratch_ = kjZeroedArray<capnp::word>(1024);
 	kj::VectorOutputStream stream_;
 };
 

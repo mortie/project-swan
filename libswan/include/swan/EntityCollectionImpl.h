@@ -3,6 +3,7 @@
 #include "EntityCollection.h"
 #include "WorldPlane.h"
 #include "GameIO.h"
+#include "kjutil.h"
 #include <fstream>
 
 #include <capnp/message.h>
@@ -88,8 +89,7 @@ public:
 	void serializeUpdates(
 		Ctx &ctx, mp_proto::EntityCollectionUpdate::Builder w) override;
 	void deserializeUpdates(
-		Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader w,
-		std::optional<uint64_t> ignoredID) override;
+		Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader w) override;
 
 	const std::string name_;
 	uint64_t nextId_ = 0;
@@ -466,9 +466,7 @@ inline void EntityCollectionImpl<Ent>::serialize(
 	}
 
 	// TODO: Do this more intelligently somehow
-	auto scratch = kj::heapArray<capnp::word>(1024);
-	auto scratchBytes = scratch.asBytes();
-	memset(&scratchBytes.front(), 0, scratchBytes.size());
+	auto scratch = kjZeroedArray<capnp::word>(1024);
 	kj::VectorOutputStream stream;
 
 	w.setName(name_);
@@ -535,9 +533,7 @@ void EntityCollectionImpl<Ent>::serializeUpdates(
 	Ctx &ctx, mp_proto::EntityCollectionUpdate::Builder w)
 {
 	// TODO: Do this more intelligently somehow
-	auto scratch = kj::heapArray<capnp::word>(1024);
-	auto scratchBytes = scratch.asBytes();
-	memset(&scratchBytes.front(), 0, scratchBytes.size());
+	auto scratch = kjZeroedArray<capnp::word>(1024);
 	kj::VectorOutputStream stream;
 
 	auto newEntities = w.initNewEntities(newEntitiesThisTick_.size());
@@ -577,8 +573,7 @@ void EntityCollectionImpl<Ent>::serializeUpdates(
 
 template<typename Ent>
 void EntityCollectionImpl<Ent>::deserializeUpdates(
-	Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader r,
-	std::optional<uint64_t> ignoredID)
+	Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader r)
 {
 	// Despawn despawned entities
 	for (auto id: r.getDespawnedEntities()) {
@@ -601,9 +596,6 @@ void EntityCollectionImpl<Ent>::deserializeUpdates(
 	// Deserialize updated entities
 	for (auto entity: r.getUpdatedEntities()) {
 		uint64_t id = entity.getId();
-		if (ignoredID && *ignoredID == id) {
-			continue;
-		}
 
 		auto it = idToIndex_.find(id);
 		if (it == idToIndex_.end()) {

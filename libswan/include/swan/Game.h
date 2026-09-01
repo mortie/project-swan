@@ -33,6 +33,12 @@ public:
 		EntityRef ref;
 	};
 
+	Game *serverSide() override { return this; }
+	EntityRef localPlayer() override
+	{
+		return localPlayer_ ? localPlayer_->ref : EntityRef{};
+	}
+
 	void createWorld(
 		std::string worldPath, const std::string &worldgen,
 		uint32_t seed);

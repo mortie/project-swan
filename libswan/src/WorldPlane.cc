@@ -451,4 +451,12 @@ void WorldPlane::deserialize(proto::WorldPlane::Reader r)
 	entitySystem_.deserialize(r.getEntitySystem());
 }
 
+void WorldPlane::deserializeCollectionUpdates(
+	EntityCollection &coll, mp_proto::EntityCollectionUpdate::Reader r)
+{
+	entitySystem_.currentCollection_ = &coll;
+	coll.deserializeUpdates(getContext(), r);
+	entitySystem_.currentCollection_ = nullptr;
+}
+
 }

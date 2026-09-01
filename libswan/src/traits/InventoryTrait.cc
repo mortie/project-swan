@@ -22,6 +22,7 @@ ItemStack BasicInventory::take(int slot)
 
 	ItemStack stack = content_[slot];
 	content_[slot] = {};
+	hasChanged_ = true;
 	return stack;
 }
 
@@ -33,6 +34,7 @@ ItemStack BasicInventory::set(int slot, ItemStack stack)
 
 	ItemStack st = content_[slot];
 	content_[slot] = stack;
+	hasChanged_ = true;
 	return st;
 }
 
@@ -46,12 +48,14 @@ ItemStack BasicInventory::insertInto(ItemStack stack, int from, int to)
 	for (int i = from; i < to && !stack.empty(); ++i) {
 		if (content_[i].item() == stack.item()) {
 			stack = content_[i].insert(stack);
+			hasChanged_ = true;
 		}
 	}
 
 	// Then find a new slot
 	for (int i = from; i < to && !stack.empty(); ++i) {
 		stack = content_[i].insert(stack);
+		hasChanged_ = true;
 	}
 
 	return stack;

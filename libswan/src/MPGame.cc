@@ -265,14 +265,7 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 				continue;
 			}
 
-			auto &coll = colls[index];
-			if (coll.get() == player_.collection()) {
-				// Ignore the current player if we got player updates.
-				// We control the state of this one player.
-				coll->deserializeUpdates(ctx, update, player_.id());
-			} else {
-				coll->deserializeUpdates(ctx, update, {});
-			}
+			plane_->deserializeCollectionUpdates(*colls[index], update);
 		}
 
 		{ // Deserialize world gen data

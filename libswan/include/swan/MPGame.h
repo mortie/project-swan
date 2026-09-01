@@ -4,7 +4,6 @@
 #include <cygnet/Renderer.h>
 #include <memory>
 
-#include "Action.h"
 #include "EntityCollection.h"
 #include "GameIO.h"
 #include "InputHandler.h"
@@ -19,6 +18,9 @@ namespace Swan {
 class MPGame final: public GameIO {
 public:
 	MPGame(std::function<bool()> recompileMods, HashMap<ModInfo> mods);
+
+	MPGame *clientSide() override { return this; }
+	EntityRef localPlayer() override { return player_; }
 
 	InputHandler &inputs() override { return inputHandler_; }
 	void onMouseMove(float x, float y) override;

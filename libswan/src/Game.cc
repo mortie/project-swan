@@ -51,6 +51,8 @@ Game::Game(std::function<bool()> recompileMods, HashMap<ModInfo> mods):
 	recompileMods_(std::move(recompileMods)),
 	mods_(std::move(mods))
 {
+	isServer_ = true;
+
 	const char *val = getenv("SWAN_DEBUG_KEYS");
 	if (val && std::string_view(val) == "1") {
 		debug_.showInputDebug = true;

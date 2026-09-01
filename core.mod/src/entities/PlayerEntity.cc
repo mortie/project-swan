@@ -236,6 +236,29 @@ void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 	} else if (temperature_ < 0 && blackout_ <= 0) {
 		temperature_ += dt * 1;
 	}
+
+	// Pick up items
+	for (auto &c: ctx.plane.entities().getColliding(physicsBody_.body)) {
+		auto *entity = c.ref.get();
+
+		auto *itemStackEnt = dynamic_cast<ItemStackEntity *>(entity);
+		if (!itemStackEnt) {
+			continue;
+		}
+
+		// Don't pick up immediately
+		if (itemStackEnt->lifetime_ < 0.2) {
+			continue;
+		}
+
+		Swan::ItemStack stack{itemStackEnt->item(), 1};
+		stack = inventory_.insert(stack);
+		if (stack.empty()) {
+			ctx.plane.entities().despawn(c.ref);
+			ctx.game.playSound(sounds::misc__snap);
+		}
+		break;
+	}
 }
 
 void PlayerEntity::drawDebug(Swan::Ctx &ctx)
@@ -702,32 +725,46 @@ void PlayerEntity::serializeUpdates(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 	heldStack_.serialize(w.initHeldStack());
 	w.setHealth(health_);
 	w.setDirection(lastDirection_ > 0);
+
+	if (inventory_.hasChanged_) {
+		inventory_.hasChanged_ = false;
+		inventory_.serialize(w.initInventory());
+	}
 }
 
 void PlayerEntity::deserializeUpdates(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
 	auto r = mr.getRoot<proto::PlayerEntity>();
-	physicsBody_.deserialize(r.getBody());
-	heldStack_.deserialize(ctx, r.getHeldStack());
-	health_ = r.getHealth();
-	lastDirection_ = r.getDirection() ? 1 : -1;
 
-	if (!physicsBody_.onGround) {
-		if (state_ != State::FALLING) {
-			state_ = State::FALLING;
-			currentAnimation_ = fallingAnimation();
+	if (ctx.game.localPlayer() != ctx.plane.entities().current()) {
+		physicsBody_.deserialize(r.getBody());
+		heldStack_.deserialize(ctx, r.getHeldStack());
+		health_ = r.getHealth();
+		lastDirection_ = r.getDirection() ? 1 : -1;
+
+		if (!physicsBody_.onGround) {
+			if (state_ != State::FALLING) {
+				state_ = State::FALLING;
+				currentAnimation_ = fallingAnimation();
+			}
+		} else if (std::abs(physicsBody_.vel.x) > 1) {
+			if (state_ != State::RUNNING) {
+				state_ = State::RUNNING;
+				currentAnimation_ = runningAnimation();
+			}
+		} else if (state_ != State::IDLE) {
+			state_ = State::IDLE;
+			currentAnimation_ = idleAnimation();
 		}
-	} else if (std::abs(physicsBody_.vel.x) > 1) {
-		if (state_ != State::RUNNING) {
-			state_ = State::RUNNING;
-			currentAnimation_ = runningAnimation();
-		}
-	} else if (state_ != State::IDLE) {
-		state_ = State::IDLE;
-		currentAnimation_ = idleAnimation();
+
+		currentAnimation_.tick(1.0 / Swan::TICK_RATE);
 	}
 
-	currentAnimation_.tick(1.0 / Swan::TICK_RATE);
+	// Always update inventory;
+	// the server will make the client pick up items
+	if (r.hasInventory()) {
+		inventory_.deserialize(ctx, r.getInventory());
+	}
 }
 
 bool PlayerEntity::askToOpenInventory(
@@ -997,32 +1034,8 @@ void PlayerEntity::handleInventoryHover(Swan::Ctx &ctx)
 void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 {
 	// Collide with stuff
-	bool pickedUpItem = false;
 	for (auto &c: ctx.plane.entities().getColliding(physicsBody_.body)) {
 		auto *entity = c.ref.get();
-
-		// Pick it up if it's an item stack, and don't collide
-		auto *itemStackEnt = dynamic_cast<ItemStackEntity *>(entity);
-		if (itemStackEnt) {
-			// Don't pick up immediately
-			if (itemStackEnt->lifetime_ < 0.2) {
-				continue;
-			}
-
-			// Only one per update
-			if (pickedUpItem) {
-				continue;
-			}
-
-			Swan::ItemStack stack{itemStackEnt->item(), 1};
-			stack = inventory_.insert(stack);
-			if (stack.empty()) {
-				ctx.plane.entities().despawn(c.ref);
-				ctx.game.playSound(sounds::misc__snap);
-				pickedUpItem = true;
-			}
-			continue;
-		}
 
 		if (c.body.isSolid) {
 			physicsBody_.collideWith(c.body);
