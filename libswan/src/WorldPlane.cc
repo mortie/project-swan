@@ -385,6 +385,7 @@ bool WorldPlane::tick(float dt, RTDeadline deadline)
 void WorldPlane::tickDone()
 {
 	entitySystem_.tickDone();
+	fluidSystem_.tickDone();
 }
 
 void WorldPlane::serialize(proto::WorldPlane::Builder w)

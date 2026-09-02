@@ -1,4 +1,5 @@
 #include "WorldData.h"
+#include "systems/FluidSystem.h"
 #include "traits/PlayerControllerTrait.h"
 #include <swan/constants.h>
 #include <swan/HashMap.h>

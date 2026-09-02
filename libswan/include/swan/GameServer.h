@@ -49,6 +49,29 @@ public:
 	bool running() { return server_.running(); }
 
 private:
+	struct TileChange {
+		TilePos pos;
+		Tile::ID newID;
+	};
+
+	struct FluidChange {
+		FluidPos pos;
+		Fluid::ID newID;
+	};
+
+	struct PlaneChanges {
+		std::vector<TileChange> tileChanges;
+		std::vector<TileChange> backgroundChanges;
+	};
+
+	PlaneChanges &planeChanges(WorldPlane::ID plane) {
+		if (plane >= planeChanges_.size()) {
+			planeChanges_.resize(plane + 1);
+		}
+
+		return planeChanges_[plane];
+	}
+
 	void onMessageFromClient(
 		const MPServer::ClientInfo &client,
 		mp_proto::ClientToServer::Reader &r);
@@ -63,6 +86,7 @@ private:
 	Game *game_;
 	std::vector<std::string> modIDs_;
 	std::vector<ConnectedClient> clients_;
+	std::vector<PlaneChanges> planeChanges_;
 
 	kj::VectorOutputStream stream_;
 	kj::Array<capnp::word> scratch_ = kjZeroedArray<capnp::word>(1024);

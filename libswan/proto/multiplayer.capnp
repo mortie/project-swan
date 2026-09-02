@@ -40,8 +40,6 @@ struct ServerToClient {
 		ping @3 :Void;
 		worldSync @4 :WorldSync;
 		tick @5 :Tick;
-		tileChange @6 :TileChange;
-		backgroundTileChange @7 :TileChange;
 	}
 
 	struct Hello {}
@@ -66,6 +64,16 @@ struct ServerToClient {
 	struct Tick {
 		updatedEntityCollections @0 :List(EntityCollectionUpdate);
 		worldGenData @1 :Data;
+		tileChanges @2 :List(TileChange);
+		backgroundChanges @3 :List(TileChange);
+
+		# fluidChangePositions is a list of tile positions
+		# which have had their fluid data changed.
+		# fluidChangeData is a flat array of bytes where
+		# each fluid change position is associated with
+		# 4*4=16 bytes in fluidChangeData.
+		fluidChangePositions @4 :List(Vec2i);
+		fluidChangeData @5 :Data;
 	}
 
 	struct TileChange {

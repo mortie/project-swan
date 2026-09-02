@@ -82,6 +82,11 @@ inline constexpr TilePos tilePos(Vec2 pos)
 	};
 }
 
+inline constexpr TilePos tilePosFromChunkAndRel(ChunkPos cpos, ChunkRelPos rpos)
+{
+	return cpos * Vec2i{CHUNK_WIDTH, CHUNK_HEIGHT} + rpos;
+}
+
 inline constexpr Vec2 tileCenter(TilePos pos)
 {
 	return {

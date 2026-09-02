@@ -275,16 +275,33 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 			plane_->worldGen_->deserialize(ctx, reader);
 		}
 
+		for (auto change: tick.getTileChanges()) {
+			auto pos = TilePos{change.getPos().getX(), change.getPos().getY()};
+			plane_->tiles().forceSetID(pos, change.getNewTile());
+		}
+
+		for (auto change: tick.getBackgroundChanges()) {
+			auto pos = TilePos{change.getPos().getX(), change.getPos().getY()};
+			plane_->tiles().forceSetBackgroundID(pos, change.getNewTile());
+		}
+
+		auto fluidData = tick.getFluidChangeData().asBytes();
+		if (fluidData.size() != tick.getFluidChangePositions().size() * sizeof(FluidInTile)) {
+			(warn
+				<< "Bad fluid data! " << fluidData.size() << " bytes of fluid data for "
+				<< tick.getFluidChangePositions().size() << " positions");
+			return;
+		}
+
+		const Fluid::ID *fluidPtr = &fluidData.front();
+		for (auto change: tick.getFluidChangePositions()) {
+			auto pos = TilePos{change.getX(), change.getY()};
+			plane_->fluids().setGridInTile(pos, fluidPtr);
+			fluidPtr += sizeof(FluidInTile);
+		}
+
 		// Finally, send the player's current state
 		sendPlayerState();
-	} else if (r.isTileChange()) {
-		auto change = r.getTileChange();
-		auto pos = TilePos{change.getPos().getX(), change.getPos().getY()};
-		plane_->tiles().forceSetID(pos, change.getNewTile());
-	} else if (r.isBackgroundTileChange()) {
-		auto change = r.getBackgroundTileChange();
-		auto pos = TilePos{change.getPos().getX(), change.getPos().getY()};
-		plane_->tiles().forceSetBackgroundID(pos, change.getNewTile());
 	} else {
 		warn << "Received unknown message from server:";
 		warn << r.toString().flatten().cStr();

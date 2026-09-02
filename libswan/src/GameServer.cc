@@ -14,14 +14,10 @@ void GameServer::onTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID)
 		return;
 	}
 
-	auto root = server_.builder();
-	auto change = root.initTileChange();
-	auto p = change.initPos();
-	p.setX(pos.x);
-	p.setY(pos.y);
-	change.setNewTile(newID);
-
-	broadcastToPlane(plane, root);
+	planeChanges(plane).tileChanges.push_back({
+		.pos = pos,
+		.newID = newID,
+	});
 }
 
 void GameServer::onBackgroundTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID)
@@ -30,14 +26,10 @@ void GameServer::onBackgroundTileChange(WorldPlane::ID plane, TilePos pos, Tile:
 		return;
 	}
 
-	auto root = server_.builder();
-	auto change = root.initBackgroundTileChange();
-	auto p = change.initPos();
-	p.setX(pos.x);
-	p.setY(pos.y);
-	change.setNewTile(newID);
-
-	broadcastToPlane(plane, root);
+	planeChanges(plane).backgroundChanges.push_back({
+		.pos = pos,
+		.newID = newID,
+	});
 }
 
 void GameServer::tick(float dt)
@@ -174,6 +166,47 @@ void GameServer::broadcastTickUpdateForPlane(WorldPlane &plane)
 		auto arr = stream_.getArray();
 		auto data = tick.initWorldGenData(arr.size());
 		memcpy(&data.front(), &arr.front(), arr.size());
+	}
+
+	PlaneChanges &changes = planeChanges(plane.id_);
+
+	if (!changes.tileChanges.empty()) {
+		auto arr = tick.initTileChanges(changes.tileChanges.size());
+		size_t len = changes.tileChanges.size();
+		for (size_t i = 0; i < len; ++i) {
+			auto changeBuilder = arr[i];
+			auto &change = changes.tileChanges[i];
+			changeBuilder.setNewTile(change.newID);
+			auto pos = changeBuilder.initPos();
+			pos.setX(change.pos.x);
+			pos.setY(change.pos.y);
+		}
+		changes.tileChanges.clear();
+	}
+
+	if (!changes.backgroundChanges.empty()) {
+		auto arr = tick.initBackgroundChanges(changes.backgroundChanges.size());
+		size_t len = changes.backgroundChanges.size();
+		for (size_t i = 0; i < len; ++i) {
+			auto changeBuilder = arr[i];
+			auto &change = changes.backgroundChanges[i];
+			changeBuilder.setNewTile(change.newID);
+			auto pos = changeBuilder.initPos();
+			pos.setX(change.pos.x);
+			pos.setY(change.pos.y);
+		}
+		changes.backgroundChanges.clear();
+	}
+
+	const auto &changedFluidTiles = plane.fluids().getChangedTiles();
+	auto fluidData = tick.initFluidChangeData(changedFluidTiles.size() * sizeof(FluidInTile));
+	auto fluidPositions = tick.initFluidChangePositions(changedFluidTiles.size());
+	auto fluidPtr = &fluidData.asBytes().front();
+	for (size_t i = 0; auto &pos: changedFluidTiles) {
+		plane.fluids().getGridInTile(pos, &fluidPtr[i * sizeof(FluidInTile)]);
+		fluidPositions[i].setX(pos.x);
+		fluidPositions[i].setY(pos.y);
+		i += 1;
 	}
 
 	broadcastToPlane(plane.id_, root);
