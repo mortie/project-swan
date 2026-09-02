@@ -153,48 +153,6 @@ void PlayerEntity::drawConsole(Swan::Ctx &ctx)
 
 void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 {
-	auto lightPos = physicsBody_.body.topMid().as<int>();
-	if (lightPos.x < 0) lightPos.x -= 1;
-	if (lightPos.y < 0) lightPos.y -= 1;
-
-	auto lightLevel = ctx.plane.tiles().getLightLevel(lightPos);
-	float desiredGamma = 1.0 / ((lightLevel / 256.0) + 1) * 2;
-
-	if (gamma_ < desiredGamma) {
-		gamma_ += 0.01;
-		if (gamma_ > desiredGamma) {
-			gamma_ = desiredGamma;
-		}
-	} else if (gamma_ > desiredGamma) {
-		gamma_ -= 0.01;
-		if (gamma_ < desiredGamma) {
-			gamma_ = desiredGamma;
-		}
-	}
-
-	// Calculate the held light we would expect to produce
-	std::optional<HeldLight> light;
-	if (!heldStack_.empty() && heldStack_.item()->lightLevel) {
-		light = {
-			.pos = placePos_,
-			.level = heldStack_.item()->lightLevel,
-		};
-	}
-
-	// If the actual held light is different than what we expect,
-	// tell the light system to remove and add lights as needed
-	if (heldLight_ != light) {
-		if (heldLight_) {
-			ctx.plane.lights().removeLight(heldLight_->pos, heldLight_->level);
-		}
-
-		if (light) {
-			ctx.plane.lights().addLight(light->pos, light->level);
-		}
-
-		heldLight_ = light;
-	};
-
 	if (auxInventory_ == &craftingInventory_) {
 		craftingInventory_.recompute(ctx, inventory_.content(), {
 			.workbench = inWorkbench_,
@@ -268,6 +226,48 @@ void PlayerEntity::drawDebug(Swan::Ctx &ctx)
 
 void PlayerEntity::controlPlayer(Swan::Ctx &ctx, float dt)
 {
+	auto lightPos = physicsBody_.body.topMid().as<int>();
+	if (lightPos.x < 0) lightPos.x -= 1;
+	if (lightPos.y < 0) lightPos.y -= 1;
+
+	auto lightLevel = ctx.plane.tiles().getLightLevel(lightPos);
+	float desiredGamma = 1.0 / ((lightLevel / 256.0) + 1) * 2;
+
+	if (gamma_ < desiredGamma) {
+		gamma_ += 0.2 * dt;
+		if (gamma_ > desiredGamma) {
+			gamma_ = desiredGamma;
+		}
+	} else if (gamma_ > desiredGamma) {
+		gamma_ -= 0.2 * dt;
+		if (gamma_ < desiredGamma) {
+			gamma_ = desiredGamma;
+		}
+	}
+
+	// Calculate the held light we would expect to produce
+	std::optional<HeldLight> light;
+	if (!heldStack_.empty() && heldStack_.item()->lightLevel) {
+		light = {
+			.pos = placePos_,
+			.level = heldStack_.item()->lightLevel,
+		};
+	}
+
+	// If the actual held light is different than what we expect,
+	// tell the light system to remove and add lights as needed
+	if (heldLight_ != light) {
+		if (heldLight_) {
+			ctx.plane.lights().removeLight(heldLight_->pos, heldLight_->level);
+		}
+
+		if (light) {
+			ctx.plane.lights().addLight(light->pos, light->level);
+		}
+
+		heldLight_ = light;
+	};
+
 	if (interactTimer_ > 0) {
 		interactTimer_ -= dt;
 	}
