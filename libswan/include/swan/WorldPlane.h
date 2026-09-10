@@ -79,6 +79,8 @@ public:
 	std::unique_ptr<WorldGen> worldGen_;
 
 	void serialize(proto::WorldPlane::Builder w);
+	void serializeWorldSync(proto::WorldPlane::Builder w);
+
 	void deserialize(proto::WorldPlane::Reader r);
 	void deserializeCollectionUpdates(
 		EntityCollection &coll, mp_proto::EntityCollectionUpdate::Reader r);

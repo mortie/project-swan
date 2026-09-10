@@ -95,7 +95,7 @@ void GameServer::onMessageFromClient(
 		}
 
 		sync.setCurrentPlaneIndex(player->plane);
-		plane.plane->serialize(sync.initCurrentPlane());
+		plane.plane->serializeWorldSync(sync.initCurrentPlane());
 		sync.getCurrentPlane().setWorldGen(plane.worldGen);
 		sync.setWorldSeed(world_->seed());
 		player->ref.serialize(sync.initPlayerRef());

@@ -390,8 +390,13 @@ void WorldPlane::tickDone()
 
 void WorldPlane::serialize(proto::WorldPlane::Builder w)
 {
-	entitySystem_.serialize(w.initEntitySystem());
+	serializeWorldSync(w);
 	fluidSystem_.serialize(w.initFluidSystem());
+}
+
+void WorldPlane::serializeWorldSync(proto::WorldPlane::Builder w)
+{
+	entitySystem_.serialize(w.initEntitySystem());
 
 	size_t chunkCount = 0;
 	for (auto &[pos, chunk]: chunks_) {
