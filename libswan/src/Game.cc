@@ -88,13 +88,8 @@ void Game::createWorld(
 	world_->setWorldGen(worldgen);
 	world_->addPlane();
 #ifndef SWAN_HEADLESS
-	localPlayer_ = &(playerData_["default"] = {
-		.plane = 0,
-		.ref = world_->getPlane(0).plane->spawnPlayer(),
-	});
-	if (!localPlayer_->ref.as<PlayerControllerTrait>()) {
-		warn << "Player does not implement PlayerControllerTrait!";
-	}
+	localPlayer_ = onPlayerConnected("default");
+	cam_.pos = localPlayer_->ref.getBody()->center();
 #endif
 
 	hasSortedItems_ = false;
@@ -147,27 +142,21 @@ void Game::loadWorld(std::string worldPath)
 	worldPath_ = std::move(worldPath);
 
 	for (auto p: worldReader.getPlayerData()) {
-		PlayerData &data = playerData_[p.getIdentifier().cStr()] = {
+		std::vector<unsigned char> data;
+		data.resize(p.getData().size());
+		memcpy(data.data(), &p.getData().front(), p.getData().size());
+
+		playerData_[p.getIdentifier().cStr()] = {
 			.plane = p.getPlane(),
+			.data = std::move(data),
 			.ref = {},
+			.collection = p.getCollection(),
 		};
-		data.ref.deserialize(world_->getPlane(data.plane).plane->getContext(), p.getRef());
 	}
 
 #ifndef SWAN_HEADLESS
-	auto defaultPlayerIt = playerData_.find("default");
-	if (defaultPlayerIt == playerData_.end()) {
-		warn << "Missing default player! Spawning a new one.";
-		localPlayer_ = &(playerData_["default"] = {
-			.plane = 0,
-			.ref = world_->getPlane(0).plane->spawnPlayer(),
-		});
-	} else {
-		localPlayer_ = &defaultPlayerIt->second;
-	}
-	if (!localPlayer_->ref.as<PlayerControllerTrait>()) {
-		warn << "Player does not implement PlayerControllerTrait!";
-	}
+	localPlayer_ = onPlayerConnected("default");
+	cam_.pos = localPlayer_->ref.getBody()->center();
 #endif
 }
 
@@ -920,19 +909,31 @@ void Game::save()
 		}
 	}
 
-	info << "Serializing world...";
+
 	capnp::MallocMessageBuilder mb;
 	auto world = mb.initRoot<proto::World>();
-	world_->serialize(world);
 
-	info << "Serializing " << playerData_.size() << " players...";
+	info << "Disconnecting players...";
+	for (auto &[ident, player]: playerData_) {
+		if (player.ref) {
+			onPlayerDisconnected(ident);
+		}
+	}
+
+	info << "Serializing players...";
 	auto playerBuilder = world.initPlayerData(playerData_.size());
 	for (size_t i = 0; auto &[ident, player]: playerData_) {
 		auto p = playerBuilder[i++];
 		p.setIdentifier(ident);
 		p.setPlane(player.plane);
-		player.ref.serialize(p.initRef());
+		p.setCollection(player.collection);
+		auto data = p.initData(player.data.size());
+		memcpy(&data.front(), player.data.data(), player.data.size());
+		info << "* Player '" << ident << "': " << data.size() << " bytes";
 	}
+
+	info << "Serializing world...";
+	world_->serialize(world);
 
 	kj::VectorOutputStream out;
 	capnp::writePackedMessage(out, mb);
@@ -1207,19 +1208,56 @@ void Game::initCommandHandler()
 	}
 }
 
-Game::PlayerData Game::onPlayerConnected(std::string_view identifier)
+Game::PlayerData *Game::onPlayerConnected(std::string_view identifier)
 {
 	auto it = playerData_.find(identifier);
 	if (it == playerData_.end()) {
 		info << "Spawning new player for client '" << identifier << '\'';
-		return playerData_[std::string(identifier)] = {
+		auto ref = world_->getPlane(0).plane->spawnPlayer();
+		return &(playerData_[std::string(identifier)] = PlayerData {
 			.plane = 0,
-			.ref = world_->getPlane(0).plane->spawnPlayer(),
-		};
+			.data = {},
+			.ref = ref,
+			.collection = ref.collection()->name(),
+		});
 	} else {
 		info << "Found existing player data for client '" << identifier << '\'';
-		return it->second;
+		auto player = &it->second;
+		auto &plane = *world_->getPlane(player->plane).plane;
+
+		kj::ArrayInputStream stream({player->data.data(), player->data.size()});
+		player->ref = plane.entities().spawn(player->collection, stream);
+		return player;
 	}
+}
+
+void Game::onPlayerDisconnected(std::string_view identifier)
+{
+	auto it = playerData_.find(identifier);
+	if (it == playerData_.end()) {
+		warn << "Non-existent player '" << identifier << "' disconnected?";
+		return;
+	}
+
+	auto &player = it->second;
+	auto &plane = *world_->getPlane(player.plane).plane;
+	Entity *ent = player.ref.get();
+	if (!ent) {
+		warn << "Player '" << identifier << "' with non-existent entity disconnected?";
+		return;
+	}
+
+	capnp::MallocMessageBuilder mb;
+	ent->serialize(plane.getContext(), mb);
+
+	kj::VectorOutputStream out;
+	capnp::writePackedMessage(out, mb);
+	auto arr = out.getArray();
+	player.data.resize(arr.size());
+	memcpy(player.data.data(), &arr.front(), arr.size());
+	info << "Player '" << identifier << " disconnected.";
+
+	plane.entities().despawnEntityNow(player.ref);
 }
 
 }

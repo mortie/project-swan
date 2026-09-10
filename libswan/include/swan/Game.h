@@ -30,7 +30,9 @@ public:
 
 	struct PlayerData {
 		WorldPlane::ID plane;
+		std::vector<unsigned char> data;
 		EntityRef ref;
+		std::string collection;
 	};
 
 	Game *serverSide() override { return this; }
@@ -140,7 +142,8 @@ private:
 	void initInputHandler();
 	void initCommandHandler();
 
-	PlayerData onPlayerConnected(std::string_view identifier);
+	PlayerData *onPlayerConnected(std::string_view identifier);
+	void onPlayerDisconnected(std::string_view identifier);
 
 	float tickAcc_ = 0;
 

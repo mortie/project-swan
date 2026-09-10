@@ -28,8 +28,9 @@ public:
 	struct ClientInfo {
 		std::string identifier;
 		std::string nick;
-		bool requestWorld = false;
 		ClientID id;
+		bool requestWorld = false;
+		bool connected = false;
 	};
 
 	bool listen(const char *host, int port);

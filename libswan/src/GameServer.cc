@@ -43,8 +43,28 @@ void GameServer::tick(float dt)
 	mp_proto::ClientToServer::Reader r;
 	const MPServer::ClientInfo *client;
 	while ((client = server_.receive(r))) {
+		if (!client->connected) {
+			onClientDisconnected(*client);
+			continue;
+		}
+
 		onMessageFromClient(*client, r);
 	}
+}
+
+void GameServer::onClientDisconnected(const MPServer::ClientInfo &client)
+{
+	for (size_t i = 0; i < clients_.size(); ++i) {
+		if (clients_[i].info.id != client.id) {
+			continue;
+		}
+
+		clients_[i] = std::move(clients_.back());
+		clients_.pop_back();
+		break;
+	}
+
+	game_->onPlayerDisconnected(client.identifier);
 }
 
 void GameServer::onMessageFromClient(
@@ -59,7 +79,7 @@ void GameServer::onMessageFromClient(
 		}
 
 		auto player = game_->onPlayerConnected(r.getHello().getIdentifier().cStr());
-		auto &plane = world_->getPlane(player.plane);
+		auto &plane = world_->getPlane(player->plane);
 
 		auto root = server_.builder();
 		auto sync = root.initWorldSync();
@@ -74,31 +94,22 @@ void GameServer::onMessageFromClient(
 			namesByID.set(i++, name);
 		}
 
-		sync.setCurrentPlaneIndex(player.plane);
+		sync.setCurrentPlaneIndex(player->plane);
 		plane.plane->serialize(sync.initCurrentPlane());
 		sync.getCurrentPlane().setWorldGen(plane.worldGen);
 		sync.setWorldSeed(world_->seed());
-		player.ref.serialize(sync.initPlayerRef());
+		player->ref.serialize(sync.initPlayerRef());
 
 		server_.send(client.id, root);
 
 		clients_.push_back(ConnectedClient {
 			.info = client,
-			.plane = player.plane,
-			.ref = player.ref,
+			.plane = player->plane,
+			.ref = player->ref,
 		});
 	} else if (r.isQuit()) {
-		info << "Client " << client.identifier << " disconnected.";
-
-		for (size_t i = 0; i < clients_.size(); ++i) {
-			if (clients_[i].info.id != client.id) {
-				continue;
-			}
-
-			clients_[i] = std::move(clients_.back());
-			clients_.pop_back();
-			break;
-		}
+		// Do nothing,
+		// onClinetDisconnected will be connected when it actually disconnects
 	} else if (r.isUpdatePlayer()) {
 		auto &c = *std::find_if(clients_.begin(), clients_.end(), [&](auto &c) {
 			return c.info.id == client.id;

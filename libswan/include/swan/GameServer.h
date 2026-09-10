@@ -72,6 +72,7 @@ private:
 		return planeChanges_[plane];
 	}
 
+	void onClientDisconnected(const MPServer::ClientInfo &client);
 	void onMessageFromClient(
 		const MPServer::ClientInfo &client,
 		mp_proto::ClientToServer::Reader &r);

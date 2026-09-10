@@ -23,6 +23,7 @@ struct MPServer::Client {
 		IDLE,
 		PINGED,
 		KICKED,
+		DONE,
 	};
 
 	State state = HANDSHAKING;
@@ -151,37 +152,35 @@ void MPServer::Impl::tick(float dt)
 			continue;
 		}
 
-		if (client.state == Client::KICKED) {
+		if (client.state == Client::DONE) {
 			clients_[i] = std::move(clients_.back());
 			clients_.pop_back();
 			continue;
 		}
 
-		auto root = builder();
+		std::optional<mp_proto::ServerToClient::Builder> root;
 		switch (client.state) {
 		case Client::HANDSHAKING:
-			warn << "Client timed out during handshake";
-			root.initKick().setReason("Timed out waiting for handshake");
-			client.state = Client::KICKED;
-			client.timer = 2;
+			kick(client, "Timed out waiting for handshake");
 			break;
 		case Client::IDLE:
-			root.setPing();
+			root = builder();
+			root->setPing();
 			client.state = Client::PINGED;
 			client.timer = 5;
 			break;
 		case Client::PINGED:
-			warn << "Client timed out";
-			root.initKick().setReason("Timed out");
-			client.state = Client::KICKED;
-			client.timer = 2;
+			kick(client, "Ping time-out");
 			break;
 		case Client::KICKED:
+		case Client::DONE:
 			// Handled earlier
 			break;
 		}
 
-		client.sock.encodeAndSend(builder_, stream_);
+		if (!client.sock.encodeAndSend(builder_, stream_)) {
+			kick(client, "Network error");
+		}
 		i += 1;
 	}
 }
@@ -191,6 +190,14 @@ MPServer::Impl::receive(mp_proto::ClientToServer::Reader &r)
 {
 	while (receiveIndex_ < clients_.size()) {
 		auto &client = *clients_[receiveIndex_];
+
+		// This gives a chance for the server code to handle disconnected clients
+		if (client.state == Client::KICKED) {
+			client.state = Client::DONE;
+			client.info.connected = false;
+			return &client.info;
+		}
+
 		if (!client.sock.receive(r)) {
 			receiveIndex_ += 1;
 			continue;
@@ -233,6 +240,7 @@ MPServer::Impl::receive(mp_proto::ClientToServer::Reader &r)
 			client.info.identifier = identifier.cStr();
 			client.info.nick = nick.cStr();
 			client.info.requestWorld = clientHello.getRequestWorld();
+			client.info.connected = true;
 			client.state = Client::IDLE;
 			client.timer = 5;
 
@@ -256,11 +264,9 @@ MPServer::Impl::receive(mp_proto::ClientToServer::Reader &r)
 		// treat it as if we kicked the client.
 		// The next tick will clean it out.
 		if (r.isQuit()) {
-			info << "Client " << client.info.identifier << " quit";
-			client.state = Client::KICKED;
-			client.timer = 0;
-			receiveIndex_ += 1;
-			continue;
+			client.state = Client::DONE;
+			client.info.connected = false;
+			return &client.info;
 		}
 
 		return &client.info;
@@ -271,6 +277,7 @@ MPServer::Impl::receive(mp_proto::ClientToServer::Reader &r)
 
 void MPServer::Impl::kick(Client &client, const char *reason)
 {
+	info << "Kicking client '" << client.info.identifier << "': " << reason;
 	client.state = Client::KICKED;
 	client.timer = 2;
 	auto root = builder();
@@ -326,7 +333,9 @@ void MPServer::send(
 			continue;
 		}
 
-		c->sock.encodeAndSend(impl_->builder_, impl_->stream_);
+		if (!c->sock.encodeAndSend(impl_->builder_, impl_->stream_)) {
+			impl_->kick(*c, "Network error");
+		}
 		break;
 	}
 }
@@ -340,7 +349,9 @@ void MPServer::broadcast(const mp_proto::ServerToClient::Builder &)
 			continue;
 		}
 
-		c->sock.send(impl_->stream_);
+		if (!c->sock.send(impl_->stream_)) {
+			impl_->kick(*c, "Network error");
+		}
 	}
 }
 

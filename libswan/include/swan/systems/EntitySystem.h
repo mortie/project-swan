@@ -19,7 +19,7 @@ namespace Swan {
 
 class WorldPlane;
 class TileSystemImpl;
-class MPGame;
+class Game;
 
 struct FoundEntity {
 	EntityRef ref;
@@ -52,7 +52,7 @@ public:
 	 * Available to game logic
 	 */
 
-	EntityRef spawn(std::string_view name, capnp::Data::Reader data);
+	EntityRef spawn(std::string_view name, kj::BufferedInputStream &data);
 
 	template<typename Ent, typename ...Args>
 	EntityRef spawn(Args &&...args)
@@ -114,6 +114,7 @@ public:
 
 	void spawnTileEntity(TilePos pos, std::string_view name);
 	void despawnTileEntity(TilePos pos);
+	void despawnEntityNow(EntityRef ref);
 
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
@@ -167,6 +168,7 @@ public:
 	friend WorldPlane;
 	friend TileSystemImpl;
 	friend EntityRef;
+	friend Game;
 };
 
 }

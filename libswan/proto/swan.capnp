@@ -76,7 +76,8 @@ struct World {
 	struct PlayerData {
 		identifier @0 :Text;
 		plane @1 :UInt16;
-		ref @2 :EntityRef;
+		collection @2 :Text;
+		data @3 :Data;
 	}
 }
 

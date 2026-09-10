@@ -45,7 +45,7 @@ public:
 	EntityRef spawnMove(Ctx &ctx, Ent &&ent);
 
 	EntityRef spawn(Ctx &ctx) override;
-	EntityRef spawn(Ctx &ctx, capnp::Data::Reader data) override;
+	EntityRef spawn(Ctx &ctx, kj::BufferedInputStream &data) override;
 
 	size_t size() override
 	{
@@ -281,15 +281,14 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(Ctx &ctx)
 
 template<typename Ent>
 inline EntityRef EntityCollectionImpl<Ent>::spawn(
-	Ctx &ctx, capnp::Data::Reader data)
+	Ctx &ctx, kj::BufferedInputStream &data)
 {
 	auto ent = spawn(ctx);
 
 	auto prevCurrentId = currentId_;
 	currentId_ = ent.id();
 
-	kj::ArrayInputStream stream(data);
-	capnp::PackedMessageReader reader(stream);
+	capnp::PackedMessageReader reader(data);
 	try {
 		Ent *e = (Ent *)ent.get();
 		e->deserialize(ctx, reader);

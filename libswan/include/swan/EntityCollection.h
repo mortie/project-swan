@@ -129,7 +129,7 @@ public:
 	virtual Body *getBody(uint64_t id) = 0;
 
 	virtual EntityRef spawn(Ctx &ctx) = 0;
-	virtual EntityRef spawn(Ctx &ctx, capnp::Data::Reader data) = 0;
+	virtual EntityRef spawn(Ctx &ctx, kj::BufferedInputStream &data) = 0;
 	virtual void update(Ctx &ctx, float dt) = 0;
 	virtual void tick(Ctx &ctx, float dt) = 0;
 	virtual void tick2(Ctx &ctx, float dt) = 0;

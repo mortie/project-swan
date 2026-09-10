@@ -20,7 +20,7 @@ EntitySystemImpl::EntitySystemImpl(
 	}
 }
 
-EntityRef EntitySystemImpl::spawn(std::string_view name, capnp::Data::Reader data)
+EntityRef EntitySystemImpl::spawn(std::string_view name, kj::BufferedInputStream &data)
 {
 	auto it = collectionsByName_.find(name);
 	if (it == collectionsByName_.end()) {
@@ -190,6 +190,15 @@ void EntitySystemImpl::despawnTileEntity(TilePos pos)
 		despawn(it->second);
 		tileEntities_.erase(pos);
 	}
+}
+
+void EntitySystemImpl::despawnEntityNow(EntityRef ref)
+{
+	auto ctx = getContext();
+	if (ref) {
+		ref->onDespawn(ctx);
+	}
+	ref.coll_->erase(ctx, ref.id_);
 }
 
 void EntitySystemImpl::draw(Cygnet::Renderer &rnd)
