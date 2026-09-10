@@ -8,6 +8,6 @@ namespace CoreMod::actions {
 #include "actions.x"
 #undef X
 
-void init(Swan::World &world);
+void init(Swan::GameIO &game);
 
 }

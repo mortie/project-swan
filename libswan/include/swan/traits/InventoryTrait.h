@@ -125,6 +125,7 @@ public:
 	void deserialize(const Swan::Context &ctx, proto::BasicInventory::Reader r);
 
 	std::vector<ItemStack> content_;
+	bool hasChanged_ = false;
 };
 
 inline InventorySlot Inventory::slot(int slot)

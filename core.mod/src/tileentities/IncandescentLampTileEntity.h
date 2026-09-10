@@ -11,8 +11,6 @@ class IncandescentLampTileEntity final: public Swan::Entity,
 	public Swan::TileEntityTrait,
 	public PowerNodeTrait {
 public:
-	using Proto = proto::IncandescentLampTileEntity;
-
 	IncandescentLampTileEntity(Swan::Ctx &ctx)
 	{}
 
@@ -27,8 +25,8 @@ public:
 	void onDespawn(Swan::Ctx &ctx) override;
 	void drawDebug(Swan::Ctx &ctx) override;
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w);
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 private:
 	float kelvin() { return temperature_ + 300; }

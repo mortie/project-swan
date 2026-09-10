@@ -22,7 +22,7 @@ struct WorldArea {
 			tp.x < begin.x || tp.y < begin.y ||
 			tp.x >= end.x || tp.y >= end.y
 		) {
-			dummyTile = Swan::World::AIR_TILE_ID;
+			dummyTile = Swan::WorldData::AIR_TILE_ID;
 			return dummyTile;
 		}
 
@@ -37,7 +37,7 @@ struct WorldArea {
 			tp.x < begin.x || tp.y < begin.y ||
 			tp.x >= end.x || tp.y >= end.y
 		) {
-			dummyTile = Swan::World::AIR_TILE_ID;
+			dummyTile = Swan::WorldData::AIR_TILE_ID;
 			return dummyTile;
 		}
 

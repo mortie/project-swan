@@ -1,4 +1,5 @@
 #include "CopperWireEntity.h"
+#include "core_mod.capnp.h"
 #include "cygnet/Renderer.h"
 #include "swan/common.h"
 #include "swan/constants.h"
@@ -125,8 +126,9 @@ void CopperWireEntity::onDespawn(Swan::Ctx &ctx)
 	}
 }
 
-void CopperWireEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
+void CopperWireEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::CopperWireEntity>();
 	begin_.serialize(w.initBegin());
 	end_.serialize(w.initEnd());
 
@@ -137,8 +139,9 @@ void CopperWireEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 	}
 }
 
-void CopperWireEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
+void CopperWireEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::CopperWireEntity>();
 	begin_.deserialize(ctx, r.getBegin());
 	end_.deserialize(ctx, r.getEnd());
 

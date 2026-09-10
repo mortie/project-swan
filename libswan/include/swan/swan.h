@@ -5,6 +5,7 @@
 #include <swan/traits/ContactDamageTrait.h>
 #include <swan/traits/InventoryTrait.h>
 #include <swan/traits/PhysicsBodyTrait.h>
+#include <swan/traits/PlayerControllerTrait.h>
 #include <swan/traits/TileEntityTrait.h>
 #include <swan/Animation.h>
 #include <swan/Chunk.h>
@@ -18,6 +19,7 @@
 #include <swan/Item.h>
 #include <swan/ItemStack.h>
 #include <swan/Mod.h>
+#include <swan/MPGame.h>
 #include <swan/OS.h>
 #include <swan/Recipe.h>
 #include <swan/RingBuffer.h>

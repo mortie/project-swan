@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 #include <memory>
@@ -27,6 +28,14 @@ namespace Swan {
 
 class World;
 class ModWrapper;
+
+struct ModInfo {
+	std::string path;
+	std::string name;
+	std::string version;
+
+	static std::optional<ModInfo> parse(std::string path);
+};
 
 class Mod {
 public:
@@ -77,7 +86,7 @@ public:
 	template<typename Ent>
 	void registerEntity(const std::string name);
 
-	virtual void start(World &)
+	virtual void start(WorldData &, GameIO &)
 	{}
 
 	std::shared_ptr<cpptomlng::table> loadToml(std::string_view name);

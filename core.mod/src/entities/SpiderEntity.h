@@ -10,8 +10,6 @@ class SpiderEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait,
 	public Swan::ContactDamageTrait {
 public:
-	using Proto = proto::SpiderEntity;
-
 	SpiderEntity(Swan::Ctx &ctx);
 	SpiderEntity(Swan::Ctx &ctx, Swan::Vec2 pos);
 
@@ -34,8 +32,8 @@ public:
 	void update(Swan::Ctx &ctx, float dt) override;
 	void tick(Swan::Ctx &ctx, float dt) override;
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w);
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 private:
 	Swan::Animation idleAnimation_;

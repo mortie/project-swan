@@ -82,6 +82,11 @@ inline constexpr TilePos tilePos(Vec2 pos)
 	};
 }
 
+inline constexpr TilePos tilePosFromChunkAndRel(ChunkPos cpos, ChunkRelPos rpos)
+{
+	return cpos * Vec2i{CHUNK_WIDTH, CHUNK_HEIGHT} + rpos;
+}
+
 inline constexpr Vec2 tileCenter(TilePos pos)
 {
 	return {
@@ -90,13 +95,13 @@ inline constexpr Vec2 tileCenter(TilePos pos)
 	};
 }
 
-class Game;
-class World;
+class GameIO;
+class WorldData;
 class WorldPlane;
 
 struct Context {
-	Game &game;
-	World &world;
+	GameIO &game;
+	WorldData &world;
 	WorldPlane &plane;
 	Cygnet::Gui &gui;
 };

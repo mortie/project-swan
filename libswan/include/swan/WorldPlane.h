@@ -7,8 +7,9 @@
 #include <memory>
 #include <unordered_map>
 #include <functional>
-
+#include <cygnet/Renderer.h>
 #include <swan/util.h>
+
 #include "Clock.h"
 #include "common.h"
 #include "systems/EntitySystem.h"
@@ -21,7 +22,7 @@
 
 namespace Swan {
 
-class World;
+class WorldData;
 class Game;
 
 class WorldPlane final: NonCopyable {
@@ -33,8 +34,9 @@ public:
 	};
 
 	WorldPlane(
-		ID id, World *world, std::unique_ptr<WorldGen> gen,
-		std::vector<std::unique_ptr<EntityCollection>> &&colls);
+		ID id, WorldData *world, GameIO *game,
+		std::unique_ptr<WorldGen> gen,
+		std::vector<std::unique_ptr<EntityCollection>> colls);
 
 	Context getContext();
 
@@ -51,39 +53,39 @@ public:
 	EntityRef spawnPlayer();
 
 	bool breakTile(TilePos pos)
-	{
-		return tileSystem_.breakTile(pos);
-	}
+	{ return tileSystem_.breakTile(pos); }
 
 	bool placeTile(TilePos pos, Tile::ID id)
-	{
-		return tileSystem_.placeTile(pos, id);
-	}
+	{ return tileSystem_.placeTile(pos, id); }
 
 	void nextTick(std::function<void(Ctx &)> cb)
-	{
-		nextTickA_.push_back(std::move(cb));
-	}
+	{ nextTickA_.push_back(std::move(cb)); }
 
 	void regenerate();
 
 	size_t getChunkCount() { return chunks_.size(); }
 	size_t getActiveChunkCount() { return activeChunks_.size(); }
 	size_t getChunkDataMemUsage();
+	void keepChunksActiveAround(Vec2 pos);
 
-	Cygnet::Color backgroundColor();
-	void draw(Cygnet::Renderer &rnd);
+	void draw(Cygnet::Renderer &rnd, Vec2 center);
 	void update(float dt);
 	bool tick(float dt, RTDeadline deadline);
+	void tickDone();
 
 	ID id_;
-	World *world_;
+	WorldData *world_;
+	GameIO *game_;
 	std::unique_ptr<WorldGen> worldGen_;
 
-private:
 	void serialize(proto::WorldPlane::Builder w);
-	void deserialize(proto::WorldPlane::Reader r, std::span<Tile::ID> tileMap);
+	void serializeWorldSync(proto::WorldPlane::Builder w);
 
+	void deserialize(proto::WorldPlane::Reader r);
+	void deserializeCollectionUpdates(
+		EntityCollection &coll, mp_proto::EntityCollectionUpdate::Reader r);
+
+private:
 	std::unordered_map<ChunkPos, Chunk> chunks_;
 	std::vector<Chunk *> activeChunks_;
 	std::vector<std::pair<ChunkPos, Chunk *>> tickChunks_;
@@ -93,6 +95,7 @@ private:
 	// Callbacks to run on next tick
 	std::vector<std::function<void(Ctx &)>> nextTickA_;
 	std::vector<std::function<void(Ctx &)>> nextTickB_;
+	std::vector<Vec2i> drawWorldTicks_;
 
 	TickProgress tickProgress_ = TickProgress::IDLE;
 	FluidSystem fluidSystem_{*this};

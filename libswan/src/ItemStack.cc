@@ -70,19 +70,19 @@ void ItemStack::serialize(proto::ItemStack::Builder w)
 	}
 
 	w.setCount(count_);
-	w.setItem(item_->name);
+	w.setItem(item_->id);
 }
 
 void ItemStack::deserialize(const Swan::Context &ctx, proto::ItemStack::Reader r)
 {
-	if (!r.hasItem()) {
+	if (r.getItem() == 0) {
 		count_ = 0;
 		item_ = nullptr;
 		return;
 	}
 
 	count_ = r.getCount();
-	item_ = &ctx.world.getItem(r.getItem().cStr());
+	item_ = &ctx.world.getItemByID(r.getItem());
 }
 
 }

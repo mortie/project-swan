@@ -6,7 +6,7 @@ namespace CoreMod::tiles {
 #include "tiles.x"
 #undef X
 
-void init(Swan::World &world)
+void init(Swan::WorldData &world)
 {
 #define X(var, name) var = world.getTileID(name);
 #include "tiles.x"

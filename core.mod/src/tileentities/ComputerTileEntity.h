@@ -11,8 +11,6 @@ namespace CoreMod {
 class ComputerTileEntity final: public Swan::Entity,
 	public Swan::TileEntityTrait {
 public:
-	using Proto = proto::ComputerTileEntity;
-
 	ComputerTileEntity(Swan::Ctx &)
 	{}
 
@@ -25,8 +23,8 @@ public:
 	void tick(Swan::Ctx &ctx, float dt) override;
 	void activate() { showGUI_ = true; }
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w);
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 private:
 	struct TextIO: public scisavm::MemoryIO {

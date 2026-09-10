@@ -32,7 +32,7 @@ inline Prefab::Prefab(Map map, Data data)
 {
 	auto lookup = [&](char ch) -> const Swan::Tile::ID * {
 		if (ch == ' ') {
-			return &Swan::World::AIR_TILE_ID;
+			return &Swan::WorldData::AIR_TILE_ID;
 		}
 
 		for (const auto &mapping: map) {
@@ -59,7 +59,7 @@ inline Prefab::Prefab(Map map, Data data)
 		return;
 	}
 
-	tiles.resize(width * height, &Swan::World::AIR_TILE_ID);
+	tiles.resize(width * height, &Swan::WorldData::AIR_TILE_ID);
 	int y = 0;
 	for (std::string_view row: data) {
 		int rowLen = int(row.length());

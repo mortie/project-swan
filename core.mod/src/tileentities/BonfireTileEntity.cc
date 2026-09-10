@@ -1,4 +1,5 @@
 #include "BonfireTileEntity.h"
+#include "core_mod.capnp.h"
 #include "entities/ItemStackEntity.h"
 #include "world/util.h"
 #include "data/sounds.h"
@@ -216,8 +217,9 @@ void BonfireTileEntity::tickCrucible(Swan::Ctx &ctx, float dt)
 	}
 }
 
-void BonfireTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
+void BonfireTileEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::BonfireTileEntity>();
 	tileEntity_.serialize(w.initTileEntity());
 
 	auto burns = w.initOngoing(ongoing_.size());
@@ -235,8 +237,9 @@ void BonfireTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 	}
 }
 
-void BonfireTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
+void BonfireTileEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::BonfireTileEntity>();
 	tileEntity_.deserialize(r.getTileEntity());
 
 	ongoing_.clear();

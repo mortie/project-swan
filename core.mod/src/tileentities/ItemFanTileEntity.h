@@ -9,8 +9,6 @@ namespace CoreMod {
 class ItemFanTileEntity final: public Swan::Entity,
 	public Swan::TileEntityTrait {
 public:
-	using Proto = proto::ItemFanTileEntity;
-
 	ItemFanTileEntity(Swan::Ctx &ctx)
 	{}
 
@@ -27,8 +25,8 @@ public:
 		dir_ = dir;
 	}
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w);
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 private:
 	Swan::Direction dir_;

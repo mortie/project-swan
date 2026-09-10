@@ -57,7 +57,7 @@ struct SoundPlayer::Playback {
 	SoundAsset *asset;
 	float volume;
 	size_t position;
-	std::optional<std::pair<float, float>> center;
+	std::optional<Vec2> center;
 };
 
 struct SoundPlayer::Context {
@@ -137,16 +137,16 @@ static int callback(
 		}
 
 		if (playback.handle->hasMoved.exchange(false)) {
-			playback.center->first = playback.handle->centerX;
-			playback.center->second = playback.handle->centerY;
+			playback.center->x = playback.handle->centerX;
+			playback.center->y = playback.handle->centerY;
 		}
 
 		float attL = playback.volume;
 		float attR = playback.volume;
 		if (playback.center) {
-			float distXL = std::abs(playback.center->first - (centerX - 0.8));
-			float distXR = std::abs(playback.center->first - (centerX + 0.8));
-			float distY = std::abs(playback.center->second - centerY);
+			float distXL = std::abs(playback.center->x - (centerX - 0.8));
+			float distXR = std::abs(playback.center->x - (centerX + 0.8));
+			float distY = std::abs(playback.center->y - centerY);
 			float distL = std::sqrt(distXL * distXL + distY * distY);
 			float distR = std::sqrt(distXR * distXR + distY * distY);
 			attL *= 4 / (distL + 2);
@@ -279,7 +279,7 @@ void SoundPlayer::flush()
 
 void SoundPlayer::play(
 	SoundAsset *asset, float volume,
-	std::optional<std::pair<float, float>> center,
+	std::optional<Vec2> center,
 	SoundHandle handle)
 {
 	assert(handle.data_);
@@ -319,6 +319,11 @@ void SoundPlayer::setCenter(float x, float y)
 
 struct SoundPlayer::Context {};
 
+SoundHandle SoundHandle::make() { return {}; }
+bool SoundHandle::done() { return true; }
+void SoundHandle::stop() {}
+void SoundHandle::move(Vec2) {}
+
 SoundPlayer::SoundPlayer() = default;
 SoundPlayer::~SoundPlayer() = default;
 
@@ -326,7 +331,7 @@ void SoundPlayer::volume(float) {}
 float SoundPlayer::volume() { return 0; }
 void SoundPlayer::flush() {}
 
-void SoundPlayer::play(SoundAsset *, float, std::optional<std::pair<float, float>>, SoundHandle) {}
+void SoundPlayer::play(SoundAsset *, float, std::optional<Vec2>, SoundHandle) {}
 void SoundPlayer::setCenter(float, float) {}
 
 #endif

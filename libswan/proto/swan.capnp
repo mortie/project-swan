@@ -34,13 +34,14 @@ struct EntityRef {
 }
 
 struct ItemStack {
-	item @0 :Text;
+	item @0 :UInt16;
 	count @1 :UInt8;
 }
 
 struct BasicPhysicsBody {
 	pos @0 :Vec2;
 	vel @1 :Vec2;
+	onGround @2 :Bool;
 }
 
 struct BasicInventory {
@@ -58,11 +59,26 @@ struct TileEntity {
 }
 
 struct World {
-	tiles @0 :List(Text);
+	# namesByID maps between item/tile names and Tile::ID values.
+	# The index indicates the ID minus 2, the value indicates the name.
+	# The "minus 2" is because ID 0 is always invalid
+	# and ID 1 is always air.
+	namesByID @0 :List(Text);
+
 	planes @1 :List(WorldPlane);
-	player @2 :EntityRef;
-	currentPlane @3 :UInt32;
-	seed @4 :UInt32;
+	seed @2 :UInt32;
+
+	# This stores data for all players.
+	# The identifier "default" represents the current player
+	# in a world created in single player
+	playerData @3 :List(PlayerData);
+
+	struct PlayerData {
+		identifier @0 :Text;
+		plane @1 :UInt16;
+		collection @2 :Text;
+		data @3 :Data;
+	}
 }
 
 struct WorldPlane {

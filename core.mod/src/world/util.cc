@@ -53,7 +53,7 @@ void fallIfFloating(Swan::Ctx &ctx, Swan::TilePos pos)
 
 	if (!ctx.plane.tiles().get(below).isSupportV()) {
 		auto &tile = ctx.plane.tiles().get(pos);
-		ctx.plane.tiles().setID(pos, Swan::World::AIR_TILE_ID);
+		ctx.plane.tiles().setID(pos, Swan::WorldData::AIR_TILE_ID);
 		ctx.plane.entities().spawn<FallingTileEntity>(
 			(Swan::Vec2)pos + Swan::Vec2{0.5, 0.5}, tile.id);
 	}
@@ -383,7 +383,7 @@ bool activateShovelable(Swan::Ctx &ctx, Swan::TilePos pos, Swan::Tile::ActivateM
 	ctx.game.playSound(tile.more->breakSound);
 
 	if constexpr (Last) {
-		ctx.plane.tiles().setID(pos, Swan::World::AIR_TILE_ID);
+		ctx.plane.tiles().setID(pos, Swan::WorldData::AIR_TILE_ID);
 	} else {
 		ctx.plane.tiles().setID(pos, tile.id + 1);
 	}

@@ -9,8 +9,6 @@ namespace CoreMod {
 class BonfireTileEntity final: public Swan::Entity,
 	public Swan::TileEntityTrait {
 public:
-	using Proto = proto::BonfireTileEntity;
-
 	BonfireTileEntity(Swan::Ctx &)
 	{}
 
@@ -25,8 +23,8 @@ public:
 	void tickBonfire(Swan::Ctx &ctx, float dt);
 	void tickCrucible(Swan::Ctx &ctx, float dt);
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w);
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 	void onDespawn(Swan::Ctx &ctx) override { evacuateCrucible(ctx); }
 

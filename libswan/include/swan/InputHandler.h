@@ -6,7 +6,7 @@
 
 namespace Swan {
 
-class Game;
+class GameIO;
 
 class InputHandler {
 public:
@@ -23,7 +23,6 @@ public:
 
 	void drawDebug();
 
-protected:
 	void setActions(std::vector<ActionSpec> actions);
 	void beginFrame();
 	void endFrame();
@@ -39,8 +38,6 @@ private:
 	void registerAxisInput(std::string_view input, float *activation);
 
 	std::unique_ptr<Impl> impl_;
-
-	friend Game;
 };
 
 }

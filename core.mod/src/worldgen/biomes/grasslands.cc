@@ -40,7 +40,7 @@ static void generateLakes(
 		bool hasLake =
 			isLake(pos.add(-1, -1)) ||
 			isLake(pos.add(1, -1)) ||
-			(isLake(pos.add(1, 0)) && area(pos.add(-1, 0)) != Swan::World::AIR_TILE_ID);
+			(isLake(pos.add(1, 0)) && area(pos.add(-1, 0)) != Swan::WorldData::AIR_TILE_ID);
 		if (hasLake && Swan::random(pos.x) % 32 < 31) {
 			return true;
 		}
@@ -85,7 +85,7 @@ static void generateLakes(
 			bool posIsLake = isLake(pos);
 			Swan::Tile::ID above = area(pos.add(0, -1));
 			if (posIsLake && (above != tiles::partialWater && above != tiles::water)) {
-				area(pos.add(0, -1)) = Swan::World::AIR_TILE_ID;
+				area(pos.add(0, -1)) = Swan::WorldData::AIR_TILE_ID;
 				area(pos) = tiles::partialWater;
 			} else if (isLake(pos)) {
 				area(pos) = tiles::water;
@@ -133,7 +133,7 @@ static void generateTrees(
 		for (int y = area.begin.y; y < area.end.y; ++y) {
 			Swan::Tile::ID tile = area({x, y});
 			Swan::Tile::ID tileBelow = area({x, y + 1});
-			if (tileBelow == tiles::grass && tile == Swan::World::AIR_TILE_ID) {
+			if (tileBelow == tiles::grass && tile == Swan::WorldData::AIR_TILE_ID) {
 				spawnTree({x, y}, area, wg);
 			}
 		}

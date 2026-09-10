@@ -16,6 +16,20 @@ install_data(
   install_dir: 'include/proto',
 )
 
+multiplayer_proto = custom_target(
+  'multiplayer_proto',
+  input: ['proto/multiplayer.capnp', capnpc_cpp_prog_native],
+  output: ['multiplayer.capnp.h', 'multiplayer.capnp.c++'],
+  command: [
+    capnp_prog_native, 'compile', '-o@INPUT1@:@OUTDIR@',
+    '--src-prefix=@CURRENT_SOURCE_DIR@/proto',
+    '-I' + capnp_include_path,
+    '@INPUT0@',
+  ],
+  install: true,
+  install_dir: ['include/proto', false],
+)
+
 libswan_cflags = []
 if has_ffmpeg
   libswan_cflags += '-DSWAN_FFMPEG_AVAILABLE'
@@ -46,21 +60,29 @@ libswan = declare_dependency(
     'src/EntityCollection.cc',
     'src/FrameRecorder.cc',
     'src/Game.cc',
+    'src/GameServer.cc',
     'src/InputHandler.cc',
     'src/ItemStack.cc',
     'src/LightServer.cc',
     'src/Mod.cc',
+    'src/MPClient.cc',
+    'src/MPGame.cc',
+    'src/MPServer.cc',
+    'src/MPSocket.cc',
     'src/OS.cc',
     'src/rle.cc',
     'src/SoundPlayer.cc',
     'src/Tile.cc',
     'src/World.cc',
+    'src/WorldData.cc',
     'src/WorldPlane.cc',
     swan_proto,
+    multiplayer_proto,
     dependencies: [
       common, libcygnet, libthreads, libstb_image,
       libstb_vorbis, libcpptoml, libdl, libgl, libglfw3,
       libimgui, libportaudio, libcapnp, libkj, libffmpeg,
+      libsdl, libsdl_net,
     ] + maybe_libtracy,
     cpp_args: libswan_cflags,
     install: true,

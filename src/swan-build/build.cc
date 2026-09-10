@@ -378,11 +378,15 @@ static bool link(
 	}
 
 	for (const auto &source: sources) {
-		if (source.type != SourceType::SOURCE) {
-			continue;
+		if (source.type == SourceType::SOURCE) {
+			cmd.push_back(source.outPath);
 		}
+	}
 
-		cmd.push_back(source.outPath);
+	for (const auto &source: sources) {
+		if (source.type == SourceType::PROTO) {
+			cmd.push_back(source.outPath);
+		}
 	}
 
 	for (const auto &flag: info.ldflags) {

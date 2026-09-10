@@ -166,7 +166,7 @@ struct Tile {
 		float explosionResistance;
 	};
 
-	ID id;
+	ID id = 0;
 	Flags flags;
 	ToolSet breakableBy;
 	// 4 bytes padding
@@ -176,9 +176,9 @@ struct Tile {
 
 	Tile() = default;
 	Tile(const Tile &) = delete;
-	Tile(Tile &&) = default;
+	Tile(Tile &&) noexcept = default;
 
-	Tile(ID id, std::string name, const Builder &builder):
+	Tile(Tile::ID id, std::string name, const Builder &builder):
 		id(id),
 		flags(
 			(builder.isSolid ? IS_SOLID : NONE) |
@@ -193,6 +193,9 @@ struct Tile {
 		name(name),
 		more(std::make_unique<More>(builder))
 	{}
+
+	Tile &operator=(const Tile &) = delete;
+	Tile &operator=(Tile &&) noexcept = default;
 
 	bool isSolid() const { return flags & IS_SOLID; }
 	bool isOpaque() const { return flags & IS_OPAQUE; }

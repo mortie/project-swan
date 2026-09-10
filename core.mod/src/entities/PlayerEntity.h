@@ -11,10 +11,9 @@ namespace CoreMod {
 
 class PlayerEntity final: public Swan::Entity,
 	public Swan::PhysicsBodyTrait,
-	public Swan::InventoryTrait {
+	public Swan::InventoryTrait,
+	public Swan::PlayerControllerTrait {
 public:
-	using Proto = proto::PlayerEntity;
-
 	using CloseInventoryCallback = void(Swan::Ctx &, Swan::EntityRef);
 
 	PlayerEntity(Swan::Ctx &ctx);
@@ -36,12 +35,17 @@ public:
 	}
 
 	void draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
-	void update(Swan::Ctx &ctx, float dt) override;
 	void tick(Swan::Ctx &ctx, float dt) override;
 	void drawDebug(Swan::Ctx &ctx) override;
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w);
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+	void controlPlayer(Swan::Ctx &ctx, float dt) override;
+	void drawUI(Swan::Ctx &ctx, Cygnet::Renderer &rnd) override;
+
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
+
+	void serializeUpdates(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserializeUpdates(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 	bool askToOpenInventory(Swan::EntityRef ent, CloseInventoryCallback cb);
 	void askToCloseInventory(Swan::Ctx &ctx, Swan::EntityRef ent);

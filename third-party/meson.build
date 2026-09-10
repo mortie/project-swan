@@ -1,4 +1,5 @@
 subdir('capnp')
+subdir('SDL_net')
 
 libglad = declare_dependency(
   include_directories: 'glad/include',

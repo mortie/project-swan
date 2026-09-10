@@ -11,7 +11,7 @@ inline void Mod::registerWorldGen(std::string name)
 {
 	worldGens_.push_back(WorldGen::Factory{
 		.name = cat(name_, "::", name),
-		.create = [](World &world, uint32_t seed) -> std::unique_ptr<WorldGen> {
+		.create = [](WorldData &world, uint32_t seed) -> std::unique_ptr<WorldGen> {
 			return std::make_unique<WG>(world, seed);
 		}
 	});

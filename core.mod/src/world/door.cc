@@ -26,11 +26,15 @@ static void setDoor(
 static bool spawnDoor(Swan::Ctx &ctx, Swan::TilePos pos)
 {
 	const char *dir;
+	// TODO
+	/*
 	if (pos.x + 0.5 < ctx.world.player_->center().x) {
 		dir = "left";
 	} else {
 		dir = "right";
 	}
+	*/
+	dir = "left";
 
 	bool placeBottom =
 		ctx.plane.tiles().get(pos.add(0, 1)).isSupportV() &&

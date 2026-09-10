@@ -261,10 +261,11 @@ auto callEnd(T &v)
 class ROString {
 public:
 	ROString() = default;
+	ROString(const ROString &other) = delete;
 	ROString(ROString &&other)
 	{
 		str_ = other.str_;
-		other.str_ = nullptr;
+		other.str_ = EMPTY;
 	}
 
 	ROString(std::string_view str)
@@ -295,6 +296,16 @@ public:
 		}
 	}
 
+	ROString &operator=(const ROString &) = delete;
+	ROString &operator=(ROString &&other)
+	{
+		if (&other != this) {
+			str_ = other.str_;
+			other.str_ = EMPTY;
+		}
+		return *this;
+	}
+
 	std::string_view str() const { return str_; }
 	const char *data() const { return str_; }
 	const char *c_str() const { return str_; }
@@ -303,12 +314,18 @@ public:
 	std::string string() const { return std::string(str()); }
 
 	operator std::string_view() const { return str_; }
-	operator bool() const { return str_[0]; }
+	explicit operator bool() const { return str_[0]; }
 
 	template<typename T>
 	friend bool operator==(const ROString &a, const T &b)
 	{
 		return a.str() == std::string_view(b);
+	}
+
+	friend std::ostream &operator<<(std::ostream &os, const ROString &s)
+	{
+		os << s.str();
+		return os;
 	}
 
 private:

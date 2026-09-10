@@ -19,6 +19,7 @@ namespace Swan {
 
 class WorldPlane;
 class TileSystemImpl;
+class Game;
 
 struct FoundEntity {
 	EntityRef ref;
@@ -27,6 +28,22 @@ struct FoundEntity {
 
 class EntitySystemImpl {
 public:
+	class CurrentEntityOverride {
+	public:
+		CurrentEntityOverride(EntitySystemImpl *sys, EntityRef ref): sys_(sys)
+		{
+			sys_->currentEntityStack_.push_back(ref);
+		}
+
+		~CurrentEntityOverride()
+		{
+			sys_->currentEntityStack_.pop_back();
+		}
+
+	private:
+		EntitySystemImpl *sys_;
+	};
+
 	EntitySystemImpl(
 		WorldPlane &plane,
 		std::vector<std::unique_ptr<EntityCollection>> &&colls);
@@ -35,7 +52,7 @@ public:
 	 * Available to game logic
 	 */
 
-	EntityRef spawn(std::string_view name, capnp::Data::Reader data);
+	EntityRef spawn(std::string_view name, kj::BufferedInputStream &data);
 
 	template<typename Ent, typename ...Args>
 	EntityRef spawn(Args &&...args)
@@ -81,9 +98,15 @@ public:
 	std::span<FoundEntity> getInTile(TilePos pos);
 	std::span<FoundEntity> getInArea(Vec2 pos, Vec2 size);
 
+	std::span<std::unique_ptr<EntityCollection>> collections()
+	{ return collections_; }
+
 	EntityRef getTileEntity(TilePos pos);
 
 	EntityRef current();
+
+	CurrentEntityOverride overrideCurrentEntity(EntityRef ref)
+	{ return {this, ref}; }
 
 	/*
 	 * Available to friends
@@ -91,10 +114,12 @@ public:
 
 	void spawnTileEntity(TilePos pos, std::string_view name);
 	void despawnTileEntity(TilePos pos);
+	void despawnEntityNow(EntityRef ref);
 
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
 	void tick(float dt);
+	void tickDone();
 
 	EntityCollection *getCollectionOf(std::string_view name);
 
@@ -120,6 +145,9 @@ private:
 
 	std::vector<EntityRef> despawnListA_;
 	std::vector<EntityRef> despawnListB_;
+
+	friend CurrentEntityOverride;
+	friend WorldPlane;
 };
 
 class EntitySystem: private EntitySystemImpl {
@@ -133,11 +161,14 @@ public:
 	using EntitySystemImpl::getInTile;
 	using EntitySystemImpl::getInArea;
 	using EntitySystemImpl::getTileEntity;
+	using EntitySystemImpl::collections;
 	using EntitySystemImpl::current;
+	using EntitySystemImpl::overrideCurrentEntity;
 
 	friend WorldPlane;
 	friend TileSystemImpl;
 	friend EntityRef;
+	friend Game;
 };
 
 }

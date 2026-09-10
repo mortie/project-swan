@@ -1,6 +1,8 @@
-#include "Game.h"
-#include "kj/io.h"
-
+#include "WorldData.h"
+#include "systems/FluidSystem.h"
+#include "traits/PlayerControllerTrait.h"
+#include <swan/constants.h>
+#include <swan/HashMap.h>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -13,6 +15,7 @@
 #include <cygnet/gl.h>
 #include <stb/stb_image_write.h>
 
+#include <kj/io.h>
 #include <capnp/message.h>
 #include <capnp/serialize-packed.h>
 
@@ -23,13 +26,15 @@
 
 #include "Clock.h"
 #include "swan.capnp.h"
+#include "Game.h"
+#include "GameServer.h"
 
 #include "traits/InventoryTrait.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
 
 namespace Swan {
 
-static constexpr float TICK_DELTA = 1.0 / 20.0;
+static constexpr float TICK_DELTA = 1.0 / TICK_RATE;
 
 static std::string formatNow()
 {
@@ -43,38 +48,55 @@ static std::string formatNow()
 	return s;
 }
 
-Game::Game(std::function<bool()> recompileMods):
-	recompileMods_(std::move(recompileMods))
+Game::Game(std::function<bool()> recompileMods, HashMap<ModInfo> mods):
+	recompileMods_(std::move(recompileMods)),
+	mods_(std::move(mods))
 {
+	isServer_ = true;
+
 	const char *val = getenv("SWAN_DEBUG_KEYS");
 	if (val && std::string_view(val) == "1") {
 		debug_.showInputDebug = true;
 	}
+
+	modPaths_.reserve(mods_.size());
+	for (auto &[id, mod]: mods_) {
+		modPaths_.push_back(mod.path);
+	}
 }
+
+Game::~Game() = default;
 
 void Game::createWorld(
 	std::string worldPath, const std::string &worldgen,
-	uint32_t seed, std::span<std::string> modPaths)
+	uint32_t seed)
 {
 	ScopedTimer timer("create world");
 
-	world_ = std::make_unique<World>(this, seed, modPaths);
+	WorldData data;
+	data.loadMods(modPaths_);
+	data.buildResources(renderer_, {});
+
+	world_ = std::make_unique<World>(this, seed, std::move(data));
 	initInputHandler();
 	initCommandHandler();
 
-	for (auto &mod: world_->mods_) {
-		mod.mod_->start(*world_);
+	for (auto &mod: world_->data().mods_) {
+		mod.mod_->start(world_->data(), *this);
 	}
 
 	world_->setWorldGen(worldgen);
-	world_->setCurrentPlane(world_->addPlane());
-	world_->spawnPlayer();
+	world_->addPlane();
+#ifndef SWAN_HEADLESS
+	localPlayer_ = onPlayerConnected("default");
+	cam_.pos = localPlayer_->ref.getBody()->center();
+#endif
+
 	hasSortedItems_ = false;
 	worldPath_ = std::move(worldPath);
 }
 
-void Game::loadWorld(
-	std::string worldPath, std::span<const std::string> modPaths)
+void Game::loadWorld(std::string worldPath)
 {
 	ScopedTimer timer("load world");
 
@@ -92,22 +114,50 @@ void Game::loadWorld(
 		return;
 	}
 
-	auto data = std::move(ss).str();
-	kj::ArrayInputStream stream({(unsigned char *)data.data(), data.size()});
+	auto buffer = std::move(ss).str();
+	kj::ArrayInputStream stream({(unsigned char *)buffer.data(), buffer.size()});
 	capnp::PackedMessageReader reader(stream);
+	auto worldReader = reader.getRoot<proto::World>();
 
-	world_ = std::make_unique<World>(this, 0, modPaths);
+	WorldData data;
+	std::vector<std::string> namesByID;
+	namesByID.reserve(worldReader.getNamesByID().size());
+	for (auto name: worldReader.getNamesByID()) {
+		namesByID.push_back(name);
+	}
+
+	data.loadMods(modPaths_);
+	data.buildResources(renderer_, std::move(namesByID));
+
+	world_ = std::make_unique<World>(this, 0, std::move(data));
 	initInputHandler();
 	initCommandHandler();
 
-	for (auto &mod: world_->mods_) {
-		mod.mod_->start(*world_);
+	for (auto &mod: world_->data().mods_) {
+		mod.mod_->start(world_->data(), *this);
 	}
 
-	auto world = reader.getRoot<proto::World>();
-	world_->deserialize(world);
+	world_->deserialize(worldReader);
 	hasSortedItems_ = false;
 	worldPath_ = std::move(worldPath);
+
+	for (auto p: worldReader.getPlayerData()) {
+		std::vector<unsigned char> data;
+		data.resize(p.getData().size());
+		memcpy(data.data(), &p.getData().front(), p.getData().size());
+
+		playerData_[p.getIdentifier().cStr()] = {
+			.plane = p.getPlane(),
+			.data = std::move(data),
+			.ref = {},
+			.collection = p.getCollection(),
+		};
+	}
+
+#ifndef SWAN_HEADLESS
+	localPlayer_ = onPlayerConnected("default");
+	cam_.pos = localPlayer_->ref.getBody()->center();
+#endif
 }
 
 void Game::onMouseMove(float x, float y)
@@ -120,9 +170,15 @@ void Game::onMouseMove(float x, float y)
 	hasMouseMoved_ = true;
 }
 
-void Game::onScrollWheel(double dy)
+void Game::onScrollWheel(float dy)
 {
 	didScroll_ += dy;
+}
+
+void Game::onViewportSize(int w, int h)
+{
+	cam_.size = {w, h};
+	uiCam_.size = {w, h};
 }
 
 Vec2 Game::getMousePos()
@@ -133,37 +189,59 @@ Vec2 Game::getMousePos()
 TilePos Game::getMouseTile()
 {
 	auto pos = (getMouseScreenPos() * 2 - renderer_.winScale()) / cam_.zoom + cam_.pos;
-
 	return TilePos{(int)floor(pos.x), (int)floor(pos.y)};
+}
+
+void Game::playSound(
+	SoundAsset *asset,
+	float volume,
+	std::optional<Vec2> center)
+{
+	soundPlayer_.play(asset, volume, center);
+}
+
+void Game::playSound(
+	SoundAsset *asset,
+	float volume,
+	std::optional<Vec2> center,
+	SoundHandle &handle)
+{
+	soundPlayer_.play(asset, volume, center, handle);
 }
 
 void Game::drawDebugMenu()
 {
-	ImGui::Text(
-		"Position: x=%d y=%d",
-		int(round(world_->player_->pos.x)),
-		int(round(world_->player_->pos.y)));
+	Entity *player = localPlayer_ ? localPlayer_->ref.get() : nullptr;
+	Body *playerBody = player ? player->trait<BodyTrait>() : nullptr;
+	if (playerBody) {
+		ImGui::Text(
+			"Position: x=%d y=%d",
+			int(round(playerBody->pos.x)),
+			int(round(playerBody->pos.y)));
+	}
 
 	ImGui::Text("World seed: %u", world_->seed());
 
 	Swan::Ctx &ctx = world_->currentPlane().getContext();
 	world_->currentPlane().worldGen_->debugInfo(ctx);
-	world_->playerRef_->drawDebug(ctx);
+	if (player) {
+		player->drawDebug(ctx);
+	}
 
 	ImGui::Checkbox("Draw collision boxes", &debug_.drawCollisionBoxes);
 	ImGui::Checkbox("Draw chunk boundaries", &debug_.drawChunkBoundaries);
 	ImGui::Checkbox("Draw world ticks", &debug_.drawWorldTicks);
 
-	#ifndef SWAN_HEADLESS
-	bool prevEnableVSync = enableVSync_;
-	ImGui::Checkbox("Enable VSync", &enableVSync_);
-	if (enableVSync_ && !prevEnableVSync) {
+#ifndef SWAN_HEADLESS
+	bool prevEnableVSync = vsync_;
+	ImGui::Checkbox("Enable VSync", &vsync_);
+	if (vsync_ && !prevEnableVSync) {
 		glfwSwapInterval(1);
 	}
-	else if (!enableVSync_ && prevEnableVSync) {
+	else if (!vsync_ && prevEnableVSync) {
 		glfwSwapInterval(0);
 	}
-	#endif
+#endif
 
 	ImGui::Checkbox("Show fluid particles", &debug_.fluidParticleLocations);
 	ImGui::Checkbox("Disable shadows", &debug_.disableShadows);
@@ -180,16 +258,35 @@ void Game::drawDebugMenu()
 		triggerSave_ = true;
 	}
 
+	ImGui::SameLine();
+
 	if (ImGui::Button("Screenshot")) {
 		std::filesystem::create_directories("screenshots");
 		auto path = cat("screenshots/", formatNow(), ".png");
 		screenshot(path.c_str());
 	}
 
+	if (server_) {
+		if (ImGui::Button("Stop Server")) {
+			server_.reset();
+		}
+	} else if (ImGui::Button("Start Server")) {
+		std::vector<std::string> modIDs;
+		modIDs.reserve(mods_.size());
+		for (auto &[id, _]: mods_) {
+			modIDs.push_back(id);
+		}
+
+		server_ = std::make_unique<GameServer>(world_.get(), this, std::move(modIDs));
+		server_->listen(nullptr, 11216);
+	}
+
 	if (!FrameRecorder::isAvailable()) {
 		ImGui::Text("Screen recording unavailable");
 	}
 	else if (frameRecorder_) {
+		ImGui::SameLine();
+
 		if (ImGui::Button("End recording")) {
 			frameRecorder_->end();
 			frameRecorder_.reset();
@@ -197,6 +294,8 @@ void Game::drawDebugMenu()
 		}
 	}
 	else {
+		ImGui::SameLine();
+
 		if (ImGui::Button("Begin recording")) {
 			frameRecorder_.emplace();
 
@@ -212,6 +311,10 @@ void Game::drawDebugMenu()
 				fixedDeltaTime_.reset();
 			}
 		}
+	}
+
+	if (server_) {
+		ImGui::Text("Server running.");
 	}
 
 	ImGui::SliderFloat(
@@ -290,8 +393,8 @@ void Game::drawDebugMenu()
 
 	if (!hasSortedItems_) {
 		sortedItems_.clear();
-		sortedItems_.reserve(world_->items_.size());
-		for (auto &item: world_->items_) {
+		sortedItems_.reserve(world_->data().items_.size());
+		for (auto &item: world_->data().items_) {
 			sortedItems_.push_back(&item);
 		}
 		std::sort(sortedItems_.begin(), sortedItems_.end(), [](Item *a, Item *b) {
@@ -307,11 +410,13 @@ void Game::drawDebugMenu()
 		}
 
 		if (ImGui::Button(item->name.c_str())) {
-			auto *inventory = world_->playerRef_.trait<InventoryTrait>();
-			ItemStack stack(item, 1);
+			Inventory *inventory = player ? player->trait<InventoryTrait>() : nullptr;
+			if (inventory) {
+				ItemStack stack(item, 1);
 
-			info << "Giving player " << stack.count() << ' ' << item->name;
-			inventory->insert(stack);
+				info << "Giving player " << stack.count() << ' ' << item->name;
+				inventory->insert(stack);
+			}
 		}
 	}
 	ImGui::EndChild();
@@ -468,8 +573,16 @@ void Game::draw()
 	}
 
 	renderer_.clear();
-	renderer_.setBackgroundColor(world_->backgroundColor());
-	world_->draw(renderer_);
+	if (localPlayer_) {
+		auto &plane = *world_->getPlane(localPlayer_->plane).plane;
+		renderer_.setBackgroundColor(plane.worldGen_->backgroundColor(cam_.pos));
+		plane.draw(renderer_, cam_.pos);
+
+		auto *controller = localPlayer_->ref.as<PlayerControllerTrait>();
+		if (controller) {
+			controller->drawUI(plane.getContext(), renderer_);
+		}
+	}
 	gui_.endFrame();
 }
 
@@ -663,6 +776,31 @@ void Game::update(float dt)
 		world_->currentPlane().regenerate();
 	}
 
+	if (localPlayer_) {
+		// Make the player control itself
+		auto *controller = localPlayer_->ref.as<PlayerControllerTrait>();
+		if (controller) {
+			auto &plane = *world_->getPlane(localPlayer_->plane).plane;
+			auto override = plane.entities().overrideCurrentEntity(localPlayer_->ref);
+			controller->controlPlayer(plane.getContext(), dt);
+		}
+
+		// Make camera follow player
+		auto body = localPlayer_->ref.trait<BodyTrait>();
+		auto camTarget = body->pos + body->size / 2;
+		auto camSqDist = (cam_.pos - camTarget).squareLength();
+		if (camSqDist > 20 * 20) {
+			cam_.pos = camTarget;
+		} else {
+			constexpr float HALF_LIFE = 0.05;
+			cam_.pos = {
+				lerpSmooth(cam_.pos.x, camTarget.x, HALF_LIFE, dt),
+				lerpSmooth(cam_.pos.y, camTarget.y, HALF_LIFE, dt),
+			};
+		}
+	}
+
+	// Update the rest of the world
 	renderer_.update(dt);
 	world_->update(dt);
 
@@ -681,6 +819,12 @@ void Game::update(float dt)
 		tickDeadline_.reset();
 		if (world_->tick(TICK_DELTA, tickDeadline_)) {
 			tickInProgress_ = false;
+
+			if (server_) {
+				server_->tick(TICK_DELTA);
+			}
+
+			world_->tickDone();
 		}
 	}
 	else if (tickAcc_ >= TICK_DELTA) {
@@ -702,6 +846,10 @@ void Game::tick()
 		triggerSave_ = false;
 	}
 
+	if (localPlayer_) {
+		world_->getPlane(localPlayer_->plane).plane->keepChunksActiveAround(cam_.pos);
+	}
+
 	perf_.tickCount += 1;
 	if (perf_.tickCount >= 20) {
 		perf_.entityTickTime.capture(perf_.tickCount);
@@ -713,6 +861,32 @@ void Game::tick()
 	tickInProgress_ = true;
 	if (world_->tick(TICK_DELTA, tickDeadline_)) {
 		tickInProgress_ = false;
+
+		if (server_) {
+			server_->tick(TICK_DELTA);
+		}
+
+		world_->tickDone();
+	}
+}
+
+void Game::onQuit()
+{
+	server_.reset();
+	save();
+}
+
+void Game::onTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID)
+{
+	if (server_) {
+		server_->onTileChange(plane, pos, newID);
+	}
+}
+
+void Game::onBackgroundTileChange(WorldPlane::ID plane, TilePos pos, Tile::ID newID)
+{
+	if (server_) {
+		server_->onBackgroundTileChange(plane, pos, newID);
 	}
 }
 
@@ -724,15 +898,43 @@ void Game::save()
 		info << "Completing current tick...";
 		if (world_->tick(TICK_DELTA, RTDeadline(2))) {
 			tickInProgress_ = false;
+
+			if (server_) {
+				server_->tick(TICK_DELTA);
+			}
+
+			world_->tickDone();
 		} else {
 			warn << "Failed to complete tick in 2 seconds!";
 		}
 	}
 
-	info << "Serializing world...";
+
 	capnp::MallocMessageBuilder mb;
 	auto world = mb.initRoot<proto::World>();
+
+	info << "Disconnecting players...";
+	for (auto &[ident, player]: playerData_) {
+		if (player.ref) {
+			onPlayerDisconnected(ident);
+		}
+	}
+
+	info << "Serializing players...";
+	auto playerBuilder = world.initPlayerData(playerData_.size());
+	for (size_t i = 0; auto &[ident, player]: playerData_) {
+		auto p = playerBuilder[i++];
+		p.setIdentifier(ident);
+		p.setPlane(player.plane);
+		p.setCollection(player.collection);
+		auto data = p.initData(player.data.size());
+		memcpy(&data.front(), player.data.data(), player.data.size());
+		info << "* Player '" << ident << "': " << data.size() << " bytes";
+	}
+
+	info << "Serializing world...";
 	world_->serialize(world);
+
 	kj::VectorOutputStream out;
 	capnp::writePackedMessage(out, mb);
 
@@ -830,14 +1032,15 @@ bool Game::reload()
 	}
 
 	std::vector<std::string> mods;
-	for (auto &mod: world_->mods_) {
+	for (auto &mod: world_->data().mods_) {
 		mods.push_back(mod.path_);
 	}
 
 	save();
 	soundPlayer_.flush();
+	server_.reset();
 	world_.reset();
-	loadWorld(worldPath_, mods);
+	loadWorld(worldPath_);
 	debugEntities_.clear();
 
 	info << "Reloaded in " << startTime.duration() << " seconds.";
@@ -902,7 +1105,7 @@ void Game::initInputHandler()
 		.defaultInputs = {"axis:RIGHT_Y"},
 	});
 
-	for (auto &mod: world_->mods_) {
+	for (auto &mod: world_->data().mods_) {
 		for (auto action: mod.mod_->actions_) {
 			action.name = cat(mod.name(), "::", action.name);
 			actions.push_back(std::move(action));
@@ -943,8 +1146,8 @@ void Game::initCommandHandler()
 		.help = "Show help info.",
 		.handler = +[](Swan::Ctx &ctx, std::span<CowStr>, std::string &out) {
 			out = "Available commands:\n";
-
-			for (auto &set: ctx.game.commandSets_) {
+			Game &game = *static_cast<Game *>(&ctx.game);
+			for (auto &set: game.commandSets_) {
 				for (auto &cmd: set.commands) {
 					if (cmd.pattern.empty()) {
 						continue;
@@ -968,7 +1171,8 @@ void Game::initCommandHandler()
 		.help = "Show help info for a given command.",
 		.handler = +[](Swan::Ctx &ctx, std::span<CowStr> argv, std::string &out) {
 			std::vector<CowStr> params;
-			CommandSpec *command = ctx.game.matchCommand(argv, params);
+			Game &game = *static_cast<Game *>(&ctx.game);
+			CommandSpec *command = game.matchCommand(argv, params);
 			for (auto &part: command->pattern) {
 				if (out != "") {
 					out += ' ';
@@ -996,12 +1200,64 @@ void Game::initCommandHandler()
 		},
 	});
 
-	for (auto &mod: world_->mods_) {
+	for (auto &mod: world_->data().mods_) {
 		commandSets_.push_back({
 			.name = std::string(mod.name()),
 			.commands = mod.takeCommands(),
 		});
 	}
+}
+
+Game::PlayerData *Game::onPlayerConnected(std::string_view identifier)
+{
+	auto it = playerData_.find(identifier);
+	if (it == playerData_.end()) {
+		info << "Spawning new player for client '" << identifier << '\'';
+		auto ref = world_->getPlane(0).plane->spawnPlayer();
+		return &(playerData_[std::string(identifier)] = PlayerData {
+			.plane = 0,
+			.data = {},
+			.ref = ref,
+			.collection = ref.collection()->name(),
+		});
+	} else {
+		info << "Found existing player data for client '" << identifier << '\'';
+		auto player = &it->second;
+		auto &plane = *world_->getPlane(player->plane).plane;
+
+		kj::ArrayInputStream stream({player->data.data(), player->data.size()});
+		player->ref = plane.entities().spawn(player->collection, stream);
+		return player;
+	}
+}
+
+void Game::onPlayerDisconnected(std::string_view identifier)
+{
+	auto it = playerData_.find(identifier);
+	if (it == playerData_.end()) {
+		warn << "Non-existent player '" << identifier << "' disconnected?";
+		return;
+	}
+
+	auto &player = it->second;
+	auto &plane = *world_->getPlane(player.plane).plane;
+	Entity *ent = player.ref.get();
+	if (!ent) {
+		warn << "Player '" << identifier << "' with non-existent entity disconnected?";
+		return;
+	}
+
+	capnp::MallocMessageBuilder mb;
+	ent->serialize(plane.getContext(), mb);
+
+	kj::VectorOutputStream out;
+	capnp::writePackedMessage(out, mb);
+	auto arr = out.getArray();
+	player.data.resize(arr.size());
+	memcpy(player.data.data(), &arr.front(), arr.size());
+	info << "Player '" << identifier << " disconnected.";
+
+	plane.entities().despawnEntityNow(player.ref);
 }
 
 }

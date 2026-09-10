@@ -1,9 +1,10 @@
 #include "systems/FluidSystem.h"
 #include "common.h"
 #include "WorldPlane.h"
-#include "World.h"
-#include "Game.h"
+#include "WorldData.h"
+#include "GameIO.h"
 #include "cygnet/Renderer.h"
+#include "swan/constants.h"
 
 #include <climits>
 #include <stdexcept>
@@ -66,6 +67,18 @@ Vec2 fluidPosToWorldPos(FluidPos pos)
 	};
 }
 
+TilePos fluidPosToTilePos(FluidPos pos)
+{
+	ChunkPos cpos;
+	Vec2i rel;
+	fluidPosToWorldPos(pos, cpos, rel);
+
+	return {
+		cpos.x * CHUNK_WIDTH + (rel.x / FLUID_RESOLUTION),
+		cpos.y * CHUNK_HEIGHT + (rel.y / FLUID_RESOLUTION),
+	};
+}
+
 FluidPos worldPosToFluidPos(Vec2 pos)
 {
 	pos.x += 0.5 / FLUID_RESOLUTION;
@@ -75,8 +88,9 @@ FluidPos worldPosToFluidPos(Vec2 pos)
 
 }
 
-void FluidSystemImpl::FluidCellRef::setAir()
+void FluidSystemImpl::FluidCellRef::setAir(FluidSystemImpl *impl)
 {
+	impl->changedTiles_.insert(fluidPosToTilePos(pos_));
 	*value_ = 0;
 }
 
@@ -90,8 +104,9 @@ bool FluidSystemImpl::FluidCellRef::isSolid()
 	return *value_ == 1;
 }
 
-void FluidSystemImpl::FluidCellRef::set(Fluid::ID id, int vx)
+void FluidSystemImpl::FluidCellRef::set(FluidSystemImpl *impl, Fluid::ID id, int vx)
 {
+	impl->changedTiles_.insert(fluidPosToTilePos(pos_));
 	int mode;
 	if (vx < 0) {
 		mode = 1;
@@ -141,8 +156,9 @@ Fluid::ID FluidSystemImpl::FluidCellRef::id()
 	return Fluid::ID(*value_ & 0x3f);
 }
 
-void FluidSystemImpl::FluidCellRef::setID(Fluid::ID id)
+void FluidSystemImpl::FluidCellRef::setID(FluidSystemImpl *impl, Fluid::ID id)
 {
+	impl->changedTiles_.insert(fluidPosToTilePos(pos_));
 	*value_ = (*value_ & 0xc0) | id;
 }
 
@@ -162,6 +178,7 @@ void FluidSystemImpl::triggerUpdateInTile(TilePos tpos)
 
 void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 {
+	changedTiles_.insert(pos);
 	auto &chunk = plane_.getChunk(chunkPos(pos));
 	auto relPos = chunkRelPos(pos);
 
@@ -171,7 +188,7 @@ void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 			(relPos.y * FLUID_RESOLUTION + y) * CHUNK_WIDTH * FLUID_RESOLUTION];
 		for (size_t x = 0; x < FLUID_RESOLUTION; ++x) {
 			Fluid::ID id = row[relPos.x * FLUID_RESOLUTION + x] & 0x3f;
-			if (id == World::AIR_FLUID_ID || id == World::SOLID_FLUID_ID) {
+			if (id == WorldData::AIR_FLUID_ID || id == WorldData::SOLID_FLUID_ID) {
 				continue;
 			}
 
@@ -196,6 +213,7 @@ void FluidSystemImpl::setInTile(TilePos pos, Fluid::ID fluid)
 
 void FluidSystemImpl::setPartialInTile(TilePos pos, Fluid::ID fluid)
 {
+	changedTiles_.insert(pos);
 	auto &chunk = plane_.getChunk(chunkPos(pos));
 	auto relPos = chunkRelPos(pos);
 	auto *data = chunk.getFluidData();
@@ -211,6 +229,7 @@ void FluidSystemImpl::setPartialInTile(TilePos pos, Fluid::ID fluid)
 
 void FluidSystemImpl::replaceInTile(TilePos pos, Fluid::ID fluid)
 {
+	changedTiles_.insert(pos);
 	auto &chunk = plane_.getChunk(chunkPos(pos));
 	auto relPos = chunkRelPos(pos);
 
@@ -220,6 +239,7 @@ void FluidSystemImpl::replaceInTile(TilePos pos, Fluid::ID fluid)
 
 void FluidSystemImpl::setSolid(TilePos pos, const FluidCollision &set)
 {
+	changedTiles_.insert(pos);
 	auto &chunk = plane_.getChunk(chunkPos(pos));
 	auto relPos = chunkRelPos(pos);
 
@@ -233,7 +253,7 @@ void FluidSystemImpl::setSolid(TilePos pos, const FluidCollision &set)
 			}
 
 			Fluid::ID id = row[relPos.x * FLUID_RESOLUTION + x] & 0x3f;
-			if (id == World::AIR_FLUID_ID || id == World::SOLID_FLUID_ID) {
+			if (id == WorldData::AIR_FLUID_ID || id == WorldData::SOLID_FLUID_ID) {
 				continue;
 			}
 
@@ -258,6 +278,7 @@ void FluidSystemImpl::setSolid(TilePos pos, const FluidCollision &set)
 
 void FluidSystemImpl::clearSolid(TilePos pos)
 {
+	changedTiles_.insert(pos);
 	auto &chunk = plane_.getChunk(chunkPos(pos));
 	auto relPos = chunkRelPos(pos);
 	chunk.clearFluidSolid(relPos);
@@ -277,8 +298,8 @@ void FluidSystemImpl::spawnFluidParticle(Vec2 pos, Fluid::ID fluid, Vec2 vel)
 
 Fluid &FluidSystemImpl::getAtPos(Vec2 pos) {
 	auto id = getFluidCell(worldPosToFluidPos(pos)).id();
-	if (id == World::SOLID_FLUID_ID) {
-		id = World::AIR_FLUID_ID;
+	if (id == WorldData::SOLID_FLUID_ID) {
+		id = WorldData::AIR_FLUID_ID;
 	}
 	return plane_.world_->getFluidByID(id);
 }
@@ -306,7 +327,7 @@ bool FluidSystemImpl::takeFluidFromRow(TilePos pos, int y, Fluid::ID fluid) {
 		auto offsetPos = fpos.add(offset, 0);
 		auto cell = getFluidCell(offsetPos);
 		if (cell.id() == fluid) {
-			cell.setAir();
+			cell.setAir(this);
 			triggerUpdateAround(offsetPos);
 			return true;
 		}
@@ -343,18 +364,49 @@ Fluid &FluidSystemImpl::takeAnyFromRow(TilePos pos, int y)
 		}
 
 		auto id = cell.id();
-		cell.setAir();
+		cell.setAir(this);
 		triggerUpdateAround(offsetPos);
 		return plane_.world_->getFluidByID(id);
 	}
 
-	return plane_.world_->getFluidByID(World::AIR_FLUID_ID);
+	return plane_.world_->getFluidByID(WorldData::AIR_FLUID_ID);
 }
 
 bool FluidSystemImpl::isFluidCellSolid(FluidPos gridPos)
 {
 	auto cell = getFluidCell(gridPos);
 	return cell.isSolid();
+}
+
+void FluidSystemImpl::getGridInTile(TilePos pos, Fluid::ID *data)
+{
+	auto &chunk = plane_.getChunk(chunkPos(pos));
+	auto rpos = chunkRelPos(pos);
+
+	auto startX = rpos.x * FLUID_RESOLUTION;
+	auto startY = rpos.y * FLUID_RESOLUTION;
+	auto dataptr = data;
+	for (int y = startY; y < startY + FLUID_RESOLUTION; ++y) {
+		auto *row = chunk.getFluidData() + (y * CHUNK_WIDTH * FLUID_RESOLUTION);
+		memcpy(dataptr, row + startX, FLUID_RESOLUTION);
+		dataptr += FLUID_RESOLUTION;
+	}
+}
+
+void FluidSystemImpl::setGridInTile(TilePos pos, const Fluid::ID *data)
+{
+	auto &chunk = plane_.getChunk(chunkPos(pos));
+	chunk.setFluidModified();
+	auto rpos = chunkRelPos(pos);
+
+	auto startX = rpos.x * FLUID_RESOLUTION;
+	auto startY = rpos.y * FLUID_RESOLUTION;
+	auto dataptr = data;
+	for (int y = startY; y < startY + FLUID_RESOLUTION; ++y) {
+		auto *row = chunk.getFluidData() + (y * CHUNK_WIDTH * FLUID_RESOLUTION);
+		memcpy(row + startX, dataptr, FLUID_RESOLUTION);
+		dataptr += FLUID_RESOLUTION;
+	}
 }
 
 void FluidSystemImpl::draw(Cygnet::Renderer &rnd)
@@ -371,7 +423,7 @@ void FluidSystemImpl::draw(Cygnet::Renderer &rnd)
 		});
 	}
 
-	if (plane_.world_->game_->debug_.fluidParticleLocations) {
+	if (plane_.game_->debug_.fluidParticleLocations) {
 		for (auto &particle: particles_) {
 			rnd.drawRect(Cygnet::Renderer::DrawRect{
 				.pos = fluidPosToWorldPos(worldPosToFluidPos(particle.pos))
@@ -387,12 +439,12 @@ void FluidSystemImpl::draw(Cygnet::Renderer &rnd)
 void FluidSystemImpl::update(float dt)
 {
 	auto spawnMist = [&](const FluidParticle &particle) {
-		if (plane_.world_->game_->renderer_.isCulled(particle.pos)) {
+		if (plane_.game_->renderer_.isCulled(particle.pos)) {
 			return;
 		}
 
 		for (int i = 0; i < int(randfloat() * 6); ++i) {
-			plane_.world_->game_->spawnParticle({
+			plane_.game_->spawnParticle({
 				.pos = {
 					particle.pos.x + (randfloat() - 0.5f) * 0.2f,
 					particle.pos.y,
@@ -428,7 +480,7 @@ void FluidSystemImpl::update(float dt)
 
 		FluidCellRef self = getFluidCell(pos);
 		if (self.isAir()) {
-			self.set(particle.id, vx);
+			self.set(this, particle.id, vx);
 			spawnMist(particle);
 			triggerUpdateAround(pos);
 			particles_[i] = particles_.back();
@@ -437,7 +489,7 @@ void FluidSystemImpl::update(float dt)
 		}
 
 		if (nearbyX.isAir()) {
-			nearbyX.set(particle.id, vx);
+			nearbyX.set(this, particle.id, vx);
 			spawnMist(particle);
 			triggerUpdateAround(pos.add(vx, 0));
 			particles_[i] = particles_.back();
@@ -446,7 +498,7 @@ void FluidSystemImpl::update(float dt)
 		}
 
 		if (nearbyY.isAir()) {
-			nearbyY.set(particle.id, vx);
+			nearbyY.set(this, particle.id, vx);
 			spawnMist(particle);
 			triggerUpdateAround(pos.add(0, vy));
 			particles_[i] = particles_.back();
@@ -456,7 +508,7 @@ void FluidSystemImpl::update(float dt)
 
 		auto invNearbyY = getFluidCell(pos.add(0, -vy));
 		if (invNearbyY.isAir()) {
-			invNearbyY.set(particle.id, vx);
+			invNearbyY.set(this, particle.id, vx);
 			spawnMist(particle);
 			triggerUpdateAround(pos.add(0, -vy));
 			particles_[i] = particles_.back();
@@ -607,7 +659,7 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 
 	FluidCellRef self = getFluidCell(pos);
 	Fluid::ID id = self.id();
-	if (id <= World::SOLID_FLUID_ID || id >= World::INVALID_FLUID_ID) {
+	if (id <= WorldData::SOLID_FLUID_ID || id >= WorldData::INVALID_FLUID_ID) {
 		return;
 	}
 
@@ -622,7 +674,7 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 			FluidCellRef nearbyBelow = getFluidCell(belowPos.add(vx, 0));
 			FluidCellRef nearby = getFluidCell(pos.add(vx, 0));
 			if (nearbyBelow.isAir() && nearby.isAir()) {
-				self.setAir();
+				self.setAir(this);
 				particles_.push_back({
 					.pos = fluidPosToWorldPos(pos),
 					.vel = {float(vx) * 5, 0},
@@ -637,7 +689,7 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 		auto below2Pos = belowPos.add(0, 1);
 		FluidCellRef below2 = getFluidCell(below2Pos);
 		if (below2.isAir()) {
-			self.setAir();
+			self.setAir(this);
 			particles_.push_back({
 				.pos = fluidPosToWorldPos(pos),
 				.vel = {0, 5},
@@ -649,8 +701,8 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 		}
 
 		triggerUpdateAround(belowPos);
-		self.setAir();
-		below.set(id, self.vx());
+		self.setAir(this);
+		below.set(this, id, self.vx());
 		movedSet_.insert(belowPos);
 		return;
 	}
@@ -659,8 +711,8 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 		auto &fluid = plane_.world_->getFluidByID(id);
 		auto &belowFluid = plane_.world_->getFluidByID(below.id());
 		if (fluid.density > belowFluid.density) {
-			self.setID(below.id());
-			below.setID(id);
+			self.setID(this, below.id());
+			below.setID(this, id);
 			triggerUpdateAround(pos);
 			triggerUpdateAround(belowPos);
 			movedSet_.insert(belowPos);
@@ -676,9 +728,9 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 		auto aPos = pos.add(ax, 0);
 		auto a = getFluidCell(aPos);
 		auto aID = a.id();
-		if (aID != World::SOLID_FLUID_ID && aID != id) {
-			self.setID(aID);
-			a.set(id, ax);
+		if (aID != WorldData::SOLID_FLUID_ID && aID != id) {
+			self.setID(this, aID);
+			a.set(this, id, ax);
 			triggerUpdateAround(pos);
 			triggerUpdateAround(aPos);
 			return;
@@ -687,9 +739,9 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 		auto bPos = pos.add(bx, 0);
 		auto b = getFluidCell(bPos);
 		auto bID = b.id();
-		if (bID != World::SOLID_FLUID_ID && bID != id) {
-			self.setID(bID);
-			b.set(id, bx);
+		if (bID != WorldData::SOLID_FLUID_ID && bID != id) {
+			self.setID(this, bID);
+			b.set(this, id, bx);
 			triggerUpdateAround(pos);
 			triggerUpdateAround(bPos);
 			return;
@@ -703,8 +755,8 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 	if (nearby.isAir()) {
 		triggerUpdateAround(pos);
 		triggerUpdateAround(nearbyPos);
-		nearby.set(id, vx);
-		self.setAir();
+		nearby.set(this, id, vx);
+		self.setAir(this);
 		movedSet_.insert(nearbyPos);
 		return;
 	}
@@ -714,6 +766,11 @@ void FluidSystemImpl::applyRules(FluidPos pos)
 }
 
 FluidSystemImpl::FluidCellRef FluidSystemImpl::getFluidCell(FluidPos pos)
+{
+	return FluidCellRef(getFluidPtr(pos), pos);
+}
+
+Fluid::ID *FluidSystemImpl::getFluidPtr(FluidPos pos)
 {
 	ChunkPos cpos;
 	Vec2i rel;

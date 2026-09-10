@@ -9,8 +9,6 @@ namespace CoreMod {
 template<typename Spec>
 class SeedEntity final: public Swan::Entity {
 public:
-	using Proto = proto::SeedEntity;
-
 	static constexpr float TIMER = 4 * 60;
 	static constexpr float TIMER_VARIANCE = 4 * 60;
 	static constexpr float DEATH_TIME = 15;
@@ -38,7 +36,7 @@ public:
 				return;
 			}
 
-			bool isAir = self.id == Swan::World::AIR_TILE_ID;
+			bool isAir = self.id == Swan::WorldData::AIR_TILE_ID;
 			if (bottom.name == "core::grass" && isAir) {
 				ctx.plane.tiles().set(pos_, "core::tall-grass");
 				return;
@@ -78,23 +76,33 @@ public:
 		}
 	}
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w)
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override
 	{
+		auto w = mb.initRoot<proto::SeedEntity>();
 		auto pos = w.initPos();
 		pos.setX(pos_.x);
 		pos.setY(pos_.y);
-		w.setPos(pos);
 		w.setTimer(timer_);
 		w.setDying(dying_);
 	}
 
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r)
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override
 	{
+		auto r = mr.getRoot<proto::SeedEntity>();
 		pos_.x = r.getPos().getX();
 		pos_.y = r.getPos().getY();
 		timer_ = r.getTimer();
 		dying_ = r.getDying();
 	}
+
+	// Seed entities only need to do something on the server side.
+	bool hasUpdated() override
+	{ return false; }
+	void deserializeUpdates(Swan::Ctx &ctx, capnp::MessageReader &mr) override
+	{}
+	void serializeUpdates(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override
+	{}
+
 
 private:
 	float timer_ = 0;

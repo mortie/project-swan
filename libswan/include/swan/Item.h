@@ -32,7 +32,7 @@ struct Item {
 		std::shared_ptr<Traits> traits = nullptr;
 	};
 
-	Tile::ID id;
+	Tile::ID id = 0;
 	std::string name;
 	std::string displayName;
 	int maxStack;
@@ -51,12 +51,13 @@ struct Item {
 	Item(const Item &) = delete;
 	Item(Item &&) = default;
 	Item(Tile::ID id, std::string name, const Builder &builder):
-		id(id), name(name), maxStack(builder.maxStack), tile(nullptr),
+		id(id), name(std::move(name)), maxStack(builder.maxStack), tile(nullptr),
 		tool(builder.tool), lightLevel(builder.lightLevel),
 		onActivate(builder.onActivate), traits(std::move(builder.traits))
 	{}
 
 	Item &operator=(Item &&) = default;
+	Item &operator=(const Item &) = delete;
 };
 
 }

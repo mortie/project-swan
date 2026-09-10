@@ -1,5 +1,7 @@
 #include "AqueductTileEntity.h"
 
+#include "core_mod.capnp.h"
+#include "swan/WorldData.h"
 #include "world/aqueduct.h"
 
 namespace CoreMod {
@@ -122,7 +124,7 @@ void AqueductTileEntity::tick2(Swan::Ctx &ctx, float dt)
 			}
 		} else {
 			Swan::Fluid &fluid = ctx.plane.fluids().takeAnyFromRow(pos, 2);
-			if (fluid.id != Swan::World::AIR_FLUID_ID) {
+			if (fluid.id != Swan::WorldData::AIR_FLUID_ID) {
 				content_.fluid = &fluid;
 				content_.level = 0.1;
 			}
@@ -187,8 +189,9 @@ void AqueductTileEntity::drawDebug(Swan::Ctx &ctx)
 	ImGui::Text("Left? %d, right? %d", bool(left_), bool(right_));
 }
 
-void AqueductTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
+void AqueductTileEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::AqueductTileEntity>();
 	tileEntity_.serialize(w.initTileEntity());
 	if (content_.fluid) {
 		w.setFluidType(content_.fluid->name);
@@ -196,8 +199,9 @@ void AqueductTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
 	}
 }
 
-void AqueductTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
+void AqueductTileEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::AqueductTileEntity>();
 	tileEntity_.deserialize(r.getTileEntity());
 	content_ = {};
 	if (r.hasFluidType()) {

@@ -1,5 +1,6 @@
 #include "FallingTileEntity.h"
 
+#include "core_mod.capnp.h"
 #include "world/util.h"
 #include <cstdlib>
 
@@ -84,18 +85,18 @@ void FallingTileEntity::place(Swan::Ctx &ctx)
 	return;
 }
 
-void FallingTileEntity::serialize(
-	Swan::Ctx &ctx, Proto::Builder w)
+void FallingTileEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::FallingTileEntity>();
 	physicsBody_.serialize(w.initBody());
-	w.setTile(ctx.world.getTileByID(tile_).name);
+	w.setTile(tile_);
 }
 
-void FallingTileEntity::deserialize(
-	Swan::Ctx &ctx, Proto::Reader r)
+void FallingTileEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::FallingTileEntity>();
 	physicsBody_.deserialize(r.getBody());
-	tile_ = ctx.world.getTileID(r.getTile().cStr());
+	tile_ = r.getTile();
 }
 
 }

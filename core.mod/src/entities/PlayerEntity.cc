@@ -5,6 +5,8 @@
 #include <imgui/imgui.h>
 
 #include "ItemStackEntity.h"
+#include "core_mod.capnp.h"
+#include "swan/constants.h"
 #include "world/util.h"
 #include "world/ladder.h"
 #include "world/workbench.h"
@@ -62,50 +64,6 @@ PlayerEntity::PlayerEntity(Swan::Ctx &ctx, Swan::Vec2 pos):
 
 void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
-	if (invulnerable_ > 0) {
-		rnd.setGamma(gamma_ + invulnerable_ * 3);
-	} else if (vit_ == Vit::LETHARGIC) {
-		rnd.setGamma(gamma_ + 0.5);
-	} else {
-		rnd.setGamma(gamma_);
-	}
-
-	float blackoutAlpha = 0;
-	Cygnet::Color blackoutColor = {0, 0, 0};
-	if (oxygen_ < 4) {
-		blackoutAlpha = (4 - oxygen_) / 3.5;
-	}
-	if (temperature_ < -4) {
-		blackoutAlpha = pow(2, (-temperature_ - 4) / 7.0) - 1;
-		blackoutColor = {0.6, 0.9, 1.0};
-	}
-
-	if (blackout_ > 0) {
-		float alpha = 1.0;
-		if (blackout_ < 0.3) {
-			alpha = blackout_ / 0.3;
-		}
-		else if (blackout_ > BLACKOUT_TIME - 0.5) {
-			alpha = 0;
-		}
-		else if (blackout_ > BLACKOUT_TIME - 2.0) {
-			alpha = (BLACKOUT_TIME - blackout_ - 0.5) / 1.5;
-		}
-
-		if (alpha > blackoutAlpha) {
-			blackoutAlpha = alpha;
-		}
-	}
-
-	if (blackoutAlpha > 0) {
-		blackoutColor.a = blackoutAlpha;
-		rnd.drawUIRect({
-			.pos = {},
-			.size = {100, 100},
-			.fill = blackoutColor,
-		});
-	}
-
 	Cygnet::Mat3gf mat;
 
 	// Currently, there is no sprite for running left.
@@ -130,178 +88,6 @@ void PlayerEntity::draw(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 	mat.translate(physicsBody_.body.pos - Swan::Vec2{0.6, 0.5});
 
 	currentAnimation_.draw(rnd, mat);
-
-	rnd.drawRect(Cygnet::RenderLayer::FOREGROUND, {
-		.pos = Swan::Vec2(placePos_).add(0.1, 0.1),
-		.size = {0.8, 0.8},
-	});
-	rnd.drawRect(Cygnet::RenderLayer::FOREGROUND, {
-		.pos = breakPos_,
-		.size = {1, 1},
-	});
-
-	float barY = 0.25;
-	float nudgeY = 0.35;
-
-	// Draw health
-	rnd.uiView({}, [&] {
-		for (int i = 0; i < std::max(MAX_HEALTH, health_); ++i) {
-			Cygnet::RenderSprite *sprite;
-			if (i >= health_) {
-				sprite = &sprites::misc__emptyHeart;
-			}
-			else {
-				sprite = &sprites::misc__heart;
-			}
-
-			float y = barY;
-			if (vit_ != Vit::OK && i % 2 == 1) {
-				y += 0.05;
-			}
-
-			rnd.drawUISprite({
-				.transform = Cygnet::Mat3gf{}
-					.translate({(i / 3.5f) + 0.25f, y}),
-				.sprite = *sprite,
-			});
-		}
-	}, Cygnet::Anchor::TOP_LEFT);
-
-	// Draw oxygen
-	if (oxygen_ >= 1.5 && oxygen_ < 11.5) {
-		barY += nudgeY;
-
-		rnd.uiView({}, [&] {
-			for (int i = 0; i < 10; ++i) {
-				if (oxygen_ < (i + 1.5)) {
-					break;
-				}
-
-				rnd.drawUISprite({
-					.transform = Cygnet::Mat3gf{}
-						.translate({(i / 3.5f) + 0.25f, barY}),
-					.sprite = sprites::misc__bubble,
-				});
-			}
-		}, Cygnet::Anchor::TOP_LEFT);
-	}
-
-	// Draw cold bar
-	if (temperature_ <= -2) {
-		barY += nudgeY;
-
-		rnd.uiView({}, [&] {
-			float freeze = -temperature_ - 2;
-			for (int i = 0; i < 10; ++i) {
-				if (freeze < i) {
-					break;
-				}
-
-				rnd.drawUISprite({
-					.transform = Cygnet::Mat3gf{}
-						.translate({(i / 3.5f) + 0.25f, barY}),
-					.sprite = sprites::misc__snowflake,
-				});
-			}
-		}, Cygnet::Anchor::TOP_LEFT);
-	}
-
-	// Draw hotbar
-	ui_.hotbarRect = rnd.uiView({
-		.size = {12, 3},
-	}, [&] {
-		// Hotbar content
-		Swan::UI::inventory(
-			ctx, rnd, {10, 1}, sprites::ui__inventory,
-			inventory_.content_, ui_.hoveredInventorySlot);
-
-		// Selection
-		if (ui_.selectedInventorySlot < 10) {
-			rnd.drawUISprite({
-				.transform = Cygnet::Mat3gf{}.translate(
-					{float(ui_.selectedInventorySlot), 0}),
-				.sprite = sprites::ui__selectedSlot,
-			}, Cygnet::Anchor::TOP_LEFT);
-		}
-	}, Cygnet::Anchor::BOTTOM);
-
-	// Do we have another inventory?
-	if (!auxInventoryEntity_.isNil()) {
-		auxInventory_ = auxInventoryEntity_->trait<Swan::InventoryTrait>();
-		if (!auxInventory_) {
-			auxInventoryEntity_ = {};
-			closeInventoryCallback_ = nullptr;
-			ui_.hoveredAuxInventorySlot = -1;
-		}
-	}
-
-	// Draw auxiliary inventory
-	if (auxInventory_) {
-		auto content = auxInventory_->content();
-		auto size = Swan::UI::calcInventorySize(content.size());
-		ui_.auxInventoryRect = rnd.uiView({
-			.pos = {0, 0},
-			.size = size.add(2, 2),
-		}, [&] {
-			Swan::UI::inventory(
-				ctx, rnd, size, sprites::ui__inventory, content,
-				ui_.hoveredAuxInventorySlot);
-		}, Cygnet::Anchor::TOP);
-	}
-
-	// Draw main inventory
-	if (ui_.showInventory) {
-		drawInventory(ctx, rnd);
-	}
-
-	// Draw held stack
-	if (!heldStack_.empty()) {
-		Swan::Vec2 pos;
-		if (mouseMode_) {
-			pos = ctx.game.getMouseUIPos();
-		} else {
-			pos = (lookVector_ / ctx.game.uiCam_.zoom) * ctx.game.cam_.zoom;
-		}
-
-		rnd.drawUITile({
-			.transform = Cygnet::Mat3gf{}
-				.scale({1.5, 1.5})
-				.translate(pos)
-				.translate({-0.25, -0.5}),
-			.id = heldStack_.item()->id,
-		});
-
-		rnd.drawUIText({
-			.textCache = ctx.game.smallFont_,
-			.pos = pos.add(0.1, 0.8),
-			.text = Swan::strify(heldStack_.count()),
-			.scale = 0.7,
-		});
-	}
-
-	// Draw tooltips for player inventory
-	if (ui_.hoveredInventorySlot >= 0 && heldStack_.empty()) {
-		inventory_.renderTooltip(
-			ctx, rnd, ctx.game.getMouseUIPos(),
-			ui_.hoveredInventorySlot);
-	}
-
-	// Draw tooltips for auxiliary inventory
-	if (ui_.hoveredAuxInventorySlot >= 0 && heldStack_.empty()) {
-		auxInventory_->renderTooltip(
-			ctx, rnd, ctx.game.getMouseUIPos(),
-			ui_.hoveredAuxInventorySlot);
-	}
-
-	// Draw console
-	if (consoleVisible_) {
-		drawConsole(ctx);
-	}
-
-	// Draw interaction manager, if there is one
-	if (interactionManager_) {
-		interactionManager_->draw(ctx, rnd);
-	}
 }
 
 void PlayerEntity::drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
@@ -332,6 +118,10 @@ void PlayerEntity::drawInventory(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 
 void PlayerEntity::drawConsole(Swan::Ctx &ctx)
 {
+	// TODO: Give access to the stuff in 'game' better
+	// (or re-write how player logic works?)
+	auto *game = dynamic_cast<Swan::Game *>(&ctx.game);
+
 	ImGui::SetNextWindowSize(ImVec2(300, 200));
 	ImGui::Begin("Console", &consoleVisible_);
 	ImGui::Text("Command");
@@ -353,7 +143,7 @@ void PlayerEntity::drawConsole(Swan::Ctx &ctx)
 
 		ImGui::SetKeyboardFocusHere(-1);
 		consoleOutput_.clear();
-		ctx.game.runCommand(ctx, consoleInput_, consoleOutput_);
+		game->runCommand(ctx, consoleInput_, consoleOutput_);
 		consoleInput_ = "";
 	}
 
@@ -361,8 +151,123 @@ void PlayerEntity::drawConsole(Swan::Ctx &ctx)
 	ImGui::End();
 }
 
-void PlayerEntity::update(Swan::Ctx &ctx, float dt)
+void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
 {
+	if (auxInventory_ == &craftingInventory_) {
+		craftingInventory_.recompute(ctx, inventory_.content(), {
+			.workbench = inWorkbench_,
+		});
+	}
+
+	// Drown
+	Swan::Fluid &fluidTop = ctx.plane.fluids().getAtPos(
+		physicsBody_.body.topMid().add(0, 0.1));
+	if (fluidTop.id == Swan::WorldData::AIR_FLUID_ID) {
+		oxygen_ += dt * 4;
+		if (oxygen_ > MAX_OXYGEN) {
+			oxygen_ = MAX_OXYGEN;
+		}
+	}
+	else if (blackout_ <= 0) {
+		oxygen_ -= dt * 0.75;
+		if (oxygen_ < 0) {
+			ctx.game.playSound(sounds::misc__hurt, 0.4f);
+			oxygen_ = 0;
+			health_ = 0;
+			blackout_ = BLACKOUT_TIME;
+			state_ = State::IDLE;
+			currentAnimation_ = idleAnimation();
+		}
+	}
+
+	float airTemp = computeAirTemperature(ctx);
+
+	if (airTemp < 5 && blackout_ <= 0) {
+		temperature_ -= dt * 0.5;
+		if (temperature_ < -12) {
+			ctx.game.playSound(sounds::misc__hurt, 0.4f);
+			health_ = 0;
+			blackout_ = BLACKOUT_TIME;
+			state_ = State::IDLE;
+			currentAnimation_ = idleAnimation();
+		}
+	} else if (temperature_ < 0 && blackout_ <= 0) {
+		temperature_ += dt * 1;
+	}
+
+	// Pick up items
+	for (auto &c: ctx.plane.entities().getColliding(physicsBody_.body)) {
+		auto *entity = c.ref.get();
+
+		auto *itemStackEnt = dynamic_cast<ItemStackEntity *>(entity);
+		if (!itemStackEnt) {
+			continue;
+		}
+
+		// Don't pick up immediately
+		if (itemStackEnt->lifetime_ < 0.2) {
+			continue;
+		}
+
+		Swan::ItemStack stack{itemStackEnt->item(), 1};
+		stack = inventory_.insert(stack);
+		if (stack.empty()) {
+			ctx.plane.entities().despawn(c.ref);
+			ctx.game.playSound(sounds::misc__snap);
+		}
+		break;
+	}
+}
+
+void PlayerEntity::drawDebug(Swan::Ctx &ctx)
+{
+	ImGui::Text("Temperature: %.01f", computeAirTemperature(ctx));
+}
+
+void PlayerEntity::controlPlayer(Swan::Ctx &ctx, float dt)
+{
+	auto lightPos = physicsBody_.body.topMid().as<int>();
+	if (lightPos.x < 0) lightPos.x -= 1;
+	if (lightPos.y < 0) lightPos.y -= 1;
+
+	auto lightLevel = ctx.plane.tiles().getLightLevel(lightPos);
+	float desiredGamma = 1.0 / ((lightLevel / 256.0) + 1) * 2;
+
+	if (gamma_ < desiredGamma) {
+		gamma_ += 0.2 * dt;
+		if (gamma_ > desiredGamma) {
+			gamma_ = desiredGamma;
+		}
+	} else if (gamma_ > desiredGamma) {
+		gamma_ -= 0.2 * dt;
+		if (gamma_ < desiredGamma) {
+			gamma_ = desiredGamma;
+		}
+	}
+
+	// Calculate the held light we would expect to produce
+	std::optional<HeldLight> light;
+	if (!heldStack_.empty() && heldStack_.item()->lightLevel) {
+		light = {
+			.pos = placePos_,
+			.level = heldStack_.item()->lightLevel,
+		};
+	}
+
+	// If the actual held light is different than what we expect,
+	// tell the light system to remove and add lights as needed
+	if (heldLight_ != light) {
+		if (heldLight_) {
+			ctx.plane.lights().removeLight(heldLight_->pos, heldLight_->level);
+		}
+
+		if (light) {
+			ctx.plane.lights().addLight(light->pos, light->level);
+		}
+
+		heldLight_ = light;
+	};
+
 	if (interactTimer_ > 0) {
 		interactTimer_ -= dt;
 	}
@@ -561,101 +466,228 @@ void PlayerEntity::update(Swan::Ctx &ctx, float dt)
 	}
 }
 
-void PlayerEntity::tick(Swan::Ctx &ctx, float dt)
+void PlayerEntity::drawUI(Swan::Ctx &ctx, Cygnet::Renderer &rnd)
 {
-	auto lightPos = physicsBody_.body.topMid().as<int>();
-	if (lightPos.x < 0) lightPos.x -= 1;
-	if (lightPos.y < 0) lightPos.y -= 1;
+	if (invulnerable_ > 0) {
+		rnd.setGamma(gamma_ + invulnerable_ * 3);
+	} else if (vit_ == Vit::LETHARGIC) {
+		rnd.setGamma(gamma_ + 0.5);
+	} else {
+		rnd.setGamma(gamma_);
+	}
 
-	auto lightLevel = ctx.plane.tiles().getLightLevel(lightPos);
-	float desiredGamma = 1.0 / ((lightLevel / 256.0) + 1) * 2;
+	float blackoutAlpha = 0;
+	Cygnet::Color blackoutColor = {0, 0, 0};
+	if (oxygen_ < 4) {
+		blackoutAlpha = (4 - oxygen_) / 3.5;
+	}
+	if (temperature_ < -4) {
+		blackoutAlpha = pow(2, (-temperature_ - 4) / 7.0) - 1;
+		blackoutColor = {0.6, 0.9, 1.0};
+	}
 
-	if (gamma_ < desiredGamma) {
-		gamma_ += 0.01;
-		if (gamma_ > desiredGamma) {
-			gamma_ = desiredGamma;
+	if (blackout_ > 0) {
+		float alpha = 1.0;
+		if (blackout_ < 0.3) {
+			alpha = blackout_ / 0.3;
 		}
-	} else if (gamma_ > desiredGamma) {
-		gamma_ -= 0.01;
-		if (gamma_ < desiredGamma) {
-			gamma_ = desiredGamma;
+		else if (blackout_ > BLACKOUT_TIME - 0.5) {
+			alpha = 0;
+		}
+		else if (blackout_ > BLACKOUT_TIME - 2.0) {
+			alpha = (BLACKOUT_TIME - blackout_ - 0.5) / 1.5;
+		}
+
+		if (alpha > blackoutAlpha) {
+			blackoutAlpha = alpha;
 		}
 	}
 
-	// Calculate the held light we would expect to produce
-	std::optional<HeldLight> light;
-	if (!heldStack_.empty() && heldStack_.item()->lightLevel) {
-		light = {
-			.pos = placePos_,
-			.level = heldStack_.item()->lightLevel,
-		};
-	}
-
-	// If the actual held light is different than what we expect,
-	// tell the light system to remove and add lights as needed
-	if (heldLight_ != light) {
-		if (heldLight_) {
-			ctx.plane.lights().removeLight(heldLight_->pos, heldLight_->level);
-		}
-
-		if (light) {
-			ctx.plane.lights().addLight(light->pos, light->level);
-		}
-
-		heldLight_ = light;
-	};
-
-	if (auxInventory_ == &craftingInventory_) {
-		craftingInventory_.recompute(ctx, inventory_.content(), {
-			.workbench = inWorkbench_,
+	if (blackoutAlpha > 0) {
+		blackoutColor.a = blackoutAlpha;
+		rnd.drawUIRect({
+			.pos = {},
+			.size = {100, 100},
+			.fill = blackoutColor,
 		});
 	}
 
-	// Drown
-	Swan::Fluid &fluidTop = ctx.plane.fluids().getAtPos(
-		physicsBody_.body.topMid().add(0, 0.1));
-	if (fluidTop.id == Swan::World::AIR_FLUID_ID) {
-		oxygen_ += dt * 4;
-		if (oxygen_ > MAX_OXYGEN) {
-			oxygen_ = MAX_OXYGEN;
+	rnd.drawRect(Cygnet::RenderLayer::FOREGROUND, {
+		.pos = Swan::Vec2(placePos_).add(0.1, 0.1),
+		.size = {0.8, 0.8},
+	});
+	rnd.drawRect(Cygnet::RenderLayer::FOREGROUND, {
+		.pos = breakPos_,
+		.size = {1, 1},
+	});
+
+	float barY = 0.25;
+	float nudgeY = 0.35;
+
+	// Draw health
+	rnd.uiView({}, [&] {
+		for (int i = 0; i < std::max(MAX_HEALTH, health_); ++i) {
+			Cygnet::RenderSprite *sprite;
+			if (i >= health_) {
+				sprite = &sprites::misc__emptyHeart;
+			}
+			else {
+				sprite = &sprites::misc__heart;
+			}
+
+			float y = barY;
+			if (vit_ != Vit::OK && i % 2 == 1) {
+				y += 0.05;
+			}
+
+			rnd.drawUISprite({
+				.transform = Cygnet::Mat3gf{}
+					.translate({(i / 3.5f) + 0.25f, y}),
+				.sprite = *sprite,
+			});
 		}
+	}, Cygnet::Anchor::TOP_LEFT);
+
+	// Draw oxygen
+	if (oxygen_ >= 1.5 && oxygen_ < 11.5) {
+		barY += nudgeY;
+
+		rnd.uiView({}, [&] {
+			for (int i = 0; i < 10; ++i) {
+				if (oxygen_ < (i + 1.5)) {
+					break;
+				}
+
+				rnd.drawUISprite({
+					.transform = Cygnet::Mat3gf{}
+						.translate({(i / 3.5f) + 0.25f, barY}),
+					.sprite = sprites::misc__bubble,
+				});
+			}
+		}, Cygnet::Anchor::TOP_LEFT);
 	}
-	else if (blackout_ <= 0) {
-		oxygen_ -= dt * 0.75;
-		if (oxygen_ < 0) {
-			ctx.game.playSound(sounds::misc__hurt, 0.4f);
-			oxygen_ = 0;
-			health_ = 0;
-			blackout_ = BLACKOUT_TIME;
-			state_ = State::IDLE;
-			currentAnimation_ = idleAnimation();
+
+	// Draw cold bar
+	if (temperature_ <= -2) {
+		barY += nudgeY;
+
+		rnd.uiView({}, [&] {
+			float freeze = -temperature_ - 2;
+			for (int i = 0; i < 10; ++i) {
+				if (freeze < i) {
+					break;
+				}
+
+				rnd.drawUISprite({
+					.transform = Cygnet::Mat3gf{}
+						.translate({(i / 3.5f) + 0.25f, barY}),
+					.sprite = sprites::misc__snowflake,
+				});
+			}
+		}, Cygnet::Anchor::TOP_LEFT);
+	}
+
+	// Draw hotbar
+	ui_.hotbarRect = rnd.uiView({
+		.size = {12, 3},
+	}, [&] {
+		// Hotbar content
+		Swan::UI::inventory(
+			ctx, rnd, {10, 1}, sprites::ui__inventory,
+			inventory_.content_, ui_.hoveredInventorySlot);
+
+		// Selection
+		if (ui_.selectedInventorySlot < 10) {
+			rnd.drawUISprite({
+				.transform = Cygnet::Mat3gf{}.translate(
+					{float(ui_.selectedInventorySlot), 0}),
+				.sprite = sprites::ui__selectedSlot,
+			}, Cygnet::Anchor::TOP_LEFT);
+		}
+	}, Cygnet::Anchor::BOTTOM);
+
+	// Do we have another inventory?
+	if (!auxInventoryEntity_.isNil()) {
+		auxInventory_ = auxInventoryEntity_->trait<Swan::InventoryTrait>();
+		if (!auxInventory_) {
+			auxInventoryEntity_ = {};
+			closeInventoryCallback_ = nullptr;
+			ui_.hoveredAuxInventorySlot = -1;
 		}
 	}
 
-	float airTemp = computeAirTemperature(ctx);
+	// Draw auxiliary inventory
+	if (auxInventory_) {
+		auto content = auxInventory_->content();
+		auto size = Swan::UI::calcInventorySize(content.size());
+		ui_.auxInventoryRect = rnd.uiView({
+			.pos = {0, 0},
+			.size = size.add(2, 2),
+		}, [&] {
+			Swan::UI::inventory(
+				ctx, rnd, size, sprites::ui__inventory, content,
+				ui_.hoveredAuxInventorySlot);
+		}, Cygnet::Anchor::TOP);
+	}
 
-	if (airTemp < 5 && blackout_ <= 0) {
-		temperature_ -= dt * 0.5;
-		if (temperature_ < -12) {
-			ctx.game.playSound(sounds::misc__hurt, 0.4f);
-			health_ = 0;
-			blackout_ = BLACKOUT_TIME;
-			state_ = State::IDLE;
-			currentAnimation_ = idleAnimation();
+	// Draw main inventory
+	if (ui_.showInventory) {
+		drawInventory(ctx, rnd);
+	}
+
+	// Draw held stack
+	if (!heldStack_.empty()) {
+		Swan::Vec2 pos;
+		if (mouseMode_) {
+			pos = ctx.game.getMouseUIPos();
+		} else {
+			pos = ctx.game.uiPosFromWorldPos(lookVector_);
 		}
-	} else if (temperature_ < 0 && blackout_ <= 0) {
-		temperature_ += dt * 1;
+
+		rnd.drawUITile({
+			.transform = Cygnet::Mat3gf{}
+				.scale({1.5, 1.5})
+				.translate(pos)
+				.translate({-0.25, -0.5}),
+			.id = heldStack_.item()->id,
+		});
+
+		rnd.drawUIText({
+			.textCache = ctx.game.smallFont_,
+			.pos = pos.add(0.1, 0.8),
+			.text = Swan::strify(heldStack_.count()),
+			.scale = 0.7,
+		});
+	}
+
+	// Draw tooltips for player inventory
+	if (ui_.hoveredInventorySlot >= 0 && heldStack_.empty()) {
+		inventory_.renderTooltip(
+			ctx, rnd, ctx.game.getMouseUIPos(),
+			ui_.hoveredInventorySlot);
+	}
+
+	// Draw tooltips for auxiliary inventory
+	if (ui_.hoveredAuxInventorySlot >= 0 && heldStack_.empty()) {
+		auxInventory_->renderTooltip(
+			ctx, rnd, ctx.game.getMouseUIPos(),
+			ui_.hoveredAuxInventorySlot);
+	}
+
+	// Draw console
+	if (consoleVisible_) {
+		drawConsole(ctx);
+	}
+
+	// Draw interaction manager, if there is one
+	if (interactionManager_) {
+		interactionManager_->draw(ctx, rnd);
 	}
 }
 
-void PlayerEntity::drawDebug(Swan::Ctx &ctx)
+void PlayerEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
-	ImGui::Text("Temperature: %.01f", computeAirTemperature(ctx));
-}
-
-void PlayerEntity::serialize(
-	Swan::Ctx &ctx, Proto::Builder w)
-{
+	auto w = mb.initRoot<proto::PlayerEntity>();
 	physicsBody_.serialize(w.initBody());
 	inventory_.serialize(w.initInventory());
 	heldStack_.serialize(w.initHeldStack());
@@ -665,11 +697,12 @@ void PlayerEntity::serialize(
 	w.setInventorySlot(ui_.selectedInventorySlot);
 	w.setHealth(health_);
 	craftingInventory_.serialize(ctx, w.initCraftingInventory());
+	w.setDirection(lastDirection_ > 0);
 }
 
-void PlayerEntity::deserialize(
-	Swan::Ctx &ctx, Proto::Reader r)
+void PlayerEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::PlayerEntity>();
 	physicsBody_.deserialize(r.getBody());
 	inventory_.deserialize(ctx, r.getInventory());
 	heldStack_.deserialize(ctx, r.getHeldStack());
@@ -682,6 +715,56 @@ void PlayerEntity::deserialize(
 	ui_.selectedInventorySlot = r.getInventorySlot();
 	health_ = r.getHealth();
 	craftingInventory_.deserialize(ctx, r.getCraftingInventory());
+	lastDirection_ = r.getDirection() ? 1 : -1;
+}
+
+void PlayerEntity::serializeUpdates(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
+{
+	auto w = mb.initRoot<proto::PlayerEntity>();
+	physicsBody_.serialize(w.initBody());
+	heldStack_.serialize(w.initHeldStack());
+	w.setHealth(health_);
+	w.setDirection(lastDirection_ > 0);
+
+	if (inventory_.hasChanged_) {
+		inventory_.hasChanged_ = false;
+		inventory_.serialize(w.initInventory());
+	}
+}
+
+void PlayerEntity::deserializeUpdates(Swan::Ctx &ctx, capnp::MessageReader &mr)
+{
+	auto r = mr.getRoot<proto::PlayerEntity>();
+
+	if (ctx.game.localPlayer() != ctx.plane.entities().current()) {
+		physicsBody_.deserialize(r.getBody());
+		heldStack_.deserialize(ctx, r.getHeldStack());
+		health_ = r.getHealth();
+		lastDirection_ = r.getDirection() ? 1 : -1;
+
+		if (!physicsBody_.onGround) {
+			if (state_ != State::FALLING) {
+				state_ = State::FALLING;
+				currentAnimation_ = fallingAnimation();
+			}
+		} else if (std::abs(physicsBody_.vel.x) > 1) {
+			if (state_ != State::RUNNING) {
+				state_ = State::RUNNING;
+				currentAnimation_ = runningAnimation();
+			}
+		} else if (state_ != State::IDLE) {
+			state_ = State::IDLE;
+			currentAnimation_ = idleAnimation();
+		}
+
+		currentAnimation_.tick(1.0 / Swan::TICK_RATE);
+	}
+
+	// Always update inventory;
+	// the server will make the client pick up items
+	if (r.hasInventory()) {
+		inventory_.deserialize(ctx, r.getInventory());
+	}
 }
 
 bool PlayerEntity::askToOpenInventory(
@@ -951,32 +1034,8 @@ void PlayerEntity::handleInventoryHover(Swan::Ctx &ctx)
 void PlayerEntity::handlePhysics(Swan::Ctx &ctx, float dt)
 {
 	// Collide with stuff
-	bool pickedUpItem = false;
 	for (auto &c: ctx.plane.entities().getColliding(physicsBody_.body)) {
 		auto *entity = c.ref.get();
-
-		// Pick it up if it's an item stack, and don't collide
-		auto *itemStackEnt = dynamic_cast<ItemStackEntity *>(entity);
-		if (itemStackEnt) {
-			// Don't pick up immediately
-			if (itemStackEnt->lifetime_ < 0.2) {
-				continue;
-			}
-
-			// Only one per update
-			if (pickedUpItem) {
-				continue;
-			}
-
-			Swan::ItemStack stack{itemStackEnt->item(), 1};
-			stack = inventory_.insert(stack);
-			if (stack.empty()) {
-				ctx.plane.entities().despawn(c.ref);
-				ctx.game.playSound(sounds::misc__snap);
-				pickedUpItem = true;
-			}
-			continue;
-		}
 
 		if (c.body.isSolid) {
 			physicsBody_.collideWith(c.body);

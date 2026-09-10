@@ -4,6 +4,7 @@
 #include <optional>
 
 #include "assets.h"
+#include "swan/Vector2.h"
 
 namespace Swan {
 
@@ -37,14 +38,14 @@ public:
 
 	void play(
 		SoundAsset *asset, float volume,
-		std::optional<std::pair<float, float>> center)
+		std::optional<Vec2> center)
 	{
 		play(asset, volume, center, nullHandle_);
 	}
 
 	void play(
 		SoundAsset *asset, float volume,
-		std::optional<std::pair<float, float>> center,
+		std::optional<Vec2> center,
 		SoundHandle handle);
 
 	void setCenter(float x, float y);

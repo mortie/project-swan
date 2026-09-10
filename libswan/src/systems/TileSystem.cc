@@ -1,12 +1,17 @@
 #include "systems/TileSystem.h"
 
+#include "WorldData.h"
 #include "WorldPlane.h"
 #include "World.h"
-#include "Game.h"
+#include "GameServer.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
 #include "traits/TileEntityTrait.h"
 
 namespace Swan {
+
+TileSystemImpl::TileSystemImpl(WorldPlane &plane):
+	plane_(plane)
+{}
 
 void TileSystemImpl::set(TilePos pos, std::string_view name)
 {
@@ -46,6 +51,7 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 	// The code which called onSpawn will handle the rest.
 	if (placingTile_) {
 		chunk.setTileID(rp, id);
+		plane_.game_->onTileChange(plane_.id_, pos, id);
 		return true;
 	}
 
@@ -72,6 +78,7 @@ bool TileSystemImpl::setIDWithoutUpdate(TilePos pos, Tile::ID id)
 	}
 
 	chunk.setTileID(rp, id);
+	plane_.game_->onTileChange(plane_.id_, pos, id);
 
 	if (!oldTile.isOpaque() && newTile.isOpaque()) {
 		plane_.lights().addSolidBlock(pos);
@@ -145,6 +152,7 @@ bool TileSystemImpl::setBackgroundIDWithoutUpdate(TilePos pos, Tile::ID id)
 	Tile &newTile = plane_.world_->getTileByID(id);
 
 	chunk.setBackgroundTileID(rp, id);
+	plane_.game_->onBackgroundTileChange(plane_.id_, pos, id);
 
 	if (newTile.more->onSpawn) {
 		newTile.more->onSpawn(plane_.getContext(), pos);
@@ -210,7 +218,7 @@ bool TileSystemImpl::breakTile(TilePos pos)
 {
 	// If the block is already air, do nothing
 	Tile::ID id = getID(pos);
-	if (id == World::AIR_TILE_ID) {
+	if (id == WorldData::AIR_TILE_ID) {
 		return false;
 	}
 
@@ -218,15 +226,15 @@ bool TileSystemImpl::breakTile(TilePos pos)
 	spawnTileParticles(pos, tile);
 
 	if (tile.more->breakSound) {
-		plane_.world_->game_->playSound(tile.more->breakSound, pos);
+		plane_.game_->playSound(tile.more->breakSound, pos);
 	}
 	else {
-		plane_.world_->game_->playSound(
-			plane_.world_->getSound(World::THUD_SOUND_NAME), pos);
+		plane_.game_->playSound(
+			plane_.world_->getSound(WorldData::THUD_SOUND_NAME), pos);
 	}
 
 	// Change tile to air
-	setID(pos, World::AIR_TILE_ID);
+	setID(pos, WorldData::AIR_TILE_ID);
 	return true;
 }
 
@@ -234,7 +242,7 @@ bool TileSystemImpl::breakTileSilently(TilePos pos)
 {
 	// If the block is already air, do nothing
 	Tile::ID id = getID(pos);
-	if (id == World::AIR_TILE_ID) {
+	if (id == WorldData::AIR_TILE_ID) {
 		return false;
 	}
 
@@ -242,7 +250,7 @@ bool TileSystemImpl::breakTileSilently(TilePos pos)
 	spawnTileParticles(pos, tile);
 
 	// Change tile to air
-	setID(pos, World::AIR_TILE_ID);
+	setID(pos, WorldData::AIR_TILE_ID);
 	return true;
 }
 
@@ -291,8 +299,8 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 
 	auto &newTile = plane_.world_->getTileByID(id);
 
-	plane_.world_->game_->playSound(oldTile.more->breakSound, pos);
-	plane_.world_->game_->playSound(newTile.more->placeSound, pos);
+	plane_.game_->playSound(oldTile.more->breakSound, pos);
+	plane_.game_->playSound(newTile.more->placeSound, pos);
 
 	// We didn't run the onBreak and despawn tile entities yet,
 	// so let's do that
@@ -304,6 +312,7 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 		plane_.entities().despawnTileEntity(pos);
 	}
 	chunk.setTileID(rp, id);
+	plane_.game_->onTileChange(plane_.id_, pos, id);
 
 	if (!oldTile.isOpaque() && newTile.isOpaque()) {
 		plane_.lights().addSolidBlock(pos);
@@ -351,6 +360,37 @@ bool TileSystemImpl::placeTile(TilePos pos, Tile::ID id)
 	scheduleUpdate(pos.add(0, 1));
 
 	return true;
+}
+
+void TileSystemImpl::forceSetID(TilePos pos, Tile::ID id)
+{
+	Chunk &chunk = plane_.getChunk(chunkPos(pos));
+	ChunkRelPos rp = chunkRelPos(pos);
+	auto oldID = chunk.getTileID(rp);
+	if (oldID == id) {
+		return;
+	}
+
+	if (id == WorldData::AIR_TILE_ID) {
+		const Tile &tile = plane_.world_->getTileByID(oldID);
+		spawnTileParticles(pos, tile);
+	}
+
+	chunk.setTileID(rp, id);
+	plane_.game_->onTileChange(plane_.id_, pos, id);
+}
+
+void TileSystemImpl::forceSetBackgroundID(TilePos pos, Tile::ID id)
+{
+	Chunk &chunk = plane_.getChunk(chunkPos(pos));
+	ChunkRelPos rp = chunkRelPos(pos);
+	auto oldID = chunk.getBackgroundTileID(rp);
+	if (oldID == id) {
+		return;
+	}
+
+	chunk.setBackgroundTileID(rp, id);
+	plane_.game_->onBackgroundTileChange(plane_.id_, pos, id);
 }
 
 Raycast TileSystemImpl::raycast(
@@ -509,9 +549,9 @@ void TileSystemImpl::spawnTileParticles(TilePos pos, const Tile &tile)
 	// We normally want the particles to be drawn in front of tiles,
 	// which means using layer NORMAL.
 	// However, we also want it to be drawn behind fluids.
-	// Therefore, if the tile is in a fluid, braw it in layer BEHIND.
+	// Therefore, if the tile is in a fluid, draw it in layer BEHIND.
 	auto &fluid = plane_.fluids().getAtPos(pos.as<float>().add(0.5, 0.5));
-	auto layer = fluid.id > World::SOLID_FLUID_ID
+	auto layer = fluid.id > WorldData::SOLID_FLUID_ID
 		? Cygnet::RenderLayer::BEHIND
 		: Cygnet::RenderLayer::NORMAL;
 
@@ -525,7 +565,7 @@ void TileSystemImpl::spawnTileParticles(TilePos pos, const Tile &tile)
 				continue;
 			}
 
-			plane_.world_->game_->spawnParticle(layer, {
+			plane_.game_->spawnParticle(layer, {
 				.pos = {fx, fy},
 				.vel = {
 					(randfloat() - 0.5f) * 2.0f,

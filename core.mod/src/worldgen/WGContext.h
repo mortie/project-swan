@@ -9,14 +9,14 @@
 namespace CoreMod {
 
 struct WGContext {
-	WGContext(uint32_t seed, Swan::World &world):
+	WGContext(uint32_t seed, Swan::WorldData &world):
 		seed(seed),
 		perlin(seed),
 		world(world) {}
 
 	uint32_t seed;
 	siv::PerlinNoise perlin;
-	Swan::World &world;
+	Swan::WorldData &world;
 };
 
 }

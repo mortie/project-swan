@@ -1,5 +1,6 @@
 #include "ItemFanTileEntity.h"
 
+#include "core_mod.capnp.h"
 #include "entities/ItemStackEntity.h"
 
 namespace CoreMod {
@@ -59,14 +60,16 @@ void ItemFanTileEntity::tick(Swan::Ctx &ctx, float dt)
 	}
 }
 
-void ItemFanTileEntity::serialize(Swan::Ctx &ctx, Proto::Builder w)
+void ItemFanTileEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::ItemFanTileEntity>();
 	tileEntity_.serialize(w.initTileEntity());
 	dir_.serialize(w.initDirection());
 }
 
-void ItemFanTileEntity::deserialize(Swan::Ctx &ctx, Proto::Reader r)
+void ItemFanTileEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::ItemFanTileEntity>();
 	tileEntity_.deserialize(r.getTileEntity());
 	dir_.deserialize(r.getDirection());
 }

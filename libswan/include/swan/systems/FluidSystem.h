@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../FastHashSet.h"
 #include "../common.h"
 #include "../Fluid.h"
 #include "../Clock.h"
 #include "swan.capnp.h"
+#include "swan/constants.h"
 
 #include <cygnet/util.h>
 #include <cstdint>
@@ -18,6 +18,7 @@ class Renderer;
 namespace Swan {
 
 class WorldPlane;
+using FluidInTile = std::array<Fluid::ID, FLUID_RESOLUTION * FLUID_RESOLUTION>;
 
 class FluidSystemImpl {
 public:
@@ -45,6 +46,12 @@ public:
 	Fluid &takeAnyFromRow(TilePos pos, int y);
 	bool isFluidCellSolid(FluidPos pos);
 
+	void getGridInTile(TilePos pos, Fluid::ID data[sizeof(FluidInTile)]);
+	void setGridInTile(TilePos pos, const Fluid::ID data[sizeof(FluidInTile)]);
+
+	const std::unordered_set<TilePos> &getChangedTiles()
+	{ return changedTiles_; }
+
 	/*
 	 * Available to friends
 	 */
@@ -52,6 +59,8 @@ public:
 	void draw(Cygnet::Renderer &rnd);
 	void update(float dt);
 	bool tick(RTDeadline deadline);
+	void tickDone()
+	{ changedTiles_.clear(); }
 
 	void serialize(proto::FluidSystem::Builder w);
 	void deserialize(proto::FluidSystem::Reader r);
@@ -67,19 +76,23 @@ private:
 
 	class FluidCellRef {
 	public:
-		FluidCellRef(uint8_t *value): value_(value) {}
+		FluidCellRef(Fluid::ID *value, FluidPos pos):
+			value_(value),
+			pos_(pos)
+		{}
 
-		void setAir();
+		void setAir(FluidSystemImpl *impl);
 		bool isAir();
 		bool isSolid();
-		void set(Fluid::ID id, int vx);
+		void set(FluidSystemImpl *impl, Fluid::ID id, int vx);
 		int vx();
 		void setVX(int vx);
 		Fluid::ID id();
-		void setID(Fluid::ID id);
+		void setID(FluidSystemImpl *impl, Fluid::ID id);
 
 	private:
-		uint8_t *value_;
+		Fluid::ID *value_;
+		FluidPos pos_;
 	};
 
 	void triggerUpdate(FluidPos pos);
@@ -87,11 +100,13 @@ private:
 
 	void applyRules(FluidPos pos);
 	FluidCellRef getFluidCell(FluidPos pos);
+	Fluid::ID *getFluidPtr(FluidPos pos);
 
 	WorldPlane &plane_;
 
 	std::unordered_set<FluidPos> updateSet_;
 	std::unordered_set<FluidPos> movedSet_;
+	std::unordered_set<TilePos> changedTiles_;
 	std::vector<FluidPos> updatesA_;
 	std::vector<FluidPos> updatesB_;
 	std::vector<FluidParticle> particles_;
@@ -115,6 +130,9 @@ public:
 	using FluidSystemImpl::takeFluidFromRow;
 	using FluidSystemImpl::takeAnyFromRow;
 	using FluidSystemImpl::isFluidCellSolid;
+	using FluidSystemImpl::getGridInTile;
+	using FluidSystemImpl::setGridInTile;
+	using FluidSystemImpl::getChangedTiles;
 
 	friend WorldPlane;
 };

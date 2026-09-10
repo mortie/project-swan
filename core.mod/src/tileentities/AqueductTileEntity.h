@@ -9,8 +9,6 @@ namespace CoreMod {
 class AqueductTileEntity final: public Swan::Entity,
 	public Swan::TileEntityTrait {
 public:
-	using Proto = proto::AqueductTileEntity;
-
 	AqueductTileEntity(Swan::Ctx &)
 	{}
 
@@ -31,8 +29,8 @@ public:
 		onTileUpdate(ctx);
 	}
 
-	void serialize(Swan::Ctx &ctx, Proto::Builder w);
-	void deserialize(Swan::Ctx &ctx, Proto::Reader r);
+	void serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb) override;
+	void deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr) override;
 
 private:
 	struct FluidStack {

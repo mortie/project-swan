@@ -4,12 +4,13 @@
 #include "swan/log.h"
 #include "traits/TileEntityTrait.h"
 #include "EntityCollectionImpl.h" // IWYU pragma: keep
+#include "Game.h"
 
 namespace Swan {
 
 EntitySystemImpl::EntitySystemImpl(
-	WorldPlane &plane,
-	std::vector<std::unique_ptr<EntityCollection>> &&colls):
+		WorldPlane &plane,
+		std::vector<std::unique_ptr<EntityCollection>> &&colls):
 	plane_(plane),
 	collections_(std::move(colls))
 {
@@ -19,7 +20,7 @@ EntitySystemImpl::EntitySystemImpl(
 	}
 }
 
-EntityRef EntitySystemImpl::spawn(std::string_view name, capnp::Data::Reader data)
+EntityRef EntitySystemImpl::spawn(std::string_view name, kj::BufferedInputStream &data)
 {
 	auto it = collectionsByName_.find(name);
 	if (it == collectionsByName_.end()) {
@@ -191,6 +192,15 @@ void EntitySystemImpl::despawnTileEntity(TilePos pos)
 	}
 }
 
+void EntitySystemImpl::despawnEntityNow(EntityRef ref)
+{
+	auto ctx = getContext();
+	if (ref) {
+		ref->onDespawn(ctx);
+	}
+	ref.coll_->erase(ctx, ref.id_);
+}
+
 void EntitySystemImpl::draw(Cygnet::Renderer &rnd)
 {
 	auto ctx = getContext();
@@ -238,6 +248,15 @@ void EntitySystemImpl::tick(float dt)
 	}
 
 	currentCollection_ = nullptr;
+}
+
+void EntitySystemImpl::tickDone()
+{
+	auto ctx = getContext();
+
+	for (auto &coll: collections_) {
+		coll->tickDone(ctx);
+	}
 }
 
 EntityCollection *EntitySystemImpl::getCollectionOf(std::string_view name)

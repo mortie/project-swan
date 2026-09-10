@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <typeindex>
 #include <functional>
@@ -9,6 +10,7 @@
 #include "Entity.h"
 #include "traits/BodyTrait.h"
 #include "swan.capnp.h"
+#include "multiplayer.capnp.h"
 
 namespace Swan {
 
@@ -119,15 +121,19 @@ public:
 	virtual const std::string &name() = 0;
 	virtual std::type_index type() = 0;
 
+	// TODO: This should track updates cleverly
+	virtual bool hasUpdated() = 0;
+
 	virtual size_t size() = 0;
 	virtual Entity *get(uint64_t id) = 0;
 	virtual Body *getBody(uint64_t id) = 0;
 
 	virtual EntityRef spawn(Ctx &ctx) = 0;
-	virtual EntityRef spawn(Ctx &ctx, capnp::Data::Reader data) = 0;
+	virtual EntityRef spawn(Ctx &ctx, kj::BufferedInputStream &data) = 0;
 	virtual void update(Ctx &ctx, float dt) = 0;
 	virtual void tick(Ctx &ctx, float dt) = 0;
 	virtual void tick2(Ctx &ctx, float dt) = 0;
+	virtual void tickDone(Ctx &ctx) = 0;
 	virtual void draw(Ctx &ctx, Cygnet::Renderer &rnd) = 0;
 	virtual void erase(Ctx &ctx, uint64_t id) = 0;
 	virtual void onWorldLoaded(Ctx &ctx) = 0;
@@ -136,6 +142,11 @@ public:
 		Ctx &ctx, proto::EntitySystem::Collection::Builder w) = 0;
 	virtual void deserialize(
 		Ctx &ctx, proto::EntitySystem::Collection::Reader r) = 0;
+
+	virtual void serializeUpdates(
+		Ctx &ctx, mp_proto::EntityCollectionUpdate::Builder w) = 0;
+	virtual void deserializeUpdates(
+		Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader r) = 0;
 
 protected:
 	uint64_t currentId_;

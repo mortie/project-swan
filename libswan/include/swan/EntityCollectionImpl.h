@@ -2,7 +2,8 @@
 
 #include "EntityCollection.h"
 #include "WorldPlane.h"
-#include "Game.h"
+#include "GameIO.h"
+#include "kjutil.h"
 #include <fstream>
 
 #include <capnp/message.h>
@@ -44,7 +45,7 @@ public:
 	EntityRef spawnMove(Ctx &ctx, Ent &&ent);
 
 	EntityRef spawn(Ctx &ctx) override;
-	EntityRef spawn(Ctx &ctx, capnp::Data::Reader data) override;
+	EntityRef spawn(Ctx &ctx, kj::BufferedInputStream &data) override;
 
 	size_t size() override
 	{
@@ -64,9 +65,18 @@ public:
 		return typeid(Ent);
 	}
 
+	bool hasUpdated() override
+	{
+		return (
+			entities_.size() > 0 ||
+			newEntitiesThisTick_.size() > 0 ||
+			despawnedEntitiesThisTick_.size() > 0);
+	}
+
 	void update(Ctx &ctx, float dt) override;
 	void tick(Ctx &ctx, float dt) override;
 	void tick2(Ctx &ctx, float dt) override;
+	void tickDone(Ctx &ctx) override;
 	void draw(Ctx &ctx, Cygnet::Renderer &rnd) override;
 	void erase(Ctx &ctx, uint64_t id) override;
 	void onWorldLoaded(Ctx &ctx) override;
@@ -76,11 +86,18 @@ public:
 	void deserialize(
 		Ctx &ctx, proto::EntitySystem::Collection::Reader r) override;
 
+	void serializeUpdates(
+		Ctx &ctx, mp_proto::EntityCollectionUpdate::Builder w) override;
+	void deserializeUpdates(
+		Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader w) override;
+
 	const std::string name_;
 	uint64_t nextId_ = 0;
 	std::vector<Wrapper> entities_;
 	std::unordered_map<uint64_t, size_t> idToIndex_;
 	bool hasTicked_ = false;
+	std::vector<uint64_t> newEntitiesThisTick_;
+	std::vector<uint64_t> despawnedEntitiesThisTick_;
 };
 
 /*
@@ -204,6 +221,7 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(Ctx &ctx, Args &&... args)
 
 	idToIndex_[id] = index;
 	w.id = id;
+	newEntitiesThisTick_.push_back(id);
 
 	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 		Body &body = w.ent.get(BodyTrait::Tag{});
@@ -229,6 +247,7 @@ inline EntityRef EntityCollectionImpl<Ent>::spawnMove(Ctx &ctx, Ent &&ent)
 
 	idToIndex_[id] = index;
 	w.id = id;
+	newEntitiesThisTick_.push_back(id);
 
 	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
 		Body &body = w.ent.get(BodyTrait::Tag{});
@@ -256,23 +275,23 @@ inline EntityRef EntityCollectionImpl<Ent>::spawn(Ctx &ctx)
 	idToIndex_[id] = index;
 
 	currentId_ = prevCurrentId;
+	newEntitiesThisTick_.push_back(id);
 	return {this, id};
 }
 
 template<typename Ent>
 inline EntityRef EntityCollectionImpl<Ent>::spawn(
-	Ctx &ctx, capnp::Data::Reader data)
+	Ctx &ctx, kj::BufferedInputStream &data)
 {
 	auto ent = spawn(ctx);
 
 	auto prevCurrentId = currentId_;
 	currentId_ = ent.id();
 
-	kj::ArrayInputStream stream(data);
-	capnp::PackedMessageReader reader(stream);
+	capnp::PackedMessageReader reader(data);
 	try {
 		Ent *e = (Ent *)ent.get();
-		e->deserialize(ctx, reader.getRoot<typename Ent::Proto>());
+		e->deserialize(ctx, reader);
 	} catch (std::exception &ex) {
 		warn << "Failed to spawn " << name_ << ": " << ex.what();
 		erase(ctx, ent);
@@ -360,6 +379,14 @@ inline void EntityCollectionImpl<Ent>::tick2(Ctx &ctx, float dt)
 }
 
 template<typename Ent>
+inline void EntityCollectionImpl<Ent>::tickDone(Ctx &ctx)
+{
+	newEntitiesThisTick_.clear();
+	despawnedEntitiesThisTick_.clear();
+}
+
+
+template<typename Ent>
 inline void EntityCollectionImpl<Ent>::draw(Ctx &ctx, Cygnet::Renderer &rnd)
 {
 	ZoneScopedN(__PRETTY_FUNCTION__);
@@ -394,6 +421,7 @@ inline void EntityCollectionImpl<Ent>::erase(Ctx &ctx, uint64_t id)
 		return;
 	}
 
+	despawnedEntitiesThisTick_.push_back(id);
 	size_t index = indexIt->second;
 
 	if constexpr (std::is_base_of_v<BodyTrait, Ent> ) {
@@ -436,6 +464,10 @@ inline void EntityCollectionImpl<Ent>::serialize(
 		}
 	}
 
+	// TODO: Do this more intelligently somehow
+	auto scratch = kjZeroedArray<capnp::word>(1024);
+	kj::VectorOutputStream stream;
+
 	w.setName(name_);
 	w.setNextID(nextId_);
 	auto entities = w.initEntities(entities_.size());
@@ -444,13 +476,12 @@ inline void EntityCollectionImpl<Ent>::serialize(
 		entities[i].setId(wrapper.id);
 
 		capnp::MallocMessageBuilder mb;
-		auto root = mb.initRoot<typename Ent::Proto>();
-		wrapper.ent.serialize(ctx, root);
+		wrapper.ent.serialize(ctx, mb);
 
-		kj::VectorOutputStream out;
-		capnp::writePackedMessage(out, mb);
+		stream.clear();
+		capnp::writePackedMessage(stream, mb);
 
-		auto arr = out.getArray();
+		auto arr = stream.getArray();
 		auto data = entities[i].initData(arr.size());
 		memcpy(&data.front(), &arr.front(), arr.size());
 
@@ -487,12 +518,101 @@ inline void EntityCollectionImpl<Ent>::deserialize(
 		kj::ArrayInputStream stream(data);
 		capnp::PackedMessageReader reader(stream);
 		try {
-			auto root = reader.getRoot<typename Ent::Proto>();
-			wrapper.ent.deserialize(ctx, root);
+			wrapper.ent.deserialize(ctx, reader);
 			idToIndex_[wrapper.id] = index;
 		} catch (std::exception &ex) {
 			warn << "Failed to deserialize " << name_ << " entity: " << ex.what();
 			entities_.pop_back();
+		}
+	}
+}
+
+template<typename Ent>
+void EntityCollectionImpl<Ent>::serializeUpdates(
+	Ctx &ctx, mp_proto::EntityCollectionUpdate::Builder w)
+{
+	// TODO: Do this more intelligently somehow
+	auto scratch = kjZeroedArray<capnp::word>(1024);
+	kj::VectorOutputStream stream;
+
+	auto newEntities = w.initNewEntities(newEntitiesThisTick_.size());
+	for (size_t i = 0; auto id: newEntitiesThisTick_) {
+		newEntities.set(i++, id);
+	}
+
+	auto despawnedEntities = w.initDespawnedEntities(despawnedEntitiesThisTick_.size());
+	for (size_t i = 0; auto id: despawnedEntitiesThisTick_) {
+		despawnedEntities.set(i++, id);
+	}
+
+	std::vector<size_t> updatedIndexes;
+	for (size_t i = 0; i < entities_.size(); ++i) {
+		if (entities_[i].ent.hasUpdated()) {
+			updatedIndexes.push_back(i);
+		}
+	}
+
+	auto entities = w.initUpdatedEntities(updatedIndexes.size());
+	for (size_t i = 0; size_t index: updatedIndexes) {
+		auto &wrapper = entities_[index];
+		auto entity = entities[i++];
+		entity.setId(wrapper.id);
+
+		capnp::MallocMessageBuilder mb;
+		wrapper.ent.serializeUpdates(ctx, mb);
+
+		stream.clear();
+		capnp::writePackedMessage(stream, mb);
+
+		auto arr = stream.getArray();
+		auto data = entity.initData(arr.size());
+		memcpy(&data.front(), &arr.front(), arr.size());
+	}
+}
+
+template<typename Ent>
+void EntityCollectionImpl<Ent>::deserializeUpdates(
+	Ctx &ctx, mp_proto::EntityCollectionUpdate::Reader r)
+{
+	// Despawn despawned entities
+	for (auto id: r.getDespawnedEntities()) {
+		erase(ctx, id);
+	}
+
+	// Spawn new entities
+	for (auto id: r.getNewEntities()) {
+		if (idToIndex_.contains(id)) {
+			warn << "Was told that ID " << id << " just spawned, but it already exists!";
+			continue;
+		}
+
+		size_t index = entities_.size();
+		auto &w = entities_.emplace_back(ctx);
+		w.id = id;
+		idToIndex_[id] = index;
+	}
+
+	// Deserialize updated entities
+	for (auto entity: r.getUpdatedEntities()) {
+		uint64_t id = entity.getId();
+
+		auto it = idToIndex_.find(id);
+		if (it == idToIndex_.end()) {
+			warn << "Update for non-existent entity with ID " << id;
+			continue;
+		}
+
+		auto &wrapper = entities_[it->second];
+
+		// This is gonna need some updates for netcode optimization too
+		auto data = entity.getData();
+		kj::ArrayInputStream stream(data);
+		capnp::PackedMessageReader reader(stream);
+		currentId_ = id;
+		try {
+			wrapper.ent.deserializeUpdates(ctx, reader);
+		} catch (std::exception &ex) {
+			warn << "Failed to deserialize " << name_ << " entity: " << ex.what();
 		}
 	}
 }

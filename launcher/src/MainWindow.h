@@ -58,6 +58,7 @@ private:
 
 	void loadWorlds();
 	void launch(std::string worldID, std::optional<uint32_t> seed);
+	void launchMultiplayer(std::string host);
 	std::string getNewWorldName();
 
 	int width_ = 0;
@@ -65,6 +66,7 @@ private:
 	std::vector<WorldWrapper> worlds_;
 	std::string newWorldName_;
 	std::string newWorldSeed_;
+	std::string serverHost_ = "localhost";
 	std::string worldRenameBuffer_;
 
 	std::shared_ptr<std::atomic<bool>> running_;

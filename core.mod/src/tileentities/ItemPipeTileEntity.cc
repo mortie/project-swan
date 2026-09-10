@@ -2,6 +2,7 @@
 
 #include <optional>
 
+#include "core_mod.capnp.h"
 #include "entities/ItemStackEntity.h"
 
 namespace CoreMod {
@@ -129,29 +130,29 @@ void ItemPipeTileEntity::onDespawn(Swan::Ctx &ctx)
 	}
 }
 
-void ItemPipeTileEntity::serialize(
-	Swan::Ctx &ctx, Proto::Builder w)
+void ItemPipeTileEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::ItemPipeTileEntity>();
 	tileEntity_.serialize(w.initTileEntity());
 
 	if (inbox_.content_) {
 		auto inboxW = w.initInbox();
 		inbox_.content_->from.serialize(inboxW.initFrom());
-		inboxW.setItem(inbox_.content_->item->name);
+		inboxW.setItem(inbox_.content_->item->id);
 	}
 
 	auto contentsW = w.initContents(content_.size());
 	for (size_t i = 0; i < content_.size(); ++i) {
-		contentsW[i].setItem(content_[i].item->name);
+		contentsW[i].setItem(content_[i].item->id);
 		content_[i].from.serialize(contentsW[i].initFrom());
 		content_[i].to.serialize(contentsW[i].initTo());
 		contentsW[i].setTimer(content_[i].timer);
 	}
 }
 
-void ItemPipeTileEntity::deserialize(
-	Swan::Ctx &ctx, Proto::Reader r)
+void ItemPipeTileEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::ItemPipeTileEntity>();
 	tileEntity_.deserialize(r.getTileEntity());
 
 	inbox_.content_.reset();
@@ -159,14 +160,14 @@ void ItemPipeTileEntity::deserialize(
 		inbox_.content_ = {};
 		auto &inboxContents = *inbox_.content_;
 		inboxContents.from.deserialize(r.getInbox().getFrom());
-		inboxContents.item = &ctx.world.getItem(r.getInbox().getItem().cStr());
+		inboxContents.item = &ctx.world.getItemByID(r.getInbox().getItem());
 	}
 
 	content_.clear();
 	auto contentsR = r.getContents();
 	content_.resize(contentsR.size());
 	for (size_t i = 0; i < contentsR.size(); ++i) {
-		content_[i].item = &ctx.world.getItem(contentsR[i].getItem().cStr());
+		content_[i].item = &ctx.world.getItemByID(contentsR[i].getItem());
 		content_[i].from.deserialize(contentsR[i].getFrom());
 		content_[i].to.deserialize(contentsR[i].getTo());
 		content_[i].timer = contentsR[i].getTimer();

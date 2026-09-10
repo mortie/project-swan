@@ -1,4 +1,6 @@
 #include "SpiderEntity.h"
+#include "core_mod.capnp.h"
+#include "entities/PlayerEntity.h"
 
 #include <stdlib.h>
 
@@ -69,7 +71,8 @@ void SpiderEntity::update(Swan::Ctx &ctx, float dt)
 void SpiderEntity::tick(Swan::Ctx &ctx, float dt)
 {
 	if (!target_) {
-		target_ = ctx.world.player_;
+		// TODO
+		//target_ = ctx.world.player_;
 	}
 
 	if (target_ && (target_->center() - physicsBody_.body.center()).squareLength() > 10 * 10) {
@@ -77,15 +80,15 @@ void SpiderEntity::tick(Swan::Ctx &ctx, float dt)
 	}
 }
 
-void SpiderEntity::serialize(
-	Swan::Ctx &ctx, Proto::Builder w)
+void SpiderEntity::serialize(Swan::Ctx &ctx, capnp::MessageBuilder &mb)
 {
+	auto w = mb.initRoot<proto::SpiderEntity>();
 	physicsBody_.serialize(w.initBody());
 }
 
-void SpiderEntity::deserialize(
-	Swan::Ctx &ctx, Proto::Reader r)
+void SpiderEntity::deserialize(Swan::Ctx &ctx, capnp::MessageReader &mr)
 {
+	auto r = mr.getRoot<proto::SpiderEntity>();
 	physicsBody_.deserialize(r.getBody());
 }
 
