@@ -251,6 +251,7 @@ void MPGame::onMessageFromServer(mp_proto::ServerToClient::Reader &r)
 			std::move(worldGen), std::move(colls));
 		plane_->deserialize(sync.getCurrentPlane());
 		player_.deserialize(plane_->getContext(), sync.getPlayerRef());
+		cam_.pos = player_.getBody()->center();
 
 		info << "Successfully performed initial world sync.";
 	} else if (r.isTick()) {
