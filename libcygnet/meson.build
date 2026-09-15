@@ -38,7 +38,7 @@ libcygnet = declare_dependency(
   link_with: shared_library('cygnet',
     cygnet_sources,
     dependencies: [
-      common, libthreads, libgl, libglfw3, libstb_truetype, libstb_image,
+      common, libthreads, libgl, libsdl, libstb_truetype, libstb_image,
     ] + maybe_libtracy,
     install: true,
     install_rpath: origin_rpath,

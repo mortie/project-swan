@@ -48,21 +48,9 @@ if get_option('trace')
   add_project_arguments('-DTRACY_ENABLE', language: 'cpp')
 endif
 
-if is_headless
-  libglfw3 = []
-else
-  glfw_opts = cmake.subproject_options()
-  glfw_opts.add_cmake_defines({
-    'GLFW_LIBRARY_TYPE': 'SHARED',
-    'GLFW_BUILD_EXAMPLES': false,
-    'GLFW_BUILD_TESTS': false,
-    'GLFW_BUILD_DOCS': false,
-    'CMAKE_INSTALL_LIBDIR': 'lib',
-  })
-  glfw_opts.set_override_option('warning_level', '1')
-  glfw_sub = cmake.subproject('glfw', options: glfw_opts)
-  libglfw3 = glfw_sub.dependency('glfw')
-endif
+libsdl = dependency('sdl3')
+libsdl_net_sub = cmake.subproject('SDL_net')
+libsdl_net = libsdl_net_sub.dependency('SDL3_net-shared')
 
 if is_headless
   libportaudio = []
@@ -83,32 +71,6 @@ tpl_opts.add_cmake_defines({
 })
 tpl_sub = cmake.subproject('tiny-process-library', options: tpl_opts)
 libtpl = tpl_sub.dependency('tiny-process-library')
-
-sdl_opts = cmake.subproject_options()
-sdl_opts.add_cmake_defines({
-  'SDL_AUDIO': false,
-  'SDL_VIDEO': false,
-  'SDL_JOYSTICK': false,
-  'SDL_HAPTIC': false,
-  'SDL_HIDAPI': false,
-  'SDL_POWER': false,
-  'SDL_SENSOR': false,
-  'SDL_DIALOG': false,
-  'SDL_TRAY': false,
-  'SDL_UNIX_CONSOLE_BUILD': true,
-})
-sdl_sub = cmake.subproject('SDL', options: sdl_opts)
-libsdl = sdl_sub.dependency('SDL3-shared')
-
-if target_machine.system() == 'windows'
-  sdl_platform = 'WINDOWS'
-elif target_machine.system() == 'linux'
-  sdl_platform = 'LINUX'
-elif target_machine.system() == 'darwin'
-  sdl_platform = 'DARWIN'
-else
-  error('Unknown target system: ' + target_machine.system())
-endif
 
 if is_headless
   libffmpeg = []
@@ -196,7 +158,7 @@ if meson.get_compiler('cpp').get_linker_id() == 'ld.bfd'
 endif
 
 swan_deps = [
-  libswan, libcygnet, common, libimgui, libgl, libglfw3, libbackwardcpp,
+  libswan, libcygnet, common, libimgui, libgl, libsdl, libbackwardcpp,
   libcpptoml, libsha1, libscisasm, libscisavm, libtpl, libsdl, libsdl_net,
 ] + maybe_libtracy
 

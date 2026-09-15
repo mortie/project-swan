@@ -11,7 +11,7 @@ if not is_headless
       libimgui,
       libcygnet,
       libgl,
-      libglfw3,
+      libsdl,
       libstb_image,
       libtpl,
       common,

@@ -1,5 +1,4 @@
 subdir('capnp')
-subdir('SDL_net')
 
 libglad = declare_dependency(
   include_directories: 'glad/include',
@@ -23,7 +22,8 @@ imgui_sources = [
 if not is_headless
   imgui_sources += [
     'imgui/backends/imgui_impl_opengl3.cpp',
-    'imgui/backends/imgui_impl_glfw.cpp',
+    'imgui/backends/imgui_impl_sdl3.cpp',
+    'imgui/backends/imgui_impl_sdlrenderer3.cpp',
   ]
 endif
 
@@ -33,7 +33,7 @@ libimgui = declare_dependency(
     imgui_sources,
     include_directories: 'imgui',
     cpp_args: ['-Wno-sign-compare', '-Wno-deprecated-enum-enum-conversion'],
-    dependencies: [libglfw3],
+    dependencies: [libsdl],
     install: true,
     install_rpath: origin_rpath,
   ),

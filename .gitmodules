@@ -28,9 +28,6 @@
 [submodule "subprojects/scisa"]
 	path = subprojects/scisa
 	url = https://github.com/mortie/scisa.git
-[submodule "subprojects/glfw"]
-	path = subprojects/glfw
-	url = https://github.com/glfw/glfw.git
 [submodule "subprojects/portaudio"]
 	path = subprojects/portaudio
 	url = https://github.com/mortie/portaudio.git
@@ -43,9 +40,6 @@
 [submodule "meson"]
 	path = meson
 	url = https://github.com/mesonbuild/meson.git
-[submodule "subprojects/SDL"]
-	path = subprojects/SDL
-	url = https://github.com/libsdl-org/SDL.git
-[submodule "third-party/SDL_net/SDL_net"]
-	path = third-party/SDL_net/SDL_net
+[submodule "subprojects/SDL_net"]
+	path = subprojects/SDL_net
 	url = https://github.com/libsdl-org/SDL_net.git

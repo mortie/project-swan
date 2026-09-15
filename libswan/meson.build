@@ -38,7 +38,7 @@ endif
 libswan = declare_dependency(
   include_directories: ['include', '.'],
   dependencies: [
-    common, libcygnet, libglfw3, libcapnp,
+    common, libcygnet, libsdl, libcapnp,
   ] + maybe_libtracy,
   link_with: shared_library('swan',
     'src/inputmaps/axes.cc',
@@ -80,7 +80,7 @@ libswan = declare_dependency(
     multiplayer_proto,
     dependencies: [
       common, libcygnet, libthreads, libstb_image,
-      libstb_vorbis, libcpptoml, libdl, libgl, libglfw3,
+      libstb_vorbis, libcpptoml, libdl, libgl, libsdl,
       libimgui, libportaudio, libcapnp, libkj, libffmpeg,
       libsdl, libsdl_net,
     ] + maybe_libtracy,
