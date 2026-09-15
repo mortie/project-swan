@@ -1,131 +1,153 @@
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
+#define SDL_MAIN_USE_CALLBACKS 1
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL.h>
 
-#include <cygnet/gl.h>
-#include <cygnet/util.h>
 #include <imgui/imgui.h>
-#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <swan/log.h>
 #include <swan/util.h>
 #include <fstream>
+#include <cygnet/gl.h>
 
 #include "MainWindow.h"
 #include "stylesheet.h"
 
-static ImGuiIO *imguiIo;
-static double pixelRatio = 1;
-static MainWindow mainWindow;
+struct AppState {
+	ImGuiIO imguiIo;
+	float pixelRatio = 1;
+	MainWindow mainWindow;
+	Swan::CPtr<SDL_Window, SDL_DestroyWindow> window;
+	SDL_GLContext glContext;
+};
 
-static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
-	int width, height;
-
-	glfwGetWindowSize(window, &width, &height);
-	glViewport(0, 0, dw, dh);
-	Cygnet::glCheck();
-	double newPixelRatio = (double)dw / (double)width;
-
-	if (newPixelRatio != pixelRatio) {
-		pixelRatio = newPixelRatio;
-		imguiIo->FontGlobalScale = 1.0 / pixelRatio;
-		imguiIo->Fonts->Clear();
-
-		imguiIo->Fonts->AddFontFromFileTTF(
-			"assets/NotoSans-Regular.ttf", 17 * pixelRatio);
-		imguiIo->Fonts->Build();
+	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
+		Swan::panic << "Failed to create window: " << SDL_GetError();
+		return SDL_APP_FAILURE;
 	}
 
-	mainWindow.setSize(width, height);
-}
+	auto state = new AppState();
+	*appstate = (void *)state;
 
-int main()
-{
-	glfwSetErrorCallback(+[] (int error, const char *description) {
-		Swan::warn << "GLFW Error: " << error << ": " << description;
-	});
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	if (!glfwInit()) {
-		Swan::panic << "Initializing GLFW failed.";
-		return 1;
-	}
-	SWAN_DEFER(glfwTerminate());
-
-	{ // Load custom input mappings from file
-		std::fstream f("assets/gamecontrollerdb.txt");
-		if (f) {
-			std::stringstream ss;
-			ss << f.rdbuf();
-			auto str = std::move(ss).str();
-			glfwUpdateGamepadMappings(str.c_str());
-		} else {
-			Swan::warn << "Failed to open assets/gamecontrollerdb.txt";
-		}
+	state->window.reset(SDL_CreateWindow(
+		"SWAN Launcher  -  " SWAN_VERSION,
+		450, 380, (
+			SDL_WINDOW_OPENGL |
+			SDL_WINDOW_RESIZABLE |
+			SDL_WINDOW_HIDDEN |
+			SDL_WINDOW_HIGH_PIXEL_DENSITY)));
+	if (!state->window) {
+		Swan::panic << "Failed to create window: " << SDL_GetError();
+		return SDL_APP_FAILURE;
 	}
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHintString(GLFW_WAYLAND_APP_ID, "coffee.mort.Swan");
-	GLFWwindow *window = glfwCreateWindow(
-		450, 380, "SWAN Launcher  -  " SWAN_VERSION,
-		nullptr, nullptr);
-	if (!window) {
-		Swan::panic << "Failed to create window";
-		return 1;
+	state->glContext = SDL_GL_CreateContext(state->window.get());
+	if (!state->glContext) {
+		Swan::panic << "Failed to create GL context: " << SDL_GetError();
+		return SDL_APP_FAILURE;
 	}
-
-	glfwSetWindowSizeLimits(window, 450, 300, GLFW_DONT_CARE, GLFW_DONT_CARE);
-	glfwMakeContextCurrent(window);
 #ifdef __MINGW32__
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
 		Swan::panic << "GLAD failed to load GL!";
-		return 1;
+		return SDL_APP_FAILURE;
 	}
 #endif
 
-	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-	glfwSwapInterval(1);
-	Cygnet::glCheck();
+ 	SDL_GL_SetSwapInterval(1);
+
+	SDL_SetWindowPosition(state->window.get(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+	SDL_SetWindowMinimumSize(state->window.get(), 450, 300);
+	SDL_ShowWindow(state->window.get());
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	SWAN_DEFER(ImGui::DestroyContext());
-	Cygnet::glCheck();
-
-	imguiIo = &ImGui::GetIO();
-	imguiIo->ConfigFlags = ImGuiConfigFlags_NavEnableGamepad;
-	imguiIo->IniFilename = nullptr;
+	state->imguiIo = ImGui::GetIO();
+	state->imguiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	state->imguiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+	state->imguiIo.IniFilename = nullptr;
 
 	StyleColors();
+	ImGui::GetStyle().ScaleAllSizes(state->pixelRatio);
+	ImGui::GetStyle().FontScaleDpi = state->pixelRatio;
+	state->imguiIo.Fonts->AddFontFromFileTTF(
+		"assets/NotoSans-Regular.ttf", 17 * state->pixelRatio);
 
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	SWAN_DEFER(ImGui_ImplGlfw_Shutdown());
+	ImGui_ImplSDL3_InitForOpenGL(state->window.get(), state->glContext);
 	ImGui_ImplOpenGL3_Init("#version 150");
-	SWAN_DEFER(ImGui_ImplOpenGL3_Shutdown());
-	Cygnet::glCheck();
 
-	{
-		int dw, dh;
-		glfwGetFramebufferSize(window, &dw, &dh);
-		framebufferSizeCallback(window, dw, dh);
+	state->mainWindow.init();
+	int width, height;
+	SDL_GetWindowSize(state->window.get(), &width, &height);
+	state->mainWindow.setSize(width, height);
+
+	return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
+{
+	auto state = (AppState *)appstate;
+	ImGui_ImplSDL3_ProcessEvent(event);
+
+	switch (event->type) {
+	case SDL_EVENT_QUIT:
+	case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+		Swan::info << "Quit event";
+		return SDL_APP_SUCCESS;
+
+	case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+		state->pixelRatio = SDL_GetWindowDisplayScale(state->window.get());
+		Swan::info << "Display scale: " << state->pixelRatio;
+		state->imguiIo.Fonts->AddFontFromFileTTF(
+			"assets/NotoSans-Regular.ttf", 17 * state->pixelRatio);
+		state->imguiIo.Fonts->Build();
+		return SDL_APP_CONTINUE;
+
+	case SDL_EVENT_WINDOW_RESIZED:
+		state->mainWindow.setSize(event->window.data1, event->window.data2);
+		return SDL_APP_CONTINUE;
+
+	default:
+		return SDL_APP_CONTINUE;
 	}
+}
 
-	mainWindow.init();
-	while (!glfwWindowShouldClose(window)) {
-		glfwPollEvents();
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		Cygnet::glCheck();
+SDL_AppResult SDL_AppIterate(void *appstate)
+{
+	auto state = (AppState *)appstate;
 
-		mainWindow.update();
-		Cygnet::glCheck();
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplSDL3_NewFrame();
+	ImGui::NewFrame();
 
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		glfwSwapBuffers(window);
-		Cygnet::glCheck();
-	}
+	state->mainWindow.update();
+
+	ImGui::Render();
+	auto &io = ImGui::GetIO();
+	glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+	glClear(GL_COLOR_BUFFER_BIT);
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	SDL_GL_SwapWindow(state->window.get());
+
+	return SDL_APP_CONTINUE;
+}
+
+void SDL_AppQuit(void *appstate, SDL_AppResult result)
+{
+	auto state = (AppState *)appstate;
+
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplSDL3_Shutdown();
+	ImGui::DestroyContext();
+	SDL_GL_DestroyContext(state->glContext);
+
+	delete state;
+	SDL_Quit();
 }
