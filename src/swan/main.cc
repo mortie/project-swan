@@ -31,6 +31,9 @@
 
 #include "../swan-build/build.h"
 
+namespace chrono = std::chrono;
+using steady_clock = std::chrono::steady_clock;
+
 struct AppState {
 	float pixelRatio = -1;
 	int windowWidth = -1;
@@ -40,6 +43,7 @@ struct AppState {
 	ImGuiIO imguiIo;
 	Swan::CPtr<SDL_Window, SDL_DestroyWindow> window;
 	SDL_GLContext glContext;
+	steady_clock::time_point prevFrameTime;
 
 #ifndef SWAN_HEADLESS
 	GLuint globalVao = 0;
@@ -56,13 +60,14 @@ static void onFramebufferSizeChanged(AppState *state)
 		Swan::info << "Window DPI scale: " << pixelRatio;
 		state->pixelRatio = pixelRatio;
 
-		ImGui::GetStyle().ScaleAllSizes(pixelRatio);
-		ImGui::GetStyle().FontScaleDpi = pixelRatio;
-
-		state->imguiIo.FontGlobalScale = 1.0 / pixelRatio;
+		// TODO: These things should probably change dynamically,
+		// but that doesn't seem to work?
+		ImGui::GetStyle().ScaleAllSizes(1);
+		ImGui::GetStyle().FontScaleDpi = 1;
 		state->imguiIo.Fonts->ClearFonts();
+		state->imguiIo.FontGlobalScale = 1.0;
 		state->imguiIo.Fonts->AddFontFromFileTTF(
-			"assets/NotoSans-Regular.ttf", 17 * pixelRatio);
+			"assets/NotoSans-Regular.ttf", 17);
 		state->imguiIo.Fonts->Build();
 	}
 
@@ -229,8 +234,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 	}
 #endif
 
- 	SDL_GL_SetSwapInterval(1);
-
 	SDL_SetWindowPosition(state->window.get(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 	SDL_SetWindowMinimumSize(state->window.get(), 450, 300);
 	SDL_ShowWindow(state->window.get());
@@ -293,6 +296,17 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 		state->game = std::move(ptr);
 	}
 
+	state->prevFrameTime = steady_clock::now();
+
+#ifdef __APPLE__
+	auto *displayMode = SDL_GetDesktopDisplayMode(SDL_GetDisplayForWindow(
+		state->window.get()));
+	state->game->fpsLimit_ = displayMode->refresh_rate;
+#else
+	SDL_GL_SetSwapInterval(1);
+	state->game->vsync_ = true;
+#endif
+
 	return SDL_APP_CONTINUE;
 }
 
@@ -328,7 +342,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 	case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		if (!state->imguiIo.WantCaptureMouse) {
-			Swan::info << "BUTTON: " << int(event->button.button);
 			state->game->inputs().onMouseDown(event->button.button);
 		}
 		return SDL_APP_CONTINUE;
@@ -362,6 +375,21 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 {
 	auto state = (AppState *)appstate;
 
+	auto now = steady_clock::now();
+	float dt = chrono::duration_cast<chrono::duration<float>>(now - state->prevFrameTime).count();
+	state->prevFrameTime = now;
+
+	if (state->game->fpsLimit_ != 0) {
+		float minDT = 1.0 / state->game->fpsLimit_;
+		if (dt < minDT) {
+			now += chrono::duration_cast<steady_clock::duration>(
+				chrono::duration<float>(minDT - dt));
+			state->prevFrameTime = now;
+			std::this_thread::sleep_until(state->prevFrameTime);
+			dt = minDT;
+		}
+	}
+
 	if (state->framebufferSizeDirty) {
 		onFramebufferSizeChanged(state);
 		state->framebufferSizeDirty = false;
@@ -373,9 +401,21 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 #endif
 	ImGui::NewFrame();
 
-	// TODO
-	float dt = 1.0 / 60;
-	state->game->update(dt);
+	// Avoid silly long time steps
+	if (dt > 0.5) {
+		dt = 0.5;
+	}
+
+	// Make sure we don't simulate too long time steps
+	int updateCount = 1;
+	while (dt / updateCount > 1.0 / 50) {
+		updateCount += 1;
+	}
+
+	float updateDT = dt / updateCount;
+	for (int i = 0; i < updateCount; ++i) {
+		state->game->update(updateDT);
+	}
 
 #ifndef SWAN_HEADLESS
 	state->game->draw();

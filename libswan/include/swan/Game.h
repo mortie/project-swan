@@ -101,7 +101,6 @@ public:
 	int triggerReload_ = 0;
 	float timeScale_ = 1.0;
 	std::optional<float> fixedDeltaTime_;
-	float fpsLimit_ = 0;
 	Perf perf_;
 	std::vector<EntityRef> debugEntities_;
 	std::unique_ptr<GameServer> server_;
