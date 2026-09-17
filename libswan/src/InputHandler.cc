@@ -18,13 +18,16 @@
 #include "inputmaps/keys.h"
 #include "inputmaps/mouse.h"
 
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
+#include <SDL3/SDL.h>
 #endif
 
 namespace Swan {
 
 #ifndef SWAN_HEADLESS
+
+static constexpr int KEY_COUNT = 350;
+static constexpr int MOUSE_BUTTON_COUNT = 8;
+static constexpr int GAMEPAD_COUNT = 16;
 
 struct InputHandler::LogEntry {
 	const char *kind;
@@ -33,8 +36,9 @@ struct InputHandler::LogEntry {
 };
 
 struct InputHandler::Gamepad {
-	GLFWgamepadstate state = {};
-	GLFWgamepadstate prevState = {};
+	// TODO
+	//GLFWgamepadstate state = {};
+	//GLFWgamepadstate prevState = {};
 };
 
 struct InputHandler::Impl {
@@ -54,12 +58,11 @@ struct InputHandler::Impl {
 	std::unordered_map<int, std::vector<ActionWrapper>> gamepadButtons;
 	std::unordered_map<int, std::vector<ActionWrapper>> joystickAxes;
 
-	std::bitset<GLFW_KEY_LAST> pressedKeys;
-	std::bitset<GLFW_MOUSE_BUTTON_LAST> pressedMouseButtons;
+	std::bitset<KEY_COUNT> pressedKeys;
+	std::bitset<MOUSE_BUTTON_COUNT> pressedMouseButtons;
 
-	std::array<std::optional<Gamepad>, GLFW_JOYSTICK_LAST + 1>
-		gamepads;
-	std::bitset<GLFW_JOYSTICK_LAST + 1> disabledGamepads;
+	std::array<std::optional<Gamepad>, GAMEPAD_COUNT> gamepads;
+	std::bitset<GAMEPAD_COUNT> disabledGamepads;
 
 	bool verbose = false;
 	std::deque<LogEntry> log;
@@ -270,6 +273,8 @@ void InputHandler::drawDebug()
 			continue;
 		}
 
+		// TODO
+		/*
 		auto &pad = *impl_->gamepads[jid];
 		ImGui::Text("Gamepad %zu (%s):", jid, glfwGetGamepadName(jid));
 
@@ -284,6 +289,7 @@ void InputHandler::drawDebug()
 			int val = pad.state.buttons[btn];
 			ImGui::Text("* %zu (%s): %d", btn, name, val);
 		}
+		*/
 	}
 
 	if (!impl_->log.empty()) {
@@ -324,6 +330,8 @@ void InputHandler::setActions(std::vector<ActionSpec> actions)
 
 void InputHandler::beginFrame()
 {
+	// TODO
+	/*
 	for (int jid = 0; jid <= GLFW_JOYSTICK_LAST; ++jid) {
 		bool present = glfwJoystickPresent(jid);
 
@@ -354,6 +362,7 @@ void InputHandler::beginFrame()
 			impl_->disabledGamepads[jid] = false;
 		}
 	}
+	*/
 }
 
 void InputHandler::endFrame()
@@ -377,6 +386,8 @@ void InputHandler::endFrame()
 
 void InputHandler::updateGamepad(Gamepad &gamepad)
 {
+	// TODO
+	/*
 	for (int i = 0; i <= GLFW_GAMEPAD_AXIS_LAST; ++i) {
 		float val = gamepad.state.axes[i];
 		if (std::abs(val) < 0.1) {
@@ -416,6 +427,7 @@ void InputHandler::updateGamepad(Gamepad &gamepad)
 			onButtonUp(i);
 		}
 	}
+	*/
 }
 
 void InputHandler::registerInput(

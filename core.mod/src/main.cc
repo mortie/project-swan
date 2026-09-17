@@ -433,7 +433,7 @@ public:
 		registerAction({
 			.name = "gui-modifier",
 			.kind = Swan::ActionKind::CONTINUOUS,
-			.defaultInputs = {"key:LEFT_SHIFT"},
+			.defaultInputs = {"key:LSHIFT"},
 		});
 		registerAction({
 			.name = "gui-left",
@@ -484,7 +484,7 @@ public:
 		registerAction({
 			.name = "sprint",
 			.kind = Swan::ActionKind::CONTINUOUS,
-			.defaultInputs = {"key:LEFT_SHIFT", "button:LEFT_THUMB"},
+			.defaultInputs = {"key:LSHIFT", "button:LEFT_THUMB"},
 		});
 		registerAction({
 			.name = "jump",

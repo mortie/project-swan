@@ -1,4 +1,8 @@
+#define SDL_MAIN_USE_CALLBACKS 1
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include <SDL3_net/SDL_net.h>
+
 #include <cstdlib>
 #include <memory>
 #include <random>
@@ -8,17 +12,12 @@
 #include <vector>
 #include <chrono>
 
-#ifndef SWAN_HEADLESS
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#endif
-
 #ifndef __MINGW32__
 #include <backward.hpp>
 #endif
 
 #include <imgui/imgui.h>
-#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <cygnet/gl.h>
 #include <cygnet/Renderer.h>
@@ -32,117 +31,79 @@
 
 #include "../swan-build/build.h"
 
+struct AppState {
+	float pixelRatio = -1;
+	int windowWidth = -1;
+	int windowHeight = -1;
+	bool framebufferSizeDirty = true;
+
+	ImGuiIO imguiIo;
+	Swan::CPtr<SDL_Window, SDL_DestroyWindow> window;
+	SDL_GLContext glContext;
+
 #ifndef SWAN_HEADLESS
-#define HAS_MODERN_GLFW \
-	GLFW_VERSION_MAJOR > 3 || \
-	(GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 4)
+	GLuint globalVao = 0;
 #endif
 
-using namespace Swan;
+	const char *thumbnailPath = nullptr;
+	std::unique_ptr<Swan::GameIO> game;
+};
 
-#define errassert(expr, str, errfn) do { \
-	if (!(expr)) { \
-		panic << (str) << ": " << errfn(); \
-		return EXIT_FAILURE; \
-	} \
-} while (0)
-
-#ifndef SWAN_HEADLESS
-static GameIO *gameptr;
-static ImGuiIO *imguiIo;
-static double pixelRatio = 1;
-
-static void keyCallback(GLFWwindow *, int key, int scancode, int action, int)
+static void onFramebufferSizeChanged(AppState *state)
 {
-	if (imguiIo->WantCaptureKeyboard) {
-		return;
-	}
+	float pixelRatio = SDL_GetWindowDisplayScale(state->window.get());
+	if (state->pixelRatio != pixelRatio) {
+		Swan::info << "Window DPI scale: " << pixelRatio;
+		state->pixelRatio = pixelRatio;
 
-	if (action == GLFW_PRESS) {
-		gameptr->inputs().onKeyDown(key);
-	}
-	else if (action == GLFW_RELEASE) {
-		gameptr->inputs().onKeyUp(key);
-	}
-}
+		ImGui::GetStyle().ScaleAllSizes(pixelRatio);
+		ImGui::GetStyle().FontScaleDpi = pixelRatio;
 
-static void mouseButtonCallback(GLFWwindow *, int button, int action, int)
-{
-	if (imguiIo->WantCaptureMouse) {
-		return;
-	}
-
-	if (action == GLFW_PRESS) {
-		gameptr->inputs().onMouseDown(button);
-	}
-	else if (action == GLFW_RELEASE) {
-		gameptr->inputs().onMouseUp(button);
-	}
-}
-
-static void cursorPositionCallback(GLFWwindow *, double xpos, double ypos)
-{
-	if (imguiIo->WantCaptureMouse) {
-		return;
-	}
-
-	gameptr->onMouseMove(xpos * pixelRatio, ypos * pixelRatio);
-}
-
-static void scrollCallback(GLFWwindow *, double dx, double dy)
-{
-	if (imguiIo->WantCaptureMouse) {
-		return;
-	}
-
-	gameptr->onScrollWheel(dy);
-}
-
-static void framebufferSizeCallback(GLFWwindow *window, int dw, int dh)
-{
-	int width, height;
-
-	glfwGetWindowSize(window, &width, &height);
-	glViewport(0, 0, dw, dh);
-	Cygnet::glCheck();
-	gameptr->onViewportSize(dw, dh);
-	double newPixelRatio = (double)dw / (double)width;
-
-	if (newPixelRatio != pixelRatio) {
-		pixelRatio = newPixelRatio;
-		imguiIo->FontGlobalScale = 1.0 / pixelRatio;
-		imguiIo->Fonts->Clear();
-
-		imguiIo->Fonts->AddFontFromFileTTF(
+		state->imguiIo.FontGlobalScale = 1.0 / pixelRatio;
+		state->imguiIo.Fonts->ClearFonts();
+		state->imguiIo.Fonts->AddFontFromFileTTF(
 			"assets/NotoSans-Regular.ttf", 17 * pixelRatio);
-		imguiIo->Fonts->Build();
+		state->imguiIo.Fonts->Build();
+	}
+
+	int width, height;
+	SDL_GetWindowSizeInPixels(state->window.get(), &width, &height);
+	bool sizeChanged = (
+		width != state->windowWidth ||
+		height != state->windowHeight);
+	if (sizeChanged) {
+		Swan::info << "Viewport size: " << width << 'x' << height;
+		glViewport(0, 0, width, height);
+		state->windowWidth = width;
+		state->windowHeight = height;
+		state->game->onViewportSize(width, height);
 	}
 }
-#endif
 
-int main(int argc, char **argv)
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
-	RTClock initTimer;
+	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
+		Swan::panic << "Failed to create window: " << SDL_GetError();
+		return SDL_APP_FAILURE;
+	}
 
 	if (!NET_Init()) {
-		panic << "Failed to initialize SDL3_net.";
-		return 1;
+		Swan::panic << "Failed to initialize SDL3_net.";
+		return SDL_APP_FAILURE;
 	}
-	SWAN_DEFER(NET_Quit());
-
-	std::optional<uint32_t> seedArg;
-	const char *worldPath = nullptr;
 
 #ifndef __MINGW32__
 	backward::SignalHandling sh;
 #endif
 
+	std::optional<uint32_t> seedArg;
+	const char *worldPath = nullptr;
 	std::vector<std::string> modPaths;
 	const char *swanRoot = ".";
 	bool doCompileMods = true;
 	const char *thumbnailPath = nullptr;
 
-	MPClient::Options multiplayer = {
+	Swan::MPClient::Options multiplayer = {
 		.host = "",
 		.port = 11216,
 		.nick = "dummy",
@@ -181,36 +142,36 @@ int main(int argc, char **argv)
 			i += 1;
 			seedArg = uint32_t(std::stoul(argv[i]));
 		} else {
-			warn << "Unexpected option: " << arg;
+			Swan::warn << "Unexpected option: " << arg;
 		}
 	}
 
 	if (modPaths.empty()) {
-		panic << "Empty mods list!";
-		return 1;
+		Swan::panic << "Empty mods list!";
+		return SDL_APP_FAILURE;
 	}
 
-	HashMap<ModInfo> mods;
+	Swan::HashMap<Swan::ModInfo> mods;
 	std::vector<std::string> modIDs;
 	for (auto &path: modPaths) {
-		auto mod = ModInfo::parse(path);
+		auto mod = Swan::ModInfo::parse(path);
 		if (!mod) {
-			panic << "Failed to parse mod info for " << path;
-			return 1;
+			Swan::panic << "Failed to parse mod info for " << path;
+			return SDL_APP_FAILURE;
 		}
 
-		auto id = cat(mod->name, "@", mod->version);
+		auto id = Swan::cat(mod->name, "@", mod->version);
 		mods[id] = std::move(*mod);
 		modIDs.push_back(std::move(id));
 	}
 
 #ifdef SWAN_HEADLESS
 	if (multiplayer.host != "") {
-		panic << "Can't join a server in headless mode.";
+		Swan::panic << "Can't join a server in headless mode.";
 		return 1;
 	}
 
-	info << "Running in headless mode.";
+	Swan::info << "Running in headless mode.";
 #endif
 
 	auto compileMods = [&]() {
@@ -218,7 +179,7 @@ int main(int argc, char **argv)
 			return true;
 		}
 
-		ScopedTimer timer("compile mods");
+		Swan::ScopedTimer timer("compile mods");
 
 		for (auto &[id, mod]: mods) {
 			if (!SwanBuild::build(mod.path.c_str(), swanRoot)) {
@@ -229,76 +190,86 @@ int main(int argc, char **argv)
 		return true;
 	};
 	if (!compileMods()) {
-		return 1;
+		return SDL_APP_FAILURE;
 	}
+
+	auto state = new AppState();
+	*appstate = (void *)state;
+	state->thumbnailPath = thumbnailPath;
 
 #ifndef SWAN_HEADLESS
-	glfwSetErrorCallback(+[] (int error, const char *description) {
-		warn << "GLFW Error: " << error << ": " << description;
-	});
-
-	if (!glfwInit()) {
-		panic << "Initializing GLFW failed.";
-		return 1;
-	}
-	SWAN_DEFER(glfwTerminate());
-
-	{ // Load custom input mappings from file
-		std::fstream f("assets/gamecontrollerdb.txt");
-		if (f) {
-			std::stringstream ss;
-			ss << f.rdbuf();
-			auto str = std::move(ss).str();
-			if (!glfwUpdateGamepadMappings(str.c_str())) {
-				warn << "Failed to update gamepad mappings";
-			}
-		} else {
-			Swan::warn << "Failed to open assets/gamecontrollerdb.txt";
-		}
-	}
-
 	Cygnet::GLSL_PRELUDE = "#version 150\n";
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHintString(GLFW_WAYLAND_APP_ID, "coffee.mort.Swan");
-	GLFWwindow *window = glfwCreateWindow(
-		640, 480, "Project: SWAN  -  " SWAN_VERSION,
-		nullptr, nullptr);
-	if (!window) {
-		panic << "Failed to create window";
-		return 1;
+	state->window.reset(SDL_CreateWindow(
+		"SWAN Launcher  -  " SWAN_VERSION,
+		450, 380, (
+			SDL_WINDOW_OPENGL |
+			SDL_WINDOW_RESIZABLE |
+			SDL_WINDOW_HIDDEN |
+			SDL_WINDOW_HIGH_PIXEL_DENSITY)));
+	if (!state->window) {
+		Swan::panic << "Failed to create window: " << SDL_GetError();
+		return SDL_APP_FAILURE;
 	}
 
-	glfwMakeContextCurrent(window);
+	state->glContext = SDL_GL_CreateContext(state->window.get());
+	if (!state->glContext) {
+		Swan::panic << "Failed to create GL context: " << SDL_GetError();
+		return SDL_APP_FAILURE;
+	}
 #ifdef __MINGW32__
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		panic << "GLAD failed to load GL!";
-		return 1;
+	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+		Swan::panic << "GLAD failed to load GL!";
+		return SDL_APP_FAILURE;
 	}
 #endif
+
+ 	SDL_GL_SetSwapInterval(1);
+
+	SDL_SetWindowPosition(state->window.get(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+	SDL_SetWindowMinimumSize(state->window.get(), 450, 300);
+	SDL_ShowWindow(state->window.get());
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 	Cygnet::glCheck();
+
+	// Create one global VAO, so we can pretend VAOs don't exist
+	glGenVertexArrays(1, &state->globalVao);
+	glBindVertexArray(state->globalVao);
+	Cygnet::glCheck();
+#endif
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	state->imguiIo = ImGui::GetIO();
+	state->imguiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	state->imguiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+	state->imguiIo.IniFilename = nullptr;
+
+#ifndef SWAN_HEADLESS
+	ImGui_ImplSDL3_InitForOpenGL(state->window.get(), state->glContext);
+	ImGui_ImplOpenGL3_Init("#version 150");
 #endif
 
 	// Create the game and mod list
-	std::unique_ptr<GameIO> game;
 	if (multiplayer.host != "") {
-		info << "Connecting to multiplayer host: " << multiplayer.host << ":" << multiplayer.port;
-		auto ptr = std::make_unique<MPGame>(compileMods, mods);
+		Swan::info << "Connecting to multiplayer host: " << multiplayer.host << ":" << multiplayer.port;
+		auto ptr = std::make_unique<Swan::MPGame>(compileMods, mods);
 		ptr->connect(std::move(multiplayer));
-		game = std::move(ptr);
+		state->game = std::move(ptr);
 	} else {
 		if (!worldPath) {
-			panic << "Missing world path!";
-			return 1;
+			Swan::panic << "Missing world path!";
+			return SDL_APP_FAILURE;
 		}
 
-		auto ptr = std::make_unique<Game>(compileMods, mods);
+		auto ptr = std::make_unique<Swan::Game>(compileMods, mods);
 
 		// Load or create world
 		if (std::filesystem::exists(worldPath)) {
@@ -315,217 +286,131 @@ int main(int argc, char **argv)
 				seed = dev();
 			}
 
-			info << "Creating world with seed: " << seed;
+			Swan::info << "Creating world with seed: " << seed;
 			ptr->createWorld(worldPath, "core::default", seed);
 		}
 
-		game = std::move(ptr);
+		state->game = std::move(ptr);
+	}
+
+	return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
+{
+	auto state = (AppState *)appstate;
+	ImGui_ImplSDL3_ProcessEvent(event);
+
+	switch (event->type) {
+	case SDL_EVENT_QUIT:
+	case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+		return SDL_APP_SUCCESS;
+
+	case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+		state->framebufferSizeDirty = true;
+		return SDL_APP_CONTINUE;
+
+	case SDL_EVENT_WINDOW_RESIZED:
+		state->framebufferSizeDirty = true;
+		return SDL_APP_CONTINUE;
+
+	case SDL_EVENT_KEY_DOWN:
+		if (!state->imguiIo.WantCaptureKeyboard && !event->key.repeat) {
+			state->game->inputs().onKeyDown(event->key.scancode);
+		}
+		return SDL_APP_CONTINUE;
+
+	case SDL_EVENT_KEY_UP:
+		if (!state->imguiIo.WantCaptureKeyboard) {
+			state->game->inputs().onKeyUp(event->key.scancode);
+		}
+		return SDL_APP_CONTINUE;
+
+	case SDL_EVENT_MOUSE_BUTTON_DOWN:
+		if (!state->imguiIo.WantCaptureMouse) {
+			Swan::info << "BUTTON: " << int(event->button.button);
+			state->game->inputs().onMouseDown(event->button.button);
+		}
+		return SDL_APP_CONTINUE;
+
+	case SDL_EVENT_MOUSE_BUTTON_UP:
+		if (!state->imguiIo.WantCaptureMouse) {
+			state->game->inputs().onMouseUp(event->button.button);
+		}
+		return SDL_APP_CONTINUE;
+
+	case SDL_EVENT_MOUSE_MOTION:
+		if (!state->imguiIo.WantCaptureMouse) {
+			state->game->onMouseMove(
+				event->motion.x * state->pixelRatio,
+				event->motion.y * state->pixelRatio);
+		}
+		return SDL_APP_CONTINUE;
+
+	case SDL_EVENT_MOUSE_WHEEL:
+		if (!state->imguiIo.WantCaptureMouse) {
+			state->game->onScrollWheel(event->wheel.y);
+		}
+		return SDL_APP_CONTINUE;
+
+	default:
+		return SDL_APP_CONTINUE;
+	}
+}
+
+SDL_AppResult SDL_AppIterate(void *appstate)
+{
+	auto state = (AppState *)appstate;
+
+	if (state->framebufferSizeDirty) {
+		onFramebufferSizeChanged(state);
+		state->framebufferSizeDirty = false;
 	}
 
 #ifndef SWAN_HEADLESS
-	gameptr = game.get();
-	glfwSetKeyCallback(window, keyCallback);
-	glfwSetMouseButtonCallback(window, mouseButtonCallback);
-	glfwSetCursorPosCallback(window, cursorPositionCallback);
-	glfwSetScrollCallback(window, scrollCallback);
-	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplSDL3_NewFrame();
+#endif
+	ImGui::NewFrame();
 
-	glfwSwapInterval(1);
+	// TODO
+	float dt = 1.0 / 60;
+	state->game->update(dt);
+
+#ifndef SWAN_HEADLESS
+	state->game->draw();
 	Cygnet::glCheck();
-	game->vsync_ = true;
+	state->game->render();
+	Cygnet::glCheck();
 
-	GLFWmonitor *currentMonitor = [&] {
-		int winX, winY, winW, winH;
-		glfwGetWindowPos(window, &winX, &winY);
-#if HAS_MODERN_GLFW
-		if (glfwGetError(nullptr) == GLFW_FEATURE_UNAVAILABLE) {
-			return glfwGetPrimaryMonitor();
-		}
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	SDL_GL_SwapWindow(state->window.get());
 #endif
 
-		glfwGetWindowSize(window, &winW, &winH);
-		int centerX = winX + (winW / 2);
-		int centerY = winY + (winH / 2);
+	return SDL_APP_CONTINUE;
+}
 
-		int n;
-		GLFWmonitor **monitors = glfwGetMonitors(&n);
-		for (int i = 0; i < n; ++i) {
-			int monX, monY, monW, monH;
-			glfwGetMonitorWorkarea(monitors[i], &monX, &monY, &monW, &monH);
-			if (centerX < monX || centerX > monX + monW) {
-				continue;
-			}
-			if (centerY < monY || centerY > monY + monH) {
-				continue;
-			}
+void SDL_AppQuit(void *appstate, SDL_AppResult result)
+{
+	auto state = (AppState *)appstate;
 
-			Swan::info << "Found monitor: " << glfwGetMonitorName(monitors[i]);
-			return monitors[i];
-		}
-
-		Swan::info << "Found no monitor, using primary";
-		return glfwGetPrimaryMonitor();
-	}();
-
-	const GLFWvidmode *mode = glfwGetVideoMode(currentMonitor);
-	game->fpsLimit_ = mode->refreshRate;
-
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	SWAN_DEFER(ImGui::DestroyContext());
-
-	imguiIo = &ImGui::GetIO();
-	imguiIo->IniFilename = nullptr;
-
-	ImGui::StyleColorsDark();
-
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	SWAN_DEFER(ImGui_ImplGlfw_Shutdown());
-	ImGui_ImplOpenGL3_Init("#version 150");
-	SWAN_DEFER(ImGui_ImplOpenGL3_Shutdown());
-
-	{
-		int dw, dh;
-		glfwGetFramebufferSize(window, &dw, &dh);
-		framebufferSizeCallback(window, dw, dh);
+	if (state->thumbnailPath) {
+		state->game->screenshot(state->thumbnailPath, 256, 256);
 	}
-
-	// Create one global VAO, so we can pretend VAOs don't exist
-	GLuint globalVao;
-	glGenVertexArrays(1, &globalVao);
-	glBindVertexArray(globalVao);
-#endif
-
-	Swan::info << "Timer 'initialize': " << initTimer;
-
-	auto prevTime = std::chrono::steady_clock::now();
-
-	int slowFrames = 0;
-#ifdef SWAN_HEADLESS
-	while (!game->shouldQuit_) {
-#else
-	while (!glfwWindowShouldClose(window) && !game->shouldQuit_) {
-#endif
-		ZoneScopedN("game loop");
+	state->game->onQuit();
 
 #ifndef SWAN_HEADLESS
-		glfwPollEvents();
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		Cygnet::glCheck();
-		ImGui::NewFrame();
+	glDeleteVertexArrays(1, &state->globalVao);
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplSDL3_Shutdown();
+	SDL_GL_DestroyContext(state->glContext);
 #endif
+	ImGui::DestroyContext();
 
-		auto now = std::chrono::steady_clock::now();
-		std::chrono::duration<float> dur(now - prevTime);
-		if (game->fpsLimit_ > 0) {
-			std::chrono::duration<float> minDur(1.0 / game->fpsLimit_);
-			if (dur < minDur) {
-				using T = std::chrono::steady_clock::duration;
-				auto sleepTime = std::chrono::duration_cast<T>(minDur - dur);
-				std::this_thread::sleep_for(sleepTime);
-				now += sleepTime;
-				dur = now - prevTime;
-			}
-		}
-
-		prevTime = now;
-		float dt = dur.count();
-
-		// We want to warn if one frame takes over 0.1 seconds...
-		if (dt > 0.1) {
-			if (slowFrames == 0) {
-				warn << "Delta time too high! (" << dt << "s)";
-			}
-			slowFrames += 1;
-
-			// And we never want to do physics as if our one frame is greater than
-			// 0.5 seconds.
-			if (dt > 0.5) {
-				dt = 0.5;
-			}
-		}
-		else if (slowFrames > 0) {
-			if (slowFrames > 1) {
-				warn << slowFrames << " consecutive slow frames.";
-			}
-			slowFrames = 0;
-		}
-
-		// If the game has a fixed delta time,
-		// ignore anything we've measured so far.
-		if (game->fixedDeltaTime_) {
-			dt = game->fixedDeltaTime_;
-		}
-
-		// Scale delta time by time scale.
-		// Everything after this will use a scaled delta time
-		// rather than the real delta time.
-		dt *= game->timeScale_;
-
-		// Simple case: we can keep up, only need one physics update
-		if (dt <= 1 / 25.0) {
-			ZoneScopedN("game update");
-			game->update(dt);
-
-			// Complex case: run multiple steps this iteration
-		}
-		else {
-			int count = (int)ceil(dt / (1 / 30.0));
-			float delta = dt / (float)count;
-
-			// Don't be too noisy with the occasional double update
-			if (count > 2) {
-				info << "Delta time " << dt << "s. Running " << count
-					 << " updates in one frame, with a delta as if we had "
-					 << 1.0 / delta << " FPS.";
-			}
-			for (int i = 0; i < count; ++i) {
-				ZoneScopedN("game update");
-				game->update(delta);
-			}
-		}
-
-#ifndef SWAN_HEADLESS
-		{
-			ZoneScopedN("game draw");
-			game->draw();
-			Cygnet::glCheck();
-		}
-
-		{
-			ZoneScopedN("imgui draw");
-			ImGui::Render();
-			Cygnet::glCheck();
-		}
-
-		{
-			ZoneScopedN("game render");
-			game->render();
-			Cygnet::glCheck();
-		}
-
-		{
-			ZoneScopedN("imgui render");
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-			Cygnet::glCheck();
-		}
-
-		{
-			ZoneScopedN("render present");
-			glfwSwapBuffers(window);
-			Cygnet::glCheck();
-		}
-#endif
-
-		FrameMark;
-	}
-
-	if (thumbnailPath) {
-		game->screenshot(thumbnailPath, 256, 256);
-	}
-
-	game->onQuit();
+	delete state;
+	NET_Quit();
+	SDL_Quit();
 
 	// Sometimes, destructing stuff hangs forever.
 	// Especially AudioOutputUnitStop on macOS sometimes hangs
@@ -535,9 +420,7 @@ int main(int argc, char **argv)
 	// teardown taking too long.
 	std::thread([] {
 		sleep(5);
-		warn << "Haven't successfully exited in 5 seconds, exiting.";
+		Swan::warn << "Haven't successfully exited in 5 seconds, exiting.";
 		exit(0);
 	}).detach();
-
-	return 0;
 }

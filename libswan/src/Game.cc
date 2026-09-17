@@ -20,8 +20,7 @@
 #include <capnp/serialize-packed.h>
 
 #ifndef SWAN_HEADLESS
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
+#include <SDL3/SDL.h>
 #endif
 
 #include "Clock.h"
@@ -236,10 +235,10 @@ void Game::drawDebugMenu()
 	bool prevEnableVSync = vsync_;
 	ImGui::Checkbox("Enable VSync", &vsync_);
 	if (vsync_ && !prevEnableVSync) {
-		glfwSwapInterval(1);
+		SDL_GL_SetSwapInterval(1);
 	}
 	else if (!vsync_ && prevEnableVSync) {
-		glfwSwapInterval(0);
+		SDL_GL_SetSwapInterval(0);
 	}
 #endif
 
