@@ -28,9 +28,6 @@
 [submodule "subprojects/scisa"]
 	path = subprojects/scisa
 	url = https://github.com/mortie/scisa.git
-[submodule "subprojects/portaudio"]
-	path = subprojects/portaudio
-	url = https://github.com/mortie/portaudio.git
 [submodule "subprojects/capnproto"]
 	path = third-party/capnp/capnp
 	url = https://github.com/capnproto/capnproto.git

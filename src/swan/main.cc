@@ -87,7 +87,7 @@ static void onFramebufferSizeChanged(AppState *state)
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
-	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
+	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD)) {
 		Swan::panic << "Failed to create window: " << SDL_GetError();
 		return SDL_APP_FAILURE;
 	}

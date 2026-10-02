@@ -52,19 +52,6 @@ libsdl = dependency('sdl3')
 libsdl_net_sub = cmake.subproject('SDL_net')
 libsdl_net = libsdl_net_sub.dependency('SDL3_net-shared')
 
-if is_headless
-  libportaudio = []
-else
-  portaudio_opts = cmake.subproject_options()
-  portaudio_opts.add_cmake_defines({
-    'BUILD_SHARED_LIBS': true,
-    'CMAKE_INSTALL_LIBDIR': 'lib',
-  })
-  portaudio_opts.set_override_option('warning_level', '0')
-  portaudio_sub = cmake.subproject('portaudio', options: portaudio_opts)
-  libportaudio = portaudio_sub.dependency('portaudio')
-endif
-
 tpl_opts = cmake.subproject_options()
 tpl_opts.add_cmake_defines({
   'BUILD_SHARED_LIBS': true,

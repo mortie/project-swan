@@ -1,22 +1,17 @@
 #include "SoundPlayer.h"
-
-#ifndef SWAN_HEADLESS
-#include <cassert>
-#include <portaudio.h>
-#include <thread>
-#include <utility>
-#include <swan/log.h>
-#include <atomic>
-
 #include "RingBuffer.h"
-#endif
+#include "swan/log.h"
+#include "swan/util.h"
+
+#include <SDL3/SDL.h>
+#include <thread>
 
 namespace Swan {
 
-#ifndef SWAN_HEADLESS
-
 constexpr size_t MAX_PLAYBACKS = 64;
 constexpr size_t MAX_NEW_PLAYBACKS = 32;
+constexpr int CHANNELS = 2;
+
 
 struct SoundHandle::Data {
 	std::atomic<bool> done = false;
@@ -25,7 +20,8 @@ struct SoundHandle::Data {
 	std::atomic<float> centerX = 0, centerY= 0;
 };
 
-SoundHandle SoundHandle::make() {
+SoundHandle SoundHandle::make()
+{
 	SoundHandle handle;
 	handle.data_ = std::make_shared<Data>();
 	return handle;
@@ -73,17 +69,11 @@ struct SoundPlayer::Context {
 	std::atomic<float> centerY = 0;
 };
 
-static int callback(
-	const void * /*inputBuffer*/, void *outputBuffer,
-	unsigned long samples,
-	const PaStreamCallbackTimeInfo * /*timeInfo*/,
-	PaStreamCallbackFlags /*statusFlags*/,
-	void *userData)
+static void fillAudioBuffer(
+	float *output,
+	size_t samples,
+	SoundPlayer::Context *ctx)
 {
-	constexpr int CHANNELS = 2;
-
-	SoundPlayer::Context *ctx = (SoundPlayer::Context *)userData;
-
 	if (ctx->flush.exchange(false)) {
 		for (size_t i = 0; i < ctx->playbackCount; ++i) {
 			ctx->playbacks[i].handle->done = true;
@@ -97,16 +87,15 @@ static int callback(
 		}
 	}
 
-	float *output = (float *)outputBuffer;
 	float volume = ctx->volume;
 	float centerX = ctx->centerX;
 	float centerY = ctx->centerY;
 
 	// Zero out the playback buffer
-	memset(outputBuffer, 0, samples * CHANNELS * sizeof(*output));
+	memset(output, 0, samples * CHANNELS * sizeof(*output));
 
 	if (ctx->ended) {
-		return paComplete;
+		return;
 	}
 
 	// Add all new playbacks
@@ -201,8 +190,25 @@ static int callback(
 
 		ctx->ended = true;
 	}
+}
 
-	return paContinue;
+static void callback(void *ptr, SDL_AudioStream *stream, int additionalBytes, int /*totalBytes*/)
+{
+	constexpr size_t SAMPLES_PER_BUFFER = 1024;
+	size_t additionalSamples = additionalBytes / (sizeof(float) * CHANNELS);
+	SoundPlayer::Context *ctx = (SoundPlayer::Context *)ptr;
+	float buffer[SAMPLES_PER_BUFFER * CHANNELS];
+
+	while (additionalSamples > 0) {
+		size_t samples = additionalSamples;
+		if (samples > SAMPLES_PER_BUFFER) {
+			samples = SAMPLES_PER_BUFFER;
+		}
+
+		fillAudioBuffer(buffer, samples, ctx);
+		SDL_PutAudioStreamData(stream, buffer, samples * sizeof(float) * CHANNELS);
+		additionalSamples -= samples;
+	}
 }
 
 SoundPlayer::SoundPlayer()
@@ -212,38 +218,27 @@ SoundPlayer::SoundPlayer()
 
 	context_ = std::make_unique<Context>();
 
-	PaError err;
-
-	err = Pa_Initialize();
-	if (err) {
-		warn << "Failed to initialize portaudio: " << Pa_GetErrorText(err);
-		return;
-	}
-
-	err = Pa_OpenDefaultStream(
-		&stream_, 0, 2, paFloat32, 48000, paFramesPerBufferUnspecified,
+	SDL_AudioSpec spec;
+	spec.channels = 2;
+	spec.format = SDL_AUDIO_F32;
+	spec.freq = 48000;
+	auto stream = SDL_OpenAudioDeviceStream(
+		SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec,
 		callback, context_.get());
-	if (err) {
-		warn << "Failed to open stream: " << Pa_GetErrorText(err);
-		Pa_Terminate();
+	if (!stream) {
+		warn << "Failed to open audio stream: " << SDL_GetError();
 		return;
 	}
 
-	err = Pa_StartStream(stream_);
-	if (err) {
-		warn << "Failed to start stream: " << Pa_GetErrorText(err);
-		Pa_CloseStream(stream_);
-		Pa_Terminate();
-		return;
-	}
-
-	ok_ = true;
+	SDL_ResumeAudioStreamDevice(stream);
+	stream_ = stream;
 }
 
 SoundPlayer::~SoundPlayer()
 {
 	using namespace std::chrono_literals;
-	if (ok_) {
+
+	if (stream_) {
 		// Ending abruptly causes sound glitches.
 		// By setting end=true, we will cause the callback
 		// to fade out smoothly the next time it's called.
@@ -252,13 +247,7 @@ SoundPlayer::~SoundPlayer()
 		// Give it some time to fade out.
 		std::this_thread::sleep_for(50ms);
 
-		Pa_StopStream(stream_);
-		Pa_CloseStream(stream_);
-
-		// Every successful call to Pa_Initialize should be matched
-		// by a call to Pa_Terminate, so this works even if there are
-		// multiple SoundPlayer instances
-		Pa_Terminate();
+		SDL_DestroyAudioStream((SDL_AudioStream *)stream_);
 	}
 }
 
@@ -289,7 +278,7 @@ void SoundPlayer::play(
 		return;
 	}
 
-	if (!ok_) {
+	if (!stream_) {
 		handle.data_->done = true;
 		return;
 	}
@@ -314,26 +303,5 @@ void SoundPlayer::setCenter(float x, float y)
 	context_->centerX = x;
 	context_->centerY = y;
 }
-
-#else
-
-struct SoundPlayer::Context {};
-
-SoundHandle SoundHandle::make() { return {}; }
-bool SoundHandle::done() { return true; }
-void SoundHandle::stop() {}
-void SoundHandle::move(Vec2) {}
-
-SoundPlayer::SoundPlayer() = default;
-SoundPlayer::~SoundPlayer() = default;
-
-void SoundPlayer::volume(float) {}
-float SoundPlayer::volume() { return 0; }
-void SoundPlayer::flush() {}
-
-void SoundPlayer::play(SoundAsset *, float, std::optional<Vec2>, SoundHandle) {}
-void SoundPlayer::setCenter(float, float) {}
-
-#endif
 
 }

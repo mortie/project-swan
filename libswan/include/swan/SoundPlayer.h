@@ -53,8 +53,7 @@ public:
 private:
 	SoundHandle nullHandle_;
 
-	void *stream_;
-	bool ok_ = false;
+	void *stream_ = nullptr;
 	std::unique_ptr<Context> context_;
 };
 
