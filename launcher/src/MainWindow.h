@@ -3,6 +3,7 @@
 #include "worlds.h"
 #include <atomic>
 #include <memory>
+#include <span>
 #include <string>
 #include <vector>
 #include <optional>

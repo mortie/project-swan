@@ -9,13 +9,13 @@
 #include <cygnet/gl.h>
 #include <span>
 #include <stb/stb_image.h>
-#include <process.hpp>
+#include <SDL3/SDL_process.h>
 
 #include "cygnet/util.h"
+#include "swan/util.h"
 #include "worlds.h"
 
 using namespace std::chrono_literals;
-namespace TPL = TinyProcessLib;
 
 GLTexture::GLTexture(GLTexture &&other)
 {
@@ -94,6 +94,33 @@ static GLTexture loadWorldThumbnail(std::string id)
 
 	Swan::panic << "Failed to load unknown-world asset!";
 	abort();
+}
+
+static void runSwanCommand(std::span<const std::string> cmd)
+{
+	std::vector<const char *> argv;
+	argv.reserve(cmd.size() + 1);
+	for (auto &arg: cmd) {
+		argv.push_back(arg.c_str());
+	}
+	argv.push_back(nullptr);
+
+	Swan::CPtr<SDL_Process, SDL_DestroyProcess> proc(
+		SDL_CreateProcess(argv.data(), false));
+	if (!proc) {
+		Swan::warn << "Failed to launch swan: " << SDL_GetError();
+		std::string cmdStr = "";
+		for (auto &arg: cmd) {
+			cmdStr += arg;
+			cmdStr += ' ';
+		}
+		Swan::warn << "Command: " << cmdStr;
+		return;
+	}
+
+	int exitCode = -1;
+	SDL_WaitProcess(proc.get(), true, &exitCode);
+	Swan::info << "Swan exited with exit code " << exitCode << '.';
 }
 
 void MainWindow::update()
@@ -312,19 +339,7 @@ void MainWindow::launch(
 			cmd.push_back(std::to_string(*seed));
 		}
 
-		// TODO: This should show output in a console window
-		auto receiveOutput = [](const char *data, size_t len) {
-			std::cerr << std::string_view(data, len);
-		};
-
-		TPL::Process proc(
-			cmd, "",
-			receiveOutput, // stdout
-			receiveOutput // stderr
-		);
-
-		int status = proc.get_exit_status();
-		Swan::info << "Swan exited with exit code " << status << '.';
+		runSwanCommand(cmd);
 
 		running->store(false);
 	}).detach();
@@ -348,19 +363,7 @@ void MainWindow::launchMultiplayer(std::string host)
 			"--mp-host", host,
 		};
 
-		// TODO: This should show output in a console window
-		auto receiveOutput = [](const char *data, size_t len) {
-			std::cerr << std::string_view(data, len);
-		};
-
-		TPL::Process proc(
-			cmd, "",
-			receiveOutput, // stdout
-			receiveOutput // stderr
-		);
-
-		int status = proc.get_exit_status();
-		Swan::info << "Swan exited with exit code " << status << '.';
+		runSwanCommand(cmd);
 
 		running->store(false);
 	}).detach();

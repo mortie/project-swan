@@ -13,7 +13,6 @@ if not is_headless
       libgl,
       libsdl,
       libstb_image,
-      libtpl,
       common,
     ],
     cpp_args: [

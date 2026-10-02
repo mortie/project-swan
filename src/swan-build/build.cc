@@ -17,7 +17,7 @@
 #include <thread>
 #include <cstring>
 #include <sha1/sha1.hpp>
-#include <process.hpp>
+#include <SDL3/SDL_process.h>
 
 #if SWAN_CXX_IS_MINGW
 #define DYNLIB_EXT ".dll"
@@ -40,8 +40,6 @@
 #else
 #define LINKLIB_EXT DYNLIB_EXT
 #endif
-
-namespace TPL = TinyProcessLib;
 
 namespace SwanBuild {
 
@@ -270,33 +268,39 @@ static void iterateSources(
 	}
 }
 
-static bool runCommand(const std::vector<std::string> &cmd)
+static bool runCommand(std::span<const std::string> cmd)
 {
-	std::string output;
+	std::vector<const char *> argv;
+	argv.reserve(cmd.size() + 1);
+	for (auto &arg: cmd) {
+		argv.push_back(arg.c_str());
+	}
+	argv.push_back(nullptr);
 
-	auto receiveOutput = [&](const char *data, size_t len) {
-		output += std::string_view(data, len);
-	};
+	Swan::CPtr<SDL_Process, SDL_DestroyProcess> proc(
+		SDL_CreateProcess(argv.data(), true));
+	if (!proc) {
+		Swan::warn << "Failed to launch process: " << SDL_GetError();
+		std::cerr << "$ " << cmdToString(cmd) << '\n';
+		return false;
+	}
 
-	TPL::Process proc(
-		cmd, "",
-		receiveOutput, // stdout
-		receiveOutput // stderr
-	);
-
-	int status = proc.get_exit_status();
-	if (status != 0) {
-		Swan::warn << "Command failed with code " << status << "!";
+	int exitCode = -1;
+	size_t outputSize = 0;
+	Swan::CPtr<void, SDL_free> output(
+		SDL_ReadProcess(proc.get(), &outputSize, &exitCode));
+	if (exitCode != 0) {
+		Swan::warn << "Command failed with code " << exitCode << "!";
 		std::cerr << "$ " << cmdToString(cmd) << '\n';
 		std::cerr << output << '\n';
 
 		return false;
 	}
 
-	if (output != "") {
+	if (outputSize > 0) {
 		Swan::info << "Command exited with output:";
 		std::cerr << "$ " << cmdToString(cmd) << '\n';
-		std::cerr << output << '\n';
+		std::cerr << std::string_view{(char *)output.get(), outputSize} << '\n';
 	}
 
 	return true;

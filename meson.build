@@ -52,13 +52,6 @@ libsdl = dependency('sdl3')
 libsdl_net_sub = cmake.subproject('SDL_net')
 libsdl_net = libsdl_net_sub.dependency('SDL3_net-shared')
 
-tpl_opts = cmake.subproject_options()
-tpl_opts.add_cmake_defines({
-  'BUILD_SHARED_LIBS': true,
-})
-tpl_sub = cmake.subproject('tiny-process-library', options: tpl_opts)
-libtpl = tpl_sub.dependency('tiny-process-library')
-
 if is_headless
   libffmpeg = []
   has_ffmpeg = false
@@ -146,7 +139,7 @@ endif
 
 swan_deps = [
   libswan, libcygnet, common, libimgui, libgl, libsdl, libbackwardcpp,
-  libcpptoml, libsha1, libscisasm, libscisavm, libtpl, libsdl, libsdl_net,
+  libcpptoml, libsha1, libscisasm, libscisavm, libsdl, libsdl_net,
 ] + maybe_libtracy
 
 executable(
@@ -173,8 +166,8 @@ executable(
   dependencies: [
     libcpptoml,
     libsha1,
-    libtpl,
     common,
+    libsdl,
   ],
   cpp_args: swanbuild_args,
 )

@@ -31,9 +31,6 @@
 [submodule "subprojects/capnproto"]
 	path = third-party/capnp/capnp
 	url = https://github.com/capnproto/capnproto.git
-[submodule "subprojects/tiny-process-library"]
-	path = subprojects/tiny-process-library
-	url = https://gitlab.com/eidheim/tiny-process-library.git
 [submodule "meson"]
 	path = meson
 	url = https://github.com/mesonbuild/meson.git
